@@ -1,0 +1,231 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<Window x:Class="WPinternals.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WPinternals" Height="760" Width="1150" Icon="..\WPinternals.ico" Closed="Window_Closed">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type local:BootUnlockResourcesViewModel}">
+            <local:FlashResourcesView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:BootRestoreResourcesViewModel}">
+            <local:BootRestoreResourcesView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaNormalViewModel}">
+            <local:NokiaNormalView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaFlashViewModel}">
+            <local:NokiaFlashView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaLabelViewModel}">
+            <local:NokiaLabelView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:AboutViewModel}">
+            <local:About />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NotImplementedViewModel}">
+            <local:NotImplementedView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaModeNormalViewModel}">
+            <local:NokiaModeNormalView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaModeFlashViewModel}">
+            <local:NokiaModeFlashView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaModeLabelViewModel}">
+            <local:NokiaModeLabelView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaModeMassStorageViewModel}">
+            <local:NokiaModeMassStorageView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaMassStorageViewModel}">
+            <local:NokiaMassStorageView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:BusyViewModel}">
+            <local:BusyView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:MessageViewModel}">
+            <local:MessageView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:DisclaimerViewModel}">
+            <local:DisclaimerView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:DisclaimerAndNdaViewModel}">
+            <local:DisclaimerAndNdaView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:RegistrationViewModel}">
+            <local:RegistrationView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:GettingStartedViewModel}">
+            <local:GettingStartedView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:LumiaUnlockRootTargetSelectionViewModel}">
+            <local:LumiaUnlockRootTargetSelectionView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:LumiaUndoRootTargetSelectionViewModel}">
+            <local:LumiaUndoRootTargetSelectionView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:BackupTargetSelectionViewModel}">
+            <local:BackupView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:RestoreSourceSelectionViewModel}">
+            <local:RestoreView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:LumiaFlashRomSourceSelectionViewModel}">
+            <local:FlashRomView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:DumpRomTargetSelectionViewModel}">
+            <local:DumpRomView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:DownloadsViewModel}">
+            <local:LumiaDownloadView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ContextViewModel}">
+            <local:ContextView />
+        </DataTemplate>
+        <BitmapImage x:Key="LogoImageSource" UriSource="..\Logo.png" />
+        <BitmapImage x:Key="LogoSmallImageSource" UriSource="..\Logo-Small.png" />
+        <Style x:Key="MenuButtonStyle" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid x:Name="Bd" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="#21FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="#10FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="#40FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="MenuButtonStyle_" TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="#80DADADA"/>
+                                <Setter Property="Background" TargetName="Bd" Value="#210080FF"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="#80DADADA"/>
+                                <Setter Property="Background" TargetName="Bd" Value="#210080FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="#90006CD9"/>
+                                <Setter Property="Background" TargetName="Bd" Value="#400080FF"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="1.5,1.5" StartPoint="0.6,0.2" SpreadMethod="Reflect">
+                <GradientStop Color="#FF342F8D" Offset="0"/>
+                <GradientStop Color="#FFE8E7F0" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="100"/>
+        <Border Margin="256,100,0,30" HorizontalAlignment="Stretch" CornerRadius="15,0,0,15" Background="White" Padding="0">
+            <ScrollViewer x:Name="MainContentScrollViewer" VerticalScrollBarVisibility="Auto" SizeChanged="ScrollViewer_SizeChanged">
+                <ContentControl x:Name="ChildFrame" Content="{Binding ContextViewModel}" HorizontalAlignment="Center" Width="700">
+                    <ContentControl.Style>
+                        <Style TargetType="{x:Type ContentControl}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Content, RelativeSource={x:Static RelativeSource.Self}}" Value="{x:Null}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <local:Empty/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
+            </ScrollViewer>
+        </Border>
+        <StackPanel HorizontalAlignment="Right" Height="85" Margin="0,10,10,0" VerticalAlignment="Top" Orientation="Horizontal">
+            <Label Content="Windows Phone Internals" Width="657" Foreground="White" FontSize="56" HorizontalContentAlignment="Right"/>
+            <Image Source="{StaticResource LogoSmallImageSource}" SnapsToDevicePixels="True"/>
+        </StackPanel>
+        <StackPanel Name="Menu" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,120,0,0" Orientation="Vertical" IsEnabled="{Binding IsMenuEnabled}">
+            <Label FontSize="20" Height="40" Margin="0,6,0,0" Content="General" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180" Foreground="White"/>
+            <Border Height="2" Margin="0,-6,0,6" BorderBrush="#FFA0A0E2" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="219"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Getting started" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding GettingStartedCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Label FontSize="20" Height="40" Margin="0,6,0,0" Content="Phone" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180" Foreground="White"/>
+            <Border BorderBrush="#FFA0A0E2" BorderThickness="1" HorizontalAlignment="Left" Height="2" Margin="0,-6,0,6" VerticalAlignment="Top" Width="219"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Info" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding InfoCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Manual mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding ModeCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Label FontSize="20" Height="40" Margin="0,6,0,0" Content="Unlock" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180" Foreground="White"/>
+            <Border BorderBrush="#FFA0A0E2" BorderThickness="1" HorizontalAlignment="Left" Height="2" Margin="0,-6,0,6" VerticalAlignment="Top" Width="219"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Unlock bootloader" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding BootUnlockCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Restore bootloader" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding BootRestoreCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Enable root access" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding RootUnlockCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Disable root access" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding RootUndoCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Label FontSize="20" Height="40" Margin="0,6,0,0" Content="Platform" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180" Foreground="White"/>
+            <Border BorderBrush="#FFA0A0E2" BorderThickness="1" HorizontalAlignment="Left" Height="2" Margin="0,-6,0,6" VerticalAlignment="Top" Width="219"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Backup" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding BackupCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Flash" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding LumiaFlashRomCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Dump" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding DumpRomCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Download" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding DownloadCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Label FontSize="20" Height="40" Margin="0,6,0,0" Content="Help" HorizontalAlignment="Left" VerticalAlignment="Top" Width="180" Foreground="White"/>
+            <Border BorderBrush="#FFA0A0E2" BorderThickness="1" HorizontalAlignment="Left" Height="2" Margin="0,-6,0,6" VerticalAlignment="Top" Width="219"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="About" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding AboutCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Donate" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding DonateCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="www.wpinternals.net" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding OpenWebSiteCommand}" Style="{DynamicResource MenuButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Window>

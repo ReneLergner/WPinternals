@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectView>ProjectFiles</ProjectView>
+    <PublishUrlHistory>publish\</PublishUrlHistory>
+    <InstallUrlHistory />
+    <SupportUrlHistory />
+    <UpdateUrlHistory />
+    <BootstrapperUrlHistory />
+    <ErrorReportUrlHistory />
+    <FallbackCulture>en-US</FallbackCulture>
+    <VerifyUploadedFiles>false</VerifyUploadedFiles>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-Test|AnyCPU'">
+    <StartArguments>-test</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-ReadGPT|AnyCPU'">
+    <StartArguments>-ReadGPT</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DumpFFU|AnyCPU'">
+    <StartArguments>-DumpFFU "C:\ProgramData\WPinternals\Repository\RM-1085\RM1085_1078.0038.10586.13080.12547.033139_retail_prod_signed.ffu" "C:\ProgramData\WPinternals\Repository\RM-1085" "mainos"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-930|AnyCPU'">
+    <StartArguments>-TestProgrammer "C:\ProgramData\WPInternals\Repository\RM-1045\MPRG8974_fh.ede"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FindFlashingProfile|AnyCPU'">
+    <StartArguments>-FindFlashingProfile</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DisableSecureBoot|AnyCPU'">
+    <StartArguments>-EnableTestSigning</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FindFlashingProfileNoRestart|AnyCPU'">
+    <StartArguments>-FindFlashingProfileNoRestart</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DisableSecureBoot %28no restart%29|AnyCPU'">
+    <StartArguments>-EnableTestSigningNoRestart</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-ClearNV|AnyCPU'">
+    <StartArguments>-ClearNV</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DumpUEFI|AnyCPU'">
+    <StartArguments>-DumpUEFI "C:\ProgramData\WPinternals\Repository\RM-1085\UEFI.bin" "C:\ProgramData\WPinternals\Repository\RM-1085\UEFI"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-MSM|AnyCPU'">
+    <StartArguments>-SwitchToMassStorageMode</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-SwitchToMSM|AnyCPU'">
+    <StartArguments>-test</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-UnlockBootloader|AnyCPU'">
+    <StartAction>Project</StartAction>
+    <StartArguments>-UnlockBootloader</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DLEmergency|AnyCPU'">
+    <StartArguments>-DownloadEmergencyByProductType RM-1085</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-ShowPhoneInfo|AnyCPU'">
+    <StartArguments>-ShowPhoneInfo</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-RelockPhone|AnyCPU'">
+    <StartArguments>-RelockPhone</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-EnableRootAccess|AnyCPU'">
+    <StartArguments>-EnableRootAccess</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-950|AnyCPU'">
+    <StartArguments>-TestProgrammer "C:\ProgramData\WPInternals\Repository\RM-1085\MPRG8994_fh.ede"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FixBoot|AnyCPU'">
+    <StartArguments>-FixBootAfterUnlockingBootloader</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DLFFU|AnyCPU'">
+    <StartArguments>-downloadffubyproductcode 059R016</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FlashFFU-RM1085|AnyCPU'">
+    <StartArguments>-FlashFFU "C:\ProgramData\WPinternals\Repository\RM-1085\RM1085_1078.0038.10586.13080.12547.033139_retail_prod_signed.ffu"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-Test|AnyCPU'">
+    <StartArguments>-Test</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-630|AnyCPU'">
+    <StartArguments>-TestProgrammer "C:\ProgramData\WPInternals\Repository\RM-976\MPRG8x26_fh.ede"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DLall|AnyCPU'">
+    <StartArguments>-DownloadAll C:\Temp</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-AddEmergency|AnyCPU'">
+    <StartArguments>-AddEmergency RM-1085 "C:\ProgramData\WPinternals\Repository\RM-1085\MPRG8994_fh.ede" "C:\ProgramData\WPinternals\Repository\RM-1085\RM1085_fh.edp"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-640|AnyCPU'">
+    <StartArguments>-TestProgrammer "C:\ProgramData\WPInternals\Repository\RM-1073\MPRG8x26_fh.ede"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-550|AnyCPU'">
+    <StartArguments>-TestProgrammer "C:\ProgramData\WPInternals\Repository\RM-1127\MPRG8909_fh.ede"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-650|AnyCPU'">
+    <StartArguments>-TestProgrammer "C:\ProgramData\WPInternals\Repository\RM-1152\MPRG8909_fh.ede"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-Help|AnyCPU'">
+    <StartArguments>-%3f</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-ShowFFU|AnyCPU'">
+    <StartArguments>-ShowFFU "C:\ProgramData\WPInternals\Repository\RM-1152\RM1152_1078.0042.10586.13333.15672.0352EF_retail_prod_signed.ffu"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-BackupGPT|AnyCPU'">
+    <StartArguments>/BackupGPT "C:\Temp\Partitions.xml"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-MergeGptXmlXml|AnyCPU'">
+    <StartArguments>-MergeGPT "C:\Temp\Partitions.xml" "C:\Temp\MergePartitions.xml"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-MergeGptXmlZip|AnyCPU'">
+    <StartArguments>-MergeGPT "C:\Temp\OriginalGPT.xml" "C:\Temp\TestROM.zip"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Preview-Test|AnyCPU'">
+    <StartArguments>/Test</StartArguments>
+  </PropertyGroup>
+</Project>

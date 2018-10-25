@@ -1,0 +1,83 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.DumpRomView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPinternals"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <UserControl.Resources>
+        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+    </UserControl.Resources>
+    <StackPanel VerticalAlignment="Center">
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <local:Paragraph>
+                            <Run Text="Dump ROM" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="You can select a source FFU-file and extract the EFIESP partition and MainOS partition. You can enable " />
+                            <Hyperlink NavigateUri="UnlockRoot">Root Access</Hyperlink>
+                            <Run Text=" on these partitions and you can further customize MainOS if you want. After you have " />
+                            <Hyperlink NavigateUri="UnlockBoot">unlocked</Hyperlink>
+                            <Run Text=" the bootloader of the phone, you can " />
+                            <Hyperlink NavigateUri="FlashRom">flash</Hyperlink>
+                            <Run Text=" the custom ROM to the phone." />
+                            <LineBreak />
+                            <LineBreak />
+                            <local:FilePicker Caption="Source FFU: " SelectionText="Select the source FFU-file for backup of the Data partition..." Path="{Binding FFUPath, Mode=TwoWay}" AllowNull="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
+                            <LineBreak />
+                            <LineBreak />
+                            <local:FilePicker x:Name="EFIESPPicker" Caption="EFIESP: " SelectionText="Select the target-file for the EFIESP partition..." Path="{Binding EFIESPPath, Mode=TwoWay}" AllowNull="True" SaveDialog="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged" DefaultFileName="EFIESP.bin"/>
+                            <CheckBox x:Name="CompressEFIESP" Margin="70,5,0,0" Content="Compress EFIESP partition" IsChecked="{Binding CompressEFIESP, Mode=TwoWay}" Checked="CompressEFIESP_Changed" Unchecked="CompressEFIESP_Changed"/>
+                            <LineBreak />
+                            <LineBreak />
+                            <local:FilePicker x:Name="MainOSPicker" Caption="MainOS: " SelectionText="Select the target-file for the MainOS partition..." Path="{Binding MainOSPath, Mode=TwoWay}" AllowNull="True" SaveDialog="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged" DefaultFileName="MainOS.bin"/>
+                            <CheckBox x:Name="CompressMainOS" Margin="70,5,0,0" Content="Compress MainOS partition" IsChecked="{Binding CompressMainOS, Mode=TwoWay}" Checked="CompressMainOS_Changed" Unchecked="CompressMainOS_Changed"/>
+                            <LineBreak />
+                            <LineBreak />
+                            <local:FilePicker x:Name="DataPicker" Caption="Data: " SelectionText="Select the target-file for the Data partition..." Path="{Binding DataPath, Mode=TwoWay}" AllowNull="True" SaveDialog="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged" DefaultFileName="Data.bin"/>
+                            <CheckBox x:Name="CompressData" Margin="70,5,0,0" Content="Compress Data partition" IsChecked="{Binding CompressData, Mode=TwoWay}" Checked="CompressData_Changed" Unchecked="CompressData_Changed"/>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
+                    <Button Command="{Binding Path=DumpCommand, Mode=OneWay}" Content="Dump partitions" Width="120" Height="Auto" Padding="0,5" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

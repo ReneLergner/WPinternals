@@ -1,0 +1,896 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.GettingStartedView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPinternals"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <StackPanel>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <local:Paragraph>
+                            <Run Text="Getting started" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="This tool may cause irrevocable damage and/or data loss when applied to any target device. As such please ensure that you fully comprehend and accept the " />
+                            <Hyperlink NavigateUri="Disclaimer">Disclaimer and warnings</Hyperlink>
+                            <Run Text=" before proceeding any further." />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="If you appreciate the countless hours of hacking, research and development I put into creating this tool then consider " />
+                            <Hyperlink NavigateUri="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=VY8N7BCBT9CS4">buying me a beer</Hyperlink>
+                            <Run Text=". If you wish to leave me a comment or ask a question visit my blog at " />
+                            <LineBreak />
+                            <Hyperlink NavigateUri="http://www.wpinternals.net/">www.wpinternals.net</Hyperlink>
+                            <Run Text="." />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="This section explains some basic information about using this tool. I suggest you take a few minutes and read this section thoroughly to help avoid problems and surprises. However please remember that any damage caused to a device during the use of this tool is your responsibility solely." />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+            </StackPanel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <local:Paragraph>
+                            <Run Text="Supported phones" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="Compatibility of this tool largely depends on the bootloader of the phone. The bootloaders of Lumia phones consist of different parts. Different bootphases are implemented by Qualcomm, Intel, Nokia and Microsoft. The earliest Windows Phone 8 based Lumia's are based on the Qualcomm Snapdragon S4 chipset. For reference I will call the bootloaders of these phones: " />
+                            <Run Text="&quot;Lumia Bootloader Spec A&quot;" FontStyle="Italic" />
+                            <Run Text=". Windows Phone Internals version 1 was written to target those Lumia's." />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="Later models are based on Qualcomm Snapdragon 200 - 800 series. Qualcomm refactored a significant part of their bootloader-code for these new chipsets. And at the same time Nokia also made significant changes to their parts of the bootloader. For reference I will call the bootloaders of these phones: " />
+                            <Run Text="&quot;Lumia Bootloader Spec B&quot;" FontStyle="Italic" />
+                            <Run Text=". So by introducing Lumia's based on the new Qualcomm chipsets all my earlier exploits were rendered useless. I had to find new exploits for defeating the new SecureBoot code, for flashing custom ROM's and for entering Mass Storage mode. Windows Phone Internals version 2 also targets Lumia phones with Bootloader Spec B now." />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="My old exploits have been proven to work on all Lumia's with Bootloader Spec A. My new exploits should be working on all Lumia's with Bootloader Spec B. I have tested a lot of models, but not all. So I cannot be sure yet that the new exploits work on all models. It is possible that some models have modified bootloaders which may not be compatible. When a phone turns out to be incompatible when trying to unlock it, it will end up in Flash mode, and it will not be able to boot the OS anymore. In this case it will always be possible to flash a stock ROM to get the phone booting again. Here is a list which shows what Bootloader Spec was used for different Lumia models. It also shows which OS versions are supported for enabling Root Access."/>
+                            <LineBreak />
+                            <LineBreak />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <Border BorderThickness="1" BorderBrush="#FFD4D4D4" Background="#FFF8F8F8" HorizontalAlignment="Stretch" Margin="20,-10,20,0" Padding="0,20,0,20" >
+                    <TextBlock Margin="30,0,30,0">
+                        <Bold>Lumia models with Bootloader Spec A</Bold><LineBreak />
+                        <LineBreak />
+                        - Lumia 520, 521, 525, 526 <LineBreak />
+                        - Lumia 620, 625 <LineBreak />
+                        - Lumia 720 <LineBreak />
+                        - Lumia 820, 822 <LineBreak />
+                        - Lumia 920, 925, 928 <LineBreak />
+                        - Lumia 1020 <LineBreak />
+                        - Lumia 1320 <LineBreak />
+                        <LineBreak />
+                        <Bold>Lumia models with Bootloader Spec B</Bold><LineBreak />
+                        <LineBreak />
+                        - Lumia 1520 <LineBreak />
+                        - Lumia 430, 435 <LineBreak />
+                        - Lumia 530, 532, 535 <LineBreak />
+                        - Lumia 630, 635, 636, 638 <LineBreak />
+                        - Lumia 730, 735 <LineBreak />
+                        - Lumia 830 <LineBreak />
+                        - Lumia 929 (Icon), 930 <LineBreak />
+                        - Lumia 540 <LineBreak />
+                        - Lumia 640, 640 XL <LineBreak />
+                        - Lumia 550 <LineBreak />
+                        - Lumia 650 <LineBreak />
+                        - Lumia 950, 950 XL
+                    </TextBlock>
+                </Border>
+                <Border BorderThickness="1" BorderBrush="#FFD4D4D4" Background="#FFF8F8F8" HorizontalAlignment="Stretch" Margin="20,20,20,0" Padding="0,20,0,20" >
+                    <TextBlock Margin="30,0,30,0">
+                        <Bold>Supported OS versions for Root Access on models with Bootloader Spec A</Bold><LineBreak />
+                        <LineBreak />
+                        - 8.10.12393.890 <LineBreak />
+                        - 8.10.12397.895 <LineBreak />
+                        - 8.10.14219.341 <LineBreak />
+                        - 8.10.14226.359 <LineBreak />
+                        - 8.10.14234.375 <LineBreak />
+                        - 8.10.15116.125 <LineBreak />
+                        - 8.10.15148.160 <LineBreak />
+                        - 10.0.10512.1000 <LineBreak />
+                        - 10.0.10536.1004 <LineBreak />
+                        - 10.0.10549.4 <LineBreak />
+                        - 10.0.10581.0 <LineBreak />
+                        - 10.0.10586.11 <LineBreak />
+                        - 10.0.10586.36 <LineBreak />
+                        <LineBreak />
+                        <Bold>Supported OS versions for all Lumia's</Bold><LineBreak />
+                        <LineBreak />
+                        - 10.0.10586.107 <LineBreak />
+                        - 10.0.10586.318 <LineBreak />
+                        - 10.0.10586.494 <LineBreak />
+                        - 10.0.15063.0 <LineBreak />
+                        - 10.0.15063.297 <LineBreak />
+                        - 10.0.15254.1 <LineBreak />
+                        - 10.0.15254.12 <LineBreak />
+                        - 10.0.15254.16 (Insider build) <LineBreak />
+                        - 10.0.15254.124 <LineBreak />
+                        - 10.0.15254.158 (Insider and production builds) <LineBreak />
+                        - 10.0.15254.490 <LineBreak />
+                        - 10.0.15254.527 <LineBreak />
+                        - 10.0.15254.530
+                    </TextBlock>
+                    <!--
+                        - 10.0.10240.16384 <LineBreak />
+                    -->
+                </Border>
+            </StackPanel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Required Third Party Downloads" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="There are a number of third party components which must be downloaded and in some cases installed before you can use this tool." />
+                    </local:Paragraph>
+                    <local:Paragraph>
+                        <Run Text="Lumia drivers" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The majority of the Lumia drivers which are required by this tool are installed by the " />
+                        <Hyperlink NavigateUri="http://go.microsoft.com/fwlink/?LinkID=525569">Windows Device Recovery Tool</Hyperlink>
+                        <Run Text=". Please download and install this tool on the computer on which you will run this tool." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Qualcomm Emergency Download drivers" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="When the bootloader is being unlocked, the phone needs to be switched to Qualcomm Emergency Download mode." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="To enable communication with your phone whilst it is in this mode you must install one of the following drivers, both of which are supported by the tool."/>
+                    </local:Paragraph>
+                    <List MarkerStyle="Decimal">
+                        <ListItem>
+                            <local:Paragraph>
+                                <Run FontWeight="Bold" Text="Microsoft / Nokia Driver"/>
+                                <Run Text=" – This exposes the phone in emergency mode as a WinUSB device. This "/>
+                                <Hyperlink NavigateUri="https://www.google.com/search?q=%22emergencydownloaddriver.msi%22">google search</Hyperlink>
+                                <Run Text=" will help you locate the driver."/>
+                            </local:Paragraph>    
+                        </ListItem>
+                        <ListItem>
+                            <local:Paragraph>
+                                <Run FontWeight="Bold" Text="Qualcomm Driver"/>
+                                <Run Text=" – This exposes the phone as a serial device whilst in this emergency mode. This "/>
+                                <Hyperlink NavigateUri="https://www.google.com/search?q=%22qcser.inf%22">google search</Hyperlink>
+                                <Run Text=" will help you locate the driver."/>
+                            </local:Paragraph>
+                        </ListItem>
+                    </List>
+                    <local:Paragraph>
+                        <Run FontWeight="Bold" Text="WARNING: "/>
+                        <Run Text="I would strongly suggest to use the Microsoft / Nokia driver. Eventhough the Qualcomm driver is supported, I have seen some unexpected behavior when using this driver. If Windows Phone Internals freezes when the phone is switched to or through Emergency Mode, first make sure you have a driver installed for Emergency Mode. If the phone is exposed as serial COM port, then you should uninstall the driver and install the WinUSB driver from Microsoft." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The downloaded driver may come as an msi package which can simply be run/installed. Alternatively if the driver package comes as an archive it will contain an INF file which can be installed with this command line:-" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="    PNPUtil.exe -i -a PATH_TO_YOUR_FILE.INF" FontFamily="Courier New" FontSize="12" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="NOTE: "/>
+                        <Run Text="Whilst in emergency mode the phone will appear in device manager as having the device ID &quot;VID_05C6&amp;PID_9008&quot;." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="FFU file" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The process of unlocking the bootloader depends on a ROM image for your target phone. Downloading such ROM images (FFU files) has become much easier with Windows Phone Internals version 2. Basically you just connect the phone, go to the " />
+                        <Hyperlink NavigateUri="Download">Download</Hyperlink>
+                        <Run Text=" page of this tool and download the ROM image."/>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="NOTE: " />
+                        <Run Text="If you are about to unlock a phone with Bootloader Spec B, then you also click the &quot;Download all&quot; button. This will download the FFU file and also the emergency programmer files. If the FFU file contains an OS version which is not supported by Windows Phone Internals SecureBoot Unlock version 2, the this will also automatically download an additional FFU file to extract the necessary files from it." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="WARNING:"/>
+                        <Run Text=" There is a "/>
+                        <Hyperlink NavigateUri="http://forum.xda-developers.com/showthread.php?t=2096045">known bug</Hyperlink>
+                        <Run Text=" related to Samsung branded memory which is used in some Lumia phones. This bug can be triggered during flashing both with official and unofficial tools and during OS updates and will render the entire eMMC (flash memory) to become write protected." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="If this bug is trigged it " />
+                        <Run FontWeight="Bold" Text="is not"/>
+                        <Run Text=" caused by this tool (official tools also trigger it) but instead it is a fault caused by a combination of the Samsung eMMC bug and recent eMMC drivers." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="It is possible that tweakers may be able to modify drivers or restore an old driver to avoid this problem using the access provided by this tool." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Lumia Emergency Programmer" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The tool requires an emergency programmer for the device that you are unlocking. There is a different programmer for every phone model. The emergency programmer can also be downloaded by using the " />
+                        <Hyperlink NavigateUri="Download">Download</Hyperlink>
+                        <Run Text=" page of this tool. In some cases the emergency files cannot be found this way and you will need to download the emergency files yourself. This " />
+                        <Hyperlink NavigateUri="https://www.google.com/search?q=%22Lumia 650 emergency files%22">google search</Hyperlink>
+                        <Run Text=" may yield some relevant results." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Engineering SBL3" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Engineering phones can be switched to Mass Storage Mode. When in this mode the phone acts as if it is removable hard drive allowing full access to the flash memory. This mode is not implemented in retail ROM images. For phones with Bootloader Spec B this is not a problem, because Windows Phone Internals is able to locate all necessary resources to unlock Mass Storage Mode on these phone. If you want to unlock Mass Storage Mode on a phone with Bootloader Spec A, then you need to select an image from an engineering phone which contains an SBL3 partition." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This tool will try to extract the SBL3 partition from either an FFU file or a raw image. This " />
+                        <Hyperlink NavigateUri="https://www.google.com/search?q=%22Lumia%22+%22Engineering%22+%22FFU%22">google search</Hyperlink>
+                        <Run Text=" may yield some relevant results. But remember to verify the OEM and CPU from the image you download. The engineering SBL3 must come from a phone or image that is from the same OEM and has the same CPU as your target device. " />
+                        <Run FontWeight="Bold" Text="Flashing the wrong SBL3 may permanently damage your phone."/>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="If you are unable to obtain an engineering image, you must first dump your phones ROM image, then apply the desired changes to this image and finally flash the modified image back onto your device." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Unlocking the bootloader" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="SecureBoot is a chain of integrity checks which prevents any modifications to system-files that has the following phases." />
+                        <LineBreak />
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="Bootloader" Margin="30,0,0,0"/>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="Operating System Loader" Margin="30,0,0,0"/>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="Operating System Runtime" Margin="30,0,0,0"/>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <LineBreak />
+                        <Hyperlink NavigateUri="UnlockBoot">Unlocking the bootloader</Hyperlink>
+                        <Run Text=" will disable the integrity checks in bootloader (e.g. the first stage of SecureBoot). This is a mandatory requirement that enables changes to the subsequent stages of the secure boot chain. Therefore you must unlock the bootloader before you enable Root Access." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="As for flashing Custom ROM's there is a difference in the approach for Bootloaders Spec A and Bootloaders Spec B. The &quot;Custom flash&quot; exploit, which is used for the phones with Bootloader Spec B, works even on phones which did not unlock the bootloader yet. So you can start flashing a Custom ROM straight away. But the first time you will use the Custom flash on such phone, it will need to find a Flashing Profile first. It will be done automatically. During this phase the phone may reboot quite a few times. Although it may look as if the phone is in a reboot-loop, you should not interfere with the process. This reboot-loop will end after Windows Phone Internals was able to find a working Flashing Profile." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="NOTE: "/>
+                        <Run Text="Unlocking the bootloader of the phone requires a certain version of UEFI on your phone. This tool will verify this version. If it is not possible to perform the Flash-operation you will be notified and you will need to run Windows Updates on your phone or flash a newer ROM to your phone before you can proceed." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="NOTE: "/>
+                        <Run Text="The unlock sequence for Lumia's with bootloader spec B depends on a certain &quot;Boot order&quot;. Right after a Full Flash or right after you relocked a phone, this boot order is different. When you flash an FFU, you can interrupt the boot immediately, before it has completed its first boot. If you would then try to unlock the bootloader, this will fail halfway. This problem will be detected and the changes will be rolled back. A simple reboot will solve the problem; the boot order is restored. After that you can start the unlock sequence again." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Mass Storage Mode" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This mode allows direct access to the eMMC (flash memory) of the phone at sector and file levels. This means it is possible to directly patch system-files. Once in mass storage mode the phone will appear as a removable hard drive in Windows." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Be very careful with this feature as it can cause irreparable damage to your phone. In particular be aware of the following:-" />
+                        <LineBreak />
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" Text="Never use a Virus Scanner on the phone as they may inadvertently corrupt system boot data."/>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" Text="Never use disk repair tools for the same reason."/>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock TextWrapping="Wrap" Margin="30,0,0,0" >
+                                <TextBlock.Inlines>
+                                    <Run Text="If Windows prompts you to format a partition when your phone is in Mass Storage Mode it is essentially that your ignore these messages. "/>
+                                    <Run FontWeight="Bold" Text="Formatting a phone partition may permanently damage the device."/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock TextWrapping="Wrap" Margin="30,0,0,0" >
+                                <TextBlock.Inlines>
+                                    <Run Text="Never modify the security-settings (ACL) of a file or registry-key."/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="You will notice that some files or folders cannot be accessed due to its security-settings. Do not alter the security-settings to get access to these files! Instead run a file-browser under the SYSTEM account to access these files and folders. Download and install " />
+                        <Hyperlink NavigateUri="https://technet.microsoft.com/en-us/sysinternals/bb896649.aspx">Sysinternals PsTools</Hyperlink>
+                        <Run Text=" and a " />
+                        <Hyperlink NavigateUri="https://www.google.nl/?#&amp;q=freeware+file+manager">3rd party file manager</Hyperlink>
+                        <Run Text=". Then launch the file manager like this:-" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="    &quot;C:\Program Files\PsTools\PsExec.exe&quot; -d -s -i &quot;&lt;PATH TO FILE MANAGER&gt;&quot;" FontFamily="Courier New" FontSize="12" />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Root Access" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Hyperlink NavigateUri="UnlockRoot">Root Access</Hyperlink>
+                        <Run Text=" is a set of hacks that unleashes the power of your Windows Phone:" />
+                        <LineBreak />
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock TextWrapping="Wrap" Margin="30,0,0,0" >
+                                <TextBlock.Inlines>
+                                    <Run Text="Disable SecureBoot at OS loader and at OS runtime level"/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock TextWrapping="Wrap" Margin="30,0,0,0" >
+                                <TextBlock.Inlines>
+                                    <Run Text="Disable all ACL, Capability and Privileges checks"/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock TextWrapping="Wrap" Margin="30,0,0,0" >
+                                <TextBlock.Inlines>
+                                    <Run Text="Allow threads to escape from sandbox security"/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock TextWrapping="Wrap" Margin="30,0,0,0" >
+                                <TextBlock.Inlines>
+                                    <Run Text="Allow .NET Console executables"/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock TextWrapping="Wrap" Margin="30,0,0,0" >
+                                <TextBlock.Inlines>
+                                    <Run Text="Jailbreak (side-load homebrew apps, only for WP 8.0 and 8.1 as Windows 10 Mobile already allows side-loading through &quot;developer mode&quot;)"/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="When all ACL, Capability and Privileges checks are disabled, it means that you have access to all system resources, which effectively means you have Root Access. Apps will still run in a &quot;Low Box&quot;, because the Low Box security token contains information that is necessary for app to be able to communicate with the system. Some API's deny access to threads that run with a Low Box token. Root Access disables the account logon checks, which allows an app to logon an account and create a thread with non-Lowboxed security token. This thread will also have access to these forbidden API's." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Root Access also implements Windows Phone Jailbreak, which lets you install Homebrew apps on your phone." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Root Access can be applied directly on the phone through Mass Storage Mode or it can be applied to a mounted ROM image." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Root Access must be implemented differently for every version of the Windows Phone Operating System. This tool aims to support the most popular versions of the OS. The Patch Engine is very flexible. Future versions will add support for additional versions of the Windows Phone Operating System." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Root Access allows a high degree of tweaking on your phone. But be aware that it also makes your phone vulnerable to badly written software and malware! If you unlocked Mass Storage mode, then this tool will allow you to enable or disable Root Access directly on your phone. To be safe, you can enable Root Access, then make necessary changes and tweaks to your phone and then disable Root Access afterwards." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Custom ROM's" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="At present there is very little tooling around custom ROM's for Windows Phone 8+. This tool implements a basic set of tools that provide the necessary building blocks to enable experimentation with custom ROMs in a convenient manner." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The eMMC of the phone basically consists of four partition types:" />
+                        <LineBreak />
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run FontStyle="Italic" Text="Boot Partitions" />
+                                    <Run Text="– There are a bunch of boot partitions. This tool manages these on your behalf." />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run FontStyle="Italic" Text="The EFIESP partition" />
+                                    <Run Text="– The OS Loader and model-specific configuration." />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run FontStyle="Italic" Text="The MainOS partition" />
+                                    <Run Text="– The majority of the operating system, model-specific drivers and configuration data." />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run FontStyle="Italic" Text="The Data partition" />
+                                    <Run Text="– Applications and user data." />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="A custom ROM image contains copies of the EFIESP, MainOS and Data-partitions. To create an image you must first "/>
+                        <Hyperlink NavigateUri="Dump">dump</Hyperlink>
+                        <Run Text=" these partitions. Then use " />
+                        <Hyperlink NavigateUri="http://www.osforensics.com/tools/mount-disk-images.html">OSFMount</Hyperlink>
+                        <Run Text=" to mount these partitions and "/>
+                        <Hyperlink NavigateUri="UnlockRoot">Root Access</Hyperlink>
+                        <Run Text=" can be applied on the mounted partitions. When you apply Root Access, the EFIESP and MainOS partitions will be modified. After that you can further customize the partitions." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="When you are ready dismount the partitions and compress these partitions into a Zip-archive. This Zip-archive is effectively your custom ROM image." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The " />
+                        <Hyperlink NavigateUri="Flash">flash-function</Hyperlink>
+                        <Run Text=" allows you to select the Zip-archive and flash the complete contents to the phone at once. It is also possible to flash separate partitions." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The partition images are usually very large files. Especially the Data-partition. It can be many Gigabytes in size, depending on the phone-model. Handling such large files can be painful. Therefore it is possible to compress a partition when it is dumped." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="If you add the compressed partition to the custom ROM Zip-image the flash-function is able to use it properly. Compressed partitions cannot be mounted so you may not wish to compress the EFIESP and MainOS-partitions. The sizes of the partitions can be different on different versions of the OS. The partition-table of the phone will automatically be realigned if necessary." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Be aware that the Windows Phone system binaries are protected by copyright! Only create custom ROM's for gaining a more comprehensive understanding of your target device and for your own personal use." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Updating your phone" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="If you want to update your phone, you should first disable Root Access and Relock the bootloader. After that you can safely update your phone. But be aware that the phone may get updated to a version, which is not supported by Windows Phone Internals. In that case you won't be able to unlock the phone after the update." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="WARNING: "/>
+                        <Run Text="When you are running Windows Phone 8 or Windows Phone 8.1, the phone can still start the update process when the phone is unlocked. But that may damage your phone! On Windows 10 Mobile update process will first do an integrity check. When the phone it unlocked, the update process will not start. After relocking the phone, you can update it again." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Backup" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="If you unlocked Mass Storage mode, this allows you to make a "/>
+                        <Hyperlink NavigateUri="Backup">backup</Hyperlink>
+                        <Run Text=" of the phone. You can backup either single partitions or all partitions straight into one single Zip-image. This Zip-image can be used as if it were a custom ROM and you can use the "/>
+                        <Hyperlink NavigateUri="Flash">flash-function</Hyperlink>
+                        <Run Text=" to restore this backup to the phone." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="It is important to realize that the MainOS and Data partitions are tied together. Even though the Data partition contains most user data and installed apps, the MainOS partition contains the registry hives and other configuration data.  This means that system backup and restore must contain the contents of both partitions." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Be aware that all stages of SecureBoot must be disabled at all times to be able to boot a custom ROM. Therefore the Backup-function also makes a backup of the EFIESP partition." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Build and capture" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="A custom ROM can be built on a live phone and then captured to a ROM image. The phone needs to have unlocked Mass Storage mode. After you applied all changes to the phone, you should Hard Reset the phone and create a backup of the reinitialized phone at the moment it is about to perform a clean boot for the first time. When you create a backup of the phone in this state, the user will have to perform the cold-boot procedure, just as if a stock ROM was flashed to the phone." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="Performing a Hard Reset on a phone will remove all user data including pictures, music, call history, messages and saved games."/>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run FontWeight="Bold" Text="NOTE: " />
+                        <Run Text="Most changes to the file-system on the C: drive of the phone will survive a Hard Reset. If a bootloader was unlocked and Root Access was enabled, the phone will still be unlocked after a Hard Reset. However, the registry-hives are restored on Hard Reset. If you want to modify the registry permanently, you have to edit the registry-hives in this location:-" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="    \Windows\system32\config\REGBACK\" FontFamily="Courier New" FontSize="12" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="After a Hard Reset the backup-image of the phone may still contain dirty sectors, which can possibly even contain private data. Therefore it is best practice to clean unused sectors. You can download and install " />
+                        <Hyperlink NavigateUri="https://technet.microsoft.com/en-us/sysinternals/bb897443.aspx">Sysinternals SDelete</Hyperlink>
+                        <Run Text=" to clean up the images." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Follow these steps for a complete Build and Capture:-" />
+                        <LineBreak />
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Make sure the phone is fully charged" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Disconnect the phone from the PC" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Power down the phone" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Press and hold Volume-Down-button and then shortly press the Power-button while still keeping the Volume-Down-button pressed until you see an exclamation-mark" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Press in this order: Volume Up, Volume Down, Power and Volume Down" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="The phone will reboot and show spinning gears" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="When the phone is showing gears choose the Backup menu-item in this tool and then connect the phone to the PC" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="After a while the phone will reboot and this tool will force the phone into Flash mode" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Choose to make a backup of separate partitions and select target-locations for the EFIESP, MainOS and Data-partition binaries" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="True">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Use " />
+                                    <Hyperlink NavigateUri="http://www.osforensics.com/tools/mount-disk-images.html">OSFMount</Hyperlink>
+                                    <Run Text=" to mount all three partitions in Read / Write mode" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Assuming the partitions are mounted as drives D: E: and F: execute these commandlines: " />
+                                    <LineBreak />
+                                    <LineBreak />
+                                    <Run Text="    sdelete -z D:" FontFamily="Courier New" FontSize="12" />
+                                    <LineBreak />
+                                    <Run Text="    sdelete -z E:" FontFamily="Courier New" FontSize="12" />
+                                    <LineBreak />
+                                    <Run Text="    sdelete -z F:" FontFamily="Courier New" FontSize="12" />
+                                    <LineBreak />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Unmount the partitions" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Create a ZIP-archive containing the three partitions" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Windows 10 Mobile" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="If your phone is not officially supported to run Windows 10 Mobile, then you can follow "/>
+                        <Hyperlink NavigateUri="https://forum.xda-developers.com/windows-10-mobile/guide-win10-mobile-offline-update-t3527340">these steps</Hyperlink>
+                        <Run Text=" to update your phone. Keep in mind that Windows 10 Mobile may have performance issues when running on unsupported phones."/>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Security Lock" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Windows 10 Mobile has a new security feature, which is called Security Lock. This feature is part of the NGC module (Next Generation Credentials), also known as Windows Hello. This module is responsible for storing credentials, like the Device Pincode, in a secure place. When the Device Pincode is enabled, it creates a container to store the pincode, using encryption and some system-variables (hash-codes of system-files)." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="When system-files are modified, the hash-codes don't match the variables on the secure container anymore, and it will not be possible to decrypt the pincode for two hours and it will not be possible to unlock the phone during this time. The phone will show this warning: -" />
+                    </local:Paragraph>
+                    <local:Paragraph Margin="30,0,0,0">
+                        <Run FontStyle="Italic" Text="&quot;This device has been locked for security reasons. Connect your device to a power source for at least two hours, and then try again.&quot;" />
+                    </local:Paragraph>
+                    <local:Paragraph>
+                        <Run Text="Security Lock can be triggered when you previously had a pincode enabled and then disabled it later on. Disabling the pincode does not clean-up the security container. If you then Enable Root Access, the variables with hash-codes of system-files will change. As soon as you enable the pincode again, you will get the Security Lock warning. In this situation you have three options:"/>
+                        <LineBreak/>
+                        <LineBreak/>
+                        <BulletDecorator IsHitTestVisible="True">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Hyperlink NavigateUri="https://support.microsoft.com/en-us/help/4028741/windows-unlock-your-windows-10-phone-remotely">Remote unlock</Hyperlink>
+                                    <Run Text=" your phone"/>
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Charge your phone and reboot after two hours" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                        <LineBreak />
+                        <BulletDecorator IsHitTestVisible="False">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text="-" Margin="20,0,10,0"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Margin="30,0,0,0" TextWrapping="Wrap">
+                                <TextBlock.Inlines>
+                                    <Run Text="Or you can prevent this situation by performing a Hard Reset on the phone after having Root Access enabled. This will remove all user data including pictures, music, call history, messages and saved games!" />
+                                </TextBlock.Inlines>
+                            </TextBlock>
+                        </BulletDecorator>
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph>
+                        <Run Text="Known limitations" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The problems stated in this section should be fixed in later versions of Windows Phone Internals. But it needs more time to implement the solutions." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The phone may boot to a Blue Screen after unlocking the bootloader" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This is a limitation of SecureBoot Unlock v2. Some Windows 10 based phones need additional modifications to be able to boot properly after the bootloader is unlocked. The patches will be applied automatically if the OS on the phone is on a supported version. In case the phone doesn't boot properly, you can still enter Mass Storage Mode if you want. To boot properly again, restore the bootloader. You can update to a supported OS version and try again after that." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Some Silverlight apps may not work" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This is a limitation of SecureBoot Unlock v2. The cause of this problem is known. For now this problem can be fixed by enabling Root Access on the phone." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Iris scanner does not work anymore on Lumia 950 and Lumia 950 XL" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This is a limitation of SecureBoot Unlock v2. SecureBoot Unlock v2 removes all policies and this also disables the iris scanner. Windows Hello does not work properly anymore. To fix the problem you can restore the bootloader." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Can't unlock ROM image for Lumia's with Bootloader Spec B" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Due to the complexity of SecureBoot Hack v2, unlocking mounted ROM images is only possible for Lumia's with Bootloader Spec A. For Lumia's with bootloader Spec B you can create Custom ROM's with Root Access using the &quot;Build and capture&quot; technique, as described on the Getting started page." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="SecureBoot unlock v2 may occasionally fail" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="On occasional the Mass Storage drivers on the PC can misbehave. In this case, the phone will be in mass storage mode, but the PC does not recognize it. This could affect the unlock process. Windows Phone Internals now has a detection-method for this behavior, but that only works on Windows 8.1 and Windows 10. So for the most stable unlock-experience, you should avoid Windows 7 or older." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Sector-boundaries for custom flashing partitions" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Lumia's with Bootloader Spec B can only flash partitions on a 0x100 sector-boundary (or 0x20000 bytes-boundary). Your partition-layout should comply to this rule. When Windows Phone Internals calculates a new partition layout for a Custom ROM, the layout will automatically comply to this rule." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="SecureBoot Unlock v2 may fail altogether" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Some phones, namely the Lumia 535 models, may experience problems during the unlock process. The first part of the unlock succeeds, but when the phone is being switched to Mass Storage Mode, it is not able to find a working Flashing Profile anymore. This issue is under investigation." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Windows Phone Internals often tries to find a flashing profile" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="When you try to unlock or relock a phone with a non-supported OS version, then you will need to provide a donor-FFU with a supported OS-version. When unlocking or relocking the phone, modifications will be made to the phone, which may also cause the existing flashing-profile to become invalid. In this case Windown Phone Internals may need to search for a new flashing profile during any unlock- or relock-attempt." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Support for single phone" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Windows Phone Internals supports only one single connected phone at a time. When multiple phones are connected, Windows Phone Internals can start showing unexpected and unstable behaviour." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+    </StackPanel>
+</UserControl>

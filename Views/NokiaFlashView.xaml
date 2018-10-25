@@ -1,0 +1,227 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.NokiaFlashView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPinternals"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <UserControl.Resources>
+        <local:HexConverter x:Key="HexConverter" />
+        <local:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
+        <local:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
+        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+    </UserControl.Resources>
+    <StackPanel>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <StackPanel Orientation="Vertical">
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <local:Paragraph>
+                            <Run Text="General info" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Grid IsHitTestVisible="False">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Platform name" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding PlatformName, Mode=OneWay}" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Operating mode" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Flash" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Product Type" Visibility="{Binding Path=ProductType, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding ProductType}" Visibility="{Binding Path=ProductType, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Product Code" Visibility="{Binding Path=ProductCode, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding ProductCode}" Visibility="{Binding Path=ProductCode, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Storage" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding eMMC}"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Bootloader" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding BootloaderDescription}"/>
+                            </Grid>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=SamsungWarningVisible, Converter={StaticResource VisibilityConverter}}">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <local:Paragraph>
+                            <LineBreak />
+                            <local:CollapsibleRun Text="Read the " IsVisible="{Binding SamsungWarningVisible}" />
+                            <Hyperlink NavigateUri="GettingStarted">Getting started</Hyperlink>
+                            <Run Text=" section for important information about Samsung eMMC." />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <local:Paragraph>
+                            <LineBreak />
+                            <Run Text="To let the phone go back to Windows, boot to " />
+                            <Hyperlink NavigateUri="Normal">Normal</Hyperlink>
+                            <Run Text=" mode." />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+            </StackPanel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <Expander Header="Phone identity" HorizontalContentAlignment="Stretch" Template="{DynamicResource TopicExpanderTemplate}" Margin="20,0">
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <local:Paragraph>
+                            <LineBreak />
+                            <Grid IsHitTestVisible="False">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Root Key Hash" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=RootKeyHash, Converter={StaticResource HexConverter}, Mode=OneWay}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Public Phone ID" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=PublicID, Converter={StaticResource HexConverter}, Mode=OneWay}" TextWrapping="Wrap" />
+                            </Grid>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+            </Expander>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20" >
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph TextAlignment="Left">
+                        <Run Text="Bootloader Security" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="If either one of these flags is green, the effective bootloader security will be disabled. When bootloader security is disabled, the phone allows unsecure actions, like entering Mass Storage mode and flashing unsigned ROM images. Phones with Bootloader Spec B can flash custom ROM's even when the bootloader security is enabled." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Grid IsHitTestVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="QFuse" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=BootloaderSecurityQfuseStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=BootloaderSecurityQfuseStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Valid RDC certificate" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Present" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=BootloaderSecurityRdcStatus, Converter={StaticResource VisibilityConverter}}" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Not present" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=BootloaderSecurityRdcStatus, Converter={StaticResource InverseVisibilityConverter}}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Super dongle" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Authenticated" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=BootloaderSecurityAuthenticationStatus, Converter={StaticResource VisibilityConverter}}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Not authenticated" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=BootloaderSecurityAuthenticationStatus, Converter={StaticResource InverseVisibilityConverter}}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Effective bootloader security" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveBootloaderSecurityStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveBootloaderSecurityStatus, Converter={StaticResource VisibilityConverter}}"/>
+                        </Grid>
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20" >
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph TextAlignment="Left">
+                        <Run Text="Secure Boot technology" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="&quot;Secure Boot&quot; is part of the &quot;chain of trust&quot; in the boot process. This technology verifies the integrity of the primary Operating System binaries. If either one of these flags is green, Secure Boot is disabled and primary Operating System binaries can be replaced with custom or patched binaries. The Windows Phone Operation System also has its own integrity verifications, which still remain active. These flags only affect the security of the boot process before the Operating System is loaded." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Grid IsHitTestVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="UEFI" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=UefiSecureBootStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=UefiSecureBootStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Secure Boot platform" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=PlatformSecureBootStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=PlatformSecureBootStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Effective Secure Boot status" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveSecureBootStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveSecureBootStatus, Converter={StaticResource VisibilityConverter}}"/>
+                        </Grid>
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" >
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph TextAlignment="Left">
+                        <Run Text="Hardware debugging" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Hardware debugging, also known as JTAG, is disabled on most retail phones. There is technology available that allows JTAG on some platforms, even when it is disabled on the phone. More info about that here: " />
+                        <Hyperlink NavigateUri="http://www.advance-box.com/">www.advance-box.com</Hyperlink>
+                        <Run Text="." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Grid IsHitTestVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Native JTAG debugging" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=NativeDebugStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=NativeDebugStatus, Converter={StaticResource VisibilityConverter}}"/>
+                        </Grid>
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+    </StackPanel>
+</UserControl>

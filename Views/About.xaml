@@ -1,0 +1,100 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.About"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPinternals"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <UserControl.Resources>
+        <BitmapImage x:Key="LogoImageSource" UriSource="..\Logo.png" />
+    </UserControl.Resources>
+    <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Image Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Source="{StaticResource LogoImageSource}" Margin="-10,0,0,0">
+            </Image>
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                    <local:Paragraph>
+                        <Run Text="Windows Phone Internals" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <Run>
+                            <Run.Text>
+                                <MultiBinding StringFormat="Version {0}.{1}">
+                                    <Binding Path="MajorVersion" Mode="OneWay" />
+                                    <Binding Path="MinorVersion" Mode="OneWay" />
+                                </MultiBinding>
+                            </Run.Text>
+                        </Run>
+                        <LineBreak />
+                        <Run Text="Copyright © 2014 - 2018 by Heathcliff74" />
+                        <LineBreak />
+                        <Hyperlink NavigateUri="http://www.wpinternals.net">www.wpinternals.net</Hyperlink>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Many thanks to the " />
+                        <Hyperlink NavigateUri="http://www.advance-box.com/">ATF Team</Hyperlink>
+                        <Run Text=" and the " />
+                        <Hyperlink NavigateUri="http://smart-gsm.net/">Smart GSM Team</Hyperlink>
+                        <Run Text=" for supplying JTAG and test equipment." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Many thanks to X-Shadow, Justin Angel, Joseph Manzy, Jeremy Sinclair, Vlad Slavskiy and Hikari Calyx for supplying test-phones." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Many thanks to X-Shadow, Cotulla, Rafael Rivera, Ultrashot and Gustave M. for having enlighting discussions about Windows Mobile." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This software uses the following libraries:" />
+                        <LineBreak />
+                        <Run Text="WinUSBNet by Thomas Bleeker (" />
+                        <Hyperlink NavigateUri="http://opensource.org/licenses/mit-license.php">license</Hyperlink>
+                        <Run Text=")" />
+                        <LineBreak />
+                        <Run Text="Prism by Microsoft patterns &amp; practices (" />
+                        <Hyperlink NavigateUri="http://compositewpf.codeplex.com/license">license</Hyperlink>
+                        <Run Text=")" />
+                        <LineBreak />
+                        <Run Text="Json.NET by James Newton-King (" />
+                        <Hyperlink NavigateUri="https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md">license</Hyperlink>
+                        <Run Text=")" />
+                        <LineBreak />
+                        <Run Text="7-zip LZMA SDK by Igor Pavlov (" />
+                        <Hyperlink NavigateUri="http://www.7-zip.org/sdk.html">license</Hyperlink>
+                        <Run Text=")" />
+                        <LineBreak />
+                        <Run Text="DiscUtils by Kenneth Bell (" />
+                        <Hyperlink NavigateUri="https://github.com/DiscUtils/DiscUtils/blob/master/LICENSE.txt">license</Hyperlink>
+                        <Run Text=")" />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Grid>
+    </Border>
+</UserControl>

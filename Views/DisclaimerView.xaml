@@ -1,0 +1,58 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.DisclaimerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPinternals"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+        <Grid>
+            <local:FlowDocumentScrollViewerNoMouseWheel Margin="45,25,45,75" VerticalScrollBarVisibility="Auto">
+                <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" PagePadding="0">
+                    <local:Paragraph>
+                        <Run Text="Disclaimer and warning!" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This software is licensed &quot;as-is&quot;. You bear the risk of using it. The developer gives no express warranties, guarantees or conditions. To the extent permitted under your local laws, the developer excludes the implied warranties of merchantability, fitness for a particular purpose and non-infringement. In no event shall the developer be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software. If you use this software, you accept this disclaimer. If you don't want to accept this disclaimer, then don't use the software." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This software is a &quot;proof of concept&quot; tool which uses dangerous and largely untested techniques on Windows Phones (&quot;Target Devices&quot;). By using this tool the target device may start showing unstable behavior and crashes. There is significant and real potential that irreversible permanent damage will occur on some devices. As such this tool must only be used against target devices which it is acceptable for such damage to occur (for example retired devices used only for test purposes). This tool should not be used against target devices, which are intended as your primary means of telecommunications, because in some circumstances you may not be able to place calls (including calls for emergency services), or you may experience increased data charges. Use of this tool may void the warranty of any chosen target device." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Your data is not safe and you may experience data loss! This software can disable important security features of the target devices, which makes your data, including personal images and documents, more accessible to other individuals. You should therefore be aware that you don't keep any sensitive or personal material on the target devices." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="This software may only be used for research purposes for gaining a more comprehensive understanding of your target device. It is your responsibility to ensure that this software is not used in a manner which is unlawful." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,80,45,25">
+                <Button Command="{Binding Path=ContinueCommand, Mode=OneWay}" Content="Continue" Width="100" Height="Auto" Padding="0,5" />
+                <Button Command="{Binding Path=ExitCommand, Mode=OneWay}" Content="Exit" Width="100" Height="Auto" Padding="0,5" Margin="10,0,0,0" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

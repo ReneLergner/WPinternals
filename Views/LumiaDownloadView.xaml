@@ -1,0 +1,240 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.LumiaDownloadView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:WPinternals"
+      mc:Ignorable="d" 
+      d:DesignWidth="700">
+    <UserControl.Resources>
+        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <local:DownloaderNameConvertor x:Key="DownloaderNameConvertor" />
+        <local:DownloaderSizeConvertor x:Key="DownloaderSizeConvertor" />
+        <local:DownloaderSpeedConvertor x:Key="DownloaderSpeedConvertor" />
+        <local:DownloaderTimeRemainingConvertor x:Key="DownloaderTimeRemainingConvertor" />
+        <Style x:Key="HeaderLeftAligned" TargetType="{x:Type GridViewColumnHeader}">
+            <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+            <Setter Property="Padding" Value="6,0,0,0"></Setter>
+        </Style>
+        <Style x:Key="HeaderRightAligned" TargetType="{x:Type GridViewColumnHeader}">
+            <Setter Property="HorizontalContentAlignment" Value="Right"></Setter>
+            <Setter Property="Padding" Value="0,0,6,0"></Setter>
+        </Style>
+        <Style x:Key="ContentRightAligned" TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="Padding" Value="0,0,6,0" />
+        </Style>
+    </UserControl.Resources>
+    <StackPanel VerticalAlignment="Center">
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <local:Paragraph>
+                            <Run Text="Download" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <local:FolderPicker Caption="Download folder: " SelectionText="Select the destination location for the downloaded files..." Path="{Binding DownloadFolder, Mode=TwoWay}" AllowNull="False" HorizontalAlignment="Stretch" />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <TextBlock Margin="36,0,36,6">Currently downloading:</TextBlock>
+                <ListView Grid.Row="1" ItemsSource="{Binding DownloadList}" Margin="36,0,36,24" MinHeight="66" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" local:GridViewColumnResize.Enabled="True" >
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn local:GridViewColumnResize.Width="*" Header="Name" DisplayMemberBinding="{Binding Name}" HeaderContainerStyle="{StaticResource HeaderLeftAligned}" />
+                            <GridViewColumn Width="80" Header="Size" HeaderContainerStyle="{StaticResource HeaderRightAligned}" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Style="{x:Null}" Text="{Binding Size, Converter={StaticResource DownloaderSizeConvertor}}" TextAlignment="Right" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="75" Header="Time Left" HeaderContainerStyle="{StaticResource HeaderRightAligned}" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Style="{x:Null}" Text="{Binding TimeLeft,Mode=OneWay,Converter={StaticResource DownloaderTimeRemainingConvertor}}" TextAlignment="Right" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="75" Header="Speed" HeaderContainerStyle="{StaticResource HeaderRightAligned}" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Style="{x:Null}" Text="{Binding Speed, Mode=OneWay,Converter={StaticResource DownloaderSpeedConvertor}}" TextAlignment="Right" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="123" Header="Progress">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ProgressBar Value="{Binding Progress, Mode=OneWay}" Width="120" Height="16" Maximum="100"></ProgressBar>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </StackPanel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <local:Paragraph>
+                            <Run Text="Model" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak/>
+                            <LineBreak/>
+                            <Run Text="When you choose &quot;Download all&quot;, Windows Phone Internals will download an FFU-file and emergency-files for your phone. When the FFU-file is downloaded, it will be analyzed. And if the OS-version is not a supported version, then Windows Phone Internals will start to download another FFU-file, which should have a supported OS-version. It will be for a different model, but Windows Phone Internals needs it extract some files from it." />
+                            <LineBreak/>
+                            <LineBreak/>
+                            <Run Text="When you connect your phone, the search criteria will be detected automatically. For some older Lumia models this may not work when the phone is in Flash mode. To get the exact search criteria, you need to switch the phone to Normal mode first." />
+                            <LineBreak/>
+                            <LineBreak/>
+                            <Run Text="In some cases the emergency files cannot be found and you will need to download the emergency files yourself. This " />
+                            <Hyperlink NavigateUri="https://www.google.com/search?q=%22Lumia 650 emergency files%22">google search</Hyperlink>
+                            <Run Text=" may yield some relevant results." />
+                            <LineBreak/>
+                            <LineBreak/>
+                            <Run Text="For some older Lumia models the operatorcode search criterion doesn't work. Your search may not yield any results when use the Operatorcode search criterion. You should use the Productcode to find the files for your exact model." />
+                            <LineBreak/>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <Grid Margin="36,-6,36,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Column="0" Grid.Row="0">Producttype</TextBlock>
+                        <TextBlock Grid.Column="0" Grid.Row="1">Productcode</TextBlock>
+                        <TextBlock Grid.Column="0" Grid.Row="2">Operatorcode</TextBlock>
+                        <TextBox Grid.Column="1" Grid.Row="0" Width="Auto" Margin="0,0,0,8" Text="{Binding ProductType, Mode=TwoWay}"/>
+                        <TextBox Grid.Column="1" Grid.Row="1" Width="Auto" Margin="0,0,0,8" Text="{Binding ProductCode, Mode=TwoWay}"/>
+                        <TextBox Grid.Column="1" Grid.Row="2" Width="Auto" Text="{Binding OperatorCode, Mode=TwoWay}"/>
+                    </Grid>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal">
+                        <Button Content="Search" Padding="0,5" Width="120" Margin="0,0,20,0" Command="{Binding Path=SearchCommand, Mode=OneWay}" IsDefault="True"/>
+                        <Button Content="Download all" Padding="0,5" Width="120" Command="{Binding Path=DownloadAllCommand, Mode=OneWay}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Margin="36,30,36,6">Search results:</TextBlock>
+                <ListView Grid.Row="1" Name="SearchResultsListView" ItemsSource="{Binding SearchResultList}" Margin="36,0,36,0" MinHeight="66" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" local:GridViewColumnResize.Enabled="True">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn local:GridViewColumnResize.Width="*" Header="Name" DisplayMemberBinding="{Binding Name}" HeaderContainerStyle="{StaticResource HeaderLeftAligned}" />
+                            <GridViewColumn Width="80" Header="Size" HeaderContainerStyle="{StaticResource HeaderRightAligned}" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Style="{x:Null}" Text="{Binding Size, Converter={StaticResource DownloaderSizeConvertor}}" TextAlignment="Right" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,16,36,25">
+                    <Button Command="{Binding Path=DownloadSelectedCommand, Mode=OneWay}" Content="Download selected" Width="Auto" Height="Auto" Padding="20,5" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <local:Paragraph>
+                            <Run Text="Repository" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-15,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=LastStatusText, Converter={StaticResource ObjectToVisibilityConverter}}">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <local:Paragraph>
+                            <Run Text="{Binding Path=LastStatusText}" />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <Button Height="30" Width="Auto" Content="Add existing FFU-file..." Padding="20,5,20,5" HorizontalAlignment="Right" Margin="0,0,36,20" Command="{Binding Path=AddFFUCommand}"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

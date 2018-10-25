@@ -1,0 +1,73 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.LumiaUndoRootTargetSelectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:WPinternals"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <UserControl.Resources>
+        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+    </UserControl.Resources>
+    <StackPanel VerticalAlignment="Center">
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <local:Paragraph>
+                            <Run Text="Disable Root Access directly on phone" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="If you want to disable Root Access directly on the phone, Mass Storage mode must have been " />
+                            <Hyperlink NavigateUri="UnlockBoot">unlocked</Hyperlink>
+                            <Run Text=". Make sure you don't have any Windows Phone disks or partitions mounted before you continue to Mass Storage Mode." />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="Warning: " FontWeight="Bold" Foreground="Red" />
+                            <Run Text="If you flashed a Custom ROM with Root Access enabled, or if you performed a Hard Reset while Root Access was still enabled, then the phone may not boot properly anymore, after you disabled Root Access. In this case you should perform another Hard Reset to solve the problem. A Hard Reset will erase all Apps, Settings, Photo's and other data from the phone!" />
+                            <LineBreak />
+                            <LineBreak />
+                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then Root Access will be disabled." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <local:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to disable Root Access." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
+                    <Button Command="{Binding Path=UnlockPhoneCommand, Mode=OneWay}" Content="Disable Root Access" Width="120" Height="Auto" Padding="0,5" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

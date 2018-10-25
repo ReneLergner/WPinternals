@@ -1,0 +1,1276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AED6DEB8-F54C-4B41-9655-793E7096AE6F}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WPinternals</RootNamespace>
+    <AssemblyName>WPinternals</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Heathcliff74.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>WPinternals.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>WPinternals.App</StartupObject>
+  </PropertyGroup>
+  <!--
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Heathcliff74.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  -->
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug-CustomFlash-950|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-CustomFlash\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-CustomFlash-930|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-CustomFlash-930\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-Test|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-Test\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-CustomFlash-950 %28no restart%29|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-CustomFlash-950 %28no restart%29\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-ReadGPT|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-ReadGPT\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DumpFFU|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-DumpFFU\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-930|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-TestProgrammer-930\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FindFlashingProfile|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-FindFlashingProfile\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug-EnableTestSigning|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-DisableSecureBoot\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FlashRaw|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-FlashRaw\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FindFlashingProfileNoRestart|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-FindFlashingProfileNoRestart\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug-EnableTestSigning %28no restart%29|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-DisableSecureBoot %28no restart%29\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug-ClearNV|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-ClearNV\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DumpUEFI|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-DumpUEFI\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-MSM|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-MSM\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-SwitchToMSM|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-SwitchToMSM\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-UnlockBootloader|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-UnlockBootloader\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DLEmergency|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-DLEmergency\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-ShowPhoneInfo|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-ShowPhoneInfo\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-RelockPhone|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-RelockPhone\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-EnableRootAccess|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-EnableRootAccess\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-950|AnyCPU'">
+    <OutputPath>bin\Debug-TestProgrammer-950\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <Prefer32Bit>true</Prefer32Bit>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-EnableRootAccessOnImage|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-EnableRootAccessOnImage\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FixBoot|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-FixBoot\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DLFFU|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-DLFFU\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FlashFFU-RM1085|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-FlashFFU-RM1085\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-Test|AnyCPU'">
+    <OutputPath>bin\Release-Test\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-630|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-TestProgrammer-630\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-DLall|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-DLall\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-AddEmergency|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-AddEmergency\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-640|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-TestProgrammer-640\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FlashCustomRom-640|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-FlashCustomRom-640\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-550|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-TestProgrammer-550\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-TestProgrammer-650|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-TestProgrammer-650\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-FlashFFU-RM1073|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-FlashFFU-RM1073\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-Help|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-Help\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Preview|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;PREVIEW</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-ShowFFU|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-ShowFFU\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-BackupGPT|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-BackupGPT\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-RestoreGPT|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-RestoreGPT\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-MergeGptXmlXml|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-MergeGptXmlXml\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-MergeGptXmlZip|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug-MergeGptXmlZip\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Preview-Test|AnyCPU'">
+    <OutputPath>bin\Preview-Test\</OutputPath>
+    <DefineConstants>TRACE;PREVIEW</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Heathcliff74.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="7zip\Common\CommandLineParser.cs" />
+    <Compile Include="7zip\Common\CRC.cs" />
+    <Compile Include="7zip\Common\InBuffer.cs" />
+    <Compile Include="7zip\Common\OutBuffer.cs" />
+    <Compile Include="7zip\Compress\LZMA\LzmaBase.cs" />
+    <Compile Include="7zip\Compress\LZMA\LzmaDecoder.cs" />
+    <Compile Include="7zip\Compress\LZMA\LzmaEncoder.cs" />
+    <Compile Include="7zip\Compress\LZ\IMatchFinder.cs" />
+    <Compile Include="7zip\Compress\LZ\LzBinTree.cs" />
+    <Compile Include="7zip\Compress\LZ\LzInWindow.cs" />
+    <Compile Include="7zip\Compress\LZ\LzOutWindow.cs" />
+    <Compile Include="7zip\Compress\RangeCoder\RangeCoder.cs" />
+    <Compile Include="7zip\Compress\RangeCoder\RangeCoderBit.cs" />
+    <Compile Include="7zip\Compress\RangeCoder\RangeCoderBitTree.cs" />
+    <Compile Include="7zip\ICoder.cs" />
+    <Compile Include="CommandLine.cs" />
+    <Compile Include="DiscUtils\Block.cs" />
+    <Compile Include="DiscUtils\BlockCache.cs" />
+    <Compile Include="DiscUtils\BlockCacheSettings.cs" />
+    <Compile Include="DiscUtils\BlockCacheStatistics.cs" />
+    <Compile Include="DiscUtils\BlockCacheStream.cs" />
+    <Compile Include="DiscUtils\BootConfig\ApplicationImageType.cs" />
+    <Compile Include="DiscUtils\BootConfig\ApplicationType.cs" />
+    <Compile Include="DiscUtils\BootConfig\BaseStorage.cs" />
+    <Compile Include="DiscUtils\BootConfig\BcdObject.cs" />
+    <Compile Include="DiscUtils\BootConfig\BooleanElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\DeviceAndPathRecord.cs" />
+    <Compile Include="DiscUtils\BootConfig\DeviceElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\DeviceRecord.cs" />
+    <Compile Include="DiscUtils\BootConfig\DiscUtilsRegistryStorage.cs" />
+    <Compile Include="DiscUtils\BootConfig\Element.cs" />
+    <Compile Include="DiscUtils\BootConfig\ElementClass.cs" />
+    <Compile Include="DiscUtils\BootConfig\ElementFormat.cs" />
+    <Compile Include="DiscUtils\BootConfig\ElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\GuidElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\GuidListElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\InheritType.cs" />
+    <Compile Include="DiscUtils\BootConfig\IntegerElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\IntegerListElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\ObjectType.cs" />
+    <Compile Include="DiscUtils\BootConfig\PartitionRecord.cs" />
+    <Compile Include="DiscUtils\BootConfig\Store.cs" />
+    <Compile Include="DiscUtils\BootConfig\StringElementValue.cs" />
+    <Compile Include="DiscUtils\BootConfig\WellKnownElement.cs" />
+    <Compile Include="DiscUtils\Buffer.cs" />
+    <Compile Include="DiscUtils\BufferStream.cs" />
+    <Compile Include="DiscUtils\BuilderBufferExtent.cs" />
+    <Compile Include="DiscUtils\BuilderExtent.cs" />
+    <Compile Include="DiscUtils\BuilderSparseStreamExtent.cs" />
+    <Compile Include="DiscUtils\BuiltStream.cs" />
+    <Compile Include="DiscUtils\ChsAddress.cs" />
+    <Compile Include="DiscUtils\ClusterMap.cs" />
+    <Compile Include="DiscUtils\Compression\Adler32.cs" />
+    <Compile Include="DiscUtils\Compression\BigEndianBitStream.cs" />
+    <Compile Include="DiscUtils\Compression\BitStream.cs" />
+    <Compile Include="DiscUtils\Compression\BlockCompressor.cs" />
+    <Compile Include="DiscUtils\Compression\BZip2BlockDecoder.cs" />
+    <Compile Include="DiscUtils\Compression\BZip2CombinedHuffmanTrees.cs" />
+    <Compile Include="DiscUtils\Compression\BZip2DecoderStream.cs" />
+    <Compile Include="DiscUtils\Compression\BZip2Randomizer.cs" />
+    <Compile Include="DiscUtils\Compression\BZip2RleStream.cs" />
+    <Compile Include="DiscUtils\Compression\CompressionResult.cs" />
+    <Compile Include="DiscUtils\Compression\DataBlockTransform.cs" />
+    <Compile Include="DiscUtils\Compression\HuffmanTree.cs" />
+    <Compile Include="DiscUtils\Compression\InverseBurrowsWheeler.cs" />
+    <Compile Include="DiscUtils\Compression\MoveToFront.cs" />
+    <Compile Include="DiscUtils\Compression\ZlibStream.cs" />
+    <Compile Include="DiscUtils\ConcatStream.cs" />
+    <Compile Include="DiscUtils\Crc32.cs" />
+    <Compile Include="DiscUtils\Crc32Algorithm.cs" />
+    <Compile Include="DiscUtils\Crc32BigEndian.cs" />
+    <Compile Include="DiscUtils\Crc32LittleEndian.cs" />
+    <Compile Include="DiscUtils\DiscDirectoryInfo.cs" />
+    <Compile Include="DiscUtils\DiscFileInfo.cs" />
+    <Compile Include="DiscUtils\DiscFileLocator.cs" />
+    <Compile Include="DiscUtils\DiscFileSystem.cs" />
+    <Compile Include="DiscUtils\DiscFileSystemChecker.cs" />
+    <Compile Include="DiscUtils\DiscFileSystemInfo.cs" />
+    <Compile Include="DiscUtils\DiscFileSystemOptions.cs" />
+    <Compile Include="DiscUtils\DiskImageBuilder.cs" />
+    <Compile Include="DiscUtils\DiskImageFileSpecification.cs" />
+    <Compile Include="DiscUtils\Fat\ClusterReader.cs" />
+    <Compile Include="DiscUtils\Fat\ClusterStream.cs" />
+    <Compile Include="DiscUtils\Fat\Directory.cs" />
+    <Compile Include="DiscUtils\Fat\DirectoryEntry.cs" />
+    <Compile Include="DiscUtils\Fat\FatAttributes.cs" />
+    <Compile Include="DiscUtils\Fat\FatBuffer.cs" />
+    <Compile Include="DiscUtils\Fat\FatFileStream.cs" />
+    <Compile Include="DiscUtils\Fat\FatFileSystem.cs" />
+    <Compile Include="DiscUtils\Fat\FatFileSystemOptions.cs" />
+    <Compile Include="DiscUtils\Fat\FatType.cs" />
+    <Compile Include="DiscUtils\Fat\FileAllocationTable.cs" />
+    <Compile Include="DiscUtils\Fat\FileName.cs" />
+    <Compile Include="DiscUtils\Fat\FileSystemFactory.cs" />
+    <Compile Include="DiscUtils\FileLocator.cs" />
+    <Compile Include="DiscUtils\FileSystemInfo.cs" />
+    <Compile Include="DiscUtils\FileSystemParameters.cs" />
+    <Compile Include="DiscUtils\FloppyDiskType.cs" />
+    <Compile Include="DiscUtils\GenericDiskAdapterType.cs" />
+    <Compile Include="DiscUtils\Geometry.cs" />
+    <Compile Include="DiscUtils\GeometryTranslation.cs" />
+    <Compile Include="DiscUtils\IBuffer.cs" />
+    <Compile Include="DiscUtils\IByteArraySerializable.cs" />
+    <Compile Include="DiscUtils\IClusterBasedFileSystem.cs" />
+    <Compile Include="DiscUtils\IDiagnosticTraceable.cs" />
+    <Compile Include="DiscUtils\IFileSystem.cs" />
+    <Compile Include="DiscUtils\IMappedBuffer.cs" />
+    <Compile Include="DiscUtils\InvalidFileSystemException.cs" />
+    <Compile Include="DiscUtils\IWindowsFileSystem.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\ComponentRecord.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\Database.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DatabaseHeader.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DatabaseRecord.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DiskGroupRecord.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DiskRecord.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DynamicDisk.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DynamicDiskGroup.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DynamicDiskManager.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DynamicDiskManagerFactory.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\DynamicVolume.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\ExtentMergeType.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\ExtentRecord.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\PrivateHeader.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\RecordType.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\TocBlock.cs" />
+    <Compile Include="DiscUtils\LogicalDiskManager\VolumeRecord.cs" />
+    <Compile Include="DiscUtils\LogicalVolumeFactory.cs" />
+    <Compile Include="DiscUtils\LogicalVolumeFactoryAttribute.cs" />
+    <Compile Include="DiscUtils\LogicalVolumeInfo.cs" />
+    <Compile Include="DiscUtils\MappedStream.cs" />
+    <Compile Include="DiscUtils\MirrorStream.cs" />
+    <Compile Include="DiscUtils\Ntfs\AttributeDefinitionRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\AttributeDefinitions.cs" />
+    <Compile Include="DiscUtils\Ntfs\AttributeList.cs" />
+    <Compile Include="DiscUtils\Ntfs\AttributeListRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\AttributeRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\AttributeReference.cs" />
+    <Compile Include="DiscUtils\Ntfs\AttributeType.cs" />
+    <Compile Include="DiscUtils\Ntfs\BiosParameterBlock.cs" />
+    <Compile Include="DiscUtils\Ntfs\Bitmap.cs" />
+    <Compile Include="DiscUtils\Ntfs\ClusterBitmap.cs" />
+    <Compile Include="DiscUtils\Ntfs\ClusterStream.cs" />
+    <Compile Include="DiscUtils\Ntfs\CompressedClusterStream.cs" />
+    <Compile Include="DiscUtils\Ntfs\CookedDataRun.cs" />
+    <Compile Include="DiscUtils\Ntfs\CookedDataRuns.cs" />
+    <Compile Include="DiscUtils\Ntfs\DataRun.cs" />
+    <Compile Include="DiscUtils\Ntfs\Directory.cs" />
+    <Compile Include="DiscUtils\Ntfs\DirectoryEntry.cs" />
+    <Compile Include="DiscUtils\Ntfs\File.cs" />
+    <Compile Include="DiscUtils\Ntfs\FileNameRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\FileRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\FileRecordReference.cs" />
+    <Compile Include="DiscUtils\Ntfs\FileSystemFactory.cs" />
+    <Compile Include="DiscUtils\Ntfs\FixupRecordBase.cs" />
+    <Compile Include="DiscUtils\Ntfs\GenericFixupRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\Index.cs" />
+    <Compile Include="DiscUtils\Ntfs\IndexBlock.cs" />
+    <Compile Include="DiscUtils\Ntfs\IndexEntry.cs" />
+    <Compile Include="DiscUtils\Ntfs\IndexHeader.cs" />
+    <Compile Include="DiscUtils\Ntfs\IndexNode.cs" />
+    <Compile Include="DiscUtils\Ntfs\IndexRoot.cs" />
+    <Compile Include="DiscUtils\Ntfs\IndexView.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\AttributeFlags.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\AttributeListAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\AttributeListEntry.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\EntryState.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\EntryStates.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\FileNameAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\GenericAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\MasterFileTable.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\MasterFileTableAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\MasterFileTableEntry.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\MasterFileTableEntryFlags.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\MasterFileTableRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\MasterFileTableRecordFlags.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\MasterFileTableReference.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\NtfsFileAttributes.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\NtfsNamespace.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\StandardInformationAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\Internals\UnknownAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\LZNT1.cs" />
+    <Compile Include="DiscUtils\Ntfs\LzWindowDictionary.cs" />
+    <Compile Include="DiscUtils\Ntfs\MasterFileTable.cs" />
+    <Compile Include="DiscUtils\Ntfs\NewFileOptions.cs" />
+    <Compile Include="DiscUtils\Ntfs\NonResidentAttributeBuffer.cs" />
+    <Compile Include="DiscUtils\Ntfs\NonResidentAttributeRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\NonResidentDataBuffer.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsAttributeBuffer.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsContext.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsFileStream.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsFileSystem.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsFileSystemChecker.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsFormatOptions.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsFormatter.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsOptions.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsStream.cs" />
+    <Compile Include="DiscUtils\Ntfs\NtfsTransaction.cs" />
+    <Compile Include="DiscUtils\Ntfs\ObjectId.cs" />
+    <Compile Include="DiscUtils\Ntfs\ObjectIdRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\ObjectIds.cs" />
+    <Compile Include="DiscUtils\Ntfs\Quotas.cs" />
+    <Compile Include="DiscUtils\Ntfs\RawClusterStream.cs" />
+    <Compile Include="DiscUtils\Ntfs\ReparsePointRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\ReparsePoints.cs" />
+    <Compile Include="DiscUtils\Ntfs\ResidentAttributeRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\SecurityDescriptor.cs" />
+    <Compile Include="DiscUtils\Ntfs\SecurityDescriptorRecord.cs" />
+    <Compile Include="DiscUtils\Ntfs\SecurityDescriptors.cs" />
+    <Compile Include="DiscUtils\Ntfs\ShortFileNameOption.cs" />
+    <Compile Include="DiscUtils\Ntfs\SparseClusterStream.cs" />
+    <Compile Include="DiscUtils\Ntfs\StandardInformation.cs" />
+    <Compile Include="DiscUtils\Ntfs\StructuredNtfsAttribute.cs" />
+    <Compile Include="DiscUtils\Ntfs\UpperCase.cs" />
+    <Compile Include="DiscUtils\Ntfs\VolumeInformation.cs" />
+    <Compile Include="DiscUtils\Ntfs\VolumeInformationFlags.cs" />
+    <Compile Include="DiscUtils\Ntfs\VolumeName.cs" />
+    <Compile Include="DiscUtils\Numbers.cs" />
+    <Compile Include="DiscUtils\ObjectCache.cs" />
+    <Compile Include="DiscUtils\Ownership.cs" />
+    <Compile Include="DiscUtils\Partitions\BiosExtendedPartitionTable.cs" />
+    <Compile Include="DiscUtils\Partitions\BiosPartitionedDiskBuilder.cs" />
+    <Compile Include="DiscUtils\Partitions\BiosPartitionInfo.cs" />
+    <Compile Include="DiscUtils\Partitions\BiosPartitionRecord.cs" />
+    <Compile Include="DiscUtils\Partitions\BiosPartitionTable.cs" />
+    <Compile Include="DiscUtils\Partitions\BiosPartitionTypes.cs" />
+    <Compile Include="DiscUtils\Partitions\DefaultPartitionTableFactory.cs" />
+    <Compile Include="DiscUtils\Partitions\GptEntry.cs" />
+    <Compile Include="DiscUtils\Partitions\GptHeader.cs" />
+    <Compile Include="DiscUtils\Partitions\GuidPartitionInfo.cs" />
+    <Compile Include="DiscUtils\Partitions\GuidPartitionTable.cs" />
+    <Compile Include="DiscUtils\Partitions\GuidPartitionTypes.cs" />
+    <Compile Include="DiscUtils\Partitions\PartitionInfo.cs" />
+    <Compile Include="DiscUtils\Partitions\PartitionTable.cs" />
+    <Compile Include="DiscUtils\Partitions\PartitionTableFactory.cs" />
+    <Compile Include="DiscUtils\Partitions\PartitionTableFactoryAttribute.cs" />
+    <Compile Include="DiscUtils\Partitions\WellKnownPartitionType.cs" />
+    <Compile Include="DiscUtils\PhysicalVolumeInfo.cs" />
+    <Compile Include="DiscUtils\PumpProgressEventArgs.cs" />
+    <Compile Include="DiscUtils\Range.cs" />
+    <Compile Include="DiscUtils\Raw\Disk.cs" />
+    <Compile Include="DiscUtils\Raw\DiskFactory.cs" />
+    <Compile Include="DiscUtils\Raw\DiskImageFile.cs" />
+    <Compile Include="DiscUtils\Registry\Bin.cs" />
+    <Compile Include="DiscUtils\Registry\BinHeader.cs" />
+    <Compile Include="DiscUtils\Registry\Cell.cs" />
+    <Compile Include="DiscUtils\Registry\HiveHeader.cs" />
+    <Compile Include="DiscUtils\Registry\KeyNodeCell.cs" />
+    <Compile Include="DiscUtils\Registry\ListCell.cs" />
+    <Compile Include="DiscUtils\Registry\RegistryCorruptException.cs" />
+    <Compile Include="DiscUtils\Registry\RegistryHive.cs" />
+    <Compile Include="DiscUtils\Registry\RegistryKey.cs" />
+    <Compile Include="DiscUtils\Registry\RegistryKeyFlags.cs" />
+    <Compile Include="DiscUtils\Registry\RegistryValue.cs" />
+    <Compile Include="DiscUtils\Registry\RegistryValueType.cs" />
+    <Compile Include="DiscUtils\Registry\SecurityCell.cs" />
+    <Compile Include="DiscUtils\Registry\SubKeyHashedListCell.cs" />
+    <Compile Include="DiscUtils\Registry\SubKeyIndirectListCell.cs" />
+    <Compile Include="DiscUtils\Registry\ValueCell.cs" />
+    <Compile Include="DiscUtils\Registry\ValueFlags.cs" />
+    <Compile Include="DiscUtils\ReparsePoint.cs" />
+    <Compile Include="DiscUtils\Sizes.cs" />
+    <Compile Include="DiscUtils\SnapshotStream.cs" />
+    <Compile Include="DiscUtils\SparseMemoryBuffer.cs" />
+    <Compile Include="DiscUtils\SparseMemoryStream.cs" />
+    <Compile Include="DiscUtils\SparseStream.cs" />
+    <Compile Include="DiscUtils\StreamBuilder.cs" />
+    <Compile Include="DiscUtils\StreamExtent.cs" />
+    <Compile Include="DiscUtils\StreamPump.cs" />
+    <Compile Include="DiscUtils\StripedStream.cs" />
+    <Compile Include="DiscUtils\SubBuffer.cs" />
+    <Compile Include="DiscUtils\SubStream.cs" />
+    <Compile Include="DiscUtils\Tuple.cs" />
+    <Compile Include="DiscUtils\Tuple_2.cs" />
+    <Compile Include="DiscUtils\Tuple_3.cs" />
+    <Compile Include="DiscUtils\UnixFileType.cs" />
+    <Compile Include="DiscUtils\Utilities.cs" />
+    <Compile Include="DiscUtils\Vfs\IVfsDirectory.cs" />
+    <Compile Include="DiscUtils\Vfs\IVfsFile.cs" />
+    <Compile Include="DiscUtils\Vfs\IVfsSymlink.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsContext.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsDirEntry.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsFileSystem.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsFileSystemFacade.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsFileSystemFactory.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsFileSystemFactoryAttribute.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsFileSystemInfo.cs" />
+    <Compile Include="DiscUtils\Vfs\VfsReadOnlyFileSystem.cs" />
+    <Compile Include="DiscUtils\VirtualDisk.cs" />
+    <Compile Include="DiscUtils\VirtualDiskClass.cs" />
+    <Compile Include="DiscUtils\VirtualDiskExtent.cs" />
+    <Compile Include="DiscUtils\VirtualDiskFactory.cs" />
+    <Compile Include="DiscUtils\VirtualDiskFactoryAttribute.cs" />
+    <Compile Include="DiscUtils\VirtualDiskLayer.cs" />
+    <Compile Include="DiscUtils\VirtualDiskParameters.cs" />
+    <Compile Include="DiscUtils\VirtualDiskTransport.cs" />
+    <Compile Include="DiscUtils\VirtualDiskTransportAttribute.cs" />
+    <Compile Include="DiscUtils\VirtualDiskTypeInfo.cs" />
+    <Compile Include="DiscUtils\VolumeInfo.cs" />
+    <Compile Include="DiscUtils\VolumeManager.cs" />
+    <Compile Include="DiscUtils\WindowsFileInformation.cs" />
+    <Compile Include="DiscUtils\WrappingMappedStream.cs" />
+    <Compile Include="DiscUtils\ZeroStream.cs" />
+    <Compile Include="FilePickerControl.xaml.cs">
+      <DependentUpon>FilePickerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FolderSelectDialog.cs" />
+    <Compile Include="Models\ByteOperations.cs" />
+    <Compile Include="Models\FFU.cs" />
+    <Compile Include="Models\GPT.cs" />
+    <Compile Include="Models\LumiaDownloadModel.cs" />
+    <Compile Include="Models\LZMA.cs" />
+    <Compile Include="Models\MassStorage.cs" />
+    <Compile Include="Models\NativeMethods.cs" />
+    <Compile Include="Models\NokiaFlashModel.cs" />
+    <Compile Include="Models\PatchEngine.cs" />
+    <Compile Include="Models\Privileges.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Models\QualcommDownload.cs" />
+    <Compile Include="Models\QualcommFlasher.cs" />
+    <Compile Include="Models\QualcommLoader.cs" />
+    <Compile Include="Models\QualcommPartition.cs" />
+    <Compile Include="Models\QualcommSahara.cs" />
+    <Compile Include="Models\QualcommSerial.cs" />
+    <Compile Include="Models\SBL1.cs" />
+    <Compile Include="Models\SBL2.cs" />
+    <Compile Include="Models\SBL3.cs" />
+    <Compile Include="Models\UEFI.cs" />
+    <Compile Include="Terminal.cs" />
+    <Compile Include="TestCode.cs" />
+    <Compile Include="ViewModels\BackupTargetSelectionViewModel.cs" />
+    <Compile Include="ViewModels\BackupViewModel.cs" />
+    <Compile Include="ViewModels\BusyViewModel.cs" />
+    <Compile Include="ViewModels\DisclaimerAndNdaViewModel.cs" />
+    <Compile Include="ViewModels\DownloadsViewModel.cs" />
+    <Compile Include="ViewModels\RegistrationViewModel.cs" />
+    <Compile Include="ViewModels\DisclaimerViewModel.cs" />
+    <Compile Include="ViewModels\DumpRomTargetSelectionViewModel.cs" />
+    <Compile Include="ViewModels\DumpRomViewModel.cs" />
+    <Compile Include="ViewModels\GettingStartedViewModel.cs" />
+    <Compile Include="ViewModels\LumiaFlashRomSourceSelectionViewModel.cs" />
+    <Compile Include="ViewModels\LumiaFlashRomViewModel.cs" />
+    <Compile Include="ViewModels\LumiaInfoViewModel.cs" />
+    <Compile Include="ViewModels\LumiaModeViewModel.cs" />
+    <Compile Include="ViewModels\LumiaUnlockRootTargetSelectionViewModel.cs" />
+    <Compile Include="ViewModels\LumiaUnlockRootViewModel.cs" />
+    <Compile Include="ViewModels\LumiaV2UnlockBootViewModel.cs" />
+    <Compile Include="ViewModels\MessageViewModel.cs" />
+    <Compile Include="ViewModels\NokiaFlashViewModel.cs" />
+    <Compile Include="ViewModels\LumiaUnlockBootViewModel.cs" />
+    <Compile Include="ViewModels\NokiaMassStorageViewModel.cs" />
+    <Compile Include="ViewModels\PhoneNotifierViewModel.cs" />
+    <Compile Include="ViewModels\RestoreSourceSelectionViewModel.cs" />
+    <Compile Include="ViewModels\RestoreViewModel.cs" />
+    <Compile Include="ViewModels\SwitchModeViewModel.cs" />
+    <Compile Include="Views\About.xaml.cs">
+      <DependentUpon>About.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\AboutViewModel.cs" />
+    <Compile Include="ViewModels\ContextViewModel.cs" />
+    <Compile Include="Views\BackupView.xaml.cs">
+      <DependentUpon>BackupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BootRestoreResourcesView.xaml.cs">
+      <DependentUpon>BootRestoreResourcesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ContextView.xaml.cs">
+      <DependentUpon>ContextView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DisclaimerAndNdaView.xaml.cs">
+      <DependentUpon>DisclaimerAndNdaView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RegistrationView.xaml.cs">
+      <DependentUpon>RegistrationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DisclaimerView.xaml.cs">
+      <DependentUpon>DisclaimerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DumpRomView.xaml.cs">
+      <DependentUpon>DumpRomView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Empty.xaml.cs">
+      <DependentUpon>Empty.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HelperClasses.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="Views\FlashResourcesView.xaml.cs">
+      <DependentUpon>FlashResourcesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FlashRomView.xaml.cs">
+      <DependentUpon>FlashRomView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GettingStartedView.xaml.cs">
+      <DependentUpon>GettingStartedView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LumiaDownloadView.xaml.cs">
+      <DependentUpon>LumiaDownloadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LumiaUndoRootTargetSelectionView.xaml.cs">
+      <DependentUpon>LumiaUndoRootTargetSelectionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LumiaUnlockRootTargetSelectionView.xaml.cs">
+      <DependentUpon>LumiaUnlockRootTargetSelectionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MessageView.xaml.cs">
+      <DependentUpon>MessageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NokiaFlashView.xaml.cs">
+      <DependentUpon>NokiaFlashView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NokiaLabelView.xaml.cs">
+      <DependentUpon>NokiaLabelView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\NokiaLabelViewModel.cs" />
+    <Compile Include="Views\NokiaMassStorageView.xaml.cs">
+      <DependentUpon>NokiaMassStorageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NokiaModeFlashView.xaml.cs">
+      <DependentUpon>NokiaModeFlashView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\NokiaModeFlashViewModel.cs" />
+    <Compile Include="Views\NokiaModeLabelView.xaml.cs">
+      <DependentUpon>NokiaModeLabelView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\NokiaModeLabelViewModel.cs" />
+    <Compile Include="Views\NokiaModeMassStorageView.xaml.cs">
+      <DependentUpon>NokiaModeMassStorageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\NokiaModeMassStorageViewModel.cs" />
+    <Compile Include="Views\NokiaModeNormalView.xaml.cs">
+      <DependentUpon>NokiaModeNormalView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\NokiaModeNormalViewModel.cs" />
+    <Compile Include="Views\NokiaNormalView.xaml.cs">
+      <DependentUpon>NokiaNormalView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\NokiaNormalViewModel.cs" />
+    <Compile Include="Views\NotImplementedView.xaml.cs">
+      <DependentUpon>NotImplementedView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\NotImplementedViewModel.cs" />
+    <Compile Include="Views\BusyView.xaml.cs">
+      <DependentUpon>BusyView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RestoreView.xaml.cs">
+      <DependentUpon>RestoreView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\StartupWindow.xaml.cs">
+      <DependentUpon>StartupWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WinUSBNet\API\APIException.cs" />
+    <Compile Include="WinUSBNet\API\DeviceDetails.cs" />
+    <Compile Include="WinUSBNet\API\DeviceManagement.cs" />
+    <Compile Include="WinUSBNet\API\DeviceManagementAPI.cs" />
+    <Compile Include="WinUSBNet\API\FileAPI.cs" />
+    <Compile Include="WinUSBNet\API\WinUSBDevice.cs" />
+    <Compile Include="WinUSBNet\API\WinUSBDeviceAPI.cs" />
+    <Compile Include="WinUSBNet\DeviceNotifyHook.cs" />
+    <Compile Include="WinUSBNet\USB.cs" />
+    <Compile Include="WinUSBNet\USBAsyncResult.cs" />
+    <Compile Include="WinUSBNet\USBDevice.cs" />
+    <Compile Include="WinUSBNet\USBDeviceDescriptor.cs" />
+    <Compile Include="WinUSBNet\USBDeviceInfo.cs" />
+    <Compile Include="WinUSBNet\USBException.cs" />
+    <Compile Include="WinUSBNet\USBInterface.cs" />
+    <Compile Include="WinUSBNet\USBInterfaceCollection.cs" />
+    <Compile Include="WinUSBNet\USBNotifier.cs" />
+    <Compile Include="WinUSBNet\USBPipe.cs" />
+    <Compile Include="WinUSBNet\USBPipeCollection.cs" />
+    <Compile Include="WinUSBNet\USBPipePolicy.cs" />
+    <Compile Include="WPinternalsConfig.cs" />
+    <Page Include="FilePickerControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\About.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BackupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BootRestoreResourcesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ContextView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DisclaimerAndNdaView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\RegistrationView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DisclaimerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DumpRomView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Empty.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FlashResourcesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FlashRomView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\GettingStartedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LumiaDownloadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LumiaUndoRootTargetSelectionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LumiaUnlockRootTargetSelectionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="Views\MessageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaFlashView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaLabelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaMassStorageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaModeFlashView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaModeLabelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaModeMassStorageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaModeNormalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NokiaNormalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\NotImplementedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BusyView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RestoreView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\StartupWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Models\NokiaPhoneModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="app.manifest">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Heathcliff74.snk" />
+    <None Include="LICENSE" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+    <EmbeddedResource Include="SB" />
+    <EmbeddedResource Include="SBMSM" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="WPinternals.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="aerobusy.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Logo-Small.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PatchDefinitions.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>"C:\Program Files\PsTools\pskill.exe" XDesProc.exe 2&gt;nul 1&gt;nul
+EXIT 0</PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,86 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.NokiaModeNormalView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:WPinternals"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <UserControl.Resources>
+        <local:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" />
+        <local:BooleanConverter x:Key="InvisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" />
+        <local:BooleanConverter x:Key="InverseConverter" OnTrue="False" OnFalse="True" />
+    </UserControl.Resources>
+    <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
+        <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
+            <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                <FlowDocument.Resources>
+                    <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                    <Style TargetType="{x:Type Paragraph}">
+                        <Setter Property="Margin" Value="0"/>
+                    </Style>
+                    <Style TargetType="{x:Type Section}">
+                        <Setter Property="Margin" Value="0"/>
+                    </Style>
+                </FlowDocument.Resources>
+                <local:Paragraph>
+                    <Run Text="Nokia Lumia - Switch mode" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                    <LineBreak />
+                    <LineBreak />
+                    <Run Text="Current mode: " />
+                    <Run Text="Normal (Windows Phone OS)" Foreground="#FF3753A6" FontWeight="Bold" />
+                    <LineBreak />
+                    <LineBreak />
+                    <Hyperlink NavigateUri="Flash">Switch to Flash-mode</Hyperlink>
+                    <LineBreak />
+                    <Run Text="This is the interface that can be used to flash a new ROM image. It can also be used to retrieve additional info and security status." />
+                    <LineBreak />
+                    <LineBreak />
+                    <Hyperlink NavigateUri="Label">Switch to Label-mode</Hyperlink>
+                    <LineBreak />
+                    <Run Text="This interface is meant for querying and provisioning the phone. This is normally used for configuring the phone during manufacturing." />
+                    <LineBreak />
+                    <LineBreak />
+                    <Hyperlink NavigateUri="MassStorage">Switch to Mass-Storage-mode</Hyperlink>
+                    <LineBreak />
+                    <Run Text="This mode allows you to access the complete file-system of the phone. " />
+                    <Run Text="To enter this mode the phone will first be booted to Flash mode. After that this tool will immediately attempt to boot the phone to Mass Storage mode. So you may see your phone reboot multiple times." />
+                    <LineBreak />
+                    <LineBreak />
+                    <Run Text="Warning 1: " Foreground="Red" FontWeight="Bold"/>
+                    <Run Text="Once you've entered Mass Storage mode, be very careful with altering files. You can easily brick your phone, when you make invalid changes to the file-system of the phone." />
+                    <LineBreak />
+                    <LineBreak />
+                    <Run Text="Warning 2: " Foreground="Red" FontWeight="Bold"/>
+                    <Run Text="Before switching to Mass Storage Mode, verify that you do not have any other Windows Phone disks or partitions mounted. The partitions may have equal identifiers, which will result in a conflict. The phone partitions will be mounted &quot;offline&quot; and if you try to switch them &quot;online&quot; in the Disk Manager, it will corrupt the partitions on the phone. Unmount any Windows Phone partitions before you continue." />
+                    <LineBreak />
+                    <LineBreak />
+                    <Run Text="Warning 3: " Foreground="Red" FontWeight="Bold"/>
+                    <Run Text="Switching to Mass Storage mode should take about 10 seconds. Phones with Bootloader Spec A should be unlocked using an Engineering SBL3 to enable Mass Storage mode. When you unlocked the bootloader, but you did not use an Engineering SBL3, an attempt to boot to Mass Storage mode may result in an unresponsive state. Installing drivers for this interface may also cause to hang the PC. So when this switch is taking too long, you should reboot both the PC and the phone." />
+                </local:Paragraph>
+            </FlowDocument>
+        </local:FlowDocumentScrollViewerNoMouseWheel>
+    </Border>
+</UserControl>
