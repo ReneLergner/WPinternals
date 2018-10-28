@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace WPinternals
@@ -42,7 +41,7 @@ namespace WPinternals
             try
             {
                 LogFile.Log("Find Flashing Profile", LogType.FileAndConsole);
-                
+
                 NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
 
                 PhoneInfo Info;
@@ -73,7 +72,7 @@ namespace WPinternals
 
                 SetWorkingStatus("Scanning for flashing-profile", "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", null, Status: WPinternalsStatus.Scanning);
 
-                await LumiaV2CustomFlash(Notifier, FFUPath, false, !Info.SecureFfuEnabled || Info.RdcPresent || Info.Authenticated, null, DoResetFirst, Experimental: Experimental, SetWorkingStatus: 
+                await LumiaV2CustomFlash(Notifier, FFUPath, false, !Info.SecureFfuEnabled || Info.RdcPresent || Info.Authenticated, null, DoResetFirst, Experimental: Experimental, SetWorkingStatus:
                     (m, s, v, a, st) =>
                     {
                         if (st == WPinternalsStatus.SwitchingMode)
@@ -332,7 +331,15 @@ namespace WPinternals
                     Partition EFIESPPartition = GPT.GetPartition("EFIESP");
                     byte[] EFIESP = Storage.ReadSectors(EFIESPPartition.FirstSector, EFIESPPartition.SizeInSectors);
                     UInt32 EfiespSizeInSectors = (UInt32)EFIESPPartition.SizeInSectors;
-                    if ((ByteOperations.ReadUInt32(EFIESP, 0x20) == (EfiespSizeInSectors / 2)) && (ByteOperations.ReadAsciiString(EFIESP, (UInt32)(EFIESP.Length / 2) + 3, 8)) == "MSDOS5.0")
+                    
+                    //
+                    // (ByteOperations.ReadUInt32(EFIESP, 0x20) == (EfiespSizeInSectors / 2)) was originally present in this check, but it does not seem to be reliable with all cases
+                    // It should be looked as why some phones have half the sector count in gpt, compared to the real partition.
+                    // With that check added, the phone won't get back its original EFIESP partition, on phones like 650s.
+                    // The second check should be more than enough in any case, if we find a header named MSDOS5.0 right in the middle of EFIESP,
+                    // there's not many cases other than us splitting the partition in half to get this here.
+                    //
+                    if ((ByteOperations.ReadAsciiString(EFIESP, (UInt32)(EFIESP.Length / 2) + 3, 8)) == "MSDOS5.0")
                     {
                         EFIESPBackup = new byte[EfiespSizeInSectors * 0x200 / 2];
                         Buffer.BlockCopy(EFIESP, (Int32)EfiespSizeInSectors * 0x200 / 2, EFIESPBackup, 0, (Int32)EfiespSizeInSectors * 0x200 / 2);
@@ -560,7 +567,7 @@ namespace WPinternals
                 {
                     Partition Target = GPT.GetPartition("UEFI_BS_NV");
                     Parts.Add(new FlashPart() { StartSector = (uint)Target.FirstSector, Stream = Space });
-                    
+
                     await LumiaV2CustomFlash(Notifier, FFUPath, false, false, Parts, DoResetFirst, ClearFlashingStatusAtEnd: false);
                 }
 
@@ -726,7 +733,7 @@ namespace WPinternals
         }
 
         // Magic!
-        internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null) //, string LoaderPath = null)
+        internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null, PhoneInfo ExistingPhoneInfo = null) //, string LoaderPath = null)
         {
             // Both SecurityHeader and StoreHeader need to be modified.
             // Those should both not fall in a memory-gap to allow modification.
@@ -742,7 +749,9 @@ namespace WPinternals
             if (ExitFailure == null) ExitFailure = (m, s) => { };
 
             NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
-            PhoneInfo Info = Model.ReadPhoneInfo();
+            PhoneInfo Info = ExistingPhoneInfo;
+            if (Info == null)
+                Info = Model.ReadPhoneInfo();
 
             string Type = Info.Type;
             if (ProgrammerPath == null)
@@ -784,7 +793,7 @@ namespace WPinternals
             UInt32 UpdateType = ByteOperations.ReadUInt32(FFU.StoreHeader, 0);
             if (UpdateType != 0)
                 throw new WPinternalsException("Only Full Flash images supported");
-            
+
             UInt32 ChunkCount = 1; // Always flash one extra chunk on the GPT (for purpose of testing and for making sure that first chunk does not contain all zero's).
             if (FlashParts != null)
             {
@@ -1154,7 +1163,7 @@ namespace WPinternals
                     {
                         // From start of hash-table skip the first hashes for Image- and StoreHeaders.
                         HashTableSize = (UInt32)(((FFU.ImageHeader.Length + FFU.StoreHeader.Length) / FFU.ChunkSize) * 0x20);
-                        NewHashOffset += HashTableSize; 
+                        NewHashOffset += HashTableSize;
                     }
 
                     // Determine number of chunks for this phase
@@ -1341,7 +1350,7 @@ namespace WPinternals
                     }
                     catch (BadConnectionException)
                     {
-                        LogFile.Log("Connection to phone is lost - " + 
+                        LogFile.Log("Connection to phone is lost - " +
                             Step.ToString() + " " +
                             StreamIndex.ToString() + " " +
                             (CurrentStream == null ? "0" : CurrentStream.Position.ToString()) + " " +
@@ -1360,12 +1369,12 @@ namespace WPinternals
                             // But if we were already flashing, then something else is wrong.
                             // We need more info and stop flashing.
                             LogFile.Log("Custom flash failed", LogType.FileAndConsole);
-                            LogFile.LogException(Ex, LogType.FileOnly, 
-                                Step.ToString() + " " + 
-                                StreamIndex.ToString() + " " + 
-                                (CurrentStream == null ? "0" : CurrentStream.Position.ToString()) + " " + 
-                                FlashingPhase.ToString() + " " + 
-                                FlashingPhaseStartChunkIndex.ToString() + " " + 
+                            LogFile.LogException(Ex, LogType.FileOnly,
+                                Step.ToString() + " " +
+                                StreamIndex.ToString() + " " +
+                                (CurrentStream == null ? "0" : CurrentStream.Position.ToString()) + " " +
+                                FlashingPhase.ToString() + " " +
+                                FlashingPhaseStartChunkIndex.ToString() + " " +
                                 DestinationChunkIndex.ToString());
                             Abort = true;
                         }
@@ -1583,7 +1592,7 @@ namespace WPinternals
             {
                 // Make the phone crash here!
                 // This will actually make the phone crash when it frees memory during shutdown or reboot of the phone
-                
+
                 ByteOperations.WriteUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.HeadStart + 4, 0); // Set allocation size to 0 in allocationhead
                 ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.HeadStart + 4, 0); // Set allocation size to 0 in allocationhead
                 if (CurrentGapFill > UefiMemorySim.PageSize)
@@ -1745,7 +1754,7 @@ namespace WPinternals
                 else
                     return null;
             }
-            
+
         }
 
         // Assumes phone with Flash protocol v2
@@ -1899,7 +1908,7 @@ namespace WPinternals
                                     MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
                                     DataPartition.FirstSector = MainOSPartition.LastSector + 1;
                                     if ((DataPartition.FirstSector % 0x100) > 0)
-                                        DataPartition.FirstSector = ((UInt64)((DataPartition.FirstSector + 0x100) / 0x100)) * 0x100; 
+                                        DataPartition.FirstSector = ((UInt64)((DataPartition.FirstSector + 0x100) / 0x100)) * 0x100;
                                     DataPartition.LastSector = DataPartition.FirstSector + DataNewSectorCount - 1;
 
                                     GPTChanged = true;
@@ -1952,6 +1961,7 @@ namespace WPinternals
                         Part.Stream = new SeekableStream(() =>
                         {
                             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
 
                             // Magic!
                             // The SB resource is a compressed version of a raw NV-variable-partition.
@@ -2062,7 +2072,7 @@ namespace WPinternals
 
             LogFile.EndAction("FixBoot");
         }
-
+        
         // Magic!
         // Assumes phone with Flash protocol v2
         // Assumes phone is in flash mode
@@ -2176,6 +2186,7 @@ namespace WPinternals
                 Partition BACKUP_EFIESP = GPT.GetPartition("BACKUP_EFIESP");
                 Partition EFIESP;
                 UInt32 OriginalEfiespSizeInSectors = (UInt32)GPT.GetPartition("EFIESP").SizeInSectors;
+                UInt32 OriginalEfiespLastSector = (UInt32)GPT.GetPartition("EFIESP").LastSector;
                 if (BACKUP_EFIESP == null)
                 {
                     BACKUP_EFIESP = GPT.GetPartition("EFIESP");
@@ -2246,12 +2257,12 @@ namespace WPinternals
                     var assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                     // Magic!
-                    // The SB resource is a compressed version of a raw NV-variable-partition.
-                    // In this partition the SecureBoot variable is disabled.
+                    // The SBMSM resource is a compressed version of a raw NV-variable-partition.
+                    // In this partition the SecureBoot variable is disabled and an extra variable is added which triggers Mass Storage Mode on next reboot.
                     // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                     // This normally leads to endless-loops when the NV-variables are enumerated.
                     // But the partition contains an extra hack to break out the endless loops.
-                    var stream = assembly.GetManifestResourceStream("WPinternals.SB");
+                    var stream = assembly.GetManifestResourceStream("WPinternals.SBMSM");
 
                     return new DecompressedStream(stream);
                 });
@@ -2266,14 +2277,6 @@ namespace WPinternals
                     Parts.Add(Part);
                 }
 
-                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
-
-                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
-                    await Notifier.WaitForArrival();
-
-                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
-                    throw new WPinternalsException("Error: Phone is in wrong mode");
-
                 // Not going to retry in a loop because a second attempt will result in gears due to changed BootOrder.
                 // Just inform user of problem and revert.
                 // User can try again after revert.
@@ -2281,7 +2284,43 @@ namespace WPinternals
                 string ErrorMessage = null;
                 try
                 {
-                    await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_MassStorage, SetWorkingStatus, UpdateWorkingStatus);
+                    await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+
+                    string MassStorageWarning = "When the screen of the phone is black for a while, it could be that the phone is already in Mass Storage Mode, but there is no drive-letter assigned. To resolve this issue, open Device Manager and manually assign a drive-letter to the MainOS partition of your phone, or open a command-prompt and type: diskpart automount enable.";
+                    if (App.IsPnPEventLogMissing)
+                        MassStorageWarning += " It is also possible that the phone is in Mass Storage mode, but the Mass Storage driver on this PC failed. Your PC does not have an eventlog to detect this misbehaviour. But in this case you will see a device with an exclamation mark in Device Manager and then you need to manually reset the phone by pressing and holding the power-button for at least 10 seconds until it vibrates and reboots. After that Windows Phone Internals will revert the changes. After the phone has rebooted to the OS, you can retry to unlock the bootloader.";
+
+                    SetWorkingStatus("Booting phone to Mass Storage mode...", MassStorageWarning, null);
+
+                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+
+                    // Wait for bootloader
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
+                    {
+                        LogFile.Log("Waiting for Mass Storage Mode (1)...", LogType.FileOnly);
+                        await Notifier.WaitForArrival();
+                    }
+
+                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+
+                    // Wait for mass storage mode
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
+                    {
+                        LogFile.Log("Waiting for Mass Storage Mode (2)...", LogType.FileOnly);
+                        await Notifier.WaitForArrival();
+                    }
+
+                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+
+                    MassStorage Storage = null;
+                    if (Notifier.CurrentModel is MassStorage)
+                        Storage = (MassStorage)Notifier.CurrentModel;
+
+                    if (Storage == null)
+                        throw new WPinternalsException("Failed to switch to Mass Storage Mode");
                 }
                 catch (WPinternalsException Ex)
                 {
@@ -2292,6 +2331,7 @@ namespace WPinternals
                 {
                     LogFile.LogException(Ex);
                 }
+
                 if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
                 {
                     SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode, but the driver of the PC failed to start. Unfortunately this happens sometimes. You need to manually reset the phone now. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. Windows Phone Internals will automatically start to revert the changes. After the phone is fully booted again, you can retry to unlock the bootloader.", null, false, WPinternalsStatus.WaitingForManualReset);
@@ -2343,6 +2383,72 @@ namespace WPinternals
                 BACKUP_EFIESP = GPT.GetPartition("BACKUP_EFIESP");
                 byte[] BackupEFIESP = MassStorage.ReadSectors(BACKUP_EFIESP.FirstSector, BACKUP_EFIESP.SizeInSectors);
 
+                LogFile.Log("Unlocking backup partition", LogType.FileAndConsole);
+                SetWorkingStatus("Unlocking backup partition", null, null);
+
+                // Copy the backed up unlocked EFIESP for future use
+                byte[] BackupUnlockedEFIESP = new byte[UnlockedEFIESP.Length];
+                Buffer.BlockCopy(BackupEFIESP, 0, BackupUnlockedEFIESP, 0, BackupEFIESP.Length);
+
+                DiscUtils.Fat.FatFileSystem UnlockedBackedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(BackupUnlockedEFIESP));
+                
+                // Magic!
+                // This patch contains multiple hacks to disable SecureBoot, disable Bootpolicies and allow Mass Storage Mode on retail phones
+                App.PatchEngine.TargetImage = UnlockedBackedEFIESPFileSystem;
+                PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
+
+                // The patch to mobilestartup failed, get a new mobilestartup from the donor FFU instead
+                if (!PatchResult)
+                {
+                    LogFile.Log("Donor-FFU: " + SupportedFFU.Path);
+                    byte[] SupportedEFIESP = SupportedFFU.GetPartition("EFIESP");
+                    DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(SupportedEFIESP));
+                    DiscUtils.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
+                    MemoryStream SupportedMobileStartupMemStream = new MemoryStream();
+                    SupportedMobileStartupStream.CopyTo(SupportedMobileStartupMemStream);
+                    byte[] SupportedMobileStartup = SupportedMobileStartupMemStream.ToArray();
+                    SupportedMobileStartupMemStream.Close();
+                    SupportedMobileStartupStream.Close();
+
+                    // Save supported mobilestartup.efi
+                    LogFile.Log("Taking mobilestartup.efi from donor-FFU");
+                    Stream MobileStartupStream = UnlockedBackedEFIESPFileSystem.OpenFile(@"Windows\System32\Boot\mobilestartup.efi", FileMode.Create, FileAccess.Write);
+                    MobileStartupStream.Write(SupportedMobileStartup, 0, SupportedMobileStartup.Length);
+                    MobileStartupStream.Close();
+
+                    App.PatchEngine.TargetImage = UnlockedBackedEFIESPFileSystem;
+                    PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
+
+                    // We shouldn't be there
+                    if (!PatchResult)
+                        throw new WPinternalsException("Failed to patch bootloader");
+                }
+
+                // Edit BCD
+                LogFile.Log("Edit BCD");
+                using (Stream BCDFileStream = UnlockedBackedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite))
+                {
+                    using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
+                    {
+                        DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
+                        DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
+                        DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
+                        if (NoCodeIntegrityElement != null)
+                            NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                        else
+                            MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+
+                        DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
+                        NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
+                        if (NoCodeIntegrityElement != null)
+                            NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                        else
+                            WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                    }
+                }
+
+                UnlockedBackedEFIESPFileSystem.Dispose();
+
                 SetWorkingStatus("Boot optimization...", null, null);
 
                 App.PatchEngine.TargetPath = MassStorage.Drive + "\\";
@@ -2372,7 +2478,7 @@ namespace WPinternals
                 EFIESP = GPT.GetPartition("EFIESP");
                 UInt32 OriginalEfiespFirstSector = (UInt32)BACKUP_EFIESP.FirstSector;
                 BACKUP_EFIESP.Name = "EFIESP";
-                BACKUP_EFIESP.LastSector = BACKUP_EFIESP.FirstSector + 0xFFFF;
+                BACKUP_EFIESP.LastSector = OriginalEfiespLastSector; // Do not hardcode the length of the partition, some phones have bigger EFIESP partitions than others.
                 BACKUP_EFIESP.PartitionGuid = EFIESP.PartitionGuid;
                 BACKUP_EFIESP.PartitionTypeGuid = EFIESP.PartitionTypeGuid;
                 GPT.Partitions.Remove(EFIESP);
@@ -2399,14 +2505,14 @@ namespace WPinternals
                 Parts.Add(Part);
                 Part = new FlashPart();
                 Part.StartSector = OriginalEfiespFirstSector;
-                Part.Stream = new MemoryStream(UnlockedEFIESP);
+                Part.Stream = new MemoryStream(BackupUnlockedEFIESP); // We must keep the Oiriginal EFIESP, but unlocked, for many reasons
                 Parts.Add(Part);
                 Part = new FlashPart();
                 Part.StartSector = OriginalEfiespFirstSector + ((OriginalEfiespSizeInSectors) / 2);
                 Part.Stream = new MemoryStream(BackupEFIESP);
                 Parts.Add(Part);
-
-                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                
+                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, false, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath, Info);
 
                 LogFile.Log("Bootloader unlocked!", LogType.FileAndConsole);
                 ExitSuccess("Bootloader unlocked successfully!", null);
@@ -2839,7 +2945,7 @@ namespace WPinternals
                 NewAllocation.TailEnd = NewAllocation.TailStart + 8 - 1;
 
                 ByteOperations.WriteAsciiString(Buffer, NewAllocation.HeadStart + 0x00, "phd0");
-                
+
                 // Correct value here is: Size + 24
                 // Wrong value is: TotalSize
                 // Having correct value avoids memory errors and phone can reboot normally, but NV vars might be written (and that will overwrite the NV vars we wrote ourselves).
@@ -2879,7 +2985,7 @@ namespace WPinternals
             if (Allocations.Contains(Allocation))
             {
                 Allocations.Remove(Allocation);
-                
+
                 if (Allocations.Count() == 0)
                 {
                     FreeMemRanges.Clear();
