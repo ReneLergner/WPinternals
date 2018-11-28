@@ -836,24 +836,6 @@ DEALINGS IN THE SOFTWARE.
                         <Run Text="The problems stated in this section should be fixed in later versions of Windows Phone Internals. But it needs more time to implement the solutions." />
                         <LineBreak />
                         <LineBreak />
-                        <Run Text="The phone may boot to a Blue Screen after unlocking the bootloader" FontWeight="Bold" Foreground="#FF3753A6" />
-                        <LineBreak />
-                        <LineBreak />
-                        <Run Text="This is a limitation of SecureBoot Unlock v2. Some Windows 10 based phones need additional modifications to be able to boot properly after the bootloader is unlocked. The patches will be applied automatically if the OS on the phone is on a supported version. In case the phone doesn't boot properly, you can still enter Mass Storage Mode if you want. To boot properly again, restore the bootloader. You can update to a supported OS version and try again after that." />
-                        <LineBreak />
-                        <LineBreak />
-                        <Run Text="Some Silverlight apps may not work" FontWeight="Bold" Foreground="#FF3753A6" />
-                        <LineBreak />
-                        <LineBreak />
-                        <Run Text="This is a limitation of SecureBoot Unlock v2. The cause of this problem is known. For now this problem can be fixed by enabling Root Access on the phone." />
-                        <LineBreak />
-                        <LineBreak />
-                        <Run Text="Iris scanner does not work anymore on Lumia 950 and Lumia 950 XL" FontWeight="Bold" Foreground="#FF3753A6" />
-                        <LineBreak />
-                        <LineBreak />
-                        <Run Text="This is a limitation of SecureBoot Unlock v2. SecureBoot Unlock v2 removes all policies and this also disables the iris scanner. Windows Hello does not work properly anymore. To fix the problem you can restore the bootloader." />
-                        <LineBreak />
-                        <LineBreak />
                         <Run Text="Can't unlock ROM image for Lumia's with Bootloader Spec B" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
