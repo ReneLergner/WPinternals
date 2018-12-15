@@ -36,6 +36,7 @@ namespace WPinternals
     {
         private PhoneNotifierViewModel Notifier;
         private Timer SpeedTimer;
+        private bool IsSearching = false;
 
         internal DownloadsViewModel(PhoneNotifierViewModel Notifier)
         {
@@ -156,6 +157,11 @@ namespace WPinternals
 
         private void Search()
         {
+            if (IsSearching)
+                return;
+
+            IsSearching = true;
+
             SynchronizationContext UIContext = SynchronizationContext.Current;
             SearchResultList.Clear();
 
@@ -184,6 +190,8 @@ namespace WPinternals
                     if (EmergencyURLs != null)
                         SearchResultList.Add(new SearchResult(ProductType + " emergency-files", EmergencyURLs, ProductType, EmergencyDownloaded, ProductType));
                 }, null);
+
+                IsSearching = false;
             }).Start();
         }
 
