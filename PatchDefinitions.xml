@@ -2802,14 +2802,13 @@ DEALINGS IN THE SOFTWARE.
             </Patches>
             <Obsolete />
           </TargetFile>
-          <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="AA03E34592A2B12AE1A7F6987165DC20090DCA76" HashPatched="3D5AB56C9DF9598DDA637298B5D0B15A8BBC045D">
+          <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="AA03E34592A2B12AE1A7F6987165DC20090DCA76" HashPatched="BD0084827482CCA508FE2D849FAF06E5AC599E75">
             <Patches>
               <Patch Address="0x000AB4EC" OriginalBytes="5FD1" PatchedBytes="5FE0" />
-              <Patch Address="0x00000158" OriginalBytes="00FF5300" PatchedBytes="93625400" />
               <Patch Address="0x000AB702" OriginalBytes="21B9" PatchedBytes="04E0" />
               <Patch Address="0x000AB722" OriginalBytes="31B9" PatchedBytes="06E0" />
               <Patch Address="0x000ABB74" OriginalBytes="12B9" PatchedBytes="02E0" />
-              <Patch Address="0x000ABC46" OriginalBytes="74D1" PatchedBytes="74E0" />
+              <Patch Address="0x000ABC3C" OriginalBytes="1AD0" PatchedBytes="79E0" />
               <Patch Address="0x000ABD76" OriginalBytes="02D1" PatchedBytes="02E0" />
               <Patch Address="0x000ABDA6" OriginalBytes="01D1" PatchedBytes="01E0" />
               <Patch Address="0x000ABD66" OriginalBytes="2CD0" PatchedBytes="00BF" />
@@ -2820,9 +2819,9 @@ DEALINGS IN THE SOFTWARE.
               <Patch Address="0x00178292" OriginalBytes="E3B9" PatchedBytes="00BF" />
               <Patch Address="0x0005F2D8" OriginalBytes="00F07281" PatchedBytes="00F072B9" />
               <Patch Address="0x002AB85C" OriginalBytes="0FB42DE9" PatchedBytes="01207047" />
-              <Patch Address="0x00260884" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
               <Patch Address="0x002DEE8C" OriginalBytes="01F48C8D" PatchedBytes="81F78CBD" />
               <Patch Address="0x002DEEB0" OriginalBytes="EED1" PatchedBytes="00BF" />
+              <Patch Address="0x00260884" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
               <Patch Address="0x000AAAA4" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
               <Patch Address="0x0005F848" OriginalBytes="2DE90048" PatchedBytes="00207047" />
               <Patch Address="0x00177E54" OriginalBytes="B0F1" PatchedBytes="54E7" />
@@ -2848,8 +2847,59 @@ DEALINGS IN THE SOFTWARE.
               <Patch Address="0x0005F744" OriginalBytes="2DE90048" PatchedBytes="00207047" />
               <Patch Address="0x000F7254" OriginalBytes="13D0" PatchedBytes="0AE0" />
               <Patch Address="0x000F72B8" OriginalBytes="0AD0" PatchedBytes="10E0" />
+              <Patch Address="0x00000158" OriginalBytes="00FF5300" PatchedBytes="F2635400" />
             </Patches>
-            <Obsolete />
+            <Obsolete>
+              <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="AA03E34592A2B12AE1A7F6987165DC20090DCA76" HashPatched="3D5AB56C9DF9598DDA637298B5D0B15A8BBC045D">
+                <Patches>
+                  <Patch Address="0x000AB4EC" OriginalBytes="5FD1" PatchedBytes="5FE0" />
+                  <Patch Address="0x00000158" OriginalBytes="00FF5300" PatchedBytes="93625400" />
+                  <Patch Address="0x000AB702" OriginalBytes="21B9" PatchedBytes="04E0" />
+                  <Patch Address="0x000AB722" OriginalBytes="31B9" PatchedBytes="06E0" />
+                  <Patch Address="0x000ABB74" OriginalBytes="12B9" PatchedBytes="02E0" />
+                  <Patch Address="0x000ABC46" OriginalBytes="74D1" PatchedBytes="74E0" />
+                  <Patch Address="0x000ABD76" OriginalBytes="02D1" PatchedBytes="02E0" />
+                  <Patch Address="0x000ABDA6" OriginalBytes="01D1" PatchedBytes="01E0" />
+                  <Patch Address="0x000ABD66" OriginalBytes="2CD0" PatchedBytes="00BF" />
+                  <Patch Address="0x000ABD54" OriginalBytes="37D0" PatchedBytes="00BF" />
+                  <Patch Address="0x002866E2" OriginalBytes="19B9" PatchedBytes="03E0" />
+                  <Patch Address="0x00286BDA" OriginalBytes="BA61" PatchedBytes="28E0" />
+                  <Patch Address="0x00286BEE" OriginalBytes="DFF8F428" PatchedBytes="4FF00002" />
+                  <Patch Address="0x00178292" OriginalBytes="E3B9" PatchedBytes="00BF" />
+                  <Patch Address="0x0005F2D8" OriginalBytes="00F07281" PatchedBytes="00F072B9" />
+                  <Patch Address="0x002AB85C" OriginalBytes="0FB42DE9" PatchedBytes="01207047" />
+                  <Patch Address="0x00260884" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
+                  <Patch Address="0x002DEE8C" OriginalBytes="01F48C8D" PatchedBytes="81F78CBD" />
+                  <Patch Address="0x002DEEB0" OriginalBytes="EED1" PatchedBytes="00BF" />
+                  <Patch Address="0x000AAAA4" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+                  <Patch Address="0x0005F848" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+                  <Patch Address="0x00177E54" OriginalBytes="B0F1" PatchedBytes="54E7" />
+                  <Patch Address="0x00177EC0" OriginalBytes="13B1" PatchedBytes="02E0" />
+                  <Patch Address="0x00177F3E" OriginalBytes="C0D1" PatchedBytes="00BF" />
+                  <Patch Address="0x00177F7C" OriginalBytes="A1D1" PatchedBytes="00BF" />
+                  <Patch Address="0x00178040" OriginalBytes="7FF43FAF" PatchedBytes="AFF30080" />
+                  <Patch Address="0x00178082" OriginalBytes="3FF43DAE" PatchedBytes="FFF73DBE" />
+                  <Patch Address="0x001780C2" OriginalBytes="3FF41DAE" PatchedBytes="FFF71DBE" />
+                  <Patch Address="0x00177D04" OriginalBytes="00F0EF81" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FEBA" OriginalBytes="40F0E380" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FF9E" OriginalBytes="40F09980" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FFAE" OriginalBytes="5ED0" PatchedBytes="00BF" />
+                  <Patch Address="0x0005FECA" OriginalBytes="40F09080" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FFC4" OriginalBytes="13D1" PatchedBytes="00BF" />
+                  <Patch Address="0x0005FF44" OriginalBytes="57D1" PatchedBytes="00BF" />
+                  <Patch Address="0x0005FEDE" OriginalBytes="00F08E80" PatchedBytes="AFF30080" />
+                  <Patch Address="0x000E64D8" OriginalBytes="BEF1007F" PatchedBytes="79F735BD" />
+                  <Patch Address="0x000E6622" OriginalBytes="39F490A4" PatchedBytes="79F790BC" />
+                  <Patch Address="0x000E6550" OriginalBytes="3EB3" PatchedBytes="27E0" />
+                  <Patch Address="0x000F2CB8" OriginalBytes="0FD0" PatchedBytes="0BE0" />
+                  <Patch Address="0x000F2C4E" OriginalBytes="12D0" PatchedBytes="08E0" />
+                  <Patch Address="0x0005F744" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+                  <Patch Address="0x000F7254" OriginalBytes="13D0" PatchedBytes="0AE0" />
+                  <Patch Address="0x000F72B8" OriginalBytes="0AD0" PatchedBytes="10E0" />
+                </Patches>
+                <Obsolete />
+              </TargetFile>
+            </Obsolete>
           </TargetFile>
         </TargetFiles>
       </TargetVersion>
@@ -2890,14 +2940,13 @@ DEALINGS IN THE SOFTWARE.
             </Patches>
             <Obsolete />
           </TargetFile>
-          <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="AFC0567924C75DA621CE6422AB2E6620C649A21E" HashPatched="F4C230DFB09013E7B0DC2E10F31FC6072BB8287D">
+          <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="AFC0567924C75DA621CE6422AB2E6620C649A21E" HashPatched="843F7527AB37B4B7EDDA3A3DC3AAEB57B3F3F1E3">
             <Patches>
               <Patch Address="0x000AB4EC" OriginalBytes="5FD1" PatchedBytes="5FE0" />
-              <Patch Address="0x00000158" OriginalBytes="B5DA5300" PatchedBytes="478F5400" />
               <Patch Address="0x000AB702" OriginalBytes="21B9" PatchedBytes="04E0" />
               <Patch Address="0x000AB722" OriginalBytes="31B9" PatchedBytes="06E0" />
               <Patch Address="0x000ABB74" OriginalBytes="12B9" PatchedBytes="02E0" />
-              <Patch Address="0x000ABC46" OriginalBytes="74D1" PatchedBytes="74E0" />
+              <Patch Address="0x000ABC3C" OriginalBytes="1AD0" PatchedBytes="79E0" />
               <Patch Address="0x000ABD76" OriginalBytes="02D1" PatchedBytes="02E0" />
               <Patch Address="0x000ABDA6" OriginalBytes="01D1" PatchedBytes="01E0" />
               <Patch Address="0x000ABD66" OriginalBytes="2CD0" PatchedBytes="00BF" />
@@ -2908,12 +2957,12 @@ DEALINGS IN THE SOFTWARE.
               <Patch Address="0x00178292" OriginalBytes="E3B9" PatchedBytes="00BF" />
               <Patch Address="0x0005F2D8" OriginalBytes="00F07281" PatchedBytes="00F072B9" />
               <Patch Address="0x002AB858" OriginalBytes="0FB42DE9" PatchedBytes="01207047" />
-              <Patch Address="0x0026087C" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
               <Patch Address="0x002DEE8C" OriginalBytes="01F4888D" PatchedBytes="81F788BD" />
               <Patch Address="0x002DEEB0" OriginalBytes="EED1" PatchedBytes="00BF" />
+              <Patch Address="0x0026087C" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
               <Patch Address="0x000AAAA4" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
               <Patch Address="0x0005F848" OriginalBytes="2DE90048" PatchedBytes="00207047" />
-              <Patch Address="0x00177E54" OriginalBytes="B0F1007F" PatchedBytes="FFF754BF" />
+              <Patch Address="0x00177E54" OriginalBytes="B0F1" PatchedBytes="54E7" />
               <Patch Address="0x00177EC0" OriginalBytes="13B1" PatchedBytes="02E0" />
               <Patch Address="0x00177F3E" OriginalBytes="C0D1" PatchedBytes="00BF" />
               <Patch Address="0x00177F7C" OriginalBytes="A1D1" PatchedBytes="00BF" />
@@ -2936,6 +2985,321 @@ DEALINGS IN THE SOFTWARE.
               <Patch Address="0x0005F744" OriginalBytes="2DE90048" PatchedBytes="00207047" />
               <Patch Address="0x000F7254" OriginalBytes="13D0" PatchedBytes="0AE0" />
               <Patch Address="0x000F72B8" OriginalBytes="0AD0" PatchedBytes="10E0" />
+              <Patch Address="0x00000158" OriginalBytes="B5DA5300" PatchedBytes="A73F5400" />
+            </Patches>
+            <Obsolete>
+              <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="AFC0567924C75DA621CE6422AB2E6620C649A21E" HashPatched="F4C230DFB09013E7B0DC2E10F31FC6072BB8287D">
+                <Patches>
+                  <Patch Address="0x000AB4EC" OriginalBytes="5FD1" PatchedBytes="5FE0" />
+                  <Patch Address="0x00000158" OriginalBytes="B5DA5300" PatchedBytes="478F5400" />
+                  <Patch Address="0x000AB702" OriginalBytes="21B9" PatchedBytes="04E0" />
+                  <Patch Address="0x000AB722" OriginalBytes="31B9" PatchedBytes="06E0" />
+                  <Patch Address="0x000ABB74" OriginalBytes="12B9" PatchedBytes="02E0" />
+                  <Patch Address="0x000ABC46" OriginalBytes="74D1" PatchedBytes="74E0" />
+                  <Patch Address="0x000ABD76" OriginalBytes="02D1" PatchedBytes="02E0" />
+                  <Patch Address="0x000ABDA6" OriginalBytes="01D1" PatchedBytes="01E0" />
+                  <Patch Address="0x000ABD66" OriginalBytes="2CD0" PatchedBytes="00BF" />
+                  <Patch Address="0x000ABD54" OriginalBytes="37D0" PatchedBytes="00BF" />
+                  <Patch Address="0x002866DE" OriginalBytes="19B9" PatchedBytes="03E0" />
+                  <Patch Address="0x00286BD6" OriginalBytes="BA61" PatchedBytes="28E0" />
+                  <Patch Address="0x00286BEA" OriginalBytes="DFF8F428" PatchedBytes="4FF00002" />
+                  <Patch Address="0x00178292" OriginalBytes="E3B9" PatchedBytes="00BF" />
+                  <Patch Address="0x0005F2D8" OriginalBytes="00F07281" PatchedBytes="00F072B9" />
+                  <Patch Address="0x002AB858" OriginalBytes="0FB42DE9" PatchedBytes="01207047" />
+                  <Patch Address="0x0026087C" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
+                  <Patch Address="0x002DEE8C" OriginalBytes="01F4888D" PatchedBytes="81F788BD" />
+                  <Patch Address="0x002DEEB0" OriginalBytes="EED1" PatchedBytes="00BF" />
+                  <Patch Address="0x000AAAA4" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+                  <Patch Address="0x0005F848" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+                  <Patch Address="0x00177E54" OriginalBytes="B0F1007F" PatchedBytes="FFF754BF" />
+                  <Patch Address="0x00177EC0" OriginalBytes="13B1" PatchedBytes="02E0" />
+                  <Patch Address="0x00177F3E" OriginalBytes="C0D1" PatchedBytes="00BF" />
+                  <Patch Address="0x00177F7C" OriginalBytes="A1D1" PatchedBytes="00BF" />
+                  <Patch Address="0x00178040" OriginalBytes="7FF43FAF" PatchedBytes="AFF30080" />
+                  <Patch Address="0x00178082" OriginalBytes="3FF43DAE" PatchedBytes="FFF73DBE" />
+                  <Patch Address="0x001780C2" OriginalBytes="3FF41DAE" PatchedBytes="FFF71DBE" />
+                  <Patch Address="0x00177D04" OriginalBytes="00F0EF81" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FEBA" OriginalBytes="40F0E380" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FF9E" OriginalBytes="40F09980" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FFAE" OriginalBytes="5ED0" PatchedBytes="00BF" />
+                  <Patch Address="0x0005FECA" OriginalBytes="40F09080" PatchedBytes="AFF30080" />
+                  <Patch Address="0x0005FFC4" OriginalBytes="13D1" PatchedBytes="00BF" />
+                  <Patch Address="0x0005FF44" OriginalBytes="57D1" PatchedBytes="00BF" />
+                  <Patch Address="0x0005FEDE" OriginalBytes="00F08E80" PatchedBytes="AFF30080" />
+                  <Patch Address="0x000E64D8" OriginalBytes="BEF1007F" PatchedBytes="79F735BD" />
+                  <Patch Address="0x000E6622" OriginalBytes="39F490A4" PatchedBytes="79F790BC" />
+                  <Patch Address="0x000E6550" OriginalBytes="3EB3" PatchedBytes="27E0" />
+                  <Patch Address="0x000F2CB8" OriginalBytes="0FD0" PatchedBytes="0BE0" />
+                  <Patch Address="0x000F2C4E" OriginalBytes="12D0" PatchedBytes="08E0" />
+                  <Patch Address="0x0005F744" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+                  <Patch Address="0x000F7254" OriginalBytes="13D0" PatchedBytes="0AE0" />
+                  <Patch Address="0x000F72B8" OriginalBytes="0AD0" PatchedBytes="10E0" />
+                </Patches>
+                <Obsolete />
+              </TargetFile>
+            </Obsolete>
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.538">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\sspisrv.dll" HashOriginal="4D9B70757FC549BE74FD5467BF491A791C9F6464" HashPatched="500EDC8A40902D80B4735308FC7525954D9177DC">
+            <Patches>
+              <Patch Address="0x00002644" OriginalBytes="2DE970480DF10C0B" PatchedBytes="0121016000207047" />
+              <Patch Address="0x00000140" OriginalBytes="4F950000" PatchedBytes="09500100" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\NtlmShared.dll" HashOriginal="80484523DED7438976B57D42E55D7FB00A42ABF2" HashPatched="E3A8D3381FDE7D6C95A93828021388831E10A1F2">
+            <Patches>
+              <Patch Address="0x00002FB0" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+              <Patch Address="0x00000140" OriginalBytes="70300100" PatchedBytes="C35E0100" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\pacmanserver.dll" HashOriginal="F891A9CC11794592E508F3AFF001456148C393DB" HashPatched="77D9633477E681A5E52B082C23865A801B7D064B">
+            <Patches>
+              <Patch Address="0x0012DBC0" OriginalBytes="2DE930480DF1080B78F7" PatchedBytes="6FF00041016000207047" />
+              <Patch Address="0x00000158" OriginalBytes="F3171800" PatchedBytes="E8EB1700" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\mscoree.dll" HashOriginal="1171EC89856229ED91EA3826CA4541836FD20AD3" HashPatched="822A0DD74A664E01A6DE865DBD37B0BEAF427CB2">
+            <Patches>
+              <Patch Address="0x0000602C" OriginalBytes="2DE9F048" PatchedBytes="00207047" />
+              <Patch Address="0x00000150" OriginalBytes="F59E0100" PatchedBytes="47D40100" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\DeploymentExt.dll" HashOriginal="0517DF554DA44436D12D9464034A0D2B781F419A" HashPatched="A873F7C314C96F123DEF09A90FACA437AF4D0EB5">
+            <Patches>
+              <Patch Address="0x000A883E" OriginalBytes="8BB9" PatchedBytes="11E0" />
+              <Patch Address="0x00000148" OriginalBytes="AB961000" PatchedBytes="31BD1000" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="10A1BACA1D054ECD8D58BD40583614223F6841A6" HashPatched="B512C25958D731748281266D386F12F91FA70699">
+            <Patches>
+              <Patch Address="0x000AB428" OriginalBytes="5FD1" PatchedBytes="5FE0" />
+              <Patch Address="0x000AB63E" OriginalBytes="21B9" PatchedBytes="04E0" />
+              <Patch Address="0x000AB65E" OriginalBytes="31B9" PatchedBytes="06E0" />
+              <Patch Address="0x000ABAB0" OriginalBytes="12B9" PatchedBytes="02E0" />
+              <Patch Address="0x000ABB78" OriginalBytes="1AD0" PatchedBytes="79E0" />
+              <Patch Address="0x000ABCB2" OriginalBytes="02D1" PatchedBytes="02E0" />
+              <Patch Address="0x000ABCE2" OriginalBytes="01D1" PatchedBytes="01E0" />
+              <Patch Address="0x000ABCA2" OriginalBytes="2CD0" PatchedBytes="00BF" />
+              <Patch Address="0x000ABC90" OriginalBytes="37D0" PatchedBytes="00BF" />
+              <Patch Address="0x002856AE" OriginalBytes="19B9" PatchedBytes="03E0" />
+              <Patch Address="0x00285BA6" OriginalBytes="BA61" PatchedBytes="28E0" />
+              <Patch Address="0x00285BBA" OriginalBytes="DFF8F428" PatchedBytes="4FF00002" />
+              <Patch Address="0x001781B2" OriginalBytes="E3B9" PatchedBytes="00BF" />
+              <Patch Address="0x0005F1CC" OriginalBytes="00F07281" PatchedBytes="00F072B9" />
+              <Patch Address="0x002AA828" OriginalBytes="0FB42DE9" PatchedBytes="01207047" />
+              <Patch Address="0x002DDE6C" OriginalBytes="01F4988D" PatchedBytes="81F798BD" />
+              <Patch Address="0x002DDE90" OriginalBytes="EED1" PatchedBytes="00BF" />
+              <Patch Address="0x0025F87C" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
+              <Patch Address="0x000AA9E0" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+              <Patch Address="0x0005F73C" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+              <Patch Address="0x00177D74" OriginalBytes="B0F1" PatchedBytes="54E7" />
+              <Patch Address="0x00177DE0" OriginalBytes="13B1" PatchedBytes="02E0" />
+              <Patch Address="0x00177E5E" OriginalBytes="C0D1" PatchedBytes="00BF" />
+              <Patch Address="0x00177E9C" OriginalBytes="A1D1" PatchedBytes="00BF" />
+              <Patch Address="0x00177F60" OriginalBytes="7FF43FAF" PatchedBytes="AFF30080" />
+              <Patch Address="0x00177FA2" OriginalBytes="3FF43DAE" PatchedBytes="FFF73DBE" />
+              <Patch Address="0x00177FE2" OriginalBytes="3FF41DAE" PatchedBytes="FFF71DBE" />
+              <Patch Address="0x00177C24" OriginalBytes="00F0EF81" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FDAE" OriginalBytes="40F0E380" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FE92" OriginalBytes="40F09980" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FEA2" OriginalBytes="5ED0" PatchedBytes="00BF" />
+              <Patch Address="0x0005FDBE" OriginalBytes="40F09080" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FEB8" OriginalBytes="13D1" PatchedBytes="00BF" />
+              <Patch Address="0x0005FE38" OriginalBytes="57D1" PatchedBytes="00BF" />
+              <Patch Address="0x0005FDD2" OriginalBytes="00F08E80" PatchedBytes="AFF30080" />
+              <Patch Address="0x000E63FC" OriginalBytes="BEF1007F" PatchedBytes="79F71DBD" />
+              <Patch Address="0x000E6546" OriginalBytes="39F478A4" PatchedBytes="79F778BC" />
+              <Patch Address="0x000E6474" OriginalBytes="3EB3" PatchedBytes="27E0" />
+              <Patch Address="0x000F2B60" OriginalBytes="0FD0" PatchedBytes="0BE0" />
+              <Patch Address="0x000F2AF6" OriginalBytes="12D0" PatchedBytes="08E0" />
+              <Patch Address="0x0005F638" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+              <Patch Address="0x000F70FC" OriginalBytes="13D0" PatchedBytes="0AE0" />
+              <Patch Address="0x000F7160" OriginalBytes="0AD0" PatchedBytes="10E0" />
+              <Patch Address="0x00000158" OriginalBytes="25785400" PatchedBytes="00DD5300" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.541">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\sspisrv.dll" HashOriginal="5AD3ACEB5209702C88FA65037D451CE6BEB504FF" HashPatched="1FCDF5C1D0D23A36F5E77A88C0605CB169010D19">
+            <Patches>
+              <Patch Address="0x00002654" OriginalBytes="2DE970480DF10C0B" PatchedBytes="0121016000207047" />
+              <Patch Address="0x00000140" OriginalBytes="8D140100" PatchedBytes="48CF0000" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\NtlmShared.dll" HashOriginal="842DA3F9B37D9A6378BACFBB6F8C08A2B5FA4237" HashPatched="5171F7AAAC1D27E89D8CC18FF9EFF0A03F46913D">
+            <Patches>
+              <Patch Address="0x00002FB0" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+              <Patch Address="0x00000140" OriginalBytes="50F50000" PatchedBytes="A3230100" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\pacmanserver.dll" HashOriginal="780D4ADB7E33C020A1704006D219C497DBE628FF" HashPatched="A79477E5EADE7F8A2BF2CC34EE74CE7E9117DB88">
+            <Patches>
+              <Patch Address="0x0012DBD0" OriginalBytes="2DE930480DF1080B78F7" PatchedBytes="6FF00041016000207047" />
+              <Patch Address="0x00000158" OriginalBytes="1B4E1700" PatchedBytes="0F221800" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\mscoree.dll" HashOriginal="1171EC89856229ED91EA3826CA4541836FD20AD3" HashPatched="822A0DD74A664E01A6DE865DBD37B0BEAF427CB2">
+            <Patches>
+              <Patch Address="0x0000602C" OriginalBytes="2DE9F048" PatchedBytes="00207047" />
+              <Patch Address="0x00000150" OriginalBytes="F59E0100" PatchedBytes="47D40100" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\DeploymentExt.dll" HashOriginal="497DAA7F918F08882096249CB092F07B5F385041" HashPatched="D07F6DC614A15C4789B8E6D4BD0C4241DD3B0688">
+            <Patches>
+              <Patch Address="0x000A883E" OriginalBytes="8BB9" PatchedBytes="11E0" />
+              <Patch Address="0x00000148" OriginalBytes="0E151100" PatchedBytes="953B1000" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="8DF1BD7621B47122E772B88AC748CC7080019E1E" HashPatched="5F6A7BE75D98C9E25EAFCB2653C01755E32F6F4D">
+            <Patches>
+              <Patch Address="0x000AB428" OriginalBytes="5FD1" PatchedBytes="5FE0" />
+              <Patch Address="0x000AB63E" OriginalBytes="21B9" PatchedBytes="04E0" />
+              <Patch Address="0x000AB65E" OriginalBytes="31B9" PatchedBytes="06E0" />
+              <Patch Address="0x000ABAB0" OriginalBytes="12B9" PatchedBytes="02E0" />
+              <Patch Address="0x000ABB78" OriginalBytes="1AD0" PatchedBytes="79E0" />
+              <Patch Address="0x000ABCB2" OriginalBytes="02D1" PatchedBytes="02E0" />
+              <Patch Address="0x000ABCE2" OriginalBytes="01D1" PatchedBytes="01E0" />
+              <Patch Address="0x000ABCA2" OriginalBytes="2CD0" PatchedBytes="00BF" />
+              <Patch Address="0x000ABC90" OriginalBytes="37D0" PatchedBytes="00BF" />
+              <Patch Address="0x002856AE" OriginalBytes="19B9" PatchedBytes="03E0" />
+              <Patch Address="0x00285BA6" OriginalBytes="BA61" PatchedBytes="28E0" />
+              <Patch Address="0x00285BBA" OriginalBytes="DFF8F428" PatchedBytes="4FF00002" />
+              <Patch Address="0x001781B2" OriginalBytes="E3B9" PatchedBytes="00BF" />
+              <Patch Address="0x0005F1CC" OriginalBytes="00F07281" PatchedBytes="00F072B9" />
+              <Patch Address="0x002AA82C" OriginalBytes="0FB42DE9" PatchedBytes="01207047" />
+              <Patch Address="0x002DDE70" OriginalBytes="01F4968D" PatchedBytes="81F796BD" />
+              <Patch Address="0x002DDE94" OriginalBytes="EED1" PatchedBytes="00BF" />
+              <Patch Address="0x0025F87C" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
+              <Patch Address="0x000AA9E0" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+              <Patch Address="0x0005F73C" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+              <Patch Address="0x00177D74" OriginalBytes="B0F1" PatchedBytes="54E7" />
+              <Patch Address="0x00177DE0" OriginalBytes="13B1" PatchedBytes="02E0" />
+              <Patch Address="0x00177E5E" OriginalBytes="C0D1" PatchedBytes="00BF" />
+              <Patch Address="0x00177E9C" OriginalBytes="A1D1" PatchedBytes="00BF" />
+              <Patch Address="0x00177F60" OriginalBytes="7FF43FAF" PatchedBytes="AFF30080" />
+              <Patch Address="0x00177FA2" OriginalBytes="3FF43DAE" PatchedBytes="FFF73DBE" />
+              <Patch Address="0x00177FE2" OriginalBytes="3FF41DAE" PatchedBytes="FFF71DBE" />
+              <Patch Address="0x00177C24" OriginalBytes="00F0EF81" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FDAE" OriginalBytes="40F0E380" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FE92" OriginalBytes="40F09980" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FEA2" OriginalBytes="5ED0" PatchedBytes="00BF" />
+              <Patch Address="0x0005FDBE" OriginalBytes="40F09080" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FEB8" OriginalBytes="13D1" PatchedBytes="00BF" />
+              <Patch Address="0x0005FE38" OriginalBytes="57D1" PatchedBytes="00BF" />
+              <Patch Address="0x0005FDD2" OriginalBytes="00F08E80" PatchedBytes="AFF30080" />
+              <Patch Address="0x000E63FC" OriginalBytes="BEF1007F" PatchedBytes="79F71DBD" />
+              <Patch Address="0x000E6546" OriginalBytes="39F478A4" PatchedBytes="79F778BC" />
+              <Patch Address="0x000E6474" OriginalBytes="3EB3" PatchedBytes="27E0" />
+              <Patch Address="0x000F2B60" OriginalBytes="0FD0" PatchedBytes="0BE0" />
+              <Patch Address="0x000F2AF6" OriginalBytes="12D0" PatchedBytes="08E0" />
+              <Patch Address="0x0005F638" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+              <Patch Address="0x000F70FC" OriginalBytes="13D0" PatchedBytes="0AE0" />
+              <Patch Address="0x000F7160" OriginalBytes="0AD0" PatchedBytes="10E0" />
+              <Patch Address="0x00000158" OriginalBytes="1FBE5300" PatchedBytes="F9225400" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.544">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\sspisrv.dll" HashOriginal="6BD62429C21675AA46257C1393022BC405AA9737" HashPatched="43E7AAA5799DD6572B0A2EC98D7F5ADD7621F2B9">
+            <Patches>
+              <Patch Address="0x00002654" OriginalBytes="2DE970480DF10C0B" PatchedBytes="0121016000207047" />
+              <Patch Address="0x00000140" OriginalBytes="99140100" PatchedBytes="54CF0000" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\NtlmShared.dll" HashOriginal="026F77F64F30B4CF2AEBCEF0C325D51EF745AA64" HashPatched="E606F9FF25BAAC357953D297C5531594A8D8B38A">
+            <Patches>
+              <Patch Address="0x00002FB0" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+              <Patch Address="0x00000140" OriginalBytes="FDBF0100" PatchedBytes="51EE0000" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\pacmanserver.dll" HashOriginal="4F1F1140B5CCCA90620F1AD24AF4A85C1B8A098B" HashPatched="C2B976AA68DF8B80FA912A193DDE75DAD0E5119A">
+            <Patches>
+              <Patch Address="0x0012DBD0" OriginalBytes="2DE930480DF1080B78F7" PatchedBytes="6FF00041016000207047" />
+              <Patch Address="0x00000158" OriginalBytes="274E1700" PatchedBytes="1B221800" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\mscoree.dll" HashOriginal="1171EC89856229ED91EA3826CA4541836FD20AD3" HashPatched="822A0DD74A664E01A6DE865DBD37B0BEAF427CB2">
+            <Patches>
+              <Patch Address="0x0000602C" OriginalBytes="2DE9F048" PatchedBytes="00207047" />
+              <Patch Address="0x00000150" OriginalBytes="F59E0100" PatchedBytes="47D40100" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\DeploymentExt.dll" HashOriginal="D3A936A9B2B64EC7CA7BC471E7BF11C96991A387" HashPatched="21434CE22741629D5F123DBACCC99C5ACC194484">
+            <Patches>
+              <Patch Address="0x000A883E" OriginalBytes="8BB9" PatchedBytes="11E0" />
+              <Patch Address="0x00000148" OriginalBytes="4D321000" PatchedBytes="D3581000" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\ntoskrnl.exe" HashOriginal="3463D4003998C171B8290D38ABF1F74FE919EACC" HashPatched="77A64FE1A7C717670BC2DABD1D03A78957669BA6">
+            <Patches>
+              <Patch Address="0x000AB428" OriginalBytes="5FD1" PatchedBytes="5FE0" />
+              <Patch Address="0x000AB63E" OriginalBytes="21B9" PatchedBytes="04E0" />
+              <Patch Address="0x000AB65E" OriginalBytes="31B9" PatchedBytes="06E0" />
+              <Patch Address="0x000ABAB0" OriginalBytes="12B9" PatchedBytes="02E0" />
+              <Patch Address="0x000ABB78" OriginalBytes="1AD0" PatchedBytes="79E0" />
+              <Patch Address="0x000ABCB2" OriginalBytes="02D1" PatchedBytes="02E0" />
+              <Patch Address="0x000ABCE2" OriginalBytes="01D1" PatchedBytes="01E0" />
+              <Patch Address="0x000ABCA2" OriginalBytes="2CD0" PatchedBytes="00BF" />
+              <Patch Address="0x000ABC90" OriginalBytes="37D0" PatchedBytes="00BF" />
+              <Patch Address="0x002856AE" OriginalBytes="19B9" PatchedBytes="03E0" />
+              <Patch Address="0x00285BA6" OriginalBytes="BA61" PatchedBytes="28E0" />
+              <Patch Address="0x00285BBA" OriginalBytes="DFF8F428" PatchedBytes="4FF00002" />
+              <Patch Address="0x001781B2" OriginalBytes="E3B9" PatchedBytes="00BF" />
+              <Patch Address="0x0005F1CC" OriginalBytes="00F07281" PatchedBytes="00F072B9" />
+              <Patch Address="0x002AA82C" OriginalBytes="0FB42DE9" PatchedBytes="01207047" />
+              <Patch Address="0x002DDE70" OriginalBytes="01F4968D" PatchedBytes="81F796BD" />
+              <Patch Address="0x002DDE94" OriginalBytes="EED1" PatchedBytes="00BF" />
+              <Patch Address="0x0025F87C" OriginalBytes="40F0B680" PatchedBytes="AFF30080" />
+              <Patch Address="0x000AA9E0" OriginalBytes="2DE9F04F" PatchedBytes="01207047" />
+              <Patch Address="0x0005F73C" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+              <Patch Address="0x00177D74" OriginalBytes="B0F1" PatchedBytes="54E7" />
+              <Patch Address="0x00177DE0" OriginalBytes="13B1" PatchedBytes="02E0" />
+              <Patch Address="0x00177E5E" OriginalBytes="C0D1" PatchedBytes="00BF" />
+              <Patch Address="0x00177E9C" OriginalBytes="A1D1" PatchedBytes="00BF" />
+              <Patch Address="0x00177F60" OriginalBytes="7FF43FAF" PatchedBytes="AFF30080" />
+              <Patch Address="0x00177FA2" OriginalBytes="3FF43DAE" PatchedBytes="FFF73DBE" />
+              <Patch Address="0x00177FE2" OriginalBytes="3FF41DAE" PatchedBytes="FFF71DBE" />
+              <Patch Address="0x00177C24" OriginalBytes="00F0EF81" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FDAE" OriginalBytes="40F0E380" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FE92" OriginalBytes="40F09980" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FEA2" OriginalBytes="5ED0" PatchedBytes="00BF" />
+              <Patch Address="0x0005FDBE" OriginalBytes="40F09080" PatchedBytes="AFF30080" />
+              <Patch Address="0x0005FEB8" OriginalBytes="13D1" PatchedBytes="00BF" />
+              <Patch Address="0x0005FE38" OriginalBytes="57D1" PatchedBytes="00BF" />
+              <Patch Address="0x0005FDD2" OriginalBytes="00F08E80" PatchedBytes="AFF30080" />
+              <Patch Address="0x000E63FC" OriginalBytes="BEF1007F" PatchedBytes="79F71DBD" />
+              <Patch Address="0x000E6546" OriginalBytes="39F478A4" PatchedBytes="79F778BC" />
+              <Patch Address="0x000E6474" OriginalBytes="3EB3" PatchedBytes="27E0" />
+              <Patch Address="0x000F2B60" OriginalBytes="0FD0" PatchedBytes="0BE0" />
+              <Patch Address="0x000F2AF6" OriginalBytes="12D0" PatchedBytes="08E0" />
+              <Patch Address="0x0005F638" OriginalBytes="2DE90048" PatchedBytes="00207047" />
+              <Patch Address="0x000F70FC" OriginalBytes="13D0" PatchedBytes="0AE0" />
+              <Patch Address="0x000F7160" OriginalBytes="0AD0" PatchedBytes="10E0" />
+              <Patch Address="0x00000158" OriginalBytes="35F45300" PatchedBytes="0F595400" />
             </Patches>
             <Obsolete />
           </TargetFile>
@@ -3415,17 +3779,26 @@ DEALINGS IN THE SOFTWARE.
       </TargetVersion>
       <TargetVersion Description="10.0.15254.527">
         <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E1CDC15B381A874DBAA94BA734C78A6ED801F66A" HashPatched="37A4ADDBB7FE997699F2E8670C3CB2CCFDF7C05D">
+            <Patches>
+              <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D474" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x00000138" OriginalBytes="FA751C00" PatchedBytes="5FDA1B00" />
+            </Patches>
+            <Obsolete>
+              <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E1CDC15B381A874DBAA94BA734C78A6ED801F66A" HashPatched="E001FB4B6C4B4A119D76A625AEFDD3DE041A6E6D">
+                <Patches>
+                  <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+                  <Patch Address="0x00000138" OriginalBytes="FA751C00" PatchedBytes="4CA41C00" />
+                </Patches>
+                <Obsolete />
+              </TargetFile>
+            </Obsolete>
+          </TargetFile>
           <TargetFile Path="efi\boot\bootarm.efi" HashOriginal="1B4F62080167244382E64572B21095775BFC1EDD" HashPatched="FCD26A767FAFE90002FE7CC721B7B55556A3AE71">
             <Patches>
               <Patch Address="0x0003890C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
               <Patch Address="0x00000148" OriginalBytes="1F430E00" PatchedBytes="71710E00" />
-            </Patches>
-            <Obsolete />
-          </TargetFile>
-          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E1CDC15B381A874DBAA94BA734C78A6ED801F66A" HashPatched="E001FB4B6C4B4A119D76A625AEFDD3DE041A6E6D">
-            <Patches>
-              <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
-              <Patch Address="0x00000138" OriginalBytes="FA751C00" PatchedBytes="4CA41C00" />
             </Patches>
             <Obsolete />
           </TargetFile>
@@ -3433,6 +3806,22 @@ DEALINGS IN THE SOFTWARE.
       </TargetVersion>
       <TargetVersion Description="10.0.15254.530">
         <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="528D1D9FA0371FEDD92548FC1E3695747BF637DB" HashPatched="C80088788F4C4B6762BD834126624958470D4273">
+            <Patches>
+              <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D474" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x00000138" OriginalBytes="409A1C00" PatchedBytes="A5FE1B00" />
+            </Patches>
+            <Obsolete>
+              <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="528D1D9FA0371FEDD92548FC1E3695747BF637DB" HashPatched="194D04F6AAFBB9E06FA476911D0EB3A768AB7831">
+                <Patches>
+                  <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+                  <Patch Address="0x00000138" OriginalBytes="409A1C00" PatchedBytes="93C81B00" />
+                </Patches>
+                <Obsolete />
+              </TargetFile>
+            </Obsolete>
+          </TargetFile>
           <TargetFile Path="efi\boot\bootarm.efi" HashOriginal="1B4F62080167244382E64572B21095775BFC1EDD" HashPatched="FCD26A767FAFE90002FE7CC721B7B55556A3AE71">
             <Patches>
               <Patch Address="0x0003890C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
@@ -3440,10 +3829,60 @@ DEALINGS IN THE SOFTWARE.
             </Patches>
             <Obsolete />
           </TargetFile>
-          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="528D1D9FA0371FEDD92548FC1E3695747BF637DB" HashPatched="194D04F6AAFBB9E06FA476911D0EB3A768AB7831">
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.538">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="3045E7B081960E0615AC876E34AABF0A4A5CAC41" HashPatched="964C762F86630E7E2467921E1F51FF08A1E359D9">
             <Patches>
-              <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
-              <Patch Address="0x00000138" OriginalBytes="409A1C00" PatchedBytes="93C81B00" />
+              <Patch Address="0x0002BB7C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D3EC" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x00000138" OriginalBytes="93731C00" PatchedBytes="F8D71B00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="efi\boot\bootarm.efi" HashOriginal="1B4F62080167244382E64572B21095775BFC1EDD" HashPatched="FCD26A767FAFE90002FE7CC721B7B55556A3AE71">
+            <Patches>
+              <Patch Address="0x0003890C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x00000148" OriginalBytes="1F430E00" PatchedBytes="71710E00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.541">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="F92F5A3E9379DB70CB7F20C751571A4AD53C746F" HashPatched="C17472D8A2046AF09ED4C75250FD307903D19C83">
+            <Patches>
+              <Patch Address="0x0002BB7C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D3EC" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x00000138" OriginalBytes="07E31B00" PatchedBytes="6B471C00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="efi\boot\bootarm.efi" HashOriginal="1B4F62080167244382E64572B21095775BFC1EDD" HashPatched="FCD26A767FAFE90002FE7CC721B7B55556A3AE71">
+            <Patches>
+              <Patch Address="0x0003890C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x00000148" OriginalBytes="1F430E00" PatchedBytes="71710E00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.544">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E57366397EFF615272D5996BFCA68F89566032B6" HashPatched="8AFB66E6BD9172923917E9711EE7C332CB994C66">
+            <Patches>
+              <Patch Address="0x0002BB7C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D3EC" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x00000138" OriginalBytes="35111C00" PatchedBytes="99751C00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="efi\boot\bootarm.efi" HashOriginal="1B4F62080167244382E64572B21095775BFC1EDD" HashPatched="FCD26A767FAFE90002FE7CC721B7B55556A3AE71">
+            <Patches>
+              <Patch Address="0x0003890C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x00000148" OriginalBytes="1F430E00" PatchedBytes="71710E00" />
             </Patches>
             <Obsolete />
           </TargetFile>
@@ -3679,29 +4118,110 @@ DEALINGS IN THE SOFTWARE.
       </TargetVersion>
       <TargetVersion Description="10.0.15254.527">
         <TargetFiles>
-          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E1CDC15B381A874DBAA94BA734C78A6ED801F66A" HashPatched="69E58EFA38729C4086A58FF76E0D0F6355A923AC">
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E1CDC15B381A874DBAA94BA734C78A6ED801F66A" HashPatched="9A69D3A34F39A5809B57CEA7547E7869D815C311">
             <Patches>
               <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
-              <Patch Address="0x00000138" OriginalBytes="FA751C00" PatchedBytes="5BED1B00" />
+              <Patch Address="0x0006D474" OriginalBytes="2DE93048" PatchedBytes="00207047" />
               <Patch Address="0x000C0054" OriginalBytes="4D00610073007300530074006F00720061006700650046006C00610067000000" PatchedBytes="4800650061007400680063006C00690066006600370034004D0053004D000000" />
-              <Patch Address="0x0007475E" OriginalBytes="01D00348" PatchedBytes="F8F789BE" />
+              <Patch Address="0x0007475E" OriginalBytes="01D0" PatchedBytes="01E0" />
+              <Patch Address="0x000020A8" OriginalBytes="72F066FB" PatchedBytes="6BF0E6B9" />
               <Patch Address="0x000020C4" OriginalBytes="2DE91848" PatchedBytes="01207047" />
-              <Patch Address="0x0006D474" OriginalBytes="2DE930480DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F7CDF9002305938DF80830012303932249204802AB009303AB06AA002495F7A0F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF7C8F90446002C0BDB01238DF8083002AB0949074800930123032295F7B4F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="0020704778462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784B7CE0060054220C0074220C0045990800ED980800687C1E0079530700" />
+              <Patch Address="0x0006D478" OriginalBytes="0DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F7CDF9002305938DF80830012303932249204802AB009303AB06AA002495F7A0F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF7C8F90446002C0BDB01238DF8083002AB0949074800930123032295F7B4F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="78462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784B7CE0060054220C0074220C0045990800ED980800687C1E0079530700" />
+              <Patch Address="0x00000138" OriginalBytes="FA751C00" PatchedBytes="561D1C00" />
             </Patches>
-            <Obsolete />
+            <Obsolete>
+              <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E1CDC15B381A874DBAA94BA734C78A6ED801F66A" HashPatched="CF9F940D28BE4181998EF7D4B9AF5AE3AE63815B">
+                <Patches>
+                  <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+                  <Patch Address="0x00000138" OriginalBytes="FA751C00" PatchedBytes="2BE21B00" />
+                  <Patch Address="0x000C0054" OriginalBytes="4D00610073007300530074006F00720061006700650046006C00610067000000" PatchedBytes="4800650061007400680063006C00690066006600370034004D0053004D000000" />
+                  <Patch Address="0x0007475E" OriginalBytes="01D00348" PatchedBytes="F8F789BE" />
+                  <Patch Address="0x000020C4" OriginalBytes="2DE91848" PatchedBytes="01207047" />
+                  <Patch Address="0x0006D474" OriginalBytes="2DE930480DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F7CDF9002305938DF80830012303932249204802AB009303AB06AA002495F7A0F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF7C8F90446002C0BDB01238DF8083002AB0949074800930123032295F7B4F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="0020704778462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784B7CE0060054220C0074220C0045990800ED980800687C1E0079530700" />
+                  <Patch Address="0x000020A8" OriginalBytes="72F066FB" PatchedBytes="6EF03AF0" />
+                </Patches>
+                <Obsolete />
+              </TargetFile>
+            </Obsolete>
           </TargetFile>
         </TargetFiles>
       </TargetVersion>
       <TargetVersion Description="10.0.15254.530">
         <TargetFiles>
-          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="528D1D9FA0371FEDD92548FC1E3695747BF637DB" HashPatched="552F56CB428A32063C292785B7EFA711D0AD1EC4">
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="528D1D9FA0371FEDD92548FC1E3695747BF637DB" HashPatched="DCE68DE966071F38A28C44D95AE66F2FADBB349D">
             <Patches>
               <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D474" OriginalBytes="2DE93048" PatchedBytes="00207047" />
               <Patch Address="0x000C0054" OriginalBytes="4D00610073007300530074006F00720061006700650046006C00610067000000" PatchedBytes="4800650061007400680063006C00690066006600370034004D0053004D000000" />
-              <Patch Address="0x0007475E" OriginalBytes="01D00348" PatchedBytes="F8F789BE" />
+              <Patch Address="0x0007475E" OriginalBytes="01D0" PatchedBytes="01E0" />
+              <Patch Address="0x000020A8" OriginalBytes="72F066FB" PatchedBytes="6BF0E6B9" />
               <Patch Address="0x000020C4" OriginalBytes="2DE91848" PatchedBytes="01207047" />
-              <Patch Address="0x0006D474" OriginalBytes="2DE930480DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F7CDF9002305938DF80830012303932249204802AB009303AB06AA002495F7A0F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF7C8F90446002C0BDB01238DF8083002AB0949074800930123032295F7B4F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="0020704778462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784B7CE0060054220C0074220C0045990800ED980800687C1E0079530700" />
-              <Patch Address="0x00000138" OriginalBytes="409A1C00" PatchedBytes="A1111C00" />
+              <Patch Address="0x0006D478" OriginalBytes="0DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F7CDF9002305938DF80830012303932249204802AB009303AB06AA002495F7A0F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF7C8F90446002C0BDB01238DF8083002AB0949074800930123032295F7B4F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="78462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784B7CE0060054220C0074220C0045990800ED980800687C1E0079530700" />
+              <Patch Address="0x00000138" OriginalBytes="409A1C00" PatchedBytes="9C411C00" />
+            </Patches>
+            <Obsolete>
+              <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="528D1D9FA0371FEDD92548FC1E3695747BF637DB" HashPatched="E5B736B0382AC3712C7BA3FF387A4055F2D5C09A">
+                <Patches>
+                  <Patch Address="0x0002BC28" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+                  <Patch Address="0x000C0054" OriginalBytes="4D00610073007300530074006F00720061006700650046006C00610067000000" PatchedBytes="4800650061007400680063006C00690066006600370034004D0053004D000000" />
+                  <Patch Address="0x0007475E" OriginalBytes="01D00348" PatchedBytes="F8F789BE" />
+                  <Patch Address="0x000020C4" OriginalBytes="2DE91848" PatchedBytes="01207047" />
+                  <Patch Address="0x0006D474" OriginalBytes="2DE930480DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F7CDF9002305938DF80830012303932249204802AB009303AB06AA002495F7A0F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF7C8F90446002C0BDB01238DF8083002AB0949074800930123032295F7B4F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="0020704778462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784B7CE0060054220C0074220C0045990800ED980800687C1E0079530700" />
+                  <Patch Address="0x00000138" OriginalBytes="409A1C00" PatchedBytes="71061C00" />
+                  <Patch Address="0x000020A8" OriginalBytes="72F066FB" PatchedBytes="6EF03AF0" />
+                </Patches>
+                <Obsolete />
+              </TargetFile>
+            </Obsolete>
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.538">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="3045E7B081960E0615AC876E34AABF0A4A5CAC41" HashPatched="733758AF398852A31B9F07C65CCC2305C924F97F">
+            <Patches>
+              <Patch Address="0x0002BB7C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D3EC" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x000BFE54" OriginalBytes="4D00610073007300530074006F00720061006700650046006C00610067000000" PatchedBytes="4800650061007400680063006C00690066006600370034004D0053004D000000" />
+              <Patch Address="0x000746D6" OriginalBytes="01D0" PatchedBytes="01E0" />
+              <Patch Address="0x000020A8" OriginalBytes="72F022FB" PatchedBytes="6BF0A2B9" />
+              <Patch Address="0x000020C4" OriginalBytes="2DE91848" PatchedBytes="01207047" />
+              <Patch Address="0x0006D3F0" OriginalBytes="0DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F711FA002305938DF80830012303932249204802AB009303AB06AA002495F7E4F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF70CFA0446002C0BDB01238DF8083002AB0949074800930123032295F7F8F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="78462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784BF4DF060054220C0074220C00BD98080065980800687C1E00F1520700" />
+              <Patch Address="0x00000138" OriginalBytes="93731C00" PatchedBytes="BF171C00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.541">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="F92F5A3E9379DB70CB7F20C751571A4AD53C746F" HashPatched="961376A7C671EEA02A2E9F348FB5A5D1A9348206">
+            <Patches>
+              <Patch Address="0x0002BB7C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D3EC" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x000BFE54" OriginalBytes="4D00610073007300530074006F00720061006700650046006C00610067000000" PatchedBytes="4800650061007400680063006C00690066006600370034004D0053004D000000" />
+              <Patch Address="0x000746D6" OriginalBytes="01D0" PatchedBytes="01E0" />
+              <Patch Address="0x000020A8" OriginalBytes="72F022FB" PatchedBytes="6BF0A2B9" />
+              <Patch Address="0x000020C4" OriginalBytes="2DE91848" PatchedBytes="01207047" />
+              <Patch Address="0x0006D3F0" OriginalBytes="0DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F711FA002305938DF80830012303932249204802AB009303AB06AA002495F7E4F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF70CFA0446002C0BDB01238DF8083002AB0949074800930123032295F7F8F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="78462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784BF4DF060054220C0074220C00BD98080065980800687C1E00F1520700" />
+              <Patch Address="0x00000138" OriginalBytes="07E31B00" PatchedBytes="32871C00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.544">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\boot\mobilestartup.efi" HashOriginal="E57366397EFF615272D5996BFCA68F89566032B6" HashPatched="2AACA16ADB000B8A80D24BBB4808423877DF5F36">
+            <Patches>
+              <Patch Address="0x0002BB7C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x0006D3EC" OriginalBytes="2DE93048" PatchedBytes="00207047" />
+              <Patch Address="0x000BFE54" OriginalBytes="4D00610073007300530074006F00720061006700650046006C00610067000000" PatchedBytes="4800650061007400680063006C00690066006600370034004D0053004D000000" />
+              <Patch Address="0x000746D6" OriginalBytes="01D0" PatchedBytes="01E0" />
+              <Patch Address="0x000020A8" OriginalBytes="72F022FB" PatchedBytes="6BF0A2B9" />
+              <Patch Address="0x000020C4" OriginalBytes="2DE91848" PatchedBytes="01207047" />
+              <Patch Address="0x0006D3F0" OriginalBytes="0DF1080BADF50A7D002304932D4B0DF1220040F206221B880021ADF8203094F711FA002305938DF80830012303932249204802AB009303AB06AA002495F7E4F8002805DB039B012B02D19DF8083063BB08A800F039F80446002C26DB04AA05A908A800F08BF80446049D002C04DA144B9C4216D1002414E01048059B03220095BCF70CFA0446002C0BDB01238DF8083002AB0949074800930123032295F7F8F8044615B12846CCF771FB20460DF50A7DBDE83088" PatchedBytes="78462549A0EB010070B481B00446234B04EB0300224B04EB030103220023009343F2812604EB0605A8471E4904EB0105A8470646012E04D001201B4904EB0105A8471A4804EB00010968D1F8AC500EA000216A46A847009D6D68002D01D1009DAD68A847012E04D030460F4904EB0105A8470F4E04EB0605A84742F6AD4604EB060001B070BC00479D5B08F90493FB408FE04AEE3B1A784BF4DF060054220C0074220C00BD98080065980800687C1E00F1520700" />
+              <Patch Address="0x00000138" OriginalBytes="35111C00" PatchedBytes="60B51C00" />
             </Patches>
             <Obsolete />
           </TargetFile>
@@ -4275,7 +4795,7 @@ DEALINGS IN THE SOFTWARE.
       </TargetVersion>
       <TargetVersion Description="10.0.15254.527">
         <TargetFiles>
-          <TargetFile Path="Windows\System32\boot\winload.efi" HashOriginal="6240D0E3856F58C4F4D09F98428917D242090295" HashPatched="A3D734FBD88BB58458306EB8D12C4EB1E7F70A8C">
+          <TargetFile Path="Windows\System32\BOOT\winload.efi" HashOriginal="6240D0E3856F58C4F4D09F98428917D242090295" HashPatched="A3D734FBD88BB58458306EB8D12C4EB1E7F70A8C">
             <Patches>
               <Patch Address="0x0003B9FC" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
               <Patch Address="0x00000148" OriginalBytes="EC700E00" PatchedBytes="3E9F0E00" />
@@ -4293,7 +4813,7 @@ DEALINGS IN THE SOFTWARE.
       </TargetVersion>
       <TargetVersion Description="10.0.15254.530">
         <TargetFiles>
-          <TargetFile Path="Windows\System32\boot\winload.efi" HashOriginal="02DE2622AC8BFEC9E04198F83A3CDCD9BD776A99" HashPatched="DA13484E5D4BBF905482F956C7CEA3004D9998CB">
+          <TargetFile Path="Windows\System32\BOOT\winload.efi" HashOriginal="02DE2622AC8BFEC9E04198F83A3CDCD9BD776A99" HashPatched="DA13484E5D4BBF905482F956C7CEA3004D9998CB">
             <Patches>
               <Patch Address="0x0003B9FC" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
               <Patch Address="0x00000148" OriginalBytes="7D080F00" PatchedBytes="CF360F00" />
@@ -4304,6 +4824,60 @@ DEALINGS IN THE SOFTWARE.
             <Patches>
               <Patch Address="0x00027982" OriginalBytes="05D0" PatchedBytes="00BF" />
               <Patch Address="0x00000158" OriginalBytes="ED9D0800" PatchedBytes="E88C0800" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.538">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\BOOT\winload.efi" HashOriginal="BCDB4CD1430EB2EBA8BFEF8B9AD1C73E28F8487D" HashPatched="C137023A2DD71ED4EF0E51DF6B21146A71F9B91C">
+            <Patches>
+              <Patch Address="0x0003B93C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x00000148" OriginalBytes="EA7C0E00" PatchedBytes="3CAB0E00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\ci.dll" HashOriginal="A542346445706983172A39E7F949DB5A8B4FAAEB" HashPatched="74CA4E52D5C28E0BD125C95286563F1D7FE3A576">
+            <Patches>
+              <Patch Address="0x00027982" OriginalBytes="05D0" PatchedBytes="00BF" />
+              <Patch Address="0x00000158" OriginalBytes="7C7F0800" PatchedBytes="776E0800" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.541">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\BOOT\winload.efi" HashOriginal="86F7A8313F58817E3B2C514117305E0A420196DA" HashPatched="6F6864D6D723B59C2897416226BF4205CD714812">
+            <Patches>
+              <Patch Address="0x0003B93C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x00000148" OriginalBytes="E1D90E00" PatchedBytes="33080F00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\ci.dll" HashOriginal="4E9EB0FEF44600FDF473613D97EBF50F7D7920BB" HashPatched="AC79636470563D6DAE2AF801D9E0BF4205A67F6C">
+            <Patches>
+              <Patch Address="0x00027982" OriginalBytes="05D0" PatchedBytes="00BF" />
+              <Patch Address="0x00000158" OriginalBytes="18770800" PatchedBytes="13660800" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+        </TargetFiles>
+      </TargetVersion>
+      <TargetVersion Description="10.0.15254.544">
+        <TargetFiles>
+          <TargetFile Path="Windows\System32\BOOT\winload.efi" HashOriginal="87D3A29ED9A1B39D56E117E39AB7657F14ACFBAD" HashPatched="052EDA9DB6CF15DCFD4180A697F229BA0A3BE19D">
+            <Patches>
+              <Patch Address="0x0003B93C" OriginalBytes="2DE9F04F" PatchedBytes="00207047" />
+              <Patch Address="0x00000148" OriginalBytes="98540F00" PatchedBytes="EB820E00" />
+            </Patches>
+            <Obsolete />
+          </TargetFile>
+          <TargetFile Path="Windows\System32\ci.dll" HashOriginal="8FF484526D9787AB3A958CB27764F5BF1678AAC2" HashPatched="29A0B9C7EE90A70B36FD36ACAA37C4D3BB57C714">
+            <Patches>
+              <Patch Address="0x00027982" OriginalBytes="05D0" PatchedBytes="00BF" />
+              <Patch Address="0x00000158" OriginalBytes="3A2B0900" PatchedBytes="351A0900" />
             </Patches>
             <Obsolete />
           </TargetFile>
