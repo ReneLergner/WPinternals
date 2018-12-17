@@ -733,7 +733,7 @@ namespace WPinternals
         }
 
         // Magic!
-        internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null, PhoneInfo ExistingPhoneInfo = null) //, string LoaderPath = null)
+        internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null) //, string LoaderPath = null)
         {
             // Both SecurityHeader and StoreHeader need to be modified.
             // Those should both not fall in a memory-gap to allow modification.
@@ -749,9 +749,7 @@ namespace WPinternals
             if (ExitFailure == null) ExitFailure = (m, s) => { };
 
             NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
-            PhoneInfo Info = ExistingPhoneInfo;
-            if (Info == null)
-                Info = Model.ReadPhoneInfo();
+            PhoneInfo Info = Model.ReadPhoneInfo();
 
             string Type = Info.Type;
             if (ProgrammerPath == null)
@@ -2257,12 +2255,12 @@ namespace WPinternals
                     var assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                     // Magic!
-                    // The SBMSM resource is a compressed version of a raw NV-variable-partition.
-                    // In this partition the SecureBoot variable is disabled and an extra variable is added which triggers Mass Storage Mode on next reboot.
+                    // The SB resource is a compressed version of a raw NV-variable-partition.
+                    // In this partition the SecureBoot variable is disabled.
                     // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                     // This normally leads to endless-loops when the NV-variables are enumerated.
                     // But the partition contains an extra hack to break out the endless loops.
-                    var stream = assembly.GetManifestResourceStream("WPinternals.SBMSM");
+                    var stream = assembly.GetManifestResourceStream("WPinternals.SB");
 
                     return new DecompressedStream(stream);
                 });
@@ -2276,6 +2274,14 @@ namespace WPinternals
                     Part.Stream = new MemoryStream(GPTChunk);
                     Parts.Add(Part);
                 }
+				
+                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+
+                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
+                    await Notifier.WaitForArrival();
+
+                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
+                    throw new WPinternalsException("Error: Phone is in wrong mode");
 
                 // Not going to retry in a loop because a second attempt will result in gears due to changed BootOrder.
                 // Just inform user of problem and revert.
@@ -2284,43 +2290,7 @@ namespace WPinternals
                 string ErrorMessage = null;
                 try
                 {
-                    await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
-
-                    string MassStorageWarning = "When the screen of the phone is black for a while, it could be that the phone is already in Mass Storage Mode, but there is no drive-letter assigned. To resolve this issue, open Device Manager and manually assign a drive-letter to the MainOS partition of your phone, or open a command-prompt and type: diskpart automount enable.";
-                    if (App.IsPnPEventLogMissing)
-                        MassStorageWarning += " It is also possible that the phone is in Mass Storage mode, but the Mass Storage driver on this PC failed. Your PC does not have an eventlog to detect this misbehaviour. But in this case you will see a device with an exclamation mark in Device Manager and then you need to manually reset the phone by pressing and holding the power-button for at least 10 seconds until it vibrates and reboots. After that Windows Phone Internals will revert the changes. After the phone has rebooted to the OS, you can retry to unlock the bootloader.";
-
-                    SetWorkingStatus("Booting phone to Mass Storage mode...", MassStorageWarning, null);
-
-                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
-                        throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
-
-                    // Wait for bootloader
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
-                    {
-                        LogFile.Log("Waiting for Mass Storage Mode (1)...", LogType.FileOnly);
-                        await Notifier.WaitForArrival();
-                    }
-
-                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
-                        throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
-
-                    // Wait for mass storage mode
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
-                    {
-                        LogFile.Log("Waiting for Mass Storage Mode (2)...", LogType.FileOnly);
-                        await Notifier.WaitForArrival();
-                    }
-
-                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
-                        throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
-
-                    MassStorage Storage = null;
-                    if (Notifier.CurrentModel is MassStorage)
-                        Storage = (MassStorage)Notifier.CurrentModel;
-
-                    if (Storage == null)
-                        throw new WPinternalsException("Failed to switch to Mass Storage Mode");
+                    await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_MassStorage, SetWorkingStatus, UpdateWorkingStatus);
                 }
                 catch (WPinternalsException Ex)
                 {
@@ -2512,7 +2482,7 @@ namespace WPinternals
                 Part.Stream = new MemoryStream(BackupEFIESP);
                 Parts.Add(Part);
                 
-                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, false, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath, Info);
+                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
 
                 LogFile.Log("Bootloader unlocked!", LogType.FileAndConsole);
                 ExitSuccess("Bootloader unlocked successfully!", null);
