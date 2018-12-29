@@ -40,6 +40,7 @@ using System.Windows.Threading;
 using System.IO.Compression;
 using System.Collections;
 using System.Reflection;
+using System.Net;
 
 namespace WPinternals
 {

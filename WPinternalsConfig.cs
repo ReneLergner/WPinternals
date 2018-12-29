@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using System.Security.Cryptography;
+using System.Windows;
 
 namespace WPinternals
 {
@@ -35,7 +36,7 @@ namespace WPinternals
         internal const bool IsPrerelease = false;
 #endif
 
-        internal static readonly DateTime ExpirationDate = new DateTime(2018, 10, 09);
+        internal static readonly DateTime ExpirationDate = new DateTime(2019, 01, 06);
 
         internal static void CheckExpiration()
         {
