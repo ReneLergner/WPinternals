@@ -53,6 +53,7 @@ DEALINGS IN THE SOFTWARE.
                                 <RowDefinition />
                                 <RowDefinition />
                                 <RowDefinition />
+                                <RowDefinition />
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Brand / model" />
                             <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap">
@@ -70,6 +71,8 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Path=Operator}" TextWrapping="Wrap" />
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="Firmware version" />
                             <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Path=Firmware}" TextWrapping="Wrap" />
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Hardware version" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Path=HWID}" TextWrapping="Wrap" />
                         </Grid>
                     </local:Paragraph>
                 </FlowDocument>
@@ -91,15 +94,24 @@ DEALINGS IN THE SOFTWARE.
                                     <RowDefinition />
                                     <RowDefinition />
                                     <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
                                 </Grid.RowDefinitions>
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="IMEI" />
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=IMEI}" TextWrapping="Wrap" />
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Public Phone ID" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=PublicID, Converter={StaticResource HexConverter}, Mode=OneWay}" TextWrapping="Wrap" />
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="WLAN MAC" />
-                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=WlanMac, Converter={StaticResource MACConverter}, Mode=OneWay}" TextWrapping="Wrap"/>
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Bluetooth MAC" />
-                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Path=BluetoothMac, Converter={StaticResource MACConverter}, Mode=OneWay}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="WLAN MAC 1" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=WlanMac1, Converter={StaticResource MACConverter}, Mode=OneWay}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="WLAN MAC 2" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Path=WlanMac2, Converter={StaticResource MACConverter}, Mode=OneWay}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="WLAN MAC 3" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Path=WlanMac3, Converter={StaticResource MACConverter}, Mode=OneWay}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="WLAN MAC 4" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Path=WlanMac4, Converter={StaticResource MACConverter}, Mode=OneWay}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Bluetooth MAC" />
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Path=BluetoothMac, Converter={StaticResource MACConverter}, Mode=OneWay}" TextWrapping="Wrap" />
                             </Grid>
                         </local:Paragraph>
                     </FlowDocument>
@@ -121,10 +133,24 @@ DEALINGS IN THE SOFTWARE.
                             <Grid.RowDefinitions>
                                 <RowDefinition />
                                 <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Sim lock" />
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=IsSimLocked, Converter={StaticResource InverseVisibilityConverter}}" />
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=IsSimLocked, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Boot policy" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=BootPolicy}" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="DB" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=Db}" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="DBX" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=Dbx}" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="KEK" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Path=Kek}" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="PK" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Path=Pk}" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" />
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Sim lock" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=IsSimLocked, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=IsSimLocked, Converter={StaticResource VisibilityConverter}}"/>
                         </Grid>
                         <LineBreak />
                         <LineBreak />

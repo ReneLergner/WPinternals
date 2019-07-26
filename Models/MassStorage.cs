@@ -35,6 +35,8 @@ namespace WPinternals
         internal IntPtr hDrive = (IntPtr)(-1);
         private bool OpenWithWriteAccess;
 
+        private QualcommSerial Serial;
+        
         internal MassStorage(string DevicePath): base(DevicePath)
         {
             try
@@ -67,6 +69,37 @@ namespace WPinternals
                             break;
                     }
                 }
+            }
+            catch { }
+        }
+
+        internal void AttachQualcommSerial(string DevicePath)
+        {
+            try
+            {
+                Serial = new QualcommSerial(DevicePath);
+                Serial.EncodeCommands = false;
+            }
+            catch { }
+        }
+
+        internal bool DoesDeviceSupportReboot()
+        {
+            return Serial != null;
+        }
+
+        internal void Reboot()
+        {
+            if (Serial == null)
+                return;
+
+            try
+            {
+                // This will succeed on new models
+                Serial.SendData(new byte[] { 0x7, 0x0, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0 });
+
+                // This will succeed on old models
+                Serial.SendData(new byte[] { 0x7E, 0xA, 0x0, 0x0, 0xB6, 0xB5, 0x7E });
             }
             catch { }
         }

@@ -75,7 +75,10 @@ namespace WPinternals
                 bool HasNewBootloader = HasNewBootloaderFromMassStorage();
                 string EFIESPPath = HasNewBootloader ? null : ((MassStorage)PhoneNotifier.CurrentModel).Drive + @"\EFIESP\";
                 string MainOSPath = ((MassStorage)PhoneNotifier.CurrentModel).Drive + @"\";
-                StartPatch(EFIESPPath, MainOSPath, HasNewBootloader);
+
+                bool HasV11Patches = HasV11PatchesFromMassStorage();
+
+                StartPatch(EFIESPPath, MainOSPath, HasNewBootloader, HasV11Patches);
             }
             catch (Exception Ex)
             {
@@ -88,12 +91,12 @@ namespace WPinternals
 
         internal void DoUnlockImage(string EFIESPMountPoint, string MainOSMountPoint)
         {
-            StartPatch(EFIESPMountPoint, MainOSMountPoint, false); // Unlock image is only supported for Lumia's with bootloader Spec A. Due to complexity of Spec B bootloader hack, it cannot be applied on a mounted image.
+            StartPatch(EFIESPMountPoint, MainOSMountPoint, false, false); // Unlock image is only supported for Lumia's with bootloader Spec A. Due to complexity of Spec B bootloader hack, it cannot be applied on a mounted image.
         }
 
         // Magic!
         // Apply patches for Root Access
-        private void StartPatch(string EFIESP, string MainOS, bool HasNewBootloader)
+        private void StartPatch(string EFIESP, string MainOS, bool HasNewBootloader, bool HasV11Patches)
         {
             IsSwitchingInterface = false;
             new Thread(() =>
@@ -105,7 +108,7 @@ namespace WPinternals
 
                     bool Result = false;
 
-                    if (EFIESP != null)
+                    if (EFIESP != null && !HasV11Patches)
                     {
                         if (DoUnlock)
                             ActivateSubContext(new BusyViewModel("Enable Root Access on EFIESP..."));
@@ -236,6 +239,19 @@ namespace WPinternals
             byte[] BootMgr = UEFI.GetFile(BootMgrName);
             // "Header V2"
             Result = (ByteOperations.FindAscii(BootMgr, "Header V2") != null);
+            Phone.CloseVolume();
+            return Result;
+        }
+
+        private bool HasV11PatchesFromMassStorage()
+        {
+            bool Result = false;
+            MassStorage Phone = (MassStorage)PhoneNotifier.CurrentModel;
+            Phone.OpenVolume(false);
+            byte[] GPTBuffer = Phone.ReadSectors(1, 33);
+            GPT GPT = new WPinternals.GPT(GPTBuffer);
+            Partition Partition = GPT.GetPartition("BACKUP_BS_NV");
+            Result = Partition != null;
             Phone.CloseVolume();
             return Result;
         }

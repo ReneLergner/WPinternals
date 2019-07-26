@@ -70,6 +70,11 @@ DEALINGS IN THE SOFTWARE.
                     <local:CollapsibleRun IsVisible="{Binding EffectiveBootloaderSecurityStatus, Converter={StaticResource InverseConverter}, Mode=OneWay}" Text="Your security flags indicate the this mode can be accessed. But this switch will only succeed if you took all measures to unlock Mass Storage mode." />
                     <LineBreak />
                     <LineBreak />
+                    <Hyperlink NavigateUri="Shutdown">Shutdown the phone</Hyperlink>
+                    <LineBreak />
+                    <Run Text="This will shutdown your phone. After selecting this option, you'll need to unplug your phone from your computer." />
+                    <LineBreak />
+                    <LineBreak />
                     <Run Text="Warning 1: " Foreground="Red" FontWeight="Bold"/>
                     <Run Text="Once you've entered Mass Storage mode, be very careful with altering files. You can easily brick your phone, when you make invalid changes to the file-system of the phone." />
                     <LineBreak />

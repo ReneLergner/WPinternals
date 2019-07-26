@@ -18,46 +18,59 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 
 namespace WPinternals
 {
     internal class NokiaModeMassStorageViewModel : ContextViewModel
     {
-        private NokiaPhoneModel CurrentModel;
+        private MassStorage CurrentModel;
+        private Action<PhoneInterfaces?> RequestModeSwitch;
 
-        internal NokiaModeMassStorageViewModel(NokiaPhoneModel CurrentModel)
+        internal NokiaModeMassStorageViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces?> RequestModeSwitch)
             : base()
         {
-            this.CurrentModel = CurrentModel;
+            this.CurrentModel = (MassStorage)CurrentModel;
+            this.RequestModeSwitch = RequestModeSwitch;
         }
 
-        internal void RebootTo(string Mode)
+        private bool _SupportsReboot = false;
+        public bool SupportsReboot
         {
-            string DeviceMode;
+            get
+            {
+                return _SupportsReboot;
+            }
+            set
+            {
+                _SupportsReboot = value;
+                OnPropertyChanged("SupportsReboot");
+            }
+        }
 
+        internal override void EvaluateViewState()
+        {
+            if (IsActive)
+                SupportsReboot = CurrentModel.DoesDeviceSupportReboot();
+        }
+
+        public void RebootTo(string Mode)
+        {
             switch (Mode)
             {
-                case "Flash":
-                    DeviceMode = "Flash";
-                    LogFile.Log("Reboot to Flash");
+                case "Normal":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_Normal);
                     break;
                 case "Label":
-                    DeviceMode = "Test";
-                    LogFile.Log("Reboot to Label");
+                    RequestModeSwitch(PhoneInterfaces.Lumia_Label);
                     break;
-                case "MassStorage":
-                    DeviceMode = "Flash"; // TODO: implement folow-up
-                    LogFile.Log("Reboot to Mass Storage");
+                case "Flash":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_Flash);
                     break;
                 default:
                     return;
             }
-
-            Dictionary<string, object> Params = new Dictionary<string, object>();
-            Params.Add("DeviceMode", DeviceMode);
-            Params.Add("ResetMethod", "HwReset");
-            CurrentModel.ExecuteJsonMethodAsync("SetDeviceMode", Params);
         }
     }
 }

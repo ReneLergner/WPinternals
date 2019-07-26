@@ -34,28 +34,65 @@ DEALINGS IN THE SOFTWARE.
         <local:BooleanConverter x:Key="InverseConverter" OnTrue="False" OnFalse="True" />
     </UserControl.Resources>
     <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
-        <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
-            <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
-                <FlowDocument.Resources>
-                    <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
-                    <Style TargetType="{x:Type Paragraph}">
-                        <Setter Property="Margin" Value="0"/>
-                    </Style>
-                    <Style TargetType="{x:Type Section}">
-                        <Setter Property="Margin" Value="0"/>
-                    </Style>
-                </FlowDocument.Resources>
-                <local:Paragraph>
-                    <Run Text="Nokia Lumia - Switch mode" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
-                    <LineBreak />
-                    <LineBreak />
-                    <Run Text="Current mode: " />
-                    <Run Text="Mass Storage" Foreground="#FF3753A6" FontWeight="Bold" />
-                    <LineBreak />
-                    <LineBreak />
-                    <Run Text="Currently it is not possible to switch from Mass Storage mode to another mode. You can press and hold the power-button and volume-down to soft-reset the phone. You will then boot to Windows Phone OS." />
-                </local:Paragraph>
-            </FlowDocument>
-        </local:FlowDocumentScrollViewerNoMouseWheel>
+        <Grid>
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=SupportsReboot, Converter={StaticResource InvisibilityConverter}}" >
+                <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                    <FlowDocument.Resources>
+                        <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                        <Style TargetType="{x:Type Paragraph}">
+                            <Setter Property="Margin" Value="0"/>
+                        </Style>
+                        <Style TargetType="{x:Type Section}">
+                            <Setter Property="Margin" Value="0"/>
+                        </Style>
+                    </FlowDocument.Resources>
+                    <local:Paragraph>
+                        <Run Text="Nokia Lumia - Switch mode" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Current mode: " />
+                        <Run Text="Mass Storage" Foreground="#FF3753A6" FontWeight="Bold" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Currently it is not possible to switch from Mass Storage mode to another mode. You can press and hold the power-button and volume-down to soft-reset the phone. You will then boot to Windows Phone OS." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=SupportsReboot, Converter={StaticResource VisibilityConverter}}" >
+                <FlowDocument x:Name="Document2" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                    <FlowDocument.Resources>
+                        <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                        <Style TargetType="{x:Type Paragraph}">
+                            <Setter Property="Margin" Value="0"/>
+                        </Style>
+                        <Style TargetType="{x:Type Section}">
+                            <Setter Property="Margin" Value="0"/>
+                        </Style>
+                    </FlowDocument.Resources>
+                    <local:Paragraph>
+                        <Run Text="Nokia Lumia - Switch mode" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Current mode: " />
+                        <Run Text="Mass Storage" Foreground="#FF3753A6" FontWeight="Bold" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Hyperlink NavigateUri="Normal">Switch to Normal-mode</Hyperlink>
+                        <LineBreak />
+                        <Run Text="This will switch back to Windows Phone OS." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Hyperlink NavigateUri="Label">Switch to Label-mode</Hyperlink>
+                        <LineBreak />
+                        <Run Text="This interface is meant for querying and provisioning the phone. This is normally used for configuring the phone during manufacturing." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Hyperlink NavigateUri="Flash">Switch to Flash-mode</Hyperlink>
+                        <LineBreak />
+                        <Run Text="This is the interface that can be used to flash a new ROM image. It can also be used to retrieve additional info and security status." />
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Grid>
     </Border>
 </UserControl>

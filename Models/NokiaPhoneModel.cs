@@ -302,6 +302,19 @@ namespace WPinternals
             }
         }
 
+        public void ResetDevice()
+        {
+            try
+            {
+                foreach (var pipe in Device.Pipes)
+                {
+                    pipe.Abort();
+                    pipe.Reset();
+                }
+            }
+            catch { }
+        }
+
         /// <summary>
         /// Disposes the UsbDevice including all unmanaged WinUSB handles. This function
         /// should be called when the UsbDevice object is no longer in use, otherwise

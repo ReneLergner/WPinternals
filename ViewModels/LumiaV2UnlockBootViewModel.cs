@@ -98,44 +98,6 @@ namespace WPinternals
             }
         }
 
-        internal static byte[] GetGptChunk(NokiaFlashModel FlashModel, UInt32 Size)
-        {
-            // This function is also used to generate a dummy chunk to flash for testing.
-            // The dummy chunk will contain the GPT, so it can be flashed to the first sectors for testing.
-            byte[] GPTChunk = new byte[Size];
-
-            PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
-            FlashAppType OriginalAppType = Info.App;
-            bool Switch = ((Info.App != FlashAppType.BootManager) && Info.SecureFfuEnabled && !Info.Authenticated && !Info.RdcPresent);
-            if (Switch)
-                FlashModel.SwitchToBootManagerContext();
-
-            byte[] Request = new byte[0x04];
-            const string Header = "NOKT";
-
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
-
-            byte[] Buffer = FlashModel.ExecuteRawMethod(Request);
-            if ((Buffer == null) || (Buffer.Length < 0x4408))
-                throw new InvalidOperationException("Unable to read GPT!");
-
-            UInt16 Error = (UInt16)((Buffer[6] << 8) + Buffer[7]);
-            if (Error > 0)
-                throw new NotSupportedException("ReadGPT: Error 0x" + Error.ToString("X4"));
-
-            System.Buffer.BlockCopy(Buffer, 8, GPTChunk, 0, 0x4400);
-
-            if (Switch)
-            {
-                if (OriginalAppType == FlashAppType.FlashApp)
-                    FlashModel.SwitchToFlashAppContext();
-                else
-                    FlashModel.SwitchToPhoneInfoAppContext();
-            }
-
-            return GPTChunk;
-        }
-
         internal static async Task LumiaV2EnableTestSigning(System.Threading.SynchronizationContext UIContext, string FFUPath, bool DoResetFirst = true)
         {
             LogFile.BeginAction("EnableTestSigning");
@@ -151,7 +113,7 @@ namespace WPinternals
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = GetGptChunk(FlashModel, 0x20000);
+                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
                 GPT GPT = new GPT(GPTChunk);
                 bool GPTChanged = false;
 
@@ -264,260 +226,6 @@ namespace WPinternals
             return Drive;
         }
 
-        internal static async Task LumiaV2RelockPhone(PhoneNotifierViewModel Notifier, string FFUPath = null, bool DoResetFirst = true, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null)
-        {
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitFailure == null) ExitFailure = (m, s) => { };
-
-            LogFile.BeginAction("RelockPhone");
-            try
-            {
-                GPT GPT = null;
-                Partition Target = null;
-                NokiaFlashModel FlashModel = null;
-
-                LogFile.Log("Command: Relock phone", LogType.FileAndConsole);
-
-                if (Notifier.CurrentInterface == null)
-                    await Notifier.WaitForArrival();
-
-                byte[] EFIESPBackup = null;
-
-                try
-                {
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
-                    {
-                        await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_MassStorage, SetWorkingStatus, UpdateWorkingStatus);
-                    }
-
-                    if (!(Notifier.CurrentModel is MassStorage))
-                        throw new WPinternalsException("Failed to switch to Mass Storage mode");
-
-                    SetWorkingStatus("Patching...", null, null, Status: WPinternalsStatus.Patching);
-
-                    // Now relock the phone
-                    MassStorage Storage = (MassStorage)Notifier.CurrentModel;
-
-                    App.PatchEngine.TargetPath = Storage.Drive + "\\EFIESP\\";
-                    App.PatchEngine.Restore("SecureBootHack-V2-EFIESP");
-
-                    App.PatchEngine.TargetPath = Storage.Drive + "\\";
-                    App.PatchEngine.Restore("SecureBootHack-MainOS");
-                    App.PatchEngine.Restore("RootAccess-MainOS");
-
-                    // Edit BCD
-                    LogFile.Log("Edit BCD");
-                    using (Stream BCDFileStream = new System.IO.FileStream(Storage.Drive + @"\EFIESP\efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite))
-                    {
-                        using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
-                        {
-                            DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
-                            DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
-                            DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
-                            if (NoCodeIntegrityElement != null)
-                                MobileStartupObject.RemoveElement(0x16000048);
-
-                            DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
-                            NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
-                            if (NoCodeIntegrityElement != null)
-                                WinLoadObject.RemoveElement(0x16000048);
-                        }
-                    }
-
-                    byte[] GPTBuffer = Storage.ReadSectors(0, 0x22);
-                    GPT = new GPT(GPTBuffer);
-                    Partition EFIESPPartition = GPT.GetPartition("EFIESP");
-                    byte[] EFIESP = Storage.ReadSectors(EFIESPPartition.FirstSector, EFIESPPartition.SizeInSectors);
-                    UInt32 EfiespSizeInSectors = (UInt32)EFIESPPartition.SizeInSectors;
-                    
-                    //
-                    // (ByteOperations.ReadUInt32(EFIESP, 0x20) == (EfiespSizeInSectors / 2)) was originally present in this check, but it does not seem to be reliable with all cases
-                    // It should be looked as why some phones have half the sector count in gpt, compared to the real partition.
-                    // With that check added, the phone won't get back its original EFIESP partition, on phones like 650s.
-                    // The second check should be more than enough in any case, if we find a header named MSDOS5.0 right in the middle of EFIESP,
-                    // there's not many cases other than us splitting the partition in half to get this here.
-                    //
-                    if ((ByteOperations.ReadAsciiString(EFIESP, (UInt32)(EFIESP.Length / 2) + 3, 8)) == "MSDOS5.0")
-                    {
-                        EFIESPBackup = new byte[EfiespSizeInSectors * 0x200 / 2];
-                        Buffer.BlockCopy(EFIESP, (Int32)EfiespSizeInSectors * 0x200 / 2, EFIESPBackup, 0, (Int32)EfiespSizeInSectors * 0x200 / 2);
-                    }
-
-                    LogFile.Log("The phone is currently in Mass Storage Mode", LogType.ConsoleOnly);
-                    LogFile.Log("To continue the relock-sequence, the phone needs to be rebooted", LogType.ConsoleOnly);
-                    LogFile.Log("Keep the phone connected to the PC", LogType.ConsoleOnly);
-                    LogFile.Log("Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates", LogType.ConsoleOnly);
-                    LogFile.Log("The relock-sequence will resume automatically", LogType.ConsoleOnly);
-                    LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
-
-                    SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the relock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The relock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
-
-                    await Notifier.WaitForRemoval();
-
-                    SetWorkingStatus("Rebooting phone...");
-
-                    await Notifier.WaitForArrival();
-                }
-                catch
-                {
-                    // If switching to mass storage mode failed, then we just skip that part. This might be a half unlocked phone.
-                    LogFile.Log("Skipping Mass Storage mode", LogType.FileAndConsole);
-                }
-
-                // Phone can also be in normal mode if switching to Mass Storage Mode had failed.
-                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Normal)
-                    await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_Flash, SetWorkingStatus, UpdateWorkingStatus);
-
-                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
-                    await Notifier.WaitForArrival();
-
-                SetWorkingStatus("Flashing...", "The phone may reboot a couple of times. Just wait for it.", null, Status: WPinternalsStatus.Flashing);
-
-                ((NokiaFlashModel)Notifier.CurrentModel).SwitchToFlashAppContext();
-
-                List<FlashPart> FlashParts = new List<FlashPart>();
-                FlashPart Part;
-
-                FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
-
-                // Remove IS_UNLOCKED flag in GPT
-                byte[] GPTChunk = GetGptChunk(FlashModel, 0x20000); // TODO: Get proper profile FFU and get ChunkSizeInBytes
-                GPT = new GPT(GPTChunk);
-                bool GPTChanged = false;
-
-                Partition IsUnlockedPartition = GPT.GetPartition("IS_UNLOCKED");
-                if (IsUnlockedPartition != null)
-                {
-                    GPT.Partitions.Remove(IsUnlockedPartition);
-                    GPTChanged = true;
-                }
-
-                Partition EfiEspBackupPartition = GPT.GetPartition("BACKUP_EFIESP");
-                if (EfiEspBackupPartition != null)
-                {
-                    // This must be a left over of a half unlocked bootloader
-                    Partition EfiEspPartition = GPT.GetPartition("EFIESP");
-                    EfiEspBackupPartition.Name = "EFIESP";
-                    EfiEspBackupPartition.LastSector = EfiEspPartition.LastSector;
-                    EfiEspBackupPartition.PartitionGuid = EfiEspPartition.PartitionGuid;
-                    EfiEspBackupPartition.PartitionTypeGuid = EfiEspPartition.PartitionTypeGuid;
-                    GPT.Partitions.Remove(EfiEspPartition);
-                    GPTChanged = true;
-                }
-
-                Partition NvBackupPartition = GPT.GetPartition("BACKUP_BS_NV");
-                if (NvBackupPartition != null)
-                {
-                    // This must be a left over of a half unlocked bootloader
-                    Partition NvPartition = GPT.GetPartition("UEFI_BS_NV");
-                    NvBackupPartition.Name = "UEFI_BS_NV";
-                    NvBackupPartition.PartitionGuid = NvPartition.PartitionGuid;
-                    NvBackupPartition.PartitionTypeGuid = NvPartition.PartitionTypeGuid;
-                    GPT.Partitions.Remove(NvPartition);
-                    GPTChanged = true;
-                }
-
-                if (GPTChanged)
-                {
-                    GPT.Rebuild();
-                    Part = new FlashPart();
-                    Part.StartSector = 0;
-                    Part.Stream = new MemoryStream(GPTChunk);
-                    FlashParts.Add(Part);
-                }
-
-                if (EFIESPBackup != null)
-                {
-                    Part = new FlashPart();
-                    Target = GPT.GetPartition("EFIESP");
-                    Part.StartSector = (UInt32)Target.FirstSector;
-                    Part.Stream = new MemoryStream(EFIESPBackup);
-                    FlashParts.Add(Part);
-                }
-
-                // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
-                bool NvCleared = false;
-                PhoneInfo Info = ((NokiaFlashModel)Notifier.CurrentModel).ReadPhoneInfo();
-                if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)
-                {
-                    // ClearNV
-                    Part = new FlashPart();
-                    Target = GPT.GetPartition("UEFI_BS_NV");
-                    Part.StartSector = (UInt32)Target.FirstSector;
-                    Part.Stream = new MemoryStream(new byte[0x40000]);
-                    FlashParts.Add(Part);
-                    NvCleared = true;
-                }
-
-                WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
-                ulong? MaxProgressValue = null;
-                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, FFUPath, false, false, FlashParts, DoResetFirst, ClearFlashingStatusAtEnd: !NvCleared,
-                    SetWorkingStatus: (m, s, v, a, st) =>
-                    {
-                        if (SetWorkingStatus != null)
-                        {
-                            if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
-                                SetWorkingStatus(m, s, v, a, st);
-                            else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset) || (LastStatus == WPinternalsStatus.Undefined))
-                            {
-                                MaxProgressValue = v;
-                                SetWorkingStatus("Flashing...", "The phone may reboot a couple of times. Just wait for it.", v, Status: WPinternalsStatus.Flashing);
-                            }
-                            LastStatus = st;
-                        }
-                    },
-                    UpdateWorkingStatus: (m, s, v, st) =>
-                    {
-                        if (UpdateWorkingStatus != null)
-                        {
-                            if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
-                                UpdateWorkingStatus(m, s, v, st);
-                            else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
-                                SetWorkingStatus("Flashing...", "The phone may reboot a couple of times. Just wait for it.", MaxProgressValue, Status: WPinternalsStatus.Flashing);
-                            else
-                                UpdateWorkingStatus("Flashing...", "The phone may reboot a couple of times. Just wait for it.", v, Status: WPinternalsStatus.Flashing);
-                            LastStatus = st;
-                        }
-                    });
-
-                if (NvBackupPartition != null)
-                {
-                    // An old NV backup was restored and it possibly contained the IsFlashing flag.
-                    // Can't clear it immeadiately, so we need another flash.
-
-                    SetWorkingStatus("Flashing...", "The phone may reboot a couple of times. Just wait for it.", null, Status: WPinternalsStatus.Flashing);
-
-                    // If last flash was a normal flash, with no forced crash at the end (!NvCleared), then we have to wait for device arrival, because it could still be detected as Flash-mode from previous flash.
-                    // When phone was forcably crashed, it can be in emergency mode, or still rebooting. Then also wait for device arrival.
-                    // But it is also possible that it is already in bootmgr mode after being crashed (Lumia 950 / 950XL). In that case don't wait for arrival.
-                    if (!NvCleared || ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)))
-                        await Notifier.WaitForArrival();
-
-                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                        ((NokiaFlashModel)Notifier.CurrentModel).SwitchToFlashAppContext();
-
-                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
-                    {
-                        await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, FFUPath, false, false, null, DoResetFirst, ClearFlashingStatusAtEnd: true, ShowProgress: false);
-                    }
-                }
-
-                LogFile.Log("Phone is relocked", LogType.FileAndConsole);
-                ExitSuccess("The phone is relocked", "NOTE: Make sure the phone properly boots and shuts down at least once before you unlock it again");
-            }
-            catch (Exception Ex)
-            {
-                LogFile.LogException(Ex);
-                ExitFailure("Error: " + Ex.Message, null);
-            }
-            finally
-            {
-                LogFile.EndAction("RelockPhone");
-            }
-        }
-
         internal static async Task LumiaV2ClearNV(System.Threading.SynchronizationContext UIContext, string FFUPath, bool DoResetFirst = true)
         {
             LogFile.BeginAction("ClearNV");
@@ -531,7 +239,7 @@ namespace WPinternals
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = GetGptChunk(FlashModel, 0x20000);
+                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
                 GPT GPT = new GPT(GPTChunk);
                 bool GPTChanged = false;
                 Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
@@ -604,7 +312,7 @@ namespace WPinternals
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = GetGptChunk(FlashModel, 0x20000);
+                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
                 GPT GPT = new GPT(GPTChunk);
 
                 Partition TargetPartition = GPT.GetPartition(PartitionName);
@@ -699,7 +407,7 @@ namespace WPinternals
                 PhoneInfo Info = FlashModel.ReadPhoneInfo();
 
                 byte[] Data = System.IO.File.ReadAllBytes(DataPath);
-
+                
                 await LumiaV2CustomFlash(Notifier, FFUPath, false, false, (UInt32)StartSector, Data, DoResetFirst);
                 Notifier.Stop();
             }
@@ -792,7 +500,6 @@ namespace WPinternals
             if (UpdateType != 0)
                 throw new WPinternalsException("Only Full Flash images supported");
 
-            UInt32 ChunkCount = 1; // Always flash one extra chunk on the GPT (for purpose of testing and for making sure that first chunk does not contain all zero's).
             if (FlashParts != null)
             {
                 foreach (FlashPart Part in FlashParts)
@@ -808,8 +515,6 @@ namespace WPinternals
                         if ((Part.Stream.Length % FFU.ChunkSize) != 0)
                             throw new ArgumentException("Invalid Data length");
                     }
-
-                    ChunkCount += (UInt32)(Part.Stream.Length / FFU.ChunkSize);
                 }
             }
 
@@ -845,7 +550,7 @@ namespace WPinternals
                 MaximumAttempts = (int)(((MaximumGapFill / FFU.ChunkSize) + 1) * 8);
             }
 
-            byte[] GPTChunk = GetGptChunk(Model, (UInt32)FFU.ChunkSize);
+            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, (UInt32)FFU.ChunkSize);
 
             // Start with a reset
             if (DoResetFirst)
@@ -959,6 +664,16 @@ namespace WPinternals
                 Model = (NokiaFlashModel)Notifier.CurrentModel;
             }
 
+            // The payloads must be ordered by the number of locations
+            //
+            // FlashApp processes payloads like this:
+            // - First payloads which are with one location, those can be sent in bulk
+            // - Then payloads with more than one location, those should not be sent in bulk
+            //
+            // If you do not order payloads like this, you will get an error, most likely hash mismatch
+            //
+            FlashingPayload[] payloads = GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Count()).ToArray();
+
             bool AssumeImageHeaderFallsInGap = true;
             bool AllocateAsyncBuffersOnPhone = true;
             bool AllocateBackupBuffersOnPhone = false;
@@ -1043,7 +758,6 @@ namespace WPinternals
                 StoreHeaderAllocation = null;
                 PartialHeaderAllocation = null;
                 UInt32 DestinationChunkIndex = 0;
-                UInt32 DestinationChunkOffset = 0;
 
                 // Create memory map
                 UefiMemorySim.Reset();
@@ -1062,13 +776,11 @@ namespace WPinternals
 
                 CombinedFFUHeaderSize = FFU.HeaderSize;
                 FfuHeader = new byte[CombinedFFUHeaderSize];
-                UInt32 TotalChunkCount = ChunkCount;
+                UInt32 TotalPayloadCount = (uint)payloads.Count();
                 bool HeadersFull;
                 int FlashingPhase = 0;
-                int FlashingPhaseStartStreamIndex = -1;
-                long FlashingPhaseStartStreamPosition = 0;
-                UInt32 FlashingPhaseStartChunkIndex = 0;
-                UInt32 FlashingPhaseChunkCount;
+                UInt32 FlashingPhaseStartPayloadIndex = 0;
+                UInt32 FlashingPhasePayloadCount = 0;
                 bool FlashInProgress = false;
                 byte[] Buffer = new byte[FFU.ChunkSize];
                 LastHeaderV2Size = 0;
@@ -1114,7 +826,7 @@ namespace WPinternals
                             UInt64 Position = CombinedFFUHeaderSize;
                             byte[] FlashPayload;
                             int ChunkIndex = 0;
-                            TotalChunkCount += (UInt32)FFU.TotalChunkCount;
+                            UInt32 TotalChunkCount = (UInt32)FFU.TotalChunkCount;
 
                             // Protocol v2
                             FlashPayload = new byte[Info.WriteBufferSize];
@@ -1164,20 +876,34 @@ namespace WPinternals
                         NewHashOffset += HashTableSize;
                     }
 
-                    // Determine number of chunks for this phase
+                    // Determine available space and number of payloads to send for this phase
                     UInt32 HashSpace = (UInt32)(FFU.SecurityHeader.Length - NewHashOffset);
-                    UInt32 FreeHashCount = HashSpace / 0x20; // Round down automatically
                     UInt32 DescriptorSpace = (UInt32)(FFU.StoreHeader.Length - NewWriteDescriptorOffset);
-                    UInt32 FreeDescriptorCount = DescriptorSpace / 0x10;
-                    FlashingPhaseChunkCount = FreeHashCount < FreeDescriptorCount ? FreeHashCount : FreeDescriptorCount;
-                    if ((ChunkCount - FlashingPhaseStartChunkIndex) <= FlashingPhaseChunkCount)
-                        FlashingPhaseChunkCount = ChunkCount - FlashingPhaseStartChunkIndex;
-                    else
-                        HeadersFull = true;
 
-                    HashTableSize += (FlashingPhaseChunkCount * 0x20);
-                    WriteDescriptorCount += FlashingPhaseChunkCount;
-                    WriteDescriptorLength += (FlashingPhaseChunkCount * 0x10);
+                    FlashingPhasePayloadCount = 0;
+
+                    // Always flash one extra chunk on the GPT (for purpose of testing and for making sure that first chunk does not contain all zero's).
+                    UInt32 SecurityHeaderSize = FlashInProgress ? 0 : 0x20u;
+                    UInt32 StoreHeaderSize = FlashInProgress ? 0 : 0x10u;
+                    for (UInt32 i = FlashingPhaseStartPayloadIndex; i < payloads.Count(); i++)
+                    {
+                        UInt32 NewSecurityHeaderSize = SecurityHeaderSize + payloads[i].GetSecurityHeaderSize();
+                        UInt32 NewStoreHeaderSize = StoreHeaderSize + payloads[i].GetStoreHeaderSize();
+
+                        if (NewSecurityHeaderSize > HashSpace || NewStoreHeaderSize > DescriptorSpace)
+                        {
+                            HeadersFull = true;
+                            break;
+                        }
+
+                        FlashingPhasePayloadCount += 1;
+                        SecurityHeaderSize = NewSecurityHeaderSize;
+                        StoreHeaderSize = NewStoreHeaderSize;
+                    }
+
+                    HashTableSize += SecurityHeaderSize;
+                    WriteDescriptorCount += (UInt32)FlashingPhasePayloadCount + (FlashInProgress ? 0 : 1u);
+                    WriteDescriptorLength += StoreHeaderSize;
 
                     if (!ClearFlashingStatusAtEnd || HeadersFull)
                         WriteDescriptorCount++;
@@ -1189,11 +915,9 @@ namespace WPinternals
                     ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xEC, 0); // FlashOnlyTableLength - Make flash progress bar white immediately.
                     ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xE8, 1); // FlashOnlyTableCount
 
-                    UInt32 CustomChunkCount = FlashingPhaseChunkCount;
-
                     // Write new descriptors
                     // First write descriptor and hash for the first GPT chunk
-                    if (!FlashInProgress && (FlashingPhaseChunkCount > 0))
+                    if (!FlashInProgress) // We only send the first GPT chunk when flash is not in progress yet.
                     {
                         ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, 0x00000001); // Location count
                         ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, 0x00000001); // Chunk count
@@ -1203,45 +927,33 @@ namespace WPinternals
                         byte[] GPTHashValue = System.Security.Cryptography.SHA256.Create().ComputeHash(GPTChunk, 0, FFU.ChunkSize); // Hash is 0x20 bytes
                         System.Buffer.BlockCopy(GPTHashValue, 0, UefiMemorySim.Buffer, (int)(SecurityHeaderAllocation.ContentStart + NewHashOffset), 0x20);
                         NewHashOffset += 0x20;
-                        CustomChunkCount--;
                     }
 
-                    // TODO: Optimize: make multiple locations for chunks with same content.
-                    Stream CurrentStream = null;
-                    int StreamIndex = FlashingPhaseStartStreamIndex;
-                    if (StreamIndex >= 0)
+                    for (UInt32 i = 0; i < FlashingPhasePayloadCount; i++)
                     {
-                        CurrentStream = FlashParts[StreamIndex].Stream;
-                        CurrentStream.Seek(FlashingPhaseStartStreamPosition, SeekOrigin.Begin);
-                    }
-                    byte[] PayloadBuffer = new byte[FFU.ChunkSize];
-                    for (int i = 0; i < CustomChunkCount; i++)
-                    {
-                        if ((CurrentStream == null) || (CurrentStream.Position == CurrentStream.Length))
+                        FlashingPayload payload = payloads[FlashingPhaseStartPayloadIndex + i];
+
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, (UInt32)payload.TargetLocations.Count()); // Location count
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, payload.ChunkCount);                      // Chunk count
+                        NewWriteDescriptorOffset += 0x08;
+
+                        foreach (UInt32 location in payload.TargetLocations)
                         {
-                            StreamIndex++;
-                            CurrentStream = FlashParts[StreamIndex].Stream;
-                            CurrentStream.Seek(0, SeekOrigin.Begin);
-                            DestinationChunkOffset = (UInt32)((Int64)FlashParts[StreamIndex].StartSector * 0x200 / FFU.ChunkSize);
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, 0x00000000);                          // Disk access method (0 = Begin, 2 = End)
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, location);                            // Chunk index
+                            NewWriteDescriptorOffset += 0x08;
                         }
 
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, 0x00000001); // Location count
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, 0x00000001); // Chunk count
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x08, 0x00000000); // Disk access method (0 = Begin, 2 = End)
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x0C, DestinationChunkOffset); // Chunk index
-                        NewWriteDescriptorOffset += 0x10;
-
-                        // Write new hash
-                        if ((CurrentStream.Length - CurrentStream.Position) < PayloadBuffer.Length)
-                            Array.Clear(PayloadBuffer, 0, PayloadBuffer.Length);
-                        CurrentStream.Read(PayloadBuffer, 0, FFU.ChunkSize);
-                        byte[] HashValue = System.Security.Cryptography.SHA256.Create().ComputeHash(PayloadBuffer, 0, FFU.ChunkSize); // Hash is 0x20 bytes
-                        System.Buffer.BlockCopy(HashValue, 0, UefiMemorySim.Buffer, (int)(SecurityHeaderAllocation.ContentStart + NewHashOffset), 0x20);
-                        NewHashOffset += 0x20;
-
-                        DestinationChunkOffset++;
+                        foreach (byte[] hashValue in payload.ChunkHashes)
+                        {
+                            // Write new hash
+                            System.Buffer.BlockCopy(hashValue, 0, UefiMemorySim.Buffer, (Int32)(SecurityHeaderAllocation.ContentStart + NewHashOffset), 0x20);
+                            NewHashOffset += 0x20;
+                        }
                     }
 
+                    Stream CurrentStream = null;
+                    int StreamIndex = 0;
                     int Step = 0;
                     try
                     {
@@ -1272,69 +984,124 @@ namespace WPinternals
                         }
 
                         // Send custom payload
-                        // TODO: Optimize to send multiple chunks at once
                         Step = 3;
-                        DestinationChunkIndex = (PerformFullFlashFirst && (FlashingPhase == 0)) ? (UInt32)FFU.TotalChunkCount : 0;
-
-                        CurrentStream = null;
-                        StreamIndex = FlashingPhaseStartStreamIndex;
-                        if (StreamIndex >= 0)
+                        Int32 payloadCount = 0;
+                        byte[] payloadBuffer = new byte[Info.WriteBufferSize];
+                        bool sendPayload = false;
+                        for (Int32 i = FlashInProgress ? 0 : -1; i < FlashingPhasePayloadCount; i++)
                         {
-                            CurrentStream = FlashParts[StreamIndex].Stream;
-                            CurrentStream.Seek(FlashingPhaseStartStreamPosition, SeekOrigin.Begin);
-                        }
-
-                        for (int i = 0; i < FlashingPhaseChunkCount; i++)
-                        {
-                            string NewProgressText = null;
+                            string NewProgressText = "Flashing resources...";
                             if (!FlashInProgress)
                             {
                                 // First send the GPT chunk
                                 Step = 4;
-                                System.Buffer.BlockCopy(GPTChunk, 0, Buffer, 0, (int)FFU.ChunkSize);
+                                System.Buffer.BlockCopy(GPTChunk, 0, Buffer, 0, FFU.ChunkSize);
+
+                                Step = 8;
+                                // This may fail. Normally with WPinternalsException for Invalid Hash or Data not aligned.
+                                // Or it may fail with a BadConnectionException when the phone crashes and drops the connection.
+                                Model.SendFfuPayloadV1(Buffer, 0);
+                                if (!FlashInProgress)
+                                {
+                                    Step = 9;
+                                    if (ShowProgress)
+                                        LogFile.Log("Flashing in progress!", LogType.FileAndConsole);
+                                    FlashInProgress = true;
+                                    Scanning = false;
+                                    SetWorkingStatus(null, null, (UInt64?)payloads.Count(), Status: WPinternalsStatus.Flashing);
+                                }
                             }
                             else
                             {
                                 Step = 5;
-                                if ((CurrentStream == null) || (CurrentStream.Position == CurrentStream.Length))
+
+                                FlashingPayload payload = payloads[FlashingPhaseStartPayloadIndex + i];
+
+                                if (payloadCount == (Info.WriteBufferSize / FFU.ChunkSize - 1))
                                 {
-                                    StreamIndex++;
-                                    CurrentStream = FlashParts[StreamIndex].Stream;
-                                    CurrentStream.Seek(0, SeekOrigin.Begin);
-                                    NewProgressText = FlashParts[StreamIndex].ProgressText;
+                                    sendPayload = true;
                                 }
 
-                                Step = 6;
-                                if ((CurrentStream.Length - CurrentStream.Position) < Buffer.Length)
-                                    Array.Clear(Buffer, 0, Buffer.Length);
+                                if (FlashingPhaseStartPayloadIndex + i + 1 >= FlashingPhasePayloadCount)
+                                {
+                                    sendPayload = true;
+                                    byte[] tmpBuffer = new byte[(payloadCount + 1) * FFU.ChunkSize];
+                                    System.Buffer.BlockCopy(payloadBuffer, 0, tmpBuffer, 0, payloadCount * FFU.ChunkSize);
+                                    payloadBuffer = tmpBuffer;
+                                }
 
-                                Step = 7;
-                                CurrentStream.Read(Buffer, 0, FFU.ChunkSize);
+                                // Check if the next payload contains more than one chunk
+                                if (!sendPayload && FlashingPhaseStartPayloadIndex + i + 1 < FlashingPhasePayloadCount && (payloads[FlashingPhaseStartPayloadIndex + i + 1].ChunkCount != 1 || payloads[FlashingPhaseStartPayloadIndex + i + 1].TargetLocations.Count() != 1))
+                                {
+                                    sendPayload = true;
+                                    byte[] tmpBuffer = new byte[(payloadCount + 1) * FFU.ChunkSize];
+                                    System.Buffer.BlockCopy(payloadBuffer, 0, tmpBuffer, 0, payloadCount * FFU.ChunkSize);
+                                    payloadBuffer = tmpBuffer;
+                                }
+
+                                // We prepare the buffer setup above with all consecutive chunks we have to send in
+                                // We can't send a single chunk otherwise we would get 0x1007: Payload data does not contain all data
+                                if (payload.ChunkCount != 1)
+                                {
+                                    NewProgressText = "Flashing common resources...";
+                                    payloadBuffer = new byte[payload.ChunkCount * FFU.ChunkSize];
+                                    for (uint j = 0; j < payload.ChunkCount; j++)
+                                    {
+                                        StreamIndex = (Int32)payload.StreamIndexes[j];
+                                        FlashPart flashPart = FlashParts[StreamIndex];
+                                        CurrentStream = flashPart.Stream;
+                                        CurrentStream.Seek(payload.StreamLocations[j], SeekOrigin.Begin);
+
+                                        Step = 6;
+                                        Array.Clear(payloadBuffer, (Int32)(FFU.ChunkSize * j), FFU.ChunkSize); // Not really needed anymore?
+
+                                        Step = 7;
+                                        CurrentStream.Read(payloadBuffer, (Int32)(FFU.ChunkSize * j), FFU.ChunkSize);
+                                    }
+                                }
+
+                                if (payload.TargetLocations.Count() != 1)
+                                {
+                                    NewProgressText = "Flashing common resources...";
+                                    payloadBuffer = new byte[FFU.ChunkSize];
+                                }
+
+                                if (payload.ChunkCount == 1)
+                                {
+                                    StreamIndex = (Int32)payload.StreamIndexes[0];
+                                    FlashPart flashPart = FlashParts[StreamIndex];
+                                    CurrentStream = flashPart.Stream;
+                                    CurrentStream.Seek(payload.StreamLocations[0], SeekOrigin.Begin);
+
+                                    if (payload.TargetLocations.Count() == 1 && !string.IsNullOrEmpty(flashPart.ProgressText))
+                                        NewProgressText = flashPart.ProgressText;
+
+                                    CurrentStream.Read(payloadBuffer, (Int32)(FFU.ChunkSize * payloadCount), FFU.ChunkSize);
+                                }
+
+                                Step = 8;
+                                // This may fail. Normally with WPinternalsException for Invalid Hash or Data not aligned.
+                                // Or it may fail with a BadConnectionException when the phone crashes and drops the connection.
+                                
+                                payloadCount++;
                             }
 
-                            Step = 8;
-                            // This may fail. Normally with WPinternalsException for Invalid Hash or Data not aligned.
-                            // Or it may fail with a BadConnectionException when the phone crashes and drops the connection.
-                            Model.SendFfuPayloadV1(Buffer, ShowProgress ? (int)((FlashingPhaseStartChunkIndex + DestinationChunkIndex + 1) * 100 / TotalChunkCount) : 0);
-                            if (!FlashInProgress)
+                            UpdateWorkingStatus(NewProgressText, null, (UInt64?)(FlashingPhaseStartPayloadIndex + i + 1), WPinternalsStatus.Flashing);
+                            
+                            if (i != -1 && sendPayload)
                             {
-                                Step = 9;
-                                if (ShowProgress)
-                                    LogFile.Log("Flashing in progress!", LogType.FileAndConsole);
-                                FlashInProgress = true;
-                                Scanning = false;
-                                SetWorkingStatus(null, null, TotalChunkCount, Status: WPinternalsStatus.Flashing);
+                                // This fails when sending multiple chunks per payload with 0x1003: Hash mismatch
+                                Model.SendFfuPayloadV2(payloadBuffer, ShowProgress ? (Int32)((FlashingPhaseStartPayloadIndex + i + 1) * 100 / payloads.Count()) : 0);
+                                sendPayload = false;
+                                payloadCount = 0;
+                                payloadBuffer = new byte[Info.WriteBufferSize];
                             }
-                            UpdateWorkingStatus(NewProgressText, null, FlashingPhaseStartChunkIndex + DestinationChunkIndex + 1, WPinternalsStatus.Flashing);
-                            NewProgressText = null;
+
                             DestinationChunkIndex++;
                         }
 
                         Step = 10;
-                        FlashingPhaseStartChunkIndex += FlashingPhaseChunkCount;
-                        FlashingPhaseStartStreamIndex = StreamIndex;
-                        if (StreamIndex >= 0)
-                            FlashingPhaseStartStreamPosition = CurrentStream.Position;
+                        FlashingPhaseStartPayloadIndex += FlashingPhasePayloadCount;
 
                         Step = 11;
                         if (!HeadersFull)
@@ -1345,6 +1112,11 @@ namespace WPinternals
                                 LogFile.Log("Custom flash succeeded!", LogType.FileAndConsole);
                             Success = true;
                         }
+                        else
+                        {
+                            // At this point we're missing a few payloads, so we need to start again.
+                            LogFile.Log("Reinitilizing a new flashing attempt because headers were full and we're not quite done yet!");
+                        }
                     }
                     catch (BadConnectionException)
                     {
@@ -1353,7 +1125,7 @@ namespace WPinternals
                             StreamIndex.ToString() + " " +
                             (CurrentStream == null ? "0" : CurrentStream.Position.ToString()) + " " +
                             FlashingPhase.ToString() + " " +
-                            FlashingPhaseStartChunkIndex.ToString() + " " +
+                            FlashingPhaseStartPayloadIndex.ToString() + " " +
                             DestinationChunkIndex.ToString());
                         LogFile.Log("Expect phone to reboot", LogType.FileAndConsole);
                         WaitForReset = true;
@@ -1372,7 +1144,7 @@ namespace WPinternals
                                 StreamIndex.ToString() + " " +
                                 (CurrentStream == null ? "0" : CurrentStream.Position.ToString()) + " " +
                                 FlashingPhase.ToString() + " " +
-                                FlashingPhaseStartChunkIndex.ToString() + " " +
+                                FlashingPhaseStartPayloadIndex.ToString() + " " +
                                 DestinationChunkIndex.ToString());
                             Abort = true;
                         }
@@ -1384,7 +1156,7 @@ namespace WPinternals
                                 StreamIndex.ToString() + " " +
                                 (CurrentStream == null ? "0" : CurrentStream.Position.ToString()) + " " +
                                 FlashingPhase.ToString() + " " +
-                                FlashingPhaseStartChunkIndex.ToString() + " " +
+                                FlashingPhaseStartPayloadIndex.ToString() + " " +
                                 DestinationChunkIndex.ToString());
                         }
 
@@ -1728,6 +1500,128 @@ namespace WPinternals
                 throw new WPinternalsException("Custom flash failed");
         }
 
+        internal class FlashingPayload
+        {
+            public UInt32 ChunkCount;
+            public byte[][] ChunkHashes;
+            public UInt32[] TargetLocations;
+            public UInt32[] StreamIndexes;
+            public Int64[] StreamLocations;
+
+            public FlashingPayload(UInt32 ChunkCount, byte[][] ChunkHashes, UInt32[] TargetLocations, UInt32[] StreamIndexes, Int64[] StreamLocations)
+            {
+                this.ChunkCount = ChunkCount;
+                this.ChunkHashes = ChunkHashes;
+                this.TargetLocations = TargetLocations;
+                this.StreamIndexes = StreamIndexes;
+                this.StreamLocations = StreamLocations;
+            }
+
+            public UInt32 GetSecurityHeaderSize()
+            {
+                return 0x20 * (UInt32)ChunkHashes.Count();
+            }
+
+            public UInt32 GetStoreHeaderSize()
+            {
+                return 0x08 * ((UInt32)TargetLocations.Count() + 1);
+            }
+        }
+        
+        //
+        // Function to fall back into the legacy implementation of custom flash, to test the modifications done in the custom flash function
+        // in LumiaV2UnlockBootViewModel
+        //
+        internal static FlashingPayload[] GetNonOptimizedPayloads(List<FlashPart> flashParts, Int32 chunkSize, UInt32 MaximumChunkCount, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null)
+        {
+            long TotalProcess1 = 0;
+            for (Int32 j = 0; j < flashParts.Count; j++)
+            {
+                FlashPart flashPart = flashParts[j];
+                TotalProcess1 += flashPart.Stream.Length / chunkSize;
+            }
+
+            ulong CurrentProcess1 = 0;
+            SetWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)TotalProcess1, Status: WPinternalsStatus.Initializing);
+
+            var crypto = System.Security.Cryptography.SHA256.Create();
+            List<FlashingPayload> flashingPayloads = new List<FlashingPayload>();
+            if (flashParts == null)
+                return flashingPayloads.ToArray();
+            for (UInt32 j = 0; j < flashParts.Count; j++)
+            {
+                FlashPart flashPart = flashParts[(Int32)j];
+                flashPart.Stream.Seek(0, SeekOrigin.Begin);
+                var totalChunkCount = flashPart.Stream.Length / chunkSize;
+                for (UInt32 i = 0; i < totalChunkCount; i++)
+                {
+                    UpdateWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)CurrentProcess1, WPinternalsStatus.Initializing);
+                    byte[] buffer = new byte[chunkSize];
+                    Int64 position = flashPart.Stream.Position;
+                    flashPart.Stream.Read(buffer, 0, chunkSize);
+                    flashingPayloads.Add(new FlashingPayload(1, new byte[][] { crypto.ComputeHash(buffer) }, new UInt32[] { (flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i }, new UInt32[] { j }, new Int64[] { position }));
+                    CurrentProcess1++;
+                }
+            }
+
+            return flashingPayloads.ToArray();
+        }
+
+        //
+        // This function finds in an optimized way the number of duplicate chunks in a given stream, and returns
+        // a list of elements, defining a chunk occurence in said stream and the chunk precomputed SHA256 hash.
+        //
+        internal static FlashingPayload[] GetOptimizedPayloads(List<FlashPart> flashParts, Int32 chunkSize, UInt32 MaximumChunkCount, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null)
+        {
+            List<FlashingPayload> flashingPayloads = new List<FlashingPayload>();
+            if (flashParts == null)
+                return flashingPayloads.ToArray();
+
+            long TotalProcess1 = 0;
+            for (Int32 j = 0; j < flashParts.Count; j++)
+            {
+                FlashPart flashPart = flashParts[j];
+                TotalProcess1 += flashPart.Stream.Length / chunkSize;
+            }
+
+            ulong CurrentProcess1 = 0;
+            SetWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)TotalProcess1, Status: WPinternalsStatus.Initializing);
+
+            using (System.Security.Cryptography.SHA256 crypto = System.Security.Cryptography.SHA256.Create())
+            {
+                for (UInt32 j = 0; j < flashParts.Count; j++)
+                {
+                    FlashPart flashPart = flashParts[(Int32)j];
+                    flashPart.Stream.Seek(0, SeekOrigin.Begin);
+                    var totalChunkCount = flashPart.Stream.Length / chunkSize;
+                    for (UInt32 i = 0; i < totalChunkCount; i++)
+                    {
+                        UpdateWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)CurrentProcess1, WPinternalsStatus.Initializing);
+                        byte[] buffer = new byte[chunkSize];
+                        Int64 position = flashPart.Stream.Position;
+                        flashPart.Stream.Read(buffer, 0, chunkSize);
+                        var hash = crypto.ComputeHash(buffer);
+
+                        if (flashingPayloads.Any(x => ByteOperations.Compare(x.ChunkHashes.First(), hash)))
+                        {
+                            var payloadIndex = flashingPayloads.FindIndex(x => ByteOperations.Compare(x.ChunkHashes.First(), hash));
+                            var locationList = flashingPayloads[payloadIndex].TargetLocations.ToList();
+                            locationList.Add((flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i);
+                            flashingPayloads[payloadIndex].TargetLocations = locationList.ToArray();
+                        }
+                        else
+                        {
+                            flashingPayloads.Add(new FlashingPayload(1, new byte[][] { hash }, new UInt32[] { (flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i }, new UInt32[] { j }, new Int64[] { position }));
+                        }
+
+                        CurrentProcess1++;
+                    }
+                }
+            }
+
+            return flashingPayloads.ToArray();
+        }
+
         internal static string GetProgrammerPath(byte[] RKH, string Type)
         {
             IEnumerable<EmergencyFileEntry> RKHEntries = App.Config.EmergencyRepository.Where(e => (StructuralComparisons.StructuralEqualityComparer.Equals(e.RKH, RKH) && e.ProgrammerExists()));
@@ -1765,7 +1659,7 @@ namespace WPinternals
 
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
-            byte[] GPTChunk = GetGptChunk(FlashModel, 0x20000);
+            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
             GPT GPT = new GPT(GPTChunk);
 
             Partition Target;
@@ -2070,430 +1964,6 @@ namespace WPinternals
 
             LogFile.EndAction("FixBoot");
         }
-        
-        // Magic!
-        // Assumes phone with Flash protocol v2
-        // Assumes phone is in flash mode
-        internal async static Task LumiaV2UnlockBootloader(PhoneNotifierViewModel Notifier, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null)
-        {
-            LogFile.BeginAction("UnlockBootloader");
-            NokiaFlashModel FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
-
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitFailure == null) ExitFailure = (m, s) => { };
-
-            try
-            {
-                PhoneInfo Info = FlashModel.ReadPhoneInfo();
-                bool IsBootLoaderSecure = !Info.Authenticated && !Info.RdcPresent && Info.SecureFfuEnabled;
-
-                if (ProfileFFUPath == null)
-                    throw new ArgumentNullException("Profile FFU path is missing");
-
-                FFU ProfileFFU = new FFU(ProfileFFUPath);
-
-                if (IsBootLoaderSecure)
-                {
-                    if (!Info.PlatformID.StartsWith(ProfileFFU.PlatformID, StringComparison.OrdinalIgnoreCase))
-                        throw new ArgumentNullException("Profile FFU has wrong Platform ID for connected phone");
-                }
-
-                FFU SupportedFFU = null;
-                if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == ProfileFFU.GetOSVersion()))
-                    SupportedFFU = ProfileFFU;
-                else if (SupportedFFUPath == null)
-                    throw new ArgumentNullException("Donor-FFU with supported OS version was not provided");
-                else
-                {
-                    SupportedFFU = new FFU(SupportedFFUPath);
-                    if (!App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
-                        throw new ArgumentNullException("Donor-FFU with supported OS version was not provided");
-                }
-
-                // TODO: Check EDE file
-
-                LogFile.Log("Assembling data for unlock", LogType.FileAndConsole);
-                SetWorkingStatus("Assembling data for unlock", null, null);
-                byte[] UnlockedEFIESP = ProfileFFU.GetPartition("EFIESP");
-
-                DiscUtils.Fat.FatFileSystem UnlockedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(UnlockedEFIESP));
-
-                if (SupportedFFU.Path != ProfileFFU.Path)
-                {
-                    LogFile.Log("Donor-FFU: " + SupportedFFU.Path);
-                    byte[] SupportedEFIESP = SupportedFFU.GetPartition("EFIESP");
-                    DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(SupportedEFIESP));
-                    DiscUtils.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
-                    MemoryStream SupportedMobileStartupMemStream = new MemoryStream();
-                    SupportedMobileStartupStream.CopyTo(SupportedMobileStartupMemStream);
-                    byte[] SupportedMobileStartup = SupportedMobileStartupMemStream.ToArray();
-                    SupportedMobileStartupMemStream.Close();
-                    SupportedMobileStartupStream.Close();
-
-                    // Save supported mobilestartup.efi
-                    LogFile.Log("Taking mobilestartup.efi from donor-FFU");
-                    Stream MobileStartupStream = UnlockedEFIESPFileSystem.OpenFile(@"Windows\System32\Boot\mobilestartup.efi", FileMode.Create, FileAccess.Write);
-                    MobileStartupStream.Write(SupportedMobileStartup, 0, SupportedMobileStartup.Length);
-                    MobileStartupStream.Close();
-                }
-
-                // Magic!
-                // This patch contains multiple hacks to disable SecureBoot, disable Bootpolicies and allow Mass Storage Mode on retail phones
-                App.PatchEngine.TargetImage = UnlockedEFIESPFileSystem;
-                bool PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
-                if (!PatchResult)
-                    throw new WPinternalsException("Failed to patch bootloader");
-
-                // Edit BCD
-                LogFile.Log("Edit BCD");
-                using (Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite))
-                {
-                    using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
-                    {
-                        DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
-                        DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
-                        DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
-                        if (NoCodeIntegrityElement != null)
-                            NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                        else
-                            MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
-
-                        DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
-                        NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
-                        if (NoCodeIntegrityElement != null)
-                            NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                        else
-                            WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
-                    }
-                }
-
-                UnlockedEFIESPFileSystem.Dispose();
-
-                List<FlashPart> Parts = new List<FlashPart>();
-                FlashPart Part;
-                GPT GPT = FlashModel.ReadGPT();
-
-                // Create backup-partition for EFIESP
-                byte[] GPTChunk = GetGptChunk(FlashModel, (UInt32)ProfileFFU.ChunkSize);
-                byte[] GPTChunkBackup = new byte[GPTChunk.Length];
-                Buffer.BlockCopy(GPTChunk, 0, GPTChunkBackup, 0, GPTChunk.Length);
-                GPT = new GPT(GPTChunk);
-                bool GPTChanged = false;
-                Partition BACKUP_EFIESP = GPT.GetPartition("BACKUP_EFIESP");
-                Partition EFIESP;
-                UInt32 OriginalEfiespSizeInSectors = (UInt32)GPT.GetPartition("EFIESP").SizeInSectors;
-                UInt32 OriginalEfiespLastSector = (UInt32)GPT.GetPartition("EFIESP").LastSector;
-                if (BACKUP_EFIESP == null)
-                {
-                    BACKUP_EFIESP = GPT.GetPartition("EFIESP");
-                    Guid OriginalPartitionTypeGuid = BACKUP_EFIESP.PartitionTypeGuid;
-                    Guid OriginalPartitionGuid = BACKUP_EFIESP.PartitionGuid;
-                    BACKUP_EFIESP.Name = "BACKUP_EFIESP";
-                    BACKUP_EFIESP.LastSector = BACKUP_EFIESP.FirstSector + ((OriginalEfiespSizeInSectors) / 2) - 1; // Original is 0x10000
-                    BACKUP_EFIESP.PartitionGuid = Guid.NewGuid();
-                    BACKUP_EFIESP.PartitionTypeGuid = Guid.NewGuid();
-                    EFIESP = new Partition();
-                    EFIESP.Name = "EFIESP";
-                    EFIESP.Attributes = BACKUP_EFIESP.Attributes;
-                    EFIESP.PartitionGuid = OriginalPartitionGuid;
-                    EFIESP.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                    EFIESP.FirstSector = BACKUP_EFIESP.LastSector + 1;
-                    EFIESP.LastSector = EFIESP.FirstSector + ((OriginalEfiespSizeInSectors) / 2) - 1; // Original is 0x10000
-                    GPT.Partitions.Add(EFIESP);
-                    GPTChanged = true;
-                }
-                EFIESP = GPT.GetPartition("EFIESP");
-                if ((UInt64)UnlockedEFIESP.Length > (EFIESP.SizeInSectors * 0x200))
-                {
-                    byte[] HalfEFIESP = new byte[EFIESP.SizeInSectors * 0x200];
-                    Buffer.BlockCopy(UnlockedEFIESP, 0, HalfEFIESP, 0, HalfEFIESP.Length);
-                    UnlockedEFIESP = HalfEFIESP;
-                    ByteOperations.WriteUInt32(UnlockedEFIESP, 0x20, (UInt32)EFIESP.SizeInSectors); // Correction of partitionsize
-                }
-
-                Partition TargetPartition = GPT.GetPartition("EFIESP");
-                if (TargetPartition == null)
-                    throw new WPinternalsException("EFIESP partition not found!");
-
-                if ((UInt64)UnlockedEFIESP.Length != (TargetPartition.SizeInSectors * 0x200))
-                    throw new WPinternalsException("New EFIESP partition has wrong size. Size = 0x" + UnlockedEFIESP.Length.ToString("X8") + ". Expected size = 0x" + (TargetPartition.SizeInSectors * 0x200).ToString("X8"));
-
-                Part = new FlashPart();
-                Part.StartSector = (UInt32)TargetPartition.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
-                Part.Stream = new MemoryStream(UnlockedEFIESP);
-                Part.ProgressText = "Flashing unlocked bootloader (part 1)...";
-                Parts.Add(Part);
-
-                // Now add NV partition
-                Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
-                Partition UEFI_BS_NV;
-                if (BACKUP_BS_NV == null)
-                {
-                    BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
-                    Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
-                    Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
-                    BACKUP_BS_NV.Name = "BACKUP_BS_NV";
-                    BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
-                    BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                    UEFI_BS_NV = new Partition();
-                    UEFI_BS_NV.Name = "UEFI_BS_NV";
-                    UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                    UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                    UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                    UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
-                    UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
-                    GPT.Partitions.Add(UEFI_BS_NV);
-                    GPTChanged = true;
-                }
-                Part = new FlashPart();
-                TargetPartition = GPT.GetPartition("UEFI_BS_NV");
-                Part.StartSector = (UInt32)TargetPartition.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
-                Part.Stream = new SeekableStream(() =>
-                {
-                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
-                    // Magic!
-                    // The SB resource is a compressed version of a raw NV-variable-partition.
-                    // In this partition the SecureBoot variable is disabled.
-                    // It overwrites the variable in a different NV-partition than where this variable is stored usually.
-                    // This normally leads to endless-loops when the NV-variables are enumerated.
-                    // But the partition contains an extra hack to break out the endless loops.
-                    var stream = assembly.GetManifestResourceStream("WPinternals.SB");
-
-                    return new DecompressedStream(stream);
-                });
-                Parts.Add(Part);
-
-                if (GPTChanged)
-                {
-                    GPT.Rebuild();
-                    Part = new FlashPart();
-                    Part.StartSector = 0;
-                    Part.Stream = new MemoryStream(GPTChunk);
-                    Parts.Add(Part);
-                }
-				
-                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
-
-                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
-                    await Notifier.WaitForArrival();
-
-                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
-                    throw new WPinternalsException("Error: Phone is in wrong mode");
-
-                // Not going to retry in a loop because a second attempt will result in gears due to changed BootOrder.
-                // Just inform user of problem and revert.
-                // User can try again after revert.
-                bool IsPhoneInBadMassStorageMode = false;
-                string ErrorMessage = null;
-                try
-                {
-                    await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_MassStorage, SetWorkingStatus, UpdateWorkingStatus);
-                }
-                catch (WPinternalsException Ex)
-                {
-                    ErrorMessage = "Error: " + Ex.Message;
-                    LogFile.LogException(Ex);
-                }
-                catch (Exception Ex)
-                {
-                    LogFile.LogException(Ex);
-                }
-
-                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
-                {
-                    SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode, but the driver of the PC failed to start. Unfortunately this happens sometimes. You need to manually reset the phone now. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. Windows Phone Internals will automatically start to revert the changes. After the phone is fully booted again, you can retry to unlock the bootloader.", null, false, WPinternalsStatus.WaitingForManualReset);
-                    await Notifier.WaitForArrival(); // Should be detected in Bootmanager mode
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
-                        IsPhoneInBadMassStorageMode = true;
-                }
-
-                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
-                {
-                    // Probably the "BootOrder" prevents to boot to MobileStartup. Mass Storage mode depends on MobileStartup.
-                    // In this case Bootarm boots straight to Winload. But Winload can't handle the change of the EFIESP partition. That will cause a bootloop.
-
-                    SetWorkingStatus("Problem detected, rolling back...", ErrorMessage);
-                    await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                    Parts = new List<FlashPart>();
-
-                    // Restore original GPT, which will also reference the original NV.
-                    Part = new FlashPart();
-                    Part.StartSector = 0;
-                    Part.Stream = new MemoryStream(GPTChunkBackup);
-                    Parts.Add(Part);
-
-                    await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
-
-                    // An old NV backup was restored and it possibly contained the IsFlashing flag.
-                    // Can't clear it immeadiately, so we need another flash.
-                    if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
-                        await Notifier.WaitForArrival();
-
-                    if ((Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) || (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash))
-                    {
-                        await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, null, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
-                    }
-
-                    if (IsPhoneInBadMassStorageMode)
-                        ExitFailure("Failed to unlock the bootloader due to misbahaving driver. Wait for phone to boot to Windows and then try again.", "The Mass Storage driver of the PC failed to start. Unfortunately this happens sometimes. After the phone is fully booted again, you can retry to unlock the bootloader.");
-                    else
-                        ExitFailure("Failed to unlock the bootloader", "It is not possible to unlock the bootloader straight after flashing. NOTE: Fully reboot the phone and then properly shutdown the phone, before you can try to unlock again!");
-
-                    return;
-                }
-
-                SetWorkingStatus("Create backup partition...", null, null);
-
-                MassStorage MassStorage = (MassStorage)Notifier.CurrentModel;
-                GPTChunk = MassStorage.ReadSectors(0, 0x100);
-                GPT = new GPT(GPTChunk);
-                BACKUP_EFIESP = GPT.GetPartition("BACKUP_EFIESP");
-                byte[] BackupEFIESP = MassStorage.ReadSectors(BACKUP_EFIESP.FirstSector, BACKUP_EFIESP.SizeInSectors);
-
-                LogFile.Log("Unlocking backup partition", LogType.FileAndConsole);
-                SetWorkingStatus("Unlocking backup partition", null, null);
-
-                // Copy the backed up unlocked EFIESP for future use
-                byte[] BackupUnlockedEFIESP = new byte[UnlockedEFIESP.Length];
-                Buffer.BlockCopy(BackupEFIESP, 0, BackupUnlockedEFIESP, 0, BackupEFIESP.Length);
-
-                DiscUtils.Fat.FatFileSystem UnlockedBackedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(BackupUnlockedEFIESP));
-                
-                // Magic!
-                // This patch contains multiple hacks to disable SecureBoot, disable Bootpolicies and allow Mass Storage Mode on retail phones
-                App.PatchEngine.TargetImage = UnlockedBackedEFIESPFileSystem;
-                PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
-
-                // The patch to mobilestartup failed, get a new mobilestartup from the donor FFU instead
-                if (!PatchResult)
-                {
-                    LogFile.Log("Donor-FFU: " + SupportedFFU.Path);
-                    byte[] SupportedEFIESP = SupportedFFU.GetPartition("EFIESP");
-                    DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(SupportedEFIESP));
-                    DiscUtils.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
-                    MemoryStream SupportedMobileStartupMemStream = new MemoryStream();
-                    SupportedMobileStartupStream.CopyTo(SupportedMobileStartupMemStream);
-                    byte[] SupportedMobileStartup = SupportedMobileStartupMemStream.ToArray();
-                    SupportedMobileStartupMemStream.Close();
-                    SupportedMobileStartupStream.Close();
-
-                    // Save supported mobilestartup.efi
-                    LogFile.Log("Taking mobilestartup.efi from donor-FFU");
-                    Stream MobileStartupStream = UnlockedBackedEFIESPFileSystem.OpenFile(@"Windows\System32\Boot\mobilestartup.efi", FileMode.Create, FileAccess.Write);
-                    MobileStartupStream.Write(SupportedMobileStartup, 0, SupportedMobileStartup.Length);
-                    MobileStartupStream.Close();
-
-                    App.PatchEngine.TargetImage = UnlockedBackedEFIESPFileSystem;
-                    PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
-
-                    // We shouldn't be there
-                    if (!PatchResult)
-                        throw new WPinternalsException("Failed to patch bootloader");
-                }
-
-                // Edit BCD
-                LogFile.Log("Edit BCD");
-                using (Stream BCDFileStream = UnlockedBackedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite))
-                {
-                    using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
-                    {
-                        DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
-                        DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
-                        DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
-                        if (NoCodeIntegrityElement != null)
-                            NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                        else
-                            MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
-
-                        DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
-                        NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
-                        if (NoCodeIntegrityElement != null)
-                            NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                        else
-                            WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
-                    }
-                }
-
-                UnlockedBackedEFIESPFileSystem.Dispose();
-
-                SetWorkingStatus("Boot optimization...", null, null);
-
-                App.PatchEngine.TargetPath = MassStorage.Drive + "\\";
-                App.PatchEngine.Patch("SecureBootHack-MainOS"); // Don't care about result here. Some phones do not need this.
-
-                LogFile.Log("The phone is currently in Mass Storage Mode", LogType.ConsoleOnly);
-                LogFile.Log("To continue the unlock-sequence, the phone needs to be rebooted", LogType.ConsoleOnly);
-                LogFile.Log("Keep the phone connected to the PC", LogType.ConsoleOnly);
-                LogFile.Log("Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates", LogType.ConsoleOnly);
-                LogFile.Log("The unlock-sequence will resume automatically", LogType.ConsoleOnly);
-                LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
-
-                SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
-
-                await Notifier.WaitForRemoval();
-
-                SetWorkingStatus("Rebooting phone...");
-
-                await Notifier.WaitForArrival();
-                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                    throw new WPinternalsException("Phone is in wrong mode");
-
-                ((NokiaFlashModel)Notifier.CurrentModel).SwitchToFlashAppContext();
-
-                // EFIESP is appended at the end of the GPT
-                // BACKUP_EFIESP is at original location in GPT
-                EFIESP = GPT.GetPartition("EFIESP");
-                UInt32 OriginalEfiespFirstSector = (UInt32)BACKUP_EFIESP.FirstSector;
-                BACKUP_EFIESP.Name = "EFIESP";
-                BACKUP_EFIESP.LastSector = OriginalEfiespLastSector; // Do not hardcode the length of the partition, some phones have bigger EFIESP partitions than others.
-                BACKUP_EFIESP.PartitionGuid = EFIESP.PartitionGuid;
-                BACKUP_EFIESP.PartitionTypeGuid = EFIESP.PartitionTypeGuid;
-                GPT.Partitions.Remove(EFIESP);
-
-                Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
-                if (IsUnlockedFlag == null)
-                {
-                    IsUnlockedFlag = new Partition();
-                    IsUnlockedFlag.Name = "IS_UNLOCKED";
-                    IsUnlockedFlag.Attributes = 0;
-                    IsUnlockedFlag.PartitionGuid = Guid.NewGuid();
-                    IsUnlockedFlag.PartitionTypeGuid = Guid.NewGuid();
-                    IsUnlockedFlag.FirstSector = 0x40;
-                    IsUnlockedFlag.LastSector = 0x40;
-                    GPT.Partitions.Add(IsUnlockedFlag);
-                }
-
-                Parts = new List<FlashPart>();
-                GPT.Rebuild();
-                Part = new FlashPart();
-                Part.StartSector = 0;
-                Part.Stream = new MemoryStream(GPTChunk);
-                Part.ProgressText = "Flashing unlocked bootloader (part 2)...";
-                Parts.Add(Part);
-                Part = new FlashPart();
-                Part.StartSector = OriginalEfiespFirstSector;
-                Part.Stream = new MemoryStream(BackupUnlockedEFIESP); // We must keep the Oiriginal EFIESP, but unlocked, for many reasons
-                Parts.Add(Part);
-                Part = new FlashPart();
-                Part.StartSector = OriginalEfiespFirstSector + ((OriginalEfiespSizeInSectors) / 2);
-                Part.Stream = new MemoryStream(BackupEFIESP);
-                Parts.Add(Part);
-                
-                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
-
-                LogFile.Log("Bootloader unlocked!", LogType.FileAndConsole);
-                ExitSuccess("Bootloader unlocked successfully!", null);
-            }
-            catch (Exception Ex)
-            {
-                LogFile.LogException(Ex);
-                ExitFailure(Ex.Message, Ex is WPinternalsException ? ((WPinternalsException)Ex).SubMessage : null);
-            }
-            LogFile.EndAction("UnlockBootloader");
-        }
 
         // Assumes phone with Flash protocol v2
         // Assumes phone is in flash mode
@@ -2503,7 +1973,7 @@ namespace WPinternals
 
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
-            byte[] GPTChunk = GetGptChunk(FlashModel, 0x20000);
+            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
             GPT GPT = new GPT(GPTChunk);
 
             Partition Target;

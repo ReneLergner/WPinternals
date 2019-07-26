@@ -39,7 +39,7 @@ namespace WPinternals
             Hyperlink link = args.Source as Hyperlink;
             if (link != null)
             {
-                (this.DataContext as NokiaModeNormalViewModel).RebootTo(link.NavigateUri.ToString());
+                (this.DataContext as NokiaModeMassStorageViewModel).RebootTo(link.NavigateUri.ToString());
             }
         }
 

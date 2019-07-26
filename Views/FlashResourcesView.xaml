@@ -100,6 +100,26 @@ DEALINGS IN THE SOFTWARE.
                         </FlowDocument>
                     </local:FlowDocumentScrollViewerNoMouseWheel>
                     <local:FilePicker SelectionText="Optionally select an FFU-image or raw image with an Engineering SBL3 partition..." AllowNull="True" Path="{Binding SBL3Path, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                    <StackPanel Visibility="{Binding Path=IsSupportedFfuNeeded, Converter={StaticResource VisibilityConverter}}">
+                        <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
+                            <FlowDocument Loaded="Document_Loaded" FontFamily="Segoe UI" FontSize="12" PagePadding="1">
+                                <local:Paragraph TextAlignment="Left">
+                                    <LineBreak />
+                                    <Run Text="The FFU-image you selected does not have a supported OS-version. Windows Phone Internals needs to extract files from a supported OS-version. You need to select such donor-FFU. If necessary, you can select an FFU-image for a different model." />
+                                    <LineBreak />
+                                </local:Paragraph>
+                            </FlowDocument>
+                        </local:FlowDocumentScrollViewerNoMouseWheel>
+                        <local:FilePicker SelectionText="Select an FFU-image with supported OS-version..." AllowNull="False" Path="{Binding SupportedFFUPath, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                        <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=IsSupportedFfuValid, Converter={StaticResource InverseVisibilityConverter}}">
+                            <FlowDocument Loaded="Document_Loaded" FontFamily="Segoe UI" FontSize="12" PagePadding="1" FontWeight="Bold" Foreground="Red">
+                                <local:Paragraph TextAlignment="Left">
+                                    <LineBreak />
+                                    <Run Text="The OS version of the selected FFU is not supported. Select a donor-FFU with a supported OS version." />
+                                </local:Paragraph>
+                            </FlowDocument>
+                        </local:FlowDocumentScrollViewerNoMouseWheel>
+                    </StackPanel>
                 </StackPanel>
                 <StackPanel Visibility="{Binding Path=TargetHasNewFlashProtocol, Converter={StaticResource VisibilityConverter}}">
                     <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >

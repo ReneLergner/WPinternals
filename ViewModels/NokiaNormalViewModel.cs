@@ -54,15 +54,28 @@ namespace WPinternals
                 LogFile.Log("Product Code: " + ProductCode);
                 Firmware = CurrentModel.ExecuteJsonMethodAsString("ReadSwVersion", "SwVersion"); // 3051.40000.1349.0007
                 LogFile.Log("Firmware: " + Firmware);
+                HWID = CurrentModel.ExecuteJsonMethodAsString("ReadHwVersion", "HWVersion"); // 1002
+                LogFile.Log("HWID: " + HWID);
 
-                IMEI = CurrentModel.ExecuteJsonMethodAsString("ReadSerialNumber", "SerialNumber"); // IMEI
+                IMEI = CurrentModel.ExecuteJsonMethodAsString("ReadSerialNumber", new System.Collections.Generic.Dictionary<string, object>() { { "SubscriptionId", 0 } }, "SerialNumber"); // IMEI
+                string IMEI2 = CurrentModel.ExecuteJsonMethodAsString("ReadSerialNumber", new System.Collections.Generic.Dictionary<string, object>() { { "SubscriptionId", 1 } }, "SerialNumber"); // IMEI 2
+
+                if (!string.IsNullOrEmpty(IMEI2))
+                    IMEI += "\n" + IMEI2;
+
                 LogFile.Log("IMEI: " + IMEI);
                 PublicID = CurrentModel.ExecuteJsonMethodAsBytes("ReadPublicId", "PublicId"); // 0x14 bytes: a5 e5 ...
                 LogFile.Log("Public ID: " + Converter.ConvertHexToString(PublicID, " "));
                 BluetoothMac = CurrentModel.ExecuteJsonMethodAsBytes("ReadBtId", "BtId"); // 6 bytes: bc c6 ...
                 LogFile.Log("Bluetooth MAC: " + Converter.ConvertHexToString(BluetoothMac, " "));
-                WlanMac = CurrentModel.ExecuteJsonMethodAsBytes("ReadWlanMacAddress", "WlanMacAddress1"); // 6 bytes
-                LogFile.Log("WLAN MAC: " + Converter.ConvertHexToString(WlanMac, " "));
+                WlanMac1 = CurrentModel.ExecuteJsonMethodAsBytes("ReadWlanMacAddress", "WlanMacAddress1"); // 6 bytes
+                LogFile.Log("WLAN MAC 1: " + Converter.ConvertHexToString(WlanMac1, " "));
+                WlanMac2 = CurrentModel.ExecuteJsonMethodAsBytes("ReadWlanMacAddress", "WlanMacAddress2"); // 6 bytes
+                LogFile.Log("WLAN MAC 2: " + Converter.ConvertHexToString(WlanMac2, " "));
+                WlanMac3 = CurrentModel.ExecuteJsonMethodAsBytes("ReadWlanMacAddress", "WlanMacAddress3"); // 6 bytes
+                LogFile.Log("WLAN MAC 3: " + Converter.ConvertHexToString(WlanMac3, " "));
+                WlanMac4 = CurrentModel.ExecuteJsonMethodAsBytes("ReadWlanMacAddress", "WlanMacAddress4"); // 6 bytes
+                LogFile.Log("WLAN MAC 4: " + Converter.ConvertHexToString(WlanMac4, " "));
 
                 bool? ProductionDone = CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
                 if (ProductionDone == null)
@@ -72,6 +85,23 @@ namespace WPinternals
                 LogFile.Log("Bootloader Security: " + ((bool)IsBootloaderSecurityEnabled ? "Enabled" : "Disabled"));
                 IsSimLocked = CurrentModel.ExecuteJsonMethodAsBoolean("ReadSimlockActive", "SimLockActive");
                 LogFile.Log("Simlock: " + ((bool)IsSimLocked ? "Active" : "Unlocked"));
+
+                string BootPolicy = CurrentModel.ExecuteJsonMethodAsString("GetUefiCertificateStatus", "BootPolicy");
+                string Db = CurrentModel.ExecuteJsonMethodAsString("GetUefiCertificateStatus", "Db");
+                string Dbx = CurrentModel.ExecuteJsonMethodAsString("GetUefiCertificateStatus", "Dbx");
+                string Kek = CurrentModel.ExecuteJsonMethodAsString("GetUefiCertificateStatus", "Kek");
+                string Pk = CurrentModel.ExecuteJsonMethodAsString("GetUefiCertificateStatus", "Pk");
+
+                this.BootPolicy = BootPolicy;
+                LogFile.Log("Boot policy: " + BootPolicy);
+                this.Db = Db;
+                LogFile.Log("DB: " + Db);
+                this.Dbx = Dbx;
+                LogFile.Log("DBX: " + Dbx);
+                this.Kek = Kek;
+                LogFile.Log("KEK: " + Kek);
+                this.Pk = Pk;
+                LogFile.Log("PK: " + Pk);
             }
             catch { }
         }
@@ -132,6 +162,20 @@ namespace WPinternals
             }
         }
 
+        private string _HWID = null;
+        public string HWID
+        {
+            get
+            {
+                return _HWID;
+            }
+            set
+            {
+                _HWID = value;
+                OnPropertyChanged("HWID");
+            }
+        }
+
         private string _IMEI = null;
         public string IMEI
         {
@@ -143,6 +187,80 @@ namespace WPinternals
             {
                 _IMEI = value;
                 OnPropertyChanged("IMEI");
+            }
+        }
+
+        private string _BootPolicy = null;
+        public string BootPolicy
+        {
+            get
+            {
+                return _BootPolicy;
+            }
+            set
+            {
+                _BootPolicy = value;
+                OnPropertyChanged("BootPolicy");
+            }
+        }
+
+
+        private string _Db = null;
+        public string Db
+        {
+            get
+            {
+                return _Db;
+            }
+            set
+            {
+                _Db = value;
+                OnPropertyChanged("Db");
+            }
+        }
+
+
+        private string _Dbx = null;
+        public string Dbx
+        {
+            get
+            {
+                return _Dbx;
+            }
+            set
+            {
+                _Dbx = value;
+                OnPropertyChanged("Dbx");
+            }
+        }
+
+
+        private string _Kek = null;
+        public string Kek
+        {
+            get
+            {
+                return _Kek;
+            }
+            set
+            {
+                _Kek = value;
+                OnPropertyChanged("Kek");
+            }
+        }
+
+
+        private string _Pk = null;
+        public string Pk
+        {
+            get
+            {
+                return _Pk;
+            }
+            set
+            {
+                _Pk = value;
+                OnPropertyChanged("Pk");
             }
         }
 
@@ -160,17 +278,59 @@ namespace WPinternals
             }
         }
 
-        private byte[] _WlanMac = null;
-        public byte[] WlanMac
+        private byte[] _WlanMac1 = null;
+        public byte[] WlanMac1
         {
             get
             {
-                return _WlanMac;
+                return _WlanMac1;
             }
             set
             {
-                _WlanMac = value;
-                OnPropertyChanged("WlanMac");
+                _WlanMac1 = value;
+                OnPropertyChanged("WlanMac1");
+            }
+        }
+
+        private byte[] _WlanMac2 = null;
+        public byte[] WlanMac2
+        {
+            get
+            {
+                return _WlanMac2;
+            }
+            set
+            {
+                _WlanMac2 = value;
+                OnPropertyChanged("WlanMac2");
+            }
+        }
+
+        private byte[] _WlanMac3 = null;
+        public byte[] WlanMac3
+        {
+            get
+            {
+                return _WlanMac3;
+            }
+            set
+            {
+                _WlanMac3 = value;
+                OnPropertyChanged("WlanMac3");
+            }
+        }
+
+        private byte[] _WlanMac4 = null;
+        public byte[] WlanMac4
+        {
+            get
+            {
+                return _WlanMac4;
+            }
+            set
+            {
+                _WlanMac4 = value;
+                OnPropertyChanged("WlanMac4");
             }
         }
 

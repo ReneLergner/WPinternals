@@ -110,7 +110,7 @@ DEALINGS IN THE SOFTWARE.
                 </StackPanel>
             </StackPanel>
         </Border>
-        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0">
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
                 <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
@@ -153,6 +153,40 @@ DEALINGS IN THE SOFTWARE.
                 </local:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=FlashPartitionsCommand, Mode=OneWay}" Content="Flash partitions" Width="120" Height="Auto" Padding="0,5" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0">
+            <StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <local:Paragraph>
+                            <Run Text="Flash MMOS" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="To flash a MMOS image (secwim), your phone will be switched to FFULoader mode."/>
+                            <LineBreak />
+                            <LineBreak />
+                            <local:FilePicker Caption="SecWim: " SelectionText="Select the source-file to flash to the MMOS image..." Path="{Binding MMOSPath, Mode=TwoWay}" AllowNull="True" DefaultFileName="MMOS.secwim" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
+                            <LineBreak />
+                            <LineBreak />
+                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the selected MMOS image will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <local:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash MMOS." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
+                    <Button Command="{Binding Path=FlashMMOSCommand, Mode=OneWay}" Content="Flash MMOS" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>
             </StackPanel>
         </Border>

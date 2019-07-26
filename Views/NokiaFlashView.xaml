@@ -55,6 +55,7 @@ DEALINGS IN THE SOFTWARE.
                                     <RowDefinition Height="*"/>
                                     <RowDefinition />
                                     <RowDefinition />
+                                    <RowDefinition />
                                 </Grid.RowDefinitions>
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Platform name" />
                                 <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding PlatformName, Mode=OneWay}" />
@@ -64,10 +65,12 @@ DEALINGS IN THE SOFTWARE.
                                 <TextBlock Grid.Row="2" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding ProductType}" Visibility="{Binding Path=ProductType, Converter={StaticResource ObjectToVisibilityConverter}}"/>
                                 <TextBlock Grid.Row="3" Grid.Column="0" Text="Product Code" Visibility="{Binding Path=ProductCode, Converter={StaticResource ObjectToVisibilityConverter}}"/>
                                 <TextBlock Grid.Row="3" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding ProductCode}" Visibility="{Binding Path=ProductCode, Converter={StaticResource ObjectToVisibilityConverter}}"/>
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Storage" />
-                                <TextBlock Grid.Row="4" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding eMMC}"/>
-                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Bootloader" />
-                                <TextBlock Grid.Row="5" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding BootloaderDescription}"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Charging status" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding ChargingStatus}"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Storage" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding eMMC}"/>
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Bootloader" />
+                                <TextBlock Grid.Row="6" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding BootloaderDescription}"/>
                             </Grid>
                         </local:Paragraph>
                     </FlowDocument>
@@ -195,7 +198,7 @@ DEALINGS IN THE SOFTWARE.
                 </FlowDocument>
             </local:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
-        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" >
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20" >
             <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
                     <local:Paragraph TextAlignment="Left">
@@ -218,6 +221,116 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Native JTAG debugging" />
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=NativeDebugStatus, Converter={StaticResource InverseVisibilityConverter}}" />
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=NativeDebugStatus, Converter={StaticResource VisibilityConverter}}"/>
+                        </Grid>
+                    </local:Paragraph>
+                </FlowDocument>
+            </local:FlowDocumentScrollViewerNoMouseWheel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" >
+            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                    <local:Paragraph TextAlignment="Left">
+                        <Run Text="Fuse Security" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Different fuses control different security feature's states. If one of those flags is green, the feature bound to the corresponding fuse will be enabled." />
+                        <LineBreak />
+                        <Run Text="Some fuses are detailed below:" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Bold>SECURE_BOOT (Platform Secure Boot)</Bold>
+                        <LineBreak />
+                        - Manages Secure Boot status for entire boot chain.
+                        <LineBreak />
+                        - Phones with this fuse unblown can have their bootloader partitions replaced.
+                        <LineBreak />
+                        - Spec A phones can have some of their partitions replaced when unlocked without this fuse unblown.
+                        <LineBreak />
+                        <LineBreak />
+                        <Bold>FFU_VERIFY (Secure FFU)</Bold>
+                        <LineBreak />
+                        - If unblown, the phone allows non secure sync flashing.
+                        <LineBreak />
+                        - If unblown, the phone also allows skipping security checks when flashing.
+                        <LineBreak />
+                        <LineBreak />
+                        <Bold>PRODUCTION_DONE</Bold>
+                        <LineBreak />
+                        - Indicates if the phone passed the production phase of manufacturing.
+                        <LineBreak />
+                        <LineBreak />
+                        <Bold>FAST_BOOT</Bold>
+                        <LineBreak />
+                        - If unblown, UEFI allows booting from the SD card first, if programmed to do so.
+                        <LineBreak />
+                        <LineBreak />
+                        <Grid IsHitTestVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="SECURE_BOOT" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSecureBootStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSecureBootStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="FFU_VERIFY" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigFfuVerifyStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigFfuVerifyStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="JTAG" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigJtagStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigJtagStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="SHK" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigShkStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigShkStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="SIMLOCK" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSimlockStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSimlockStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="PRODUCTION_DONE" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigProductionDoneStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigProductionDoneStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="RKH" />
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigRkhStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigRkhStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="PUBLIC_ID" />
+                            <TextBlock Grid.Row="7" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigPublicIdStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="7" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigPublicIdStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="8" Grid.Column="0" Text="DAK" />
+                            <TextBlock Grid.Row="8" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigDakStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="8" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigDakStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="9" Grid.Column="0" Text="SEC_GEN" />
+                            <TextBlock Grid.Row="9" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSecGenStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="9" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSecGenStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="10" Grid.Column="0" Text="OEM_ID" />
+                            <TextBlock Grid.Row="10" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigOemIdStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="10" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigOemIdStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="11" Grid.Column="0" Text="FAST_BOOT" />
+                            <TextBlock Grid.Row="11" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigFastBootStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="11" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigFastBootStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="12" Grid.Column="0" Text="SPDM_SEC_MODE" />
+                            <TextBlock Grid.Row="12" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSpdmSecModeStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="12" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSpdmSecModeStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="13" Grid.Column="0" Text="RPM_WDOG" />
+                            <TextBlock Grid.Row="13" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigRpmWdogStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="13" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigRpmWdogStatus, Converter={StaticResource VisibilityConverter}}"/>
+                            <TextBlock Grid.Row="14" Grid.Column="0" Text="SSM" />
+                            <TextBlock Grid.Row="14" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSsmStatus, Converter={StaticResource InverseVisibilityConverter}}" />
+                            <TextBlock Grid.Row="14" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSsmStatus, Converter={StaticResource VisibilityConverter}}"/>
                         </Grid>
                     </local:Paragraph>
                 </FlowDocument>

@@ -217,7 +217,7 @@ namespace WPinternals
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
                             FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
-                            byte[] GptChunk = LumiaV2UnlockBootViewModel.GetGptChunk(FlashModel, 0x20000);
+                            byte[] GptChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
                             GPT GPT = new GPT(GptChunk);
                             string Xml = File.ReadAllText(args[2]);
                             GPT.MergePartitions(Xml, false);
@@ -436,13 +436,47 @@ namespace WPinternals
                         break;
                     case "relockphone":
                         Notifier = new PhoneNotifierViewModel();
-                        UIContext.Send(s => Notifier.Start(), null);
+                        try
+                        {
+                            UIContext.Send(s => Notifier.Start(), null);
+                            FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
+                            Info = FlashModel.ReadPhoneInfo();
+                            Info.Log(LogType.ConsoleOnly);
 
-                        if (args.Length > 2)
-                            await LumiaV2UnlockBootViewModel.LumiaV2RelockPhone(Notifier, args[2]);
-                        else
-                            await LumiaV2UnlockBootViewModel.LumiaV2RelockPhone(Notifier, null);
+                            FFU ProfileFFU = null;
+                            FFU CurrentFFU;
+                            for (int i = 2; i <= 3; i++)
+                            {
+                                if (args.Length > i)
+                                {
+                                    CurrentFFU = new FFU(args[i]);
+                                    string CurrentVersion = CurrentFFU.GetOSVersion();
+                                    string PlatformID = CurrentFFU.PlatformID;
 
+                                    // Check if the current FFU matches the connected phone, so that the FFU can be used for profiling.
+                                    if (Info.PlatformID.StartsWith(PlatformID, StringComparison.OrdinalIgnoreCase))
+                                        ProfileFFU = CurrentFFU;
+                                }
+                            }
+
+                            if (ProfileFFU == null)
+                            {
+                                List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => (Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
+                                if (FFUs.Count() > 0)
+                                    ProfileFFU = new FFU(FFUs[0].Path);
+                                else
+                                    throw new WPinternalsException("Profile FFU missing");
+                            }
+                            LogFile.Log("Profile FFU: " + ProfileFFU.Path);
+
+                            UIContext.Send(s => Notifier.Start(), null);
+
+                            await LumiaUnlockBootloaderViewModel.LumiaRelockUEFI(Notifier, ProfileFFU.Path);
+                        }
+                        catch (Exception Ex)
+                        {
+                            LogFile.LogException(Ex);
+                        }
                         Notifier.Stop();
                         break;
                     case "addffu":
@@ -580,7 +614,7 @@ namespace WPinternals
                                     throw new WPinternalsException("No donor-FFU found with supported OS version");
                             }
 
-                            await LumiaV2UnlockBootViewModel.LumiaV2UnlockBootloader(Notifier, ProfileFFU.Path, null, SupportedFFU.Path);
+                            await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFU.Path, null, SupportedFFU.Path);
 
                             Notifier.Stop();
                         }

@@ -57,7 +57,7 @@ namespace WPinternals
                 return;
 
             if (SubContextViewModel == null)
-                ActivateSubContext(new LumiaFlashRomSourceSelectionViewModel(PhoneNotifier, SwitchToUnlockBoot, SwitchToUnlockRoot, SwitchToDumpFFU, SwitchToBackup, FlashPartitions, FlashArchive, FlashFFU));
+                ActivateSubContext(new LumiaFlashRomSourceSelectionViewModel(PhoneNotifier, SwitchToUnlockBoot, SwitchToUnlockRoot, SwitchToDumpFFU, SwitchToBackup, FlashPartitions, FlashArchive, FlashFFU, FlashMMOS));
         }
 
         // Called from an event-handler. So, "async void" is valid here.
@@ -505,7 +505,7 @@ namespace WPinternals
 
                 if (Info.FlashAppProtocolVersionMajor >= 2)
                 {
-                    byte[] GPTChunk = LumiaV2UnlockBootViewModel.GetGptChunk(Phone, 0x20000); // TODO: Get proper profile FFU and get ChunkSizeInBytes
+                    byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Phone, 0x20000); // TODO: Get proper profile FFU and get ChunkSizeInBytes
                     GPT GPT = new GPT(GPTChunk);
                     FlashPart Part;
                     List<FlashPart> FlashParts = new List<FlashPart>();
@@ -604,6 +604,84 @@ namespace WPinternals
 
                 ExitSuccess("Flash successful!", null);
             }).Start();
+        }
+
+        // Called from an event-handler. So, "async void" is valid here.
+        internal async void FlashMMOS(string MMOSPath)
+        {
+            IsSwitchingInterface = true; // Prevents that a device is forced to Flash mode on this screen which is meant for flashing
+            try
+            {
+                await SwitchModeViewModel.SwitchToWithProgress(PhoneNotifier, PhoneInterfaces.Lumia_Flash,
+                    (msg, sub) =>
+                        ActivateSubContext(new BusyViewModel(msg, sub)));
+                FlashMMOSTask(MMOSPath);
+            }
+            catch (Exception Ex)
+            {
+                ActivateSubContext(new MessageViewModel(Ex.Message, Callback));
+            }
+        }
+
+        internal void FlashMMOSTask(string MMOSPath)
+        {
+            NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+            if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                Phone.SwitchToFlashAppContext();
+            
+            new Thread(() =>
+            {
+                bool Result = true;
+
+                ActivateSubContext(new BusyViewModel("Initializing flash..."));
+
+                string ErrorSubMessage = null;
+
+                try
+                {
+                    FileInfo info = new FileInfo(MMOSPath);
+                    uint length = uint.Parse(info.Length.ToString());
+                    int maximumbuffersize = 0x00240000;
+                    uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
+                    BusyViewModel Busy = new BusyViewModel("Flashing Test Mode package...", MaxProgressValue: totalcounts, UIContext: UIContext);
+                    ActivateSubContext(Busy);
+
+                    Phone.FlashMMOS(MMOSPath, Busy.ProgressUpdater);
+
+                    ActivateSubContext(new BusyViewModel("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process."));
+
+                    PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                }
+                catch (Exception Ex)
+                {
+                    LogFile.LogException(Ex);
+                    if (Ex is WPinternalsException)
+                        ErrorSubMessage = ((WPinternalsException)Ex).SubMessage;
+                    Result = false;
+                }
+
+                if (!Result)
+                {
+                    ExitFailure("Flash failed!", ErrorSubMessage);
+                    return;
+                }
+            }).Start();
+        }
+
+        private void NewDeviceArrived(ArrivalEventArgs Args)
+        {
+            PhoneNotifier.NewDeviceArrived -= NewDeviceArrived;
+
+            if (Args.NewInterface != PhoneInterfaces.Lumia_Label)
+            {
+                ExitFailure("Flash failed!", "Phone unexpectedly switched mode while booting MMOS image.");
+                return;
+            }
+            else
+            {
+                ExitSuccess("Flash successful!", null);
+                return;
+            }
         }
 
         // Called from an event-handler. So, "async void" is valid here.

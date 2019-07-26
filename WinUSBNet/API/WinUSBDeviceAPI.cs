@@ -170,6 +170,9 @@ namespace MadWizard.WinUSBNet.API
         [DllImport("kernel32.dll", SetLastError = true)]
         private static unsafe extern bool CancelIoEx(IntPtr hFile, NativeOverlapped* pOverlapped);
         
+
+        [DllImport("winusb.dll", SetLastError = true)]
+        private static unsafe extern bool WinUsb_ResetPipe(IntPtr InterfaceHandle, byte PipeID);
         
 
 

@@ -28,13 +28,14 @@ namespace WPinternals
         private PhoneNotifierViewModel PhoneNotifier;
         private Action<string, string, string> FlashPartitionsCallback;
         private Action<string> FlashFFUCallback;
+        private Action<string> FlashMMOSCallback;
         private Action<string> FlashArchiveCallback;
         internal Action SwitchToUnlockBoot;
         internal Action SwitchToUnlockRoot;
         internal Action SwitchToDumpFFU;
         internal Action SwitchToBackup;
 
-        internal LumiaFlashRomSourceSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action SwitchToUnlockRoot, Action SwitchToDumpFFU, Action SwitchToBackup, Action<string, string, string> FlashPartitionsCallback, Action<string> FlashArchiveCallback, Action<string> FlashFFUCallback)
+        internal LumiaFlashRomSourceSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action SwitchToUnlockRoot, Action SwitchToDumpFFU, Action SwitchToBackup, Action<string, string, string> FlashPartitionsCallback, Action<string> FlashArchiveCallback, Action<string> FlashFFUCallback, Action<string> FlashMMOSCallback)
             : base()
         {
             this.PhoneNotifier = PhoneNotifier;
@@ -45,6 +46,7 @@ namespace WPinternals
             this.FlashPartitionsCallback = FlashPartitionsCallback;
             this.FlashArchiveCallback = FlashArchiveCallback;
             this.FlashFFUCallback = FlashFFUCallback;
+            this.FlashMMOSCallback = FlashMMOSCallback;
 
             this.PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
             this.PhoneNotifier.DeviceRemoved += DeviceRemoved;
@@ -137,6 +139,23 @@ namespace WPinternals
             }
         }
 
+        private string _MMOSPath;
+        public string MMOSPath
+        {
+            get
+            {
+                return _MMOSPath;
+            }
+            set
+            {
+                if (value != _MMOSPath)
+                {
+                    _MMOSPath = value;
+                    OnPropertyChanged("MMOSPath");
+                }
+            }
+        }
+
         private bool _IsPhoneDisconnected;
         public bool IsPhoneDisconnected
         {
@@ -214,6 +233,19 @@ namespace WPinternals
             }
         }
 
+        private DelegateCommand _FlashMMOSCommand;
+        public DelegateCommand FlashMMOSCommand
+        {
+            get
+            {
+                if (_FlashMMOSCommand == null)
+                {
+                    _FlashMMOSCommand = new DelegateCommand(() => { FlashMMOSCallback(MMOSPath); }, () => ((MMOSPath != null) && (PhoneNotifier.CurrentInterface != null)));
+                }
+                return _FlashMMOSCommand;
+            }
+        }
+
         private DelegateCommand _FlashArchiveCommand;
         public DelegateCommand FlashArchiveCommand
         {
@@ -257,6 +289,7 @@ namespace WPinternals
             FlashPartitionsCommand.RaiseCanExecuteChanged();
             FlashArchiveCommand.RaiseCanExecuteChanged();
             FlashFFUCommand.RaiseCanExecuteChanged();
+            FlashMMOSCommand.RaiseCanExecuteChanged();
         }
     }
 }

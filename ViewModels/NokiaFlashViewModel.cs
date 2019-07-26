@@ -92,6 +92,22 @@ namespace WPinternals
                         {
                             SecurityFlags = (UInt32)CurrentModel.ReadSecurityFlags();
                             LogFile.Log("Security flags: 0x" + SecurityFlags.ToString("X8"));
+                            
+                            FinalConfigDakStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Dak);
+                            FinalConfigFastBootStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.FastBoot);
+                            FinalConfigFfuVerifyStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.FfuVerify);
+                            FinalConfigJtagStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Jtag);
+                            FinalConfigOemIdStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.OemId);
+                            FinalConfigProductionDoneStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.ProductionDone);
+                            FinalConfigPublicIdStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.PublicId);
+                            FinalConfigRkhStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Rkh);
+                            FinalConfigRpmWdogStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.RpmWdog);
+                            FinalConfigSecGenStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.SecGen);
+                            FinalConfigSecureBootStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.SecureBoot);
+                            FinalConfigShkStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Shk);
+                            FinalConfigSimlockStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Simlock);
+                            FinalConfigSpdmSecModeStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.SpdmSecMode);
+                            FinalConfigSsmStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Ssm);
                         }
                         else
                             LogFile.Log("Security flags could not be read");
@@ -172,6 +188,9 @@ namespace WPinternals
                         else
                             eMMC = Manufacturer + " " + MemSizeDouble.ToString() + " GB";
                         SamsungWarningVisible = (MID == 0x0015);
+
+                        ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + CurrentModel.ReadCurrentChargeCurrent() + " mA";
+                        LogFile.Log("Charging status: " + ChargingStatus);
 
                         PhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
                         if (Info.FlashAppProtocolVersionMajor < 2)
@@ -290,6 +309,20 @@ namespace WPinternals
             {
                 _BootloaderDescription = value;
                 OnPropertyChanged("BootloaderDescription");
+            }
+        }
+
+        private string _ChargingStatus = null;
+        public string ChargingStatus
+        {
+            get
+            {
+                return _ChargingStatus;
+            }
+            set
+            {
+                _ChargingStatus = value;
+                OnPropertyChanged("ChargingStatus");
             }
         }
 
@@ -418,6 +451,218 @@ namespace WPinternals
                 OnPropertyChanged("NativeDebugStatus");
             }
         }
+
+        #region Final Config
+        private bool? _FinalConfigSecureBootStatus = null;
+        public bool? FinalConfigSecureBootStatus
+        {
+            get
+            {
+                return _FinalConfigSecureBootStatus;
+            }
+            set
+            {
+                _FinalConfigSecureBootStatus = value;
+                OnPropertyChanged("FinalConfigSecureBootStatus");
+            }
+        }
+
+        private bool? _FinalConfigFfuVerifyStatus = null;
+        public bool? FinalConfigFfuVerifyStatus
+        {
+            get
+            {
+                return _FinalConfigFfuVerifyStatus;
+            }
+            set
+            {
+                _FinalConfigFfuVerifyStatus = value;
+                OnPropertyChanged("FinalConfigFfuVerifyStatus");
+            }
+        }
+
+        private bool? _FinalConfigJtagStatus = null;
+        public bool? FinalConfigJtagStatus
+        {
+            get
+            {
+                return _FinalConfigJtagStatus;
+            }
+            set
+            {
+                _FinalConfigJtagStatus = value;
+                OnPropertyChanged("FinalConfigJtagStatus");
+            }
+        }
+
+        private bool? _FinalConfigShkStatus = null;
+        public bool? FinalConfigShkStatus
+        {
+            get
+            {
+                return _FinalConfigShkStatus;
+            }
+            set
+            {
+                _FinalConfigShkStatus = value;
+                OnPropertyChanged("FinalConfigShkStatus");
+            }
+        }
+
+        private bool? _FinalConfigSimlockStatus = null;
+        public bool? FinalConfigSimlockStatus
+        {
+            get
+            {
+                return _FinalConfigSimlockStatus;
+            }
+            set
+            {
+                _FinalConfigSimlockStatus = value;
+                OnPropertyChanged("FinalConfigSimlockStatus");
+            }
+        }
+
+        private bool? _FinalConfigProductionDoneStatus = null;
+        public bool? FinalConfigProductionDoneStatus
+        {
+            get
+            {
+                return _FinalConfigProductionDoneStatus;
+            }
+            set
+            {
+                _FinalConfigProductionDoneStatus = value;
+                OnPropertyChanged("FinalConfigProductionDoneStatus");
+            }
+        }
+
+        private bool? _FinalConfigRkhStatus = null;
+        public bool? FinalConfigRkhStatus
+        {
+            get
+            {
+                return _FinalConfigRkhStatus;
+            }
+            set
+            {
+                _FinalConfigRkhStatus = value;
+                OnPropertyChanged("FinalConfigRkhStatus");
+            }
+        }
+
+        private bool? _FinalConfigPublicIdStatus = null;
+        public bool? FinalConfigPublicIdStatus
+        {
+            get
+            {
+                return _FinalConfigPublicIdStatus;
+            }
+            set
+            {
+                _FinalConfigPublicIdStatus = value;
+                OnPropertyChanged("FinalConfigPublicIdStatus");
+            }
+        }
+
+        private bool? _FinalConfigDakStatus = null;
+        public bool? FinalConfigDakStatus
+        {
+            get
+            {
+                return _FinalConfigDakStatus;
+            }
+            set
+            {
+                _FinalConfigDakStatus = value;
+                OnPropertyChanged("FinalConfigDakStatus");
+            }
+        }
+
+        private bool? _FinalConfigSecGenStatus = null;
+        public bool? FinalConfigSecGenStatus
+        {
+            get
+            {
+                return _FinalConfigSecGenStatus;
+            }
+            set
+            {
+                _FinalConfigSecGenStatus = value;
+                OnPropertyChanged("FinalConfigSecGenStatus");
+            }
+        }
+
+        private bool? _FinalConfigOemIdStatus = null;
+        public bool? FinalConfigOemIdStatus
+        {
+            get
+            {
+                return _FinalConfigOemIdStatus;
+            }
+            set
+            {
+                _FinalConfigOemIdStatus = value;
+                OnPropertyChanged("FinalConfigOemIdStatus");
+            }
+        }
+
+        private bool? _FinalConfigFastBootStatus = null;
+        public bool? FinalConfigFastBootStatus
+        {
+            get
+            {
+                return _FinalConfigFastBootStatus;
+            }
+            set
+            {
+                _FinalConfigFastBootStatus = value;
+                OnPropertyChanged("FinalConfigFastBootStatus");
+            }
+        }
+
+        private bool? _FinalConfigSpdmSecModeStatus = null;
+        public bool? FinalConfigSpdmSecModeStatus
+        {
+            get
+            {
+                return _FinalConfigSpdmSecModeStatus;
+            }
+            set
+            {
+                _FinalConfigSpdmSecModeStatus = value;
+                OnPropertyChanged("FinalConfigSpdmSecModeStatus");
+            }
+        }
+
+        private bool? _FinalConfigRpmWdogStatus = null;
+        public bool? FinalConfigRpmWdogStatus
+        {
+            get
+            {
+                return _FinalConfigRpmWdogStatus;
+            }
+            set
+            {
+                _FinalConfigRpmWdogStatus = value;
+                OnPropertyChanged("FinalConfigRpmWdogStatus");
+            }
+        }
+
+        private bool? _FinalConfigSsmStatus = null;
+        public bool? FinalConfigSsmStatus
+        {
+            get
+            {
+                return _FinalConfigSsmStatus;
+            }
+            set
+            {
+                _FinalConfigSsmStatus = value;
+                OnPropertyChanged("FinalConfigSsmStatus");
+            }
+        }
+        #endregion
 
         internal void RebootTo(string Mode)
         {

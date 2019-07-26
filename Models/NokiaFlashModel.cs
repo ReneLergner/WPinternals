@@ -75,6 +75,36 @@ namespace WPinternals
             return System.Text.ASCIIEncoding.ASCII.GetString(Bytes).Trim(new char[] { '\0' });
         }
 
+        [Flags]
+        internal enum Fuse
+        {
+            SecureBoot = 1,
+            FfuVerify = 2,
+            Jtag = 4,
+            Shk = 8,
+            Simlock = 16,
+            ProductionDone = 32,
+            Rkh = 64,
+            PublicId = 128,
+            Dak = 256,
+            SecGen = 512,
+            OemId = 1024,
+            FastBoot = 2048,
+            SpdmSecMode = 4096,
+            RpmWdog = 8192,
+            Ssm = 16384
+        }
+
+        public bool? ReadFuseStatus(Fuse fuse)
+        {
+            uint? flags = ReadSecurityFlags();
+            if (!flags.HasValue)
+                return null;
+            
+            var finalconfig = (Fuse)flags.Value;
+            return finalconfig.HasFlag(fuse);
+        }
+
         public uint? ReadSecurityFlags()
         {
             byte[] Response = ReadParam("FCS");
@@ -82,6 +112,24 @@ namespace WPinternals
 
             // This value is in big endian
             return (UInt32)((Response[0] << 24) | (Response[1] << 16) | (Response[2] << 8) | Response[3]);
+        }
+
+        public uint? ReadCurrentChargeLevel()
+        {
+            byte[] Response = ReadParam("CS");
+            if ((Response == null) || (Response.Length != 8)) return null;
+
+            // This value is in big endian
+            return (UInt32)((Response[0] << 24) | (Response[1] << 16) | (Response[2] << 8) | Response[3]) + 1;
+        }
+
+        public uint? ReadCurrentChargeCurrent()
+        {
+            byte[] Response = ReadParam("CS");
+            if ((Response == null) || (Response.Length != 8)) return null;
+
+            // This value is in big endian and needs to be XOR'd with 0xFFFFFFFF
+            return ((UInt32)((Response[4] << 24) | (Response[5] << 16) | (Response[6] << 8) | Response[7]) ^ 0xFFFFFFFF) + 1;
         }
 
         public UefiSecurityStatusResponse ReadSecurityStatus()
@@ -320,7 +368,18 @@ namespace WPinternals
             if (ResultCode != 0)
                 ThrowFlashError(ResultCode);
         }
+        
+        internal void SwitchToMmosContext()
+        {
+            byte[] Request = new byte[7];
+            ByteOperations.WriteAsciiString(Request, 0, "NOKXCBA");
+            ExecuteRawVoidMethod(Request);
+            
+            ResetDevice();
 
+            Dispose(true);
+        }
+        
         private void ThrowFlashError(int ErrorCode)
         {
             string SubMessage;
@@ -449,6 +508,53 @@ namespace WPinternals
                 ResetPhone();
 
             LogFile.EndAction("FlashFFU");
+        }
+
+        public void FlashMMOS(string MMOSPath, ProgressUpdater UpdaterPerChunk)
+        {
+            LogFile.BeginAction("FlashMMOS");
+
+            ProgressUpdater Progress = UpdaterPerChunk;
+
+            PhoneInfo Info = ReadPhoneInfo();
+            if (!Info.MmosOverUsbSupported)
+                throw new WPinternalsException("Flash failed!", "Protocols not supported");
+
+            FileInfo info = new FileInfo(MMOSPath);
+            uint length = uint.Parse(info.Length.ToString());
+
+            int offset = 0;
+            int maximumbuffersize = 0x00240000;
+
+            uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
+
+            using (System.IO.FileStream MMOSFile = new System.IO.FileStream(MMOSPath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+            {
+                for (int i = 1; i <= (uint)Math.Truncate((decimal)length / maximumbuffersize); i++)
+                {
+                    Progress.IncreaseProgress(1);
+                    byte[] data = new byte[maximumbuffersize];
+                    MMOSFile.Read(data, 0, maximumbuffersize);
+
+                    LoadMmosBinary(length, (uint)offset, false, data);
+
+                    offset += maximumbuffersize;
+                }
+
+                if (length - offset != 0)
+                {
+                    Progress.IncreaseProgress(1);
+
+                    byte[] data = new byte[length - offset];
+                    MMOSFile.Read(data, 0, (int)(length - offset));
+                    LoadMmosBinary(length, (uint)offset, false, data);
+                }
+                
+                SwitchToMmosContext();
+                ResetPhone();
+            }
+            
+            LogFile.EndAction("FlashMMOS");
         }
 
         public void FlashSectors(UInt32 StartSector, byte[] Data, int Progress = 0)

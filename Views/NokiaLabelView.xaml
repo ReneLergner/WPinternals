@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
         <local:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
         <local:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
     </UserControl.Resources>
-    <StackPanel>
+    <StackPanel VerticalAlignment="Center">
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
             <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">

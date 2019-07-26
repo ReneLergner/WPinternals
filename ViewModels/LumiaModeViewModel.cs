@@ -90,7 +90,7 @@ namespace WPinternals
                     ActivateSubContext(new NokiaModeLabelViewModel((NokiaPhoneModel)CurrentModel, OnModeSwitchRequested));
                     break;
                 case PhoneInterfaces.Lumia_MassStorage:
-                    ActivateSubContext(new NokiaModeMassStorageViewModel(null));
+                    ActivateSubContext(new NokiaModeMassStorageViewModel((MassStorage)CurrentModel, OnModeSwitchRequested));
                     break;
             };
         }

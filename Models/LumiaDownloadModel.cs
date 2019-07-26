@@ -30,6 +30,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.IO;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace WPinternals
 {
@@ -142,6 +143,148 @@ namespace WPinternals
             HttpClient.Dispose();
 
             return FfuUrl;
+        }
+
+        internal static string SearchENOSW(string ProductType, string PhoneFirmwareRevision)
+        {
+            if (ProductType == "")
+                ProductType = null;
+
+            if (ProductType != null)
+            {
+                ProductType = ProductType.ToUpper();
+                if (ProductType.StartsWith("RM") && !ProductType.StartsWith("RM-"))
+                    ProductType = "RM-" + ProductType.Substring(2);
+            }
+
+            DiscoveryQueryParameters DiscoveryQueryParams = new DiscoveryQueryParameters
+            {
+                manufacturerName = "Microsoft",
+                manufacturerProductLine = "Lumia",
+                packageType = "Test Mode",
+                packageClass = "Public",
+                manufacturerHardwareModel = ProductType
+            };
+            DiscoveryParameters DiscoveryParams = new DiscoveryParameters
+            {
+                query = DiscoveryQueryParams
+            };
+
+            DataContractJsonSerializer Serializer1 = new DataContractJsonSerializer(typeof(DiscoveryParameters));
+            MemoryStream JsonStream1 = new MemoryStream();
+            Serializer1.WriteObject(JsonStream1, DiscoveryParams);
+            JsonStream1.Seek(0L, SeekOrigin.Begin);
+            string JsonContent = new StreamReader(JsonStream1).ReadToEnd();
+
+            Uri RequestUri = new Uri("https://api.swrepository.com/rest-api/discovery/1/package");
+
+            HttpClient HttpClient = new HttpClient();
+            HttpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("SoftwareRepository");
+            HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            Task<HttpResponseMessage> HttpPostTask = HttpClient.PostAsync(RequestUri, new StringContent(JsonContent, Encoding.UTF8, "application/json"));
+            HttpPostTask.Wait();
+            HttpResponseMessage Response = HttpPostTask.Result;
+
+            string JsonResultString = "";
+            if (Response.StatusCode == HttpStatusCode.OK)
+            {
+                Task<string> ReadResponseTask = Response.Content.ReadAsStringAsync();
+                ReadResponseTask.Wait();
+                JsonResultString = ReadResponseTask.Result;
+            }
+
+            SoftwarePackage Package = null;
+            using (MemoryStream JsonStream2 = new MemoryStream(Encoding.UTF8.GetBytes(JsonResultString)))
+            {
+                DataContractJsonSerializer Serializer2 = new DataContractJsonSerializer(typeof(SoftwarePackages));
+                SoftwarePackages SoftwarePackages = (SoftwarePackages)Serializer2.ReadObject(JsonStream2);
+                if (SoftwarePackages != null)
+                {
+                    foreach (SoftwarePackage pkg in SoftwarePackages.softwarePackages)
+                    Package = SoftwarePackages.softwarePackages.FirstOrDefault<SoftwarePackage>();
+                }
+            }
+
+            if (Package == null)
+                throw new WPinternalsException("ENOSW package not found");
+            
+            SoftwareFile FileInfo = Package.files.Where(f => f.fileName.EndsWith(".secwim", StringComparison.OrdinalIgnoreCase)).First();
+
+            SoftwareFile DPLF = Package.files.Where(f => f.fileName.EndsWith(".dpl", StringComparison.OrdinalIgnoreCase)).First();
+            Uri DPLUri = new Uri("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + DPLF.fileName);
+            Task<string> GetDPLTask = HttpClient.GetStringAsync(DPLUri);
+            GetDPLTask.Wait();
+            string DPLString = GetDPLTask.Result;
+
+            string DPLUrl = "";
+            FileUrlResult FileUrlDPL = null;
+            using (MemoryStream JsonStream3 = new MemoryStream(Encoding.UTF8.GetBytes(DPLString)))
+            {
+                DataContractJsonSerializer Serializer3 = new DataContractJsonSerializer(typeof(FileUrlResult));
+                FileUrlDPL = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
+                if (FileUrlDPL != null)
+                {
+                    DPLUrl = FileUrlDPL.url;
+                }
+            }
+
+            if (DPLUrl == "")
+                throw new WPinternalsException("DPL not found");
+            
+            Task<string> GetDPLStrTask = HttpClient.GetStringAsync(DPLUrl);
+            GetDPLStrTask.Wait();
+            string DPLStrString = GetDPLStrTask.Result;
+            
+            DPL.Package dpl;
+            XmlSerializer serializer = new XmlSerializer(typeof(DPL.Package));
+            using (StringReader reader = new StringReader(DPLStrString.Replace("ft:", "").Replace("dpl:", "").Replace("typedes:", "")))
+            {
+                dpl = (DPL.Package)serializer.Deserialize(reader);
+            }
+
+            foreach (DPL.File file in dpl.Content.Files.File)
+            {
+                string name = file.Name;
+                
+                DPL.Range range = file.Extensions.MmosWimFile.UseCaseCompatibilities.Compatibility.FirstOrDefault().Range;
+                
+                if (IsFirmwareBetween(PhoneFirmwareRevision, range.From, range.To))
+                    FileInfo = Package.files.Where(f => f.fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase)).First();
+            }
+
+            Uri FileInfoUri = new Uri("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + FileInfo.fileName);
+            Task<string> GetFileInfoTask = HttpClient.GetStringAsync(FileInfoUri);
+            GetFileInfoTask.Wait();
+            string FileInfoString = GetFileInfoTask.Result;
+
+            string ENOSWUrl = "";
+            FileUrlResult FileUrl = null;
+            using (MemoryStream JsonStream3 = new MemoryStream(Encoding.UTF8.GetBytes(FileInfoString)))
+            {
+                DataContractJsonSerializer Serializer3 = new DataContractJsonSerializer(typeof(FileUrlResult));
+                FileUrl = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
+                if (FileUrl != null)
+                {
+                    ENOSWUrl = FileUrl.url;
+                }
+            }
+
+            HttpClient.Dispose();
+
+            return ENOSWUrl;
+        }
+
+        private static bool IsFirmwareBetween(string PhoneFirmwareRevision, string Limit1, string Limit2)
+        {
+            var version = new Version(PhoneFirmwareRevision);
+            var version1 = new Version(Limit1);
+            var version2 = new Version(Limit2);
+
+            var result = version.CompareTo(version1);
+            var result2 = version.CompareTo(version2);
+
+            return result >= 0 && result2 <= 0;
         }
 
         internal static string[] SearchEmergencyFiles(string ProductType)
@@ -474,5 +617,217 @@ namespace WPinternals
 
         [DataMember]
         public string fileType;
+    }
+
+    public static class DPL
+    {
+        [XmlRoot(ElementName = "BasicProductCodes")]
+        public class BasicProductCodes
+        {
+            [XmlElement(ElementName = "BasicProductCode")]
+            public List<string> BasicProductCode { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Identification")]
+        public class Identification
+        {
+            [XmlElement(ElementName = "TypeDesignator")]
+            public string TypeDesignator { get; set; }
+            [XmlElement(ElementName = "BasicProductCodes")]
+            public BasicProductCodes BasicProductCodes { get; set; }
+            [XmlElement(ElementName = "Purpose")]
+            public string Purpose { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Extensions")]
+        public class Extensions
+        {
+            [XmlElement(ElementName = "PackageType")]
+            public string PackageType { get; set; }
+            [XmlElement(ElementName = "Identification")]
+            public Identification Identification { get; set; }
+            [XmlElement(ElementName = "FileType")]
+            public string FileType { get; set; }
+            [XmlElement(ElementName = "MmosWimFile")]
+            public MmosWimFile MmosWimFile { get; set; }
+        }
+
+        [XmlRoot(ElementName = "PackageDescription")]
+        public class PackageDescription
+        {
+            [XmlElement(ElementName = "Identifier")]
+            public string Identifier { get; set; }
+            [XmlElement(ElementName = "Revision")]
+            public string Revision { get; set; }
+            [XmlElement(ElementName = "Extensions")]
+            public Extensions Extensions { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Digest")]
+        public class Digest
+        {
+            [XmlAttribute(AttributeName = "method")]
+            public string Method { get; set; }
+            [XmlAttribute(AttributeName = "encoding")]
+            public string Encoding { get; set; }
+            [XmlText]
+            public string Text { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Digests")]
+        public class Digests
+        {
+            [XmlElement(ElementName = "Digest")]
+            public List<Digest> Digest { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Range")]
+        public class Range
+        {
+            [XmlAttribute(AttributeName = "from")]
+            public string From { get; set; }
+            [XmlAttribute(AttributeName = "to")]
+            public string To { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Compatibility")]
+        public class Compatibility
+        {
+            [XmlElement(ElementName = "Range")]
+            public Range Range { get; set; }
+            [XmlAttribute(AttributeName = "useCase")]
+            public string UseCase { get; set; }
+        }
+
+        [XmlRoot(ElementName = "UseCaseCompatibilities")]
+        public class UseCaseCompatibilities
+        {
+            [XmlElement(ElementName = "Compatibility")]
+            public List<Compatibility> Compatibility { get; set; }
+        }
+
+        [XmlRoot(ElementName = "MmosWimFile")]
+        public class MmosWimFile
+        {
+            [XmlElement(ElementName = "UseCaseCompatibilities")]
+            public UseCaseCompatibilities UseCaseCompatibilities { get; set; }
+        }
+
+        [XmlRoot(ElementName = "File")]
+        public class File
+        {
+            [XmlElement(ElementName = "Name")]
+            public string Name { get; set; }
+            [XmlElement(ElementName = "Digests")]
+            public Digests Digests { get; set; }
+            [XmlElement(ElementName = "Revision")]
+            public string Revision { get; set; }
+            [XmlElement(ElementName = "Extensions")]
+            public Extensions Extensions { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Files")]
+        public class Files
+        {
+            [XmlElement(ElementName = "File")]
+            public List<File> File { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Content")]
+        public class Content
+        {
+            [XmlElement(ElementName = "PackageDescription")]
+            public PackageDescription PackageDescription { get; set; }
+            [XmlElement(ElementName = "Files")]
+            public Files Files { get; set; }
+        }
+
+        [XmlRoot(ElementName = "CanonicalizationMethod", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class CanonicalizationMethod
+        {
+            [XmlAttribute(AttributeName = "Algorithm")]
+            public string Algorithm { get; set; }
+        }
+
+        [XmlRoot(ElementName = "SignatureMethod", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class SignatureMethod
+        {
+            [XmlAttribute(AttributeName = "Algorithm")]
+            public string Algorithm { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Transform", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class Transform
+        {
+            [XmlAttribute(AttributeName = "Algorithm")]
+            public string Algorithm { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Transforms", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class Transforms
+        {
+            [XmlElement(ElementName = "Transform", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public Transform Transform { get; set; }
+        }
+
+        [XmlRoot(ElementName = "DigestMethod", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class DigestMethod
+        {
+            [XmlAttribute(AttributeName = "Algorithm")]
+            public string Algorithm { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Reference", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class Reference
+        {
+            [XmlElement(ElementName = "Transforms", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public Transforms Transforms { get; set; }
+            [XmlElement(ElementName = "DigestMethod", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public DigestMethod DigestMethod { get; set; }
+            [XmlElement(ElementName = "DigestValue", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public string DigestValue { get; set; }
+            [XmlAttribute(AttributeName = "URI")]
+            public string URI { get; set; }
+        }
+
+        [XmlRoot(ElementName = "SignedInfo", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class SignedInfo
+        {
+            [XmlElement(ElementName = "CanonicalizationMethod", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public CanonicalizationMethod CanonicalizationMethod { get; set; }
+            [XmlElement(ElementName = "SignatureMethod", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public SignatureMethod SignatureMethod { get; set; }
+            [XmlElement(ElementName = "Reference", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public Reference Reference { get; set; }
+        }
+
+        [XmlRoot(ElementName = "KeyInfo", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class KeyInfo
+        {
+            [XmlElement(ElementName = "KeyName", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public string KeyName { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Signature", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+        public class Signature
+        {
+            [XmlElement(ElementName = "SignedInfo", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public SignedInfo SignedInfo { get; set; }
+            [XmlElement(ElementName = "SignatureValue", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public string SignatureValue { get; set; }
+            [XmlElement(ElementName = "KeyInfo", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public KeyInfo KeyInfo { get; set; }
+            [XmlAttribute(AttributeName = "xmlns")]
+            public string Xmlns { get; set; }
+        }
+
+        [XmlRoot(ElementName = "Package")]
+        public class Package
+        {
+            [XmlElement(ElementName = "Content")]
+            public Content Content { get; set; }
+            [XmlElement(ElementName = "Signature", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
+            public Signature Signature { get; set; }
+        }
     }
 }

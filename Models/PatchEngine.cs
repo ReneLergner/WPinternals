@@ -427,18 +427,17 @@ namespace WPinternals
                 }
 
                 // Backup original owner and ACL
-                OriginalACL = File.GetAccessControl(FilePath);
+
+                OriginalACL = new FileSecurity(FilePath, AccessControlSections.Owner | AccessControlSections.Group | AccessControlSections.Access);
 
                 // And take the original security to create new security rules.
-                FileSecurity NewACL = File.GetAccessControl(FilePath);
+                FileSecurity NewACL = new FileSecurity(FilePath, AccessControlSections.Owner | AccessControlSections.Group | AccessControlSections.Access);
 
                 // Take ownership
                 NewACL.SetOwner(WindowsIdentity.GetCurrent().User);
-                File.SetAccessControl(FilePath, NewACL);
 
                 // And create a new access rule
                 NewACL.SetAccessRule(new FileSystemAccessRule(WindowsIdentity.GetCurrent().User, FileSystemRights.FullControl, AccessControlType.Allow));
-                File.SetAccessControl(FilePath, NewACL);
 
                 // Open the file for patching
                 Stream = new FileStream(FilePath, FileMode.Open, FileAccess.ReadWrite);
@@ -460,9 +459,8 @@ namespace WPinternals
             {
                 // Restore original owner and access rules.
                 // The OriginalACL cannot be reused directly.
-                FileSecurity NewACL = File.GetAccessControl(FilePath);
+                FileSecurity NewACL = new FileSecurity(FilePath, AccessControlSections.Owner | AccessControlSections.Group | AccessControlSections.Access);
                 NewACL.SetSecurityDescriptorBinaryForm(OriginalACL.GetSecurityDescriptorBinaryForm());
-                File.SetAccessControl(FilePath, NewACL);
 
                 // Revert to self
                 RestorePrivilege.Revert();

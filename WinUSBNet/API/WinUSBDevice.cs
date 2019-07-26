@@ -384,6 +384,14 @@ namespace MadWizard.WinUSBNet.API
 
         }
 
+        public void ResetPipe(int ifaceIndex, byte pipeID)
+        {
+            bool success = WinUsb_ResetPipe(InterfaceHandle(ifaceIndex), pipeID);
+            if (!success)
+                throw APIException.Win32("Failed to reset pipe on WinUSB device.");
+
+        }
+
         public void WritePipe(int ifaceIndex, byte pipeID, byte[] buffer, int offset, int length)
 		{
             uint bytesWritten;
