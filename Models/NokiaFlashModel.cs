@@ -123,13 +123,13 @@ namespace WPinternals
             return (UInt32)((Response[0] << 24) | (Response[1] << 16) | (Response[2] << 8) | Response[3]) + 1;
         }
 
-        public uint? ReadCurrentChargeCurrent()
+        public int? ReadCurrentChargeCurrent()
         {
             byte[] Response = ReadParam("CS");
             if ((Response == null) || (Response.Length != 8)) return null;
 
             // This value is in big endian and needs to be XOR'd with 0xFFFFFFFF
-            return ((UInt32)((Response[4] << 24) | (Response[5] << 16) | (Response[6] << 8) | Response[7]) ^ 0xFFFFFFFF) + 1;
+            return (Int32)(((Response[4] << 24) | (Response[5] << 16) | (Response[6] << 8) | Response[7]) ^ 0xFFFFFFFF) + 1;
         }
 
         public UefiSecurityStatusResponse ReadSecurityStatus()

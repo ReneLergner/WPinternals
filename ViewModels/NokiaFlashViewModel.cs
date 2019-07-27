@@ -189,7 +189,13 @@ namespace WPinternals
                             eMMC = Manufacturer + " " + MemSizeDouble.ToString() + " GB";
                         SamsungWarningVisible = (MID == 0x0015);
 
-                        ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + CurrentModel.ReadCurrentChargeCurrent() + " mA";
+                        int chargecurrent = CurrentModel.ReadCurrentChargeCurrent().Value;
+
+                        if (chargecurrent < 0)
+                            ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + ((-1) * CurrentModel.ReadCurrentChargeCurrent()) + " mA (discharging)";
+                        else
+                            ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + CurrentModel.ReadCurrentChargeCurrent() + " mA (charging)";
+
                         LogFile.Log("Charging status: " + ChargingStatus);
 
                         PhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
