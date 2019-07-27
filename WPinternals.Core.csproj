@@ -34,6 +34,7 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.0.0-preview7.19362.9" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.6.0-preview7.19362.9" />
   </ItemGroup>
 
   <ItemGroup>
