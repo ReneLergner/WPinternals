@@ -49,7 +49,7 @@ namespace WPinternals
 
             if (SubContextViewModel == null)
             {
-                ActivateSubContext(new BackupTargetSelectionViewModel(PhoneNotifier, SwitchToUnlockBoot, DoBackupArchive, DoBackup));
+                ActivateSubContext(new BackupTargetSelectionViewModel(PhoneNotifier, SwitchToUnlockBoot, DoBackupArchive, DoBackup, DoBackupArchiveProvisioning));
                 IsSwitchingInterface = false;
             }
 
@@ -80,6 +80,21 @@ namespace WPinternals
                 await SwitchModeViewModel.SwitchToWithProgress(PhoneNotifier, PhoneInterfaces.Lumia_MassStorage,
                     (msg, sub) => ActivateSubContext(new BusyViewModel(msg, sub)));
                 BackupArchiveTask(ArchivePath);
+            }
+            catch (Exception Ex)
+            {
+                ActivateSubContext(new MessageViewModel(Ex.Message, Callback));
+            }
+        }
+
+        internal async void DoBackupArchiveProvisioning(string ArchiveProvisioningPath)
+        {
+            try
+            {
+                IsSwitchingInterface = true;
+                await SwitchModeViewModel.SwitchToWithProgress(PhoneNotifier, PhoneInterfaces.Lumia_MassStorage,
+                    (msg, sub) => ActivateSubContext(new BusyViewModel(msg, sub)));
+                BackupArchiveProvisioningTask(ArchiveProvisioningPath);
             }
             catch (Exception Ex)
             {
@@ -322,6 +337,139 @@ namespace WPinternals
                                     if (EntryStream != null)
                                         EntryStream.Close();
                                     EntryStream = null;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+                finally
+                {
+                    Phone.CloseVolume();
+                }
+
+                if (!Result)
+                {
+                    ActivateSubContext(new MessageViewModel("Failed to create backup!", Exit));
+                    return;
+                }
+
+                ActivateSubContext(new MessageViewModel("Successfully created a backup!", Exit));
+            }).Start();
+        }
+
+        private readonly static string[] ProvisioningPartitions = new string[]
+        {
+            "DPP",
+            "MODEM_FSG",
+            "MODEM_FS1",
+            "MODEM_FS2",
+            "MODEM_FSC",
+            "DDR",
+            "SEC",
+            "APDP",
+            "MSADP",
+            "DPO",
+            "SSD",
+            "DBI",
+            "UEFI_BS_NV",
+            "UEFI_NV",
+            "UEFI_RT_NV",
+            "UEFI_RT_NV_RPMB",
+            "BOOTMODE",
+            "LIMITS"
+        };
+
+        internal void BackupArchiveProvisioningTask(string ArchiveProvisioningPath)
+        {
+            IsSwitchingInterface = false;
+            new Thread(() =>
+            {
+                bool Result = true;
+
+                ActivateSubContext(new BusyViewModel("Initializing backup..."));
+
+                ulong TotalSizeSectors = 0;
+                int PartitionCount = 0;
+
+                MassStorage Phone = (MassStorage)PhoneNotifier.CurrentModel;
+
+                try
+                {
+                    Phone.OpenVolume(false);
+                    byte[] GPTBuffer = Phone.ReadSectors(1, 33);
+                    GPT GPT = new WPinternals.GPT(GPTBuffer);
+
+                    Partition Partition;
+
+                    try
+                    {
+                        foreach (string PartitionName in ProvisioningPartitions)
+                        {
+                            if (GPT.Partitions.Any(p => p.Name == PartitionName))
+                            {
+                                Partition = GPT.Partitions.Where(p => p.Name == PartitionName).First();
+                                if (PartitionName == "UEFI_BS_NV" && GPT.Partitions.Any(p => p.Name == "BACKUP_BS_NV"))
+                                {
+                                    Partition = GPT.Partitions.Where(p => p.Name == "BACKUP_BS_NV").First();
+                                }
+                                
+                                TotalSizeSectors += Partition.SizeInSectors;
+                                PartitionCount++;
+                            }
+                        }
+                    }
+                    catch (Exception Ex)
+                    {
+                        LogFile.LogException(Ex);
+                        Result = false;
+                    }
+
+                    BusyViewModel Busy = new BusyViewModel("Create backup...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
+                    ProgressUpdater Updater = Busy.ProgressUpdater;
+                    ActivateSubContext(Busy);
+                    ZipArchiveEntry Entry;
+                    Stream EntryStream = null;
+
+                    using (FileStream FileStream = new FileStream(ArchiveProvisioningPath, FileMode.Create))
+                    {
+                        using (ZipArchive Archive = new ZipArchive(FileStream, ZipArchiveMode.Create))
+                        {
+                            int i = 0;
+
+                            foreach (string PartitionName in ProvisioningPartitions)
+                            {
+                                if (GPT.Partitions.Any(p => p.Name == PartitionName))
+                                {
+                                    if (Result)
+                                    {
+                                        try
+                                        {
+                                            Entry = Archive.CreateEntry(PartitionName + ".bin", CompressionLevel.Optimal);
+                                            EntryStream = Entry.Open();
+                                            i++;
+                                            Busy.Message = "Create backup of partition " + PartitionName + " (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
+                                            if (PartitionName == "UEFI_BS_NV" && GPT.Partitions.Any(p => p.Name == "BACKUP_BS_NV"))
+                                            {
+                                                Phone.BackupPartition("BACKUP_BS_NV", EntryStream, Updater);
+                                            }
+                                            else
+                                            {
+                                                Phone.BackupPartition(PartitionName, EntryStream, Updater);
+                                            }
+                                        }
+                                        catch (Exception Ex)
+                                        {
+                                            LogFile.LogException(Ex);
+                                            Result = false;
+                                        }
+                                        finally
+                                        {
+                                            if (EntryStream != null)
+                                                EntryStream.Close();
+                                            EntryStream = null;
+                                        }
+                                    }
                                 }
                             }
                         }

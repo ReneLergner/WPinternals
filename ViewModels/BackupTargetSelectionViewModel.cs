@@ -28,14 +28,16 @@ namespace WPinternals
         private PhoneNotifierViewModel PhoneNotifier;
         private Action<string, string, string> BackupCallback;
         private Action<string> BackupArchiveCallback;
+        private Action<string> BackupArchiveProvisioningCallback;
         internal Action SwitchToUnlockBoot;
 
-        internal BackupTargetSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action<string> BackupArchiveCallback, Action<string, string, string> BackupCallback)
+        internal BackupTargetSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action<string> BackupArchiveCallback, Action<string, string, string> BackupCallback, Action<string> BackupArchiveProvisioningCallback)
             : base()
         {
             this.PhoneNotifier = PhoneNotifier;
             this.BackupCallback = BackupCallback;
             this.BackupArchiveCallback = BackupArchiveCallback;
+            this.BackupArchiveProvisioningCallback = BackupArchiveProvisioningCallback;
             this.SwitchToUnlockBoot = SwitchToUnlockBoot;
 
             this.PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
@@ -108,6 +110,23 @@ namespace WPinternals
                 {
                     _DataPath = value;
                     OnPropertyChanged("DataPath");
+                }
+            }
+        }
+
+        private string _ArchiveProvisioningPath;
+        public string ArchiveProvisioningPath
+        {
+            get
+            {
+                return _ArchiveProvisioningPath;
+            }
+            set
+            {
+                if (value != _ArchiveProvisioningPath)
+                {
+                    _ArchiveProvisioningPath = value;
+                    OnPropertyChanged("ArchiveProvisioningPath");
                 }
             }
         }
@@ -189,6 +208,19 @@ namespace WPinternals
             }
         }
 
+        private DelegateCommand _BackupArchiveProvisioningCommand;
+        public DelegateCommand BackupArchiveProvisioningCommand
+        {
+            get
+            {
+                if (_BackupArchiveProvisioningCommand == null)
+                {
+                    _BackupArchiveProvisioningCommand = new DelegateCommand(() => { BackupArchiveProvisioningCallback(ArchiveProvisioningPath); }, () => ((ArchiveProvisioningPath != null) && (PhoneNotifier.CurrentInterface != null)));
+                }
+                return _BackupArchiveProvisioningCommand;
+            }
+        }
+
         ~BackupTargetSelectionViewModel()
         {
             PhoneNotifier.NewDeviceArrived -= NewDeviceArrived;
@@ -211,6 +243,7 @@ namespace WPinternals
             IsPhoneInOtherMode = (!IsPhoneDisconnected && !IsPhoneInMassStorage);
             BackupCommand.RaiseCanExecuteChanged();
             BackupArchiveCommand.RaiseCanExecuteChanged();
+            BackupArchiveProvisioningCommand.RaiseCanExecuteChanged();
         }
     }
 }
