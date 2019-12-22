@@ -170,9 +170,23 @@ namespace WPinternals
         {
             IsSwitching = false;
             if ((UIContext == null) || (SynchronizationContext.Current == UIContext))
-                ModeSwitchSuccess((IDisposable)PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface);
+            {
+                if (PhoneNotifier.CurrentInterface == null)
+                {
+                    ModeSwitchErrorWrapper("Phone disconnected");
+                }
+                else
+                    ModeSwitchSuccess((IDisposable)PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface);
+            } 
             else
-                UIContext.Post(s => { ModeSwitchSuccess((IDisposable)PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface); }, null);
+            {
+                if (PhoneNotifier.CurrentInterface == null)
+                {
+                    UIContext.Post(s => { ModeSwitchErrorWrapper("Phone disconnected"); }, null);
+                }
+                else
+                    UIContext.Post(s => { ModeSwitchSuccess((IDisposable)PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface); }, null);
+            }
         }
 
         ~SwitchModeViewModel()
@@ -259,12 +273,12 @@ namespace WPinternals
                     {
                         case null:
                             ((NokiaFlashModel)CurrentModel).Shutdown();
-                            ModeSwitchProgressWrapper("Shutting down phone...", null);
-                            LogFile.Log("Shutting down phone", LogType.FileAndConsole);
+                            ModeSwitchProgressWrapper("Please disconnect your device. Waiting...", null);
+                            LogFile.Log("Please disconnect your device. Waiting...", LogType.FileAndConsole);
                             new Thread(() =>
                             {
                                 PhoneNotifier.WaitForRemoval().Wait();
-                                //ModeSwitchSuccessWrapper(); TODO: Display UI
+                                ModeSwitchSuccessWrapper();
                             }).Start();
                             break;
                         case PhoneInterfaces.Lumia_Normal:
