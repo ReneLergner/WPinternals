@@ -152,7 +152,8 @@ namespace WPinternals
             try
             {
                 if ((e.DevicePath.IndexOf("VID_0421&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (e.DevicePath.IndexOf("VID_0421&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) >= 0)) // for Spec B
+                    (e.DevicePath.IndexOf("VID_0421&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) || // for Spec B
+                    (e.DevicePath.IndexOf("VID_045E&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase) >= 0)) // for Spec B (650)
                 {
                     CurrentInterface = PhoneInterfaces.Lumia_Label;
                     CurrentModel = new NokiaPhoneModel(e.DevicePath);

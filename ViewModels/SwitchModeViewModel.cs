@@ -516,6 +516,10 @@ namespace WPinternals
                     {
                         ModeSwitchProgressWrapper(ProgressText, null);
                         string TempFolder = Environment.GetEnvironmentVariable("TEMP") + @"\WPInternals";
+                        if (Info.Type == "RM-1152")
+                        {
+                            Info.Type = "RM-1151";
+                        }
                         string ENOSWPackage = LumiaDownloadModel.SearchENOSW(Info.Type, Info.Firmware);
                         SetWorkingStatus("Downloading " + Info.Type + " Test Mode package...", MaxProgressValue: 100);
                         DownloadEntry downloadEntry = new DownloadEntry(ENOSWPackage, TempFolder, null, null, null);
