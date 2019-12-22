@@ -79,13 +79,16 @@ namespace WPinternals
             Params.Add("Challenge", Challenge);
             Params.Add("AsicIndex", 0);
             byte[] TerminalResponseBytes = CurrentModel.ExecuteJsonMethodAsBytes("TerminalChallenge", Params, "TerminalResponse");
-            TerminalResponse TerminalResponse = Terminal.Parse(TerminalResponseBytes, 0);
-            if (TerminalResponse != null)
+            if (TerminalResponseBytes != null)
             {
-                PublicID = TerminalResponse.PublicId;
-                LogFile.Log("Public ID: " + Converter.ConvertHexToString(PublicID, " "));
-                RootKeyHash = TerminalResponse.RootKeyHash;
-                LogFile.Log("RootKeyHash: " + Converter.ConvertHexToString(RootKeyHash, " "));
+                TerminalResponse TerminalResponse = Terminal.Parse(TerminalResponseBytes, 0);
+                if (TerminalResponse != null)
+                {
+                    PublicID = TerminalResponse.PublicId;
+                    LogFile.Log("Public ID: " + Converter.ConvertHexToString(PublicID, " "));
+                    RootKeyHash = TerminalResponse.RootKeyHash;
+                    LogFile.Log("RootKeyHash: " + Converter.ConvertHexToString(RootKeyHash, " "));
+                }
             }
 
             ManufacturerModelName = CurrentModel.ExecuteJsonMethodAsString("ReadManufacturerModelName", "ManufacturerModelName"); // RM-821_eu_denmark_251
