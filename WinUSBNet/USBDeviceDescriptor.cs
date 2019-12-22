@@ -6,8 +6,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MadWizard.WinUSBNet
 {
@@ -51,9 +49,9 @@ namespace MadWizard.WinUSBNet
         /// Friendly device name, or path name when no 
         /// further device information is available
         /// </summary>
-        public string FullName 
-        { 
-            get 
+        public string FullName
+        {
+            get
             {
                 if (Manufacturer != null && Product != null)
                     return Product + " - " + Manufacturer;
@@ -127,7 +125,7 @@ namespace MadWizard.WinUSBNet
             {
                 BaseClass = (USBBaseClass)(int)deviceDesc.bDeviceClass;
             }
-           
+
 
 
         }

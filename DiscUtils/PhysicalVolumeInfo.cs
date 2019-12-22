@@ -22,9 +22,9 @@
 
 namespace DiscUtils
 {
+    using DiscUtils.Partitions;
     using System;
     using System.Globalization;
-    using DiscUtils.Partitions;
 
     /// <summary>
     /// Enumeration of possible types of physical volume.

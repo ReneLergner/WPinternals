@@ -22,11 +22,11 @@
 
 namespace DiscUtils
 {
+    using DiscUtils.Partitions;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
-    using DiscUtils.Partitions;
 
     /// <summary>
     /// Base class representing virtual hard disks.

@@ -22,11 +22,11 @@
 
 namespace DiscUtils.LogicalDiskManager
 {
+    using DiscUtils.Partitions;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
-    using DiscUtils.Partitions;
 
     internal class DynamicDiskGroup : IDiagnosticTraceable
     {

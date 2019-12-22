@@ -18,11 +18,9 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System.Threading;
-
 namespace WPinternals
 {
-    internal class NokiaMassStorageViewModel: ContextViewModel
+    internal class NokiaMassStorageViewModel : ContextViewModel
     {
         private MassStorage CurrentModel;
 

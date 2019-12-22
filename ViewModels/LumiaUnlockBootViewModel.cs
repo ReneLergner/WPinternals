@@ -519,7 +519,7 @@ namespace WPinternals
             SuccessMessageViewModel.SubMessage = SubMessage;
             ActivateSubContext(SuccessMessageViewModel);
         }
-        
+
         void NewDeviceArrived(ArrivalEventArgs Args)
         {
             // Do not start on a new thread, because EvaluateViewState will also create new ViewModels and those should be created on the UI thread.

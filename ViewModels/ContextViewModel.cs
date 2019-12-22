@@ -49,7 +49,7 @@ namespace WPinternals
                 }
             }
         }
-        
+
         private ContextViewModel _SubContextViewModel;
         public ContextViewModel SubContextViewModel
         {
@@ -73,11 +73,11 @@ namespace WPinternals
             UIContext = SynchronizationContext.Current;
         }
 
-        internal ContextViewModel(MainViewModel Main): this()
+        internal ContextViewModel(MainViewModel Main) : this()
         {
         }
 
-        internal ContextViewModel(MainViewModel Main, ContextViewModel SubContext): this(Main)
+        internal ContextViewModel(MainViewModel Main, ContextViewModel SubContext) : this(Main)
         {
             SubContextViewModel = SubContext;
         }

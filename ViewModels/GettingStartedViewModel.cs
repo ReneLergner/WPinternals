@@ -22,7 +22,7 @@ using System;
 
 namespace WPinternals
 {
-    internal class GettingStartedViewModel: ContextViewModel
+    internal class GettingStartedViewModel : ContextViewModel
     {
         internal Action ShowDisclaimer;
         internal Action SwitchToUnlockBoot;

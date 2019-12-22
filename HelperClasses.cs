@@ -22,25 +22,24 @@
 // Where possible the original authors are referenced.
 
 using System;
-using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Threading;
-using System.Windows.Input;
 using System.Windows.Threading;
-using System.IO.Compression;
-using System.Collections;
-using System.Reflection;
-using System.Net;
 
 namespace WPinternals
 {
@@ -226,11 +225,11 @@ namespace WPinternals
 
         public Boolean IsVisible
         {
-            get 
+            get
             {
                 return (Boolean)this.GetValue(IsVisibleProperty);
             }
-            set 
+            set
             {
                 this.SetValue(IsVisibleProperty, value);
             }
@@ -1061,7 +1060,7 @@ namespace WPinternals
         {
         }
 
-        public DelegateCommand(Action executeMethod, Func<bool> canExecuteMethod): base(o => executeMethod(), f => canExecuteMethod())
+        public DelegateCommand(Action executeMethod, Func<bool> canExecuteMethod) : base(o => executeMethod(), f => canExecuteMethod())
         {
         }
 
@@ -1076,7 +1075,7 @@ namespace WPinternals
         }
     }
 
-    internal class FlowDocumentScrollViewerNoMouseWheel: FlowDocumentScrollViewer
+    internal class FlowDocumentScrollViewerNoMouseWheel : FlowDocumentScrollViewer
     {
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
@@ -1167,7 +1166,7 @@ namespace WPinternals
         }
     }
 
-    internal class WPinternalsException: Exception
+    internal class WPinternalsException : Exception
     {
         // Message and SubMessaage are always printable
         internal string SubMessage = null;
@@ -1423,7 +1422,7 @@ namespace WPinternals
         internal DecompressedStream(Stream InputStream)
         {
             UnderlyingStream = new ReadSeekableStream(InputStream, 0x100);
-            
+
             byte[] Signature = new byte["CompressedPartition".Length + 2];
             Signature[0x00] = 0xFF;
             Buffer.BlockCopy(Encoding.ASCII.GetBytes("CompressedPartition"), 0, Signature, 0x01, "CompressedPartition".Length);
@@ -1469,7 +1468,7 @@ namespace WPinternals
 
         public override bool CanRead { get { return true; } }
         public override bool CanSeek { get { return false; } }
-        public override int Read(byte[] buffer, int offset, int count) 
+        public override int Read(byte[] buffer, int offset, int count)
         {
             int RealCount = UnderlyingStream.Read(buffer, offset, count);
             ReadPosition += RealCount;
@@ -1483,18 +1482,18 @@ namespace WPinternals
         }
         public override bool CanTimeout { get { return UnderlyingStream.CanTimeout; } }
         public override bool CanWrite { get { return true; } }
-        public override long Length 
-        { 
-            get 
+        public override long Length
+        {
+            get
             {
                 if (IsSourceCompressed)
                     return (long)DecompressedLength;
                 else
                     return UnderlyingStream.Length;
-            } 
+            }
         }
         public override void SetLength(long value) { throw new NotSupportedException(); }
-        public override void Write(byte[] buffer, int offset, int count) {throw new NotSupportedException(); }
+        public override void Write(byte[] buffer, int offset, int count) { throw new NotSupportedException(); }
         public override void Flush() { UnderlyingStream.Flush(); }
         public override void Close() { UnderlyingStream.Close(); }
         protected override void Dispose(bool disposing)
@@ -1507,7 +1506,7 @@ namespace WPinternals
     }
 
     // For writing a compressed stream
-    internal class CompressedStream: Stream
+    internal class CompressedStream : Stream
     {
         private UInt32 HeaderSize;
         private UInt64 WritePosition;
@@ -1541,7 +1540,7 @@ namespace WPinternals
         public override bool CanWrite { get { return true; } }
         public override long Length { get { return (long)WritePosition; } }
         public override void SetLength(long value) { throw new NotSupportedException(); }
-        public override void Write(byte[] buffer, int offset, int count) 
+        public override void Write(byte[] buffer, int offset, int count)
         {
             WritePosition += (UInt64)count;
             UnderlyingStream.Write(buffer, offset, count);
@@ -1558,7 +1557,7 @@ namespace WPinternals
         }
     }
 
-    internal class SeekableStream: Stream        
+    internal class SeekableStream : Stream
     {
         private Stream UnderlyingStream;
         private Int64 ReadPosition = 0;
@@ -1579,7 +1578,7 @@ namespace WPinternals
                     UnderlyingStreamLength = UnderlyingStream.Length;
                 }
                 catch
-                { 
+                {
                     throw new ArgumentException("Unknown stream length");
                 }
             }
@@ -1587,7 +1586,7 @@ namespace WPinternals
 
         public override bool CanRead { get { return true; } }
         public override bool CanSeek { get { return true; } }
-        public override int Read(byte[] buffer, int offset, int count) 
+        public override int Read(byte[] buffer, int offset, int count)
         {
             int RealCount = UnderlyingStream.Read(buffer, offset, count);
             ReadPosition += RealCount;
@@ -1642,19 +1641,19 @@ namespace WPinternals
             {
                 return ReadPosition;
             }
-            set 
+            set
             {
                 Seek(value, SeekOrigin.Begin);
             }
         }
         public override bool CanTimeout { get { return UnderlyingStream.CanTimeout; } }
         public override bool CanWrite { get { return false; } }
-        public override long Length 
-        { 
-            get 
+        public override long Length
+        {
+            get
             {
                 return UnderlyingStreamLength;
-            } 
+            }
         }
         public override void SetLength(long value) { throw new NotSupportedException(); }
         public override void Write(byte[] buffer, int offset, int count) { throw new NotSupportedException(); }
@@ -1929,7 +1928,7 @@ namespace WPinternals
     /// </summary>
     public static class GridViewColumnResize
     {
-#region DependencyProperties
+        #region DependencyProperties
 
         public static readonly DependencyProperty WidthProperty =
             DependencyProperty.RegisterAttached("Width", typeof(string), typeof(GridViewColumnResize),
@@ -1948,7 +1947,7 @@ namespace WPinternals
             DependencyProperty.RegisterAttached("ListViewResizeBehaviorProperty",
                                                 typeof(ListViewResizeBehavior), typeof(GridViewColumnResize), null);
 
-#endregion
+        #endregion
 
         public static string GetWidth(DependencyObject obj)
         {
@@ -1970,7 +1969,7 @@ namespace WPinternals
             obj.SetValue(EnabledProperty, value);
         }
 
-#region CallBack
+        #region CallBack
 
         private static void OnSetWidthCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
@@ -2025,10 +2024,10 @@ namespace WPinternals
             return behavior;
         }
 
-#endregion
+        #endregion
 
-#region Nested type: GridViewColumnResizeBehavior
-        
+        #region Nested type: GridViewColumnResizeBehavior
+
         // This class was written by: Rolf Wessels
         // https://github.com/rolfwessels/lazycowprojects/tree/master/Wpf
 
@@ -2103,13 +2102,13 @@ namespace WPinternals
             }
         }
 
-#endregion
+        #endregion
 
-#region Nested type: ListViewResizeBehavior
+        #region Nested type: ListViewResizeBehavior
 
         // This class was written by: Rolf Wessels
         // https://github.com/rolfwessels/lazycowprojects/tree/master/Wpf
-        
+
         /// <summary>
         /// ListViewResizeBehavior class that gets attached to the ListView control
         /// </summary>
@@ -2211,7 +2210,7 @@ namespace WPinternals
             }
         }
 
-#endregion
+        #endregion
     }
 
     internal static class ExtensionMethods

@@ -24,7 +24,7 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class LumiaUnlockRootViewModel: ContextViewModel
+    internal class LumiaUnlockRootViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel PhoneNotifier;
         private Action SwitchToUnlockBoot;
@@ -82,7 +82,8 @@ namespace WPinternals
             }
             catch (Exception Ex)
             {
-                ActivateSubContext(new MessageViewModel(Ex.Message, () => {
+                ActivateSubContext(new MessageViewModel(Ex.Message, () =>
+                {
                     Callback();
                     ActivateSubContext(null);
                 }));

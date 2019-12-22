@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 
 namespace WPinternals
 {
-    internal class MassStorage: NokiaPhoneModel
+    internal class MassStorage : NokiaPhoneModel
     {
         internal string Drive = null;
         internal string PhysicalDrive = null;
@@ -36,8 +36,8 @@ namespace WPinternals
         private bool OpenWithWriteAccess;
 
         private QualcommSerial Serial;
-        
-        internal MassStorage(string DevicePath): base(DevicePath)
+
+        internal MassStorage(string DevicePath) : base(DevicePath)
         {
             try
             {
@@ -288,7 +288,7 @@ namespace WPinternals
             ProgressUpdater Progress = UpdaterPerSector;
             if ((Progress == null) && (ProgressUpdateCallback != null))
                 Progress = new ProgressUpdater(SectorCount, ProgressUpdateCallback);
-            
+
             byte[] Buffer;
             if (SectorCount >= 0x80)
                 Buffer = new byte[0x10000];
@@ -425,13 +425,13 @@ namespace WPinternals
                 OpenVolume(true);
 
             SetSectorPosition(StartSector);
-            
+
             byte[] Buffer;
 
             using (BinaryReader Reader = new BinaryReader(File.Open(Path, FileMode.Open)))
             {
                 ProgressUpdater Progress = UpdaterPerSector;
-                if ((Progress ==  null) && (ProgressUpdateCallback != null))
+                if ((Progress == null) && (ProgressUpdateCallback != null))
                     Progress = new ProgressUpdater((UInt64)(Reader.BaseStream.Length / 0x200), ProgressUpdateCallback);
 
                 if (Reader.BaseStream.Length >= 0x10000)
@@ -443,9 +443,9 @@ namespace WPinternals
                 for (UInt64 i = 0; i < (UInt64)(Reader.BaseStream.Length / 0x200); i += 0x80)
                 {
                     Count = Reader.Read(Buffer, 0, Buffer.Length);
-                    
+
                     WriteSectors(Buffer, (uint)Count);
-                    
+
                     if (Progress != null)
                         Progress.IncreaseProgress((ulong)Count / 0x200);
                 }

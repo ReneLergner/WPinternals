@@ -5,9 +5,6 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-using System;
-
-
 namespace MadWizard.WinUSBNet
 {
     /// <summary>

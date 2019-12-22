@@ -22,10 +22,10 @@
 
 namespace DiscUtils.Ntfs
 {
+    using DiscUtils.Compression;
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using DiscUtils.Compression;
 
     internal sealed class CompressedClusterStream : ClusterStream
     {

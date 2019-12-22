@@ -24,7 +24,7 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class RestoreViewModel: ContextViewModel
+    internal class RestoreViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel PhoneNotifier;
         private Action Callback;

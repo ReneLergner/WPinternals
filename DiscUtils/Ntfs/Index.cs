@@ -474,7 +474,7 @@ namespace DiscUtils.Ntfs
                 {
                     writer.WriteLine(prefix + "      " + EntryAsString(entry, _file.BestName, _name));
                 }
-                
+
                 if ((entry.Flags & IndexEntryFlags.Node) != 0)
                 {
                     NodeAsString(writer, prefix + "        ", GetSubBlock(entry).Node, ":i" + entry.ChildrenVirtualCluster);

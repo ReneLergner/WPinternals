@@ -26,7 +26,7 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class BackupViewModel: ContextViewModel
+    internal class BackupViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel PhoneNotifier;
         private Action Callback;
@@ -413,7 +413,7 @@ namespace WPinternals
                                 {
                                     Partition = GPT.Partitions.Where(p => p.Name == "BACKUP_BS_NV").First();
                                 }
-                                
+
                                 TotalSizeSectors += Partition.SizeInSectors;
                                 PartitionCount++;
                             }

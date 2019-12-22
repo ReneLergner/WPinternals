@@ -6,8 +6,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MadWizard.WinUSBNet
 {
@@ -27,14 +25,14 @@ namespace MadWizard.WinUSBNet
         /// <summary>
         /// Endpoint address including the direction in the most significant bit
         /// </summary>
-        public byte Address 
+        public byte Address
         {
             get
             {
                 return _pipeInfo.PipeId;
             }
         }
-        
+
         /// <summary>
         /// The USBDevice this pipe is associated with
         /// </summary>
@@ -45,7 +43,7 @@ namespace MadWizard.WinUSBNet
                 return _device;
             }
         }
-        
+
         /// <summary>
         /// Maximum packet size for transfers on this endpoint
         /// </summary>
@@ -125,9 +123,9 @@ namespace MadWizard.WinUSBNet
             try
             {
                 uint bytesRead;
-                
+
                 _device.InternalDevice.ReadPipe(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length, out bytesRead);
-                
+
                 return (int)bytesRead;
             }
             catch (API.APIException e)
@@ -255,7 +253,7 @@ namespace MadWizard.WinUSBNet
         {
             Write(buffer, 0, buffer.Length);
         }
-        
+
         /// <summary>
         /// Writes data from a buffer to the pipe.
         /// </summary>
@@ -379,7 +377,7 @@ namespace MadWizard.WinUSBNet
                 LogAndThrowException(new USBException("Failed to abort pipe.", e));
             }
         }
-        
+
         /// <summary>
         /// Resets all pending transfers for this pipe.
         /// </summary>
@@ -430,7 +428,7 @@ namespace MadWizard.WinUSBNet
             // Initialize policy now that interface is set (policy requires interface)
             _policy = new USBPipePolicy(_device, _interface.InterfaceIndex, _pipeInfo.PipeId);
         }
-        
+
         private void LogException(Exception Ex)
         {
             WPinternals.LogFile.Log("Error on USB port!", WPinternals.LogType.FileOnly);
@@ -442,7 +440,7 @@ namespace MadWizard.WinUSBNet
             if ((LastWritten == null) && (Ex is USBException) && (Ex.InnerException is MadWizard.WinUSBNet.API.APIException) &&
                 (((MadWizard.WinUSBNet.API.APIException)Ex.InnerException).InnerException is System.ComponentModel.Win32Exception) &&
                 (((System.ComponentModel.Win32Exception)Ex.InnerException.InnerException).NativeErrorCode == 0X1F))
-                    WPinternals.LogFile.Log("Failed to communicate on new USB connection", WPinternals.LogType.FileAndConsole);
+                WPinternals.LogFile.Log("Failed to communicate on new USB connection", WPinternals.LogType.FileAndConsole);
 
             if (LastWritten != null)
                 WPinternals.LogFile.Log("Last written: " + WPinternals.Converter.ConvertHexToString(LastWritten, ""), WPinternals.LogType.FileOnly);

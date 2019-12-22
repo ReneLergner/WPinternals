@@ -809,7 +809,7 @@ namespace DiscUtils.Ntfs
 
             return SplitAttribute(record, (NonResidentAttributeRecord)record.FirstAttribute, false);
         }
-        
+
         private bool SplitAttribute(FileRecord record, NonResidentAttributeRecord targetAttr, bool atStart)
         {
             if (targetAttr.DataRuns.Count <= 1)

@@ -30,7 +30,7 @@ namespace WPinternals
     internal delegate void ModeSwitchErrorHandler(string Message);
     internal delegate void ModeSwitchSuccessHandler(IDisposable NewModel, PhoneInterfaces NewInterface);
 
-    internal class SwitchModeViewModel: ContextViewModel
+    internal class SwitchModeViewModel : ContextViewModel
     {
         protected PhoneNotifierViewModel PhoneNotifier;
         protected IDisposable CurrentModel;
@@ -149,7 +149,8 @@ namespace WPinternals
             }
             else
             {
-                UIContext.Post(s => {
+                UIContext.Post(s =>
+                {
                     ModeSwitchProgress(Message, SubMessage);
                     SetWorkingStatus(Message, SubMessage);
                 }, null);
@@ -555,7 +556,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         ModeSwitchErrorWrapper(Ex.Message);
                     }
-                    
+
                     LogFile.EndAction("SwitchToLabelMode");
                 }).Start();
             }
@@ -685,8 +686,8 @@ namespace WPinternals
                                     Part.StartSector = (uint)Target.FirstSector;
                                     Part.Stream = SB;
                                     Parts.Add(Part);
-                                    await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, null, false, false, Parts, DoResetFirst: true, ClearFlashingStatusAtEnd: false, ShowProgress: false, 
-                                        SetWorkingStatus: (m, s, v, a, st) => 
+                                    await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, null, false, false, Parts, DoResetFirst: true, ClearFlashingStatusAtEnd: false, ShowProgress: false,
+                                        SetWorkingStatus: (m, s, v, a, st) =>
                                         {
                                             if (SetWorkingStatus != null)
                                             {
@@ -697,7 +698,7 @@ namespace WPinternals
                                                 LastStatus = st;
                                             }
                                         },
-                                        UpdateWorkingStatus: (m, s, v, st) => 
+                                        UpdateWorkingStatus: (m, s, v, st) =>
                                         {
                                             if (UpdateWorkingStatus != null)
                                             {
@@ -775,14 +776,14 @@ namespace WPinternals
             AsyncAutoResetEvent Event = new AsyncAutoResetEvent(false);
 
             SwitchModeViewModel Switch = new SwitchModeViewModel(
-                Notifier, 
+                Notifier,
                 TargetMode,
-                ModeSwitchProgress, 
-                (string ErrorMessage) => 
+                ModeSwitchProgress,
+                (string ErrorMessage) =>
                     {
                         LocalErrorMessage = ErrorMessage;
                         Event.Set();
-                    }, 
+                    },
                 (IDisposable NewModel, PhoneInterfaces NewInterface) =>
                     {
                         Result = NewModel;

@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace WPinternals
 {
-    internal class NokiaPhoneModel: IDisposable
+    internal class NokiaPhoneModel : IDisposable
     {
         protected bool Disposed = false;
         private USBDevice Device = null;

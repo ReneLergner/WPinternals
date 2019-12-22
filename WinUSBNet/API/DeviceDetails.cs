@@ -5,11 +5,6 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace MadWizard.WinUSBNet.API
 {
     internal struct DeviceDetails

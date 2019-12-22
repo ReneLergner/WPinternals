@@ -404,7 +404,7 @@ namespace DiscUtils.Ntfs
             }
 
             return null;
-         }
+        }
 
         private IndexEntry PopulateEnd()
         {

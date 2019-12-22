@@ -6,9 +6,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MadWizard.WinUSBNet
 {
@@ -18,7 +15,7 @@ namespace MadWizard.WinUSBNet
     /// <param name="sender">The source of the event</param>
     /// <param name="e">Details of the event</param>
     public delegate void USBEventHandler(object sender, USBEvent e);
-    
+
     /// <summary>
     /// Event type enumeration for WinUSB events
     /// </summary>
@@ -59,7 +56,7 @@ namespace MadWizard.WinUSBNet
         {
             this.Guid = guid;
             this.DevicePath = devicePath;
-            this.Type= type;
+            this.Type = type;
         }
     }
 
@@ -221,7 +218,7 @@ namespace MadWizard.WinUSBNet
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this); 
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

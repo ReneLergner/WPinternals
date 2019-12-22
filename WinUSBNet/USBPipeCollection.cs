@@ -6,7 +6,6 @@
  */
 
 using System;
-using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -37,7 +36,7 @@ namespace MadWizard.WinUSBNet
         /// <returns>The pipe with the given pipe address</returns>
         /// <exception cref="IndexOutOfRangeException">Thrown if no pipe with the specified address
         /// is available in the collection.</exception>
-        public USBPipe this [byte pipeAddress]
+        public USBPipe this[byte pipeAddress]
         {
             get
             {
@@ -80,11 +79,11 @@ namespace MadWizard.WinUSBNet
             {
                 get
                 {
-                    return GetCurrent(); 
+                    return GetCurrent();
                 }
             }
-            
-            
+
+
             object IEnumerator.Current
             {
                 get
@@ -122,7 +121,7 @@ namespace MadWizard.WinUSBNet
         {
             return new UsbPipeEnumerator(GetPipeList());
         }
-       
+
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>

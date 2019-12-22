@@ -20,7 +20,7 @@
 
 namespace WPinternals
 {
-    internal class NotImplementedViewModel: ContextViewModel
+    internal class NotImplementedViewModel : ContextViewModel
     {
         internal string Message { get; set; }
 

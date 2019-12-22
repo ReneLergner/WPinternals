@@ -84,13 +84,13 @@ namespace WPinternals
         }
 
         private ContextViewModel _ContextViewModel;
-        public ContextViewModel ContextViewModel 
-        { 
-            get 
-            { 
-                return _ContextViewModel; 
-            } 
-            set 
+        public ContextViewModel ContextViewModel
+        {
+            get
+            {
+                return _ContextViewModel;
+            }
+            set
             {
                 if (_ContextViewModel != value)
                 {
@@ -103,7 +103,7 @@ namespace WPinternals
                     }
                     OnPropertyChanged("ContextViewModel");
                 }
-            } 
+            }
         }
 
         private SynchronizationContext MainSyncContext;

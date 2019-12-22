@@ -29,7 +29,7 @@ namespace WPinternals
         Action Accepted;
 
         internal DisclaimerAndNdaViewModel(Action Accepted)
-            : base() 
+            : base()
         {
             this.Accepted = Accepted;
         }

@@ -92,7 +92,7 @@ namespace WPinternals
                         {
                             SecurityFlags = (UInt32)CurrentModel.ReadSecurityFlags();
                             LogFile.Log("Security flags: 0x" + SecurityFlags.ToString("X8"));
-                            
+
                             FinalConfigDakStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Dak);
                             FinalConfigFastBootStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.FastBoot);
                             FinalConfigFfuVerifyStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.FfuVerify);

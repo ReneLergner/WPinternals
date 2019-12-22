@@ -7,7 +7,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace MadWizard.WinUSBNet
 {
@@ -45,7 +44,7 @@ namespace MadWizard.WinUSBNet
             get;
             private set;
         }
-        
+
         /// <summary>
         /// Collection of all interfaces available on the USB device
         /// </summary>
@@ -167,7 +166,7 @@ namespace MadWizard.WinUSBNet
                 API.WINUSB_PIPE_INFORMATION[] pipesInfo;
                 _wuDevice.GetInterfaceInfo(i, out descriptor, out pipesInfo);
                 USBPipe[] interfacePipes = new USBPipe[pipesInfo.Length];
-                for(int k=0;k<pipesInfo.Length;k++)
+                for (int k = 0; k < pipesInfo.Length; k++)
                 {
                     USBPipe pipe = new USBPipe(this, pipesInfo[k]);
                     interfacePipes[k] = pipe;
@@ -179,7 +178,7 @@ namespace MadWizard.WinUSBNet
                 //if (descriptor.iInterface != 0)
                 //    _wuDevice.GetStringDescriptor(descriptor.iInterface);
                 USBPipeCollection pipeCollection = new USBPipeCollection(interfacePipes);
-                interfaces[i] = new USBInterface(this, i, descriptor, pipeCollection); 
+                interfaces[i] = new USBInterface(this, i, descriptor, pipeCollection);
             }
             Pipes = new USBPipeCollection(allPipes.ToArray());
             Interfaces = new USBInterfaceCollection(interfaces);
@@ -243,7 +242,7 @@ namespace MadWizard.WinUSBNet
             // Parameters are int and not ushort because ushort is not CLS compliant.
             CheckNotDisposed();
             CheckControlParams(value, index, buffer, length);
-            
+
             try
             {
                 _wuDevice.ControlTransfer(requestType, request, (ushort)value, (ushort)index, (ushort)length, buffer);
@@ -284,7 +283,7 @@ namespace MadWizard.WinUSBNet
             CheckControlParams(value, index, buffer, length);
 
             USBAsyncResult result = new USBAsyncResult(userCallback, stateObject);
-            
+
             try
             {
                 _wuDevice.ControlTransferOverlapped(requestType, request, (ushort)value, (ushort)index, (ushort)length, buffer, result);
@@ -293,7 +292,7 @@ namespace MadWizard.WinUSBNet
             {
                 if (result != null)
                     result.Dispose();
-                 throw new USBException("Asynchronous control transfer failed", e);
+                throw new USBException("Asynchronous control transfer failed", e);
             }
             catch (Exception)
             {
@@ -516,7 +515,7 @@ namespace MadWizard.WinUSBNet
             CheckOut(requestType);
             ControlTransfer(requestType, request, value, index, buffer);
         }
-       
+
         /// <summary>
         /// Initiates a control transfer without a data stage over the default control endpoint. The request should have an OUT direction (specified by the highest bit
         /// of the <paramref name="requestType"/> parameter. The setup packets' length member will be set to zero.
@@ -532,7 +531,7 @@ namespace MadWizard.WinUSBNet
             ControlTransfer(requestType, request, value, index, new byte[0]);
         }
 
- 
+
 
         /// <summary>
         /// Initiates an asynchronous control transfer without a data stage over the default control endpoint. This method allows both IN and OUT direction transfers, depending
@@ -702,7 +701,7 @@ namespace MadWizard.WinUSBNet
             return BeginControlTransfer(requestType, request, value, index, new byte[0], userCallback, stateObject);
         }
 
- 
+
         private void CheckNotDisposed()
         {
             if (_disposed)
@@ -756,7 +755,7 @@ namespace MadWizard.WinUSBNet
             if (detailList.Length == 0)
                 return null;
 
-      
+
             return new USBDevice(detailList[0].DevicePath);
         }
 
@@ -769,8 +768,8 @@ namespace MadWizard.WinUSBNet
         /// no device with the given GUID could be found null is returned.</returns>
         public static USBDevice GetSingleDevice(string guidString)
         {
-            
-            return USBDevice.GetSingleDevice(new Guid(guidString));         
+
+            return USBDevice.GetSingleDevice(new Guid(guidString));
         }
 
         private static USBDeviceDescriptor GetDeviceDescriptor(string devicePath)
@@ -821,6 +820,6 @@ namespace MadWizard.WinUSBNet
                 throw new USBException("Failed to retrieve device descriptor.", e);
             }
         }
-        
+
     }
 }

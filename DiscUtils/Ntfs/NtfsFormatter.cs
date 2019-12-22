@@ -137,8 +137,8 @@ namespace DiscUtils.Ntfs
                 SetSecurityAttribute(volumeFile, "O:" + localAdminString + "G:BAD:(A;;0x12019f;;;SY)(A;;0x12019f;;;BA)");
                 volumeFile.UpdateRecordInMft();
 
-                _context.GetFileByIndex = delegate(long index) { return new File(_context, _context.Mft.GetRecord(index, false)); };
-                _context.AllocateFile = delegate(FileRecordFlags frf) { return new File(_context, _context.Mft.AllocateRecord(frf, false)); };
+                _context.GetFileByIndex = delegate (long index) { return new File(_context, _context.Mft.GetRecord(index, false)); };
+                _context.AllocateFile = delegate (FileRecordFlags frf) { return new File(_context, _context.Mft.AllocateRecord(frf, false)); };
 
                 File attrDefFile = CreateSystemFile(MasterFileTable.AttrDefIndex);
                 _context.AttributeDefinitions.WriteTo(attrDefFile);

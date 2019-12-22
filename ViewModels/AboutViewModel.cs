@@ -20,7 +20,7 @@
 
 namespace WPinternals
 {
-    internal class AboutViewModel: ContextViewModel
+    internal class AboutViewModel : ContextViewModel
     {
         internal AboutViewModel() : base() { }
 

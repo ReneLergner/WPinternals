@@ -29,7 +29,7 @@ namespace DiscUtils
     using System.Text.RegularExpressions;
 
     internal delegate TResult Func<T, TResult>(T arg);
-    
+
     internal static class Utilities
     {
         /// <summary>

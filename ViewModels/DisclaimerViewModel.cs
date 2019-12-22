@@ -31,7 +31,7 @@ namespace WPinternals
         Action Accepted;
 
         internal DisclaimerViewModel(Action Accepted)
-            : base() 
+            : base()
         {
             this.Accepted = Accepted;
         }

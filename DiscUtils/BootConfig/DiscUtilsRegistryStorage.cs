@@ -22,10 +22,10 @@
 
 namespace DiscUtils.BootConfig
 {
+    using DiscUtils.Registry;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using DiscUtils.Registry;
 
     internal class DiscUtilsRegistryStorage : BaseStorage
     {

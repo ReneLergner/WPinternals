@@ -1097,7 +1097,7 @@ namespace DiscUtils.Ntfs
                     }
                 }
 
-                UpdateStandardInformation(dirEntry, file, delegate(StandardInformation si) { si.FileAttributes = FileNameRecord.SetAttributes(newValue, si.FileAttributes); });
+                UpdateStandardInformation(dirEntry, file, delegate (StandardInformation si) { si.FileAttributes = FileNameRecord.SetAttributes(newValue, si.FileAttributes); });
             }
         }
 
@@ -1131,7 +1131,7 @@ namespace DiscUtils.Ntfs
         {
             using (new NtfsTransaction())
             {
-                UpdateStandardInformation(path, delegate(StandardInformation si) { si.CreationTime = newTime; });
+                UpdateStandardInformation(path, delegate (StandardInformation si) { si.CreationTime = newTime; });
             }
         }
 
@@ -1165,7 +1165,7 @@ namespace DiscUtils.Ntfs
         {
             using (new NtfsTransaction())
             {
-                UpdateStandardInformation(path, delegate(StandardInformation si) { si.LastAccessTime = newTime; });
+                UpdateStandardInformation(path, delegate (StandardInformation si) { si.LastAccessTime = newTime; });
             }
         }
 
@@ -1199,7 +1199,7 @@ namespace DiscUtils.Ntfs
         {
             using (new NtfsTransaction())
             {
-                UpdateStandardInformation(path, delegate(StandardInformation si) { si.ModificationTime = newTime; });
+                UpdateStandardInformation(path, delegate (StandardInformation si) { si.ModificationTime = newTime; });
             }
         }
 
@@ -1763,7 +1763,7 @@ namespace DiscUtils.Ntfs
             {
                 UpdateStandardInformation(
                     path,
-                    delegate(StandardInformation si)
+                    delegate (StandardInformation si)
                     {
                         si.CreationTime = info.CreationTime;
                         si.LastAccessTime = info.LastAccessTime;
@@ -1813,7 +1813,7 @@ namespace DiscUtils.Ntfs
             DirectoryEntry dirEntry = GetDirectoryEntry(path);
             if (dirEntry == null)
             {
-                    throw new FileNotFoundException("File not found", path);
+                throw new FileNotFoundException("File not found", path);
             }
 
             File file = GetFile(dirEntry.Reference);

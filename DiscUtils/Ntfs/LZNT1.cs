@@ -30,8 +30,8 @@
 
 namespace DiscUtils.Ntfs
 {
-    using System;
     using DiscUtils.Compression;
+    using System;
 
     /// <summary>
     /// Implementation of the LZNT1 algorithm used for compressing NTFS files.

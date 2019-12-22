@@ -6,9 +6,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -127,7 +124,7 @@ namespace MadWizard.WinUSBNet
             if (disposing)
             {
                 // clean managed resources
-                
+
                 // do not clean the notifier here. the notifier owns and will dispose this object.
             }
             if (_notifyHandle != IntPtr.Zero)

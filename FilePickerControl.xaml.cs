@@ -27,7 +27,7 @@ using System.Windows.Media;
 
 namespace WPinternals
 {
-    public class PathChangedEventArgs: EventArgs
+    public class PathChangedEventArgs : EventArgs
     {
         public PathChangedEventArgs(string NewPath)
             : base()
@@ -110,7 +110,7 @@ namespace WPinternals
             {
                 return (string)GetValue(PathProperty);
             }
-            set 
+            set
             {
                 if ((string)GetValue(PathProperty) != value)
                 {

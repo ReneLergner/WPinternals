@@ -6,9 +6,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 namespace MadWizard.WinUSBNet
 {
@@ -21,7 +18,7 @@ namespace MadWizard.WinUSBNet
         private ManualResetEvent _waitEvent;
         private int _bytesTransfered;
         private Exception _error;
-        
+
         public USBAsyncResult(AsyncCallback userCallback, object stateObject)
         {
             _stateObject = stateObject;
@@ -33,7 +30,7 @@ namespace MadWizard.WinUSBNet
 
         public object AsyncState
         {
-            get 
+            get
             {
                 return _stateObject;
             }
@@ -55,7 +52,7 @@ namespace MadWizard.WinUSBNet
         }
         public WaitHandle AsyncWaitHandle
         {
-            get 
+            get
             {
                 lock (this)
                 {
@@ -68,7 +65,7 @@ namespace MadWizard.WinUSBNet
 
         public bool CompletedSynchronously
         {
-            get 
+            get
             {
                 lock (this)
                 {
@@ -79,7 +76,7 @@ namespace MadWizard.WinUSBNet
 
         public bool IsCompleted
         {
-            get 
+            get
             {
                 lock (this)
                 {
@@ -131,6 +128,6 @@ namespace MadWizard.WinUSBNet
             }
         }
 
-    
+
     }
 }

@@ -6,9 +6,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MadWizard.WinUSBNet
 {
@@ -30,7 +27,7 @@ namespace MadWizard.WinUSBNet
             _device = device;
         }
 
- 
+
 
         private void RequireDirectionOut()
         {
@@ -82,7 +79,7 @@ namespace MadWizard.WinUSBNet
                 _device.InternalDevice.SetPipePolicy(_interfaceIndex, _pipeID, API.POLICY_TYPE.AUTO_CLEAR_STALL, value);
             }
         }
-        
+
         /// <summary>
         /// If both AllowPartialReads and AutoFlush are true, when the device returns more data than requested by the client it
         /// will discard the remaining data. Default value is false. Only available on IN direction pipes.
@@ -119,7 +116,7 @@ namespace MadWizard.WinUSBNet
                 _device.InternalDevice.SetPipePolicy(_interfaceIndex, _pipeID, API.POLICY_TYPE.IGNORE_SHORT_PACKETS, value);
             }
         }
-   
+
         /// <summary>
         /// Specifies the timeout in milliseconds for pipe operations. If an operation does not finish within the specified time it will fail.
         /// When set to zero, no timeout is used. Default value is zero.

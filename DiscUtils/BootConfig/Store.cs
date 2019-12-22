@@ -22,9 +22,9 @@
 
 namespace DiscUtils.BootConfig
 {
+    using DiscUtils.Registry;
     using System;
     using System.Collections.Generic;
-    using DiscUtils.Registry;
 
     /// <summary>
     /// Represents a Boot Configuration Database store (i.e. a BCD file).

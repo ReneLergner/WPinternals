@@ -22,7 +22,6 @@
 
 namespace DiscUtils.Ntfs
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
 
@@ -70,7 +69,7 @@ namespace DiscUtils.Ntfs
             value.ReadFrom(buffer, 0);
             return value;
         }
-        
+
         /// <summary>
         /// Sets the content of a stream.
         /// </summary>

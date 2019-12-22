@@ -22,8 +22,8 @@
 
 namespace DiscUtils.Fat
 {
-    using System.IO;
     using DiscUtils.Vfs;
+    using System.IO;
 
     [VfsFileSystemFactory]
     internal class FileSystemFactory : VfsFileSystemFactory

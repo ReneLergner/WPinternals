@@ -23,7 +23,7 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class DumpRomTargetSelectionViewModel: ContextViewModel
+    internal class DumpRomTargetSelectionViewModel : ContextViewModel
     {
         private Action<string, string, bool, string, bool, string, bool> DumpCallback;
         internal Action SwitchToUnlockBoot;

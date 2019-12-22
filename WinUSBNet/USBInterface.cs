@@ -6,8 +6,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MadWizard.WinUSBNet
 {
@@ -33,7 +31,7 @@ namespace MadWizard.WinUSBNet
             get;
             private set;
         }
-      
+
         /// <summary>
         /// USB device associated with this interface
         /// </summary>
@@ -100,7 +98,7 @@ namespace MadWizard.WinUSBNet
             get;
             private set;
         }
-       
+
         /// Zero based interface index in WinUSB.
         /// Note that this is not necessarily the same as the interface *number*
         /// from the interface descriptor. There might be interfaces within the
@@ -128,7 +126,7 @@ namespace MadWizard.WinUSBNet
             {
                 BaseClass = (USBBaseClass)(int)rawDesc.bInterfaceClass;
             }
-           
+
 
             Device = device;
             Pipes = pipes;
@@ -146,7 +144,7 @@ namespace MadWizard.WinUSBNet
                     OutPipe = pipe;
 
             }
-        
+
         }
     }
 }

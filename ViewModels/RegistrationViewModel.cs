@@ -29,7 +29,7 @@ namespace WPinternals
         Action Failed;
 
         internal RegistrationViewModel(Action Completed, Action Failed)
-            : base() 
+            : base()
         {
             this.Completed = Completed;
             this.Failed = Failed;

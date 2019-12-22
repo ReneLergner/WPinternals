@@ -47,7 +47,7 @@ namespace WPinternals
         internal uint CertificatesOffset;
         internal byte[] RootKeyHash = null;
 
-        internal QualcommPartition(string Path): this(File.ReadAllBytes(Path)) { }
+        internal QualcommPartition(string Path) : this(File.ReadAllBytes(Path)) { }
 
         internal QualcommPartition(byte[] Binary, uint Offset = 0)
         {

@@ -22,9 +22,9 @@
 
 namespace DiscUtils.Raw
 {
+    using DiscUtils.Partitions;
     using System;
     using System.IO;
-    using DiscUtils.Partitions;
 
     /// <summary>
     /// Represents a single raw disk image file.

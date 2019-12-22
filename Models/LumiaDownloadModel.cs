@@ -20,15 +20,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -202,13 +202,13 @@ namespace WPinternals
                 if (SoftwarePackages != null)
                 {
                     foreach (SoftwarePackage pkg in SoftwarePackages.softwarePackages)
-                    Package = SoftwarePackages.softwarePackages.FirstOrDefault<SoftwarePackage>();
+                        Package = SoftwarePackages.softwarePackages.FirstOrDefault<SoftwarePackage>();
                 }
             }
 
             if (Package == null)
                 throw new WPinternalsException("ENOSW package not found");
-            
+
             SoftwareFile FileInfo = Package.files.Where(f => f.fileName.EndsWith(".secwim", StringComparison.OrdinalIgnoreCase)).First();
 
             SoftwareFile DPLF = Package.files.Where(f => f.fileName.EndsWith(".dpl", StringComparison.OrdinalIgnoreCase)).First();
@@ -231,11 +231,11 @@ namespace WPinternals
 
             if (DPLUrl == "")
                 throw new WPinternalsException("DPL not found");
-            
+
             Task<string> GetDPLStrTask = HttpClient.GetStringAsync(DPLUrl);
             GetDPLStrTask.Wait();
             string DPLStrString = GetDPLStrTask.Result;
-            
+
             DPL.Package dpl;
             XmlSerializer serializer = new XmlSerializer(typeof(DPL.Package));
             using (StringReader reader = new StringReader(DPLStrString.Replace("ft:", "").Replace("dpl:", "").Replace("typedes:", "")))
@@ -246,9 +246,9 @@ namespace WPinternals
             foreach (DPL.File file in dpl.Content.Files.File)
             {
                 string name = file.Name;
-                
+
                 DPL.Range range = file.Extensions.MmosWimFile.UseCaseCompatibilities.Compatibility.FirstOrDefault().Range;
-                
+
                 if (IsFirmwareBetween(PhoneFirmwareRevision, range.From, range.To))
                     FileInfo = Package.files.Where(f => f.fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase)).First();
             }
@@ -363,7 +363,7 @@ namespace WPinternals
         }
     }
 
-    #pragma warning disable 0649
+#pragma warning disable 0649
     [DataContract]
     internal class FileUrlResult
     {
@@ -379,7 +379,7 @@ namespace WPinternals
         [DataMember]
         internal List<SoftwareFileChecksum> checksum;
     }
-    #pragma warning restore 0649
+#pragma warning restore 0649
 
     [DataContract]
     public class DiscoveryQueryParameters
@@ -454,7 +454,7 @@ namespace WPinternals
         [DataMember]
         public List<string> response;
 
-        public DiscoveryParameters(): this(DiscoveryCondition.Default)
+        public DiscoveryParameters() : this(DiscoveryCondition.Default)
         {
         }
 

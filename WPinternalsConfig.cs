@@ -22,9 +22,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml.Serialization;
 using System.Security.Cryptography;
-using System.Windows;
+using System.Xml.Serialization;
 
 namespace WPinternals
 {
@@ -184,7 +183,7 @@ namespace WPinternals
         internal void RemoveFfuFromRepository(string FFUPath)
         {
             int Count = 0;
-            FFURepository.Where(e => (string.Compare(e.Path, FFUPath, true) == 0)).ToList().ForEach(e => 
+            FFURepository.Where(e => (string.Compare(e.Path, FFUPath, true) == 0)).ToList().ForEach(e =>
                 {
                     Count++;
                     FFURepository.Remove(e);
@@ -215,7 +214,7 @@ namespace WPinternals
             {
                 LogFile.Log("Adding emergency files to repository: " + ProgrammerPath, LogType.FileAndConsole);
                 LogFile.Log("Type: " + Type, LogType.FileAndConsole);
-                
+
                 Entry = new EmergencyFileEntry();
                 Entry.Type = Type;
                 Entry.ProgrammerPath = ProgrammerPath;

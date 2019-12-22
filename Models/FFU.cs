@@ -442,7 +442,7 @@ namespace WPinternals
             byte[] mobilestartup = msms.ToArray();
             Version OSVersion = PE.GetProductVersion(mobilestartup);
             s.Close();
-            
+
             return OSVersion.ToString();
         }
     }

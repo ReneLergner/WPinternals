@@ -24,7 +24,7 @@ using System.IO.Ports;
 
 namespace WPinternals
 {
-    internal class QualcommSerial: IDisposable
+    internal class QualcommSerial : IDisposable
     {
         private bool Disposed = false;
         private SerialPort Port = null;
@@ -37,7 +37,7 @@ namespace WPinternals
         public QualcommSerial(string DevicePath)
         {
             CRC16 = new CRC16(0x1189, 0xFFFF, 0xFFFF);
-            
+
             string[] DevicePathElements = DevicePath.Split(new char[] { '#' });
             if (string.Compare(DevicePathElements[3], "{86E0D1E0-8089-11D0-9CE4-08003E301F73}", true) == 0)
             {
@@ -132,7 +132,7 @@ namespace WPinternals
                         for (int i = 0; i < ResponsePattern.Length; i++)
                             if (DecodedResponse[i] != ResponsePattern[i])
                             {
-                                byte[] LogResponse = new byte[DecodedResponse.Length < 0x10 ? DecodedResponse.Length: 0x10];
+                                byte[] LogResponse = new byte[DecodedResponse.Length < 0x10 ? DecodedResponse.Length : 0x10];
                                 LogFile.Log("Qualcomm serial response: " + Converter.ConvertHexToString(LogResponse, ""), LogType.FileOnly);
                                 LogFile.Log("Expected: " + Converter.ConvertHexToString(ResponsePattern, ""), LogType.FileOnly);
                                 throw new BadMessageException();
@@ -292,7 +292,7 @@ namespace WPinternals
 
     public class CRC16
     {
-        private UInt16[] ChecksumTable = 
+        private UInt16[] ChecksumTable =
             new UInt16[] {
                 0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
                 0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,

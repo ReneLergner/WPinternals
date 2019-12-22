@@ -162,7 +162,7 @@ namespace WPinternals
                     LogFile.Log("Mode: Label", LogType.FileAndConsole);
                     NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                 }
-                else if ((e.DevicePath.IndexOf("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase) >= 0) || 
+                else if ((e.DevicePath.IndexOf("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase) >= 0) ||
                         (e.DevicePath.IndexOf("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_0421&PID_06FC is for Lumia 930
                         (e.DevicePath.IndexOf("vid_045e&pid_0a00", StringComparison.OrdinalIgnoreCase) >= 0)) // vid_045e & pid_0a00 & mi_03 = Lumia 950 XL normal mode
                 {
@@ -256,7 +256,8 @@ namespace WPinternals
                     // It is not possible to invoke COM objects from a WndProc.
                     // MassStorage uses ManagementObjectSearcher, which is a COM object.
                     // Therefore we use a new thread.
-                    ThreadPool.QueueUserWorkItem(s => {
+                    ThreadPool.QueueUserWorkItem(s =>
+                    {
                         lock (ModelLock)
                         {
                             if (!(CurrentModel is MassStorage))
@@ -392,7 +393,8 @@ namespace WPinternals
                 (e.DevicePath.IndexOf("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf(@"disk&ven_qualcomm&prod_mmc_storage", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf(@"DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase) >= 0)
-            ) {
+            )
+            {
                 if (CurrentInterface != null)
                     LastInterface = CurrentInterface;
                 CurrentInterface = null;

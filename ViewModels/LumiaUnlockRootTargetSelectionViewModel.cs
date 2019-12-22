@@ -23,19 +23,19 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class LumiaUnlockRootTargetSelectionViewModel: LumiaRootAccessTargetSelectionViewModel
+    internal class LumiaUnlockRootTargetSelectionViewModel : LumiaRootAccessTargetSelectionViewModel
     {
         public LumiaUnlockRootTargetSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action SwitchToDumpRom, Action SwitchToFlashRom, Action UnlockPhoneCallback, Action<string, string> UnlockImageCallback)
             : base(PhoneNotifier, SwitchToUnlockBoot, SwitchToDumpRom, SwitchToFlashRom, UnlockPhoneCallback, UnlockImageCallback) { }
     }
 
-    internal class LumiaUndoRootTargetSelectionViewModel: LumiaRootAccessTargetSelectionViewModel
+    internal class LumiaUndoRootTargetSelectionViewModel : LumiaRootAccessTargetSelectionViewModel
     {
         public LumiaUndoRootTargetSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action SwitchToDumpRom, Action SwitchToFlashRom, Action UnlockPhoneCallback, Action<string, string> UnlockImageCallback)
             : base(PhoneNotifier, SwitchToUnlockBoot, SwitchToDumpRom, SwitchToFlashRom, UnlockPhoneCallback, UnlockImageCallback) { }
     }
 
-    internal class LumiaRootAccessTargetSelectionViewModel: ContextViewModel
+    internal class LumiaRootAccessTargetSelectionViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel PhoneNotifier;
         internal Action SwitchToUnlockBoot;

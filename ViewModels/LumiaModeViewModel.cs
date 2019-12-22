@@ -111,7 +111,8 @@ namespace WPinternals
             catch (Exception Ex)
             {
                 IsSwitchingInterface = false;
-                ActivateSubContext(new MessageViewModel(Ex.Message, () => {
+                ActivateSubContext(new MessageViewModel(Ex.Message, () =>
+                {
                     Callback();
                     Refresh();
                 }));

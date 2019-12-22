@@ -24,7 +24,7 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class DumpRomViewModel: ContextViewModel
+    internal class DumpRomViewModel : ContextViewModel
     {
         private Action SwitchToUnlockBoot;
         private Action SwitchToUnlockRoot;
@@ -56,7 +56,7 @@ namespace WPinternals
                     ActivateSubContext(new BusyViewModel("Initializing ROM dump..."));
 
                     ulong TotalSizeSectors = 0;
-                    int PartitionCount = 0;    
+                    int PartitionCount = 0;
                     Partition Partition;
                     FFU FFU = null;
                     try

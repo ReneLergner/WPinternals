@@ -103,7 +103,7 @@ namespace WPinternals
                 OnPropertyChanged("SubMessage");
             }
         }
-        
+
         private int? _ProgressPercentage = null;
         public int? ProgressPercentage
         {
@@ -148,7 +148,7 @@ namespace WPinternals
             {
                 NewText = "Progress: " + ((int)ProgressPercentage).ToString() + "%";
             }
-            if  (TimeRemaining != null)
+            if (TimeRemaining != null)
             {
                 if (NewText == null)
                     NewText = "";

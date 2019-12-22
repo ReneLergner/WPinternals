@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace WPinternals
 {
-    internal class LumiaFlashRomViewModel: ContextViewModel
+    internal class LumiaFlashRomViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel PhoneNotifier;
         internal Action SwitchToUnlockBoot;
@@ -178,7 +178,7 @@ namespace WPinternals
                     else if ((MainOSNewSectorCount > 0) && (MainOSNewSectorCount > MainOSOldSectorCount))
                     {
                         LogFile.Log("Flash failed! Size of partition 'MainOS' is too big.");
-                       ExitFailure("Flash failed!", "Size of partition 'MainOS' is too big.");
+                        ExitFailure("Flash failed!", "Size of partition 'MainOS' is too big.");
                         return;
                     }
                     else if ((DataNewSectorCount > 0) && (DataNewSectorCount > DataOldSectorCount))
@@ -220,7 +220,7 @@ namespace WPinternals
                                 i++;
                                 Busy.Message = "Flashing partition MainOS (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
                                 Phone.FlashRawPartition(MainOSPath, "MainOS", Updater);
-                           }
+                            }
                         }
                         catch (Exception Ex)
                         {
@@ -249,7 +249,7 @@ namespace WPinternals
 
                     if (!Result)
                     {
-                    ExitFailure("Flash failed!", null);
+                        ExitFailure("Flash failed!", null);
                         return;
                     }
 
@@ -344,7 +344,7 @@ namespace WPinternals
 
                                         TotalSizeSectors += StreamLengthInSectors;
                                         PartitionCount++;
-                                            
+
                                         if (string.Compare(PartitionName, "MainOS", true) == 0)
                                         {
                                             MainOSOldSectorCount = Partition.SizeInSectors;
@@ -467,7 +467,7 @@ namespace WPinternals
                 ExitSuccess("Flash successful! Make sure you disable Windows Update on the phone!", null);
             }).Start();
         }
-        
+
         // Called from an event-handler. So, "async void" is valid here.
         internal async void FlashFFU(string FFUPath)
         {
@@ -628,7 +628,7 @@ namespace WPinternals
             NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
             if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                 Phone.SwitchToFlashAppContext();
-            
+
             new Thread(() =>
             {
                 bool Result = true;
@@ -722,7 +722,7 @@ namespace WPinternals
 
         internal void ExitFailure(string Message, string SubMessage)
         {
-            MessageViewModel ErrorMessageViewModel = new MessageViewModel(Message, () => 
+            MessageViewModel ErrorMessageViewModel = new MessageViewModel(Message, () =>
             {
                 IsSwitchingInterface = false;
                 Callback();

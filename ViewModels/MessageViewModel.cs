@@ -22,7 +22,7 @@ using System;
 
 namespace WPinternals
 {
-    internal class MessageViewModel: ContextViewModel
+    internal class MessageViewModel : ContextViewModel
     {
         internal MessageViewModel(string Message, Action OkAction = null, Action CancelAction = null)
             : base()

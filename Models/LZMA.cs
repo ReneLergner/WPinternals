@@ -39,7 +39,7 @@ namespace WPinternals
             Buffer.BlockCopy(Input, (int)Offset, Properties, 0, 5);
 
             UInt64 OutputSize = ByteOperations.ReadUInt64(Input, Offset + 5);
-            
+
             SevenZip.Compression.LZMA.Decoder Coder = new SevenZip.Compression.LZMA.Decoder();
             Coder.SetDecoderProperties(Properties);
 

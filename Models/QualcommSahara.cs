@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace WPinternals
 {
-    internal enum SaharaMode: uint
+    internal enum SaharaMode : uint
     {
         ImageTransferPending = 0x00,
         ImagetransferComplete = 0x01,
@@ -154,7 +154,7 @@ namespace WPinternals
                 LogFile.Log("MaxLength: 0x" + ByteOperations.ReadUInt32(Hello, 0x10).ToString("X8"), LogType.FileOnly);
                 LogFile.Log("Mode: 0x" + ByteOperations.ReadUInt32(Hello, 0x14).ToString("X8"), LogType.FileOnly);
 
-                byte[] HelloResponse = new byte[] { 
+                byte[] HelloResponse = new byte[] {
                     0x02, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -233,7 +233,7 @@ namespace WPinternals
                         Incoming = System.Text.Encoding.ASCII.GetString(Serial.GetResponse(null));
                         LogFile.Log("In: " + Incoming, LogType.FileOnly);
                     };
-                    
+
                     LogFile.Log("Incoming Hello-response received", LogType.FileOnly);
                     HandshakeCompleted = true;
                 }

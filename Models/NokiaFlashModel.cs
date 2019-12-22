@@ -100,7 +100,7 @@ namespace WPinternals
             uint? flags = ReadSecurityFlags();
             if (!flags.HasValue)
                 return null;
-            
+
             var finalconfig = (Fuse)flags.Value;
             return finalconfig.HasFlag(fuse);
         }
@@ -186,7 +186,7 @@ namespace WPinternals
         public void SendFfuHeaderV1(byte[] FfuHeader, byte Options = 0)
         {
             byte[] Request = new byte[FfuHeader.Length + 0x20];
-            
+
             string Header = "NOKXFS";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             System.Buffer.BlockCopy(BigEndian.GetBytes(0x0001, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
@@ -279,7 +279,7 @@ namespace WPinternals
 
             System.Buffer.BlockCopy(BigEndian.GetBytes(0x0000001B, 4), 0, Request, 0x0C, 4); // Subblock type for Payload v2 = 0x1B
             System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length + 0x0C, 4), 0, Request, 0x10, 4); // Subblock length = length of chunk + 0x08
-            
+
             System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length, 4), 0, Request, 0x14, 4); // Payload length = length of chunk
             Request[0x18] = Options; // Data options = 0 (1 = verify)
 
@@ -368,18 +368,18 @@ namespace WPinternals
             if (ResultCode != 0)
                 ThrowFlashError(ResultCode);
         }
-        
+
         internal void SwitchToMmosContext()
         {
             byte[] Request = new byte[7];
             ByteOperations.WriteAsciiString(Request, 0, "NOKXCBA");
             ExecuteRawVoidMethod(Request);
-            
+
             ResetDevice();
 
             Dispose(true);
         }
-        
+
         private void ThrowFlashError(int ErrorCode)
         {
             string SubMessage;
@@ -549,11 +549,11 @@ namespace WPinternals
                     MMOSFile.Read(data, 0, (int)(length - offset));
                     LoadMmosBinary(length, (uint)offset, false, data);
                 }
-                
+
                 SwitchToMmosContext();
                 ResetPhone();
             }
-            
+
             LogFile.EndAction("FlashMMOS");
         }
 
@@ -613,9 +613,9 @@ namespace WPinternals
             // If this function is used with a locked BootMgr v1, 
             // then the mode-switching should be done outside this function, 
             // because the context-switches that are used here are not supported on BootMgr v1.
-            
+
             // Only works in BootLoader-mode or on unlocked bootloaders in Flash-mode!!
-            
+
             PhoneInfo Info = ReadPhoneInfo(ExtendedInfo: false);
             FlashAppType OriginalAppType = Info.App;
             bool Switch = ((Info.App != FlashAppType.BootManager) && Info.SecureFfuEnabled && !Info.Authenticated && !Info.RdcPresent);
@@ -1112,7 +1112,7 @@ namespace WPinternals
             ExecuteRawMethod(Request);
         }
 
-        internal enum SecureBootKeyType: byte
+        internal enum SecureBootKeyType : byte
         {
             Retail = 0,
             Engineering = 1
@@ -1154,7 +1154,7 @@ namespace WPinternals
         public string Imei;        // Extended info
         public string Firmware;    // Extended info
         public byte[] RKH;         // Extended info
-        
+
         public FlashAppType App;
 
         public byte FlashAppVersionMajor;

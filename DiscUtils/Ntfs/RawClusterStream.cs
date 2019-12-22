@@ -22,11 +22,11 @@
 
 namespace DiscUtils.Ntfs
 {
+    using DiscUtils;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
-    using DiscUtils;
 
     /// <summary>
     /// Low-level non-resident attribute operations.

@@ -21,15 +21,15 @@
 using System;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Runtime.ConstrainedExecution;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace WPinternals
 {
     using Luid = NativeMethods.LUID;
-    using Win32Exception = System.ComponentModel.Win32Exception;
     using PrivilegeNotHeldException = System.Security.AccessControl.PrivilegeNotHeldException;
+    using Win32Exception = System.ComponentModel.Win32Exception;
 
     internal delegate void PrivilegedCallback(object state);
 

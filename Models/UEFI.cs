@@ -324,7 +324,7 @@ namespace WPinternals
                 Buffer.BlockCopy(
                     DecompressedImage,
                     (int)(File.BinaryOffset + OldBinarySize + OldSectionPadding),
-                    NewImage, 
+                    NewImage,
                     (int)(File.BinaryOffset + NewBinarySize + NewSectionPadding),
                     (int)(File.FileOffset + OldFileSize - File.BinaryOffset - OldBinarySize - OldSectionPadding));
 
@@ -334,8 +334,8 @@ namespace WPinternals
 
                 // Copy volume-tail
                 Buffer.BlockCopy(
-                    DecompressedImage, 
-                    (int)(File.FileOffset + OldFileSize + OldFilePadding), 
+                    DecompressedImage,
+                    (int)(File.FileOffset + OldFileSize + OldFilePadding),
                     NewImage,
                     (int)(File.FileOffset + NewFileSize + NewFilePadding),
                     (int)(DecompressedImage.Length - File.FileOffset - OldFileSize - OldFilePadding));
@@ -386,7 +386,7 @@ namespace WPinternals
             // The new binary will include the Qualcomm header, but not the signature and certificates, because they won't match anyway.
             byte[] NewBinary = new byte[Binary.Length];
             Buffer.BlockCopy(Binary, 0, NewBinary, 0, (int)CompressedSubImageOffset);
-            
+
             ByteOperations.WriteUInt32(NewBinary, 0x10, ByteOperations.ReadUInt32(NewBinary, 0x14)); // Complete image size - does not include signature and certs anymore
             ByteOperations.WriteUInt32(NewBinary, 0x18, 0x00000000); // Address of signature
             ByteOperations.WriteUInt32(NewBinary, 0x1C, 0x00000000); // Signature length
@@ -433,7 +433,7 @@ namespace WPinternals
 
             if (NewCompressedImage.Length > CompressedSubImageSize)
             {
-                Buffer.BlockCopy(Binary, (int)(FileHeaderOffset + OldFileSize + OldFilePadding), NewBinary, (int)(FileHeaderOffset + NewFileSize + NewFilePadding), 
+                Buffer.BlockCopy(Binary, (int)(FileHeaderOffset + OldFileSize + OldFilePadding), NewBinary, (int)(FileHeaderOffset + NewFileSize + NewFilePadding),
                     (int)(VolumeHeaderOffset + VolumeSize - FileHeaderOffset - NewFileSize - NewFilePadding));
             }
             else
@@ -548,8 +548,8 @@ namespace WPinternals
             byte[] SecurityDxe = GetFile("SecurityDxe");
             ClearEfiChecksum(SecurityDxe);
 
-            UInt32? PatchOffset = ByteOperations.FindPattern(SecurityDxe, 
-                new byte[] { 0xF0, 0x41, 0x2D, 0xE9, 0xFF, 0xFF, 0xB0, 0xE1, 0x28, 0xD0, 0x4D, 0xE2, 0xFF, 0xFF, 0xA0, 0xE1, 0x00, 0x00, 0xFF, 0x13, 0x20, 0xFF, 0xA0, 0xE3 }, 
+            UInt32? PatchOffset = ByteOperations.FindPattern(SecurityDxe,
+                new byte[] { 0xF0, 0x41, 0x2D, 0xE9, 0xFF, 0xFF, 0xB0, 0xE1, 0x28, 0xD0, 0x4D, 0xE2, 0xFF, 0xFF, 0xA0, 0xE1, 0x00, 0x00, 0xFF, 0x13, 0x20, 0xFF, 0xA0, 0xE3 },
                 new byte[] { 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00 },
                 null);
 

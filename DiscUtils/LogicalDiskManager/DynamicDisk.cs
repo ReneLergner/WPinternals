@@ -22,9 +22,9 @@
 
 namespace DiscUtils.LogicalDiskManager
 {
+    using DiscUtils.Partitions;
     using System;
     using System.IO;
-    using DiscUtils.Partitions;
 
     internal class DynamicDisk : IDiagnosticTraceable
     {

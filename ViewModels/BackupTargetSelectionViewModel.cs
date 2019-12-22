@@ -23,7 +23,7 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class BackupTargetSelectionViewModel: ContextViewModel
+    internal class BackupTargetSelectionViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel PhoneNotifier;
         private Action<string, string, string> BackupCallback;

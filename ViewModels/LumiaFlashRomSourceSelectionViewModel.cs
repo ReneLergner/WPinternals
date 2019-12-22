@@ -23,7 +23,7 @@ using System.Threading;
 
 namespace WPinternals
 {
-    internal class LumiaFlashRomSourceSelectionViewModel: ContextViewModel
+    internal class LumiaFlashRomSourceSelectionViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel PhoneNotifier;
         private Action<string, string, string> FlashPartitionsCallback;

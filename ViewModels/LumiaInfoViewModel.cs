@@ -22,7 +22,7 @@ using System;
 
 namespace WPinternals
 {
-    internal class LumiaInfoViewModel: ContextViewModel
+    internal class LumiaInfoViewModel : ContextViewModel
     {
         internal PhoneInterfaces? CurrentInterface;
         internal IDisposable CurrentModel;

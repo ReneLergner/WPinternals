@@ -19,10 +19,10 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Linq;
-using System.Windows;
 using System.IO;
+using System.Linq;
 using System.Threading;
+using System.Windows;
 
 namespace WPinternals
 {

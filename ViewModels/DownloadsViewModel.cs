@@ -32,7 +32,7 @@ using System.Windows.Data;
 
 namespace WPinternals
 {
-    internal class DownloadsViewModel: ContextViewModel
+    internal class DownloadsViewModel : ContextViewModel
     {
         private PhoneNotifierViewModel Notifier;
         private Timer SpeedTimer;
@@ -56,7 +56,7 @@ namespace WPinternals
             AddFFUCommand = new DelegateCommand(() =>
             {
                 string FFUPath = null;
-                
+
                 Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
                 dlg.DefaultExt = ".ffu"; // Default file extension
                 dlg.Filter = "ROM images (.ffu)|*.ffu"; // Filter files by extension 
@@ -82,7 +82,7 @@ namespace WPinternals
                     {
                         LastStatusText = "Error: File \"" + FFUFile + "\" was not added.";
                     }
-                    
+
                 }
                 else
                 {
@@ -496,7 +496,7 @@ namespace WPinternals
         Failed
     };
 
-    internal class DownloadEntry: INotifyPropertyChanged
+    internal class DownloadEntry : INotifyPropertyChanged
     {
         private SynchronizationContext UIContext;
         public event PropertyChangedEventHandler PropertyChanged = delegate { };

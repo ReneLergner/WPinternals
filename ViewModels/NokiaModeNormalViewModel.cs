@@ -22,7 +22,7 @@ using System;
 
 namespace WPinternals
 {
-    internal class NokiaModeNormalViewModel: ContextViewModel
+    internal class NokiaModeNormalViewModel : ContextViewModel
     {
         private NokiaPhoneModel CurrentModel;
         private Action<PhoneInterfaces?> RequestModeSwitch;
