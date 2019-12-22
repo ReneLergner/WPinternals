@@ -1452,7 +1452,7 @@ namespace WPinternals
                             LogFile.Log("The relock-sequence will resume automatically", LogType.ConsoleOnly);
                             LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
 
-                            SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the relock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The relock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
+                            SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the relock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. The relock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
 
                             await Notifier.WaitForRemoval();
 
@@ -1899,7 +1899,7 @@ namespace WPinternals
 
                 if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
                 {
-                    SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode, but the driver of the PC failed to start. Unfortunately this happens sometimes. You need to manually reset the phone now. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. Windows Phone Internals will automatically start to revert the changes. After the phone is fully booted again, you can retry to unlock the bootloader.", null, false, WPinternalsStatus.WaitingForManualReset);
+                    SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode, but the driver of the PC failed to start. Unfortunately this happens sometimes. You need to manually reset the phone now. Keep the phone connected to the PC. Windows Phone Internals will automatically start to revert the changes. After the phone is fully booted again, you can retry to unlock the bootloader.", null, false, WPinternalsStatus.WaitingForManualReset);
                     await Notifier.WaitForArrival(); // Should be detected in Bootmanager mode
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
                         IsPhoneInBadMassStorageMode = true;
@@ -1986,7 +1986,7 @@ namespace WPinternals
                     LogFile.Log("The unlock-sequence will resume automatically", LogType.ConsoleOnly);
                     LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
 
-                    SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
+                    SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
 
                     await Notifier.WaitForRemoval();
 
@@ -2132,7 +2132,7 @@ namespace WPinternals
                         LogFile.Log("The unlock-sequence will resume automatically", LogType.ConsoleOnly);
                         LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
 
-                        SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
+                        SetWorkingStatus("You need to manually reset your phone now!", "The phone is currently in Mass Storage Mode. To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
 
                         await Notifier.WaitForRemoval();
 

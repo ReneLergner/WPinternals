@@ -587,7 +587,7 @@ namespace WPinternals
                     LogFile.Log("The unlock-sequence will resume automatically", LogType.ConsoleOnly);
                     LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
 
-                    SetWorkingStatus("You need to manually reset your phone now!", (Timeout ? "The phone is not responding. It might be in emergency mode, while you have no matching driver installed. " : "") + "To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
+                    SetWorkingStatus("You need to manually reset your phone now!", (Timeout ? "The phone is not responding. It might be in emergency mode, while you have no matching driver installed. " : "") + "To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
 
                     await Notifier.WaitForRemoval();
 
@@ -645,7 +645,7 @@ namespace WPinternals
                                 SetWorkingStatus("You need to manually reset your phone now!",
                                     "The phone is in emergency mode and you didn't provide an emergency programmer." +
                                     " This phone also doesn't seem to reboot after a timeout, so you got to help a bit." +
-                                    " Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates." +
+                                    " Keep the phone connected to the PC." +
                                     " The unlock-sequence will resume automatically. To prevent this, provide an emergency programmer next time you will unlock a bootloader.",
                                     null, false, WPinternalsStatus.WaitingForManualReset);
                             }
@@ -661,7 +661,7 @@ namespace WPinternals
                                 SetWorkingStatus("You need to manually reset your phone now!",
                                     "The phone is in emergency mode and we couldn't start the emergency programmer." +
                                     " This phone also doesn't seem to reboot after a timeout, so you got to help a bit." +
-                                    " Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates." +
+                                    " Keep the phone connected to the PC." +
                                     " The unlock-sequence will resume automatically.",
                                     null, false, WPinternalsStatus.WaitingForManualReset);
                             }
@@ -1243,7 +1243,7 @@ namespace WPinternals
                             LogFile.Log("The unlock-sequence will resume automatically", LogType.ConsoleOnly);
                             LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
 
-                            UpdateWorkingStatus("You need to manually reset your phone now!", (Timeout ? "The phone is not responding. It might be in emergency mode, while you have no matching driver installed. " : "") + "To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The unlock-sequence will resume automatically.", null, WPinternalsStatus.WaitingForManualReset);
+                            UpdateWorkingStatus("You need to manually reset your phone now!", (Timeout ? "The phone is not responding. It might be in emergency mode, while you have no matching driver installed. " : "") + "To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. The unlock-sequence will resume automatically.", null, WPinternalsStatus.WaitingForManualReset);
 
                             await Notifier.WaitForRemoval();
 
@@ -1300,7 +1300,7 @@ namespace WPinternals
                                         SetWorkingStatus("You need to manually reset your phone now!",
                                             "The phone is in emergency mode and you didn't provide an emergency programmer." +
                                             " This phone also doesn't seem to reboot after a timeout, so you got to help a bit." +
-                                            " Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates." +
+                                            " Keep the phone connected to the PC." +
                                             " The unlock-sequence will resume automatically. To prevent this, provide an emergency programmer next time you will unlock a bootloader.",
                                             null, false, WPinternalsStatus.WaitingForManualReset);
                                     }
@@ -1316,7 +1316,7 @@ namespace WPinternals
                                         SetWorkingStatus("You need to manually reset your phone now!",
                                             "The phone is in emergency mode and we couldn't start the emergency programmer." +
                                             " This phone also doesn't seem to reboot after a timeout, so you got to help a bit." +
-                                            " Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates." +
+                                            " Keep the phone connected to the PC." +
                                             " The unlock-sequence will resume automatically.",
                                             null, false, WPinternalsStatus.WaitingForManualReset);
                                     }
@@ -1498,7 +1498,7 @@ namespace WPinternals
                     LogFile.Log("The unlock-sequence will resume automatically", LogType.ConsoleOnly);
                     LogFile.Log("Waiting for manual reset of the phone...", LogType.ConsoleOnly);
 
-                    SetWorkingStatus("You need to manually reset your phone now!", (Timeout ? "The phone is not responding. It might be in emergency mode, while you have no matching driver installed. " : "") + "To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
+                    SetWorkingStatus("You need to manually reset your phone now!", (Timeout ? "The phone is not responding. It might be in emergency mode, while you have no matching driver installed. " : "") + "To continue the unlock-sequence, the phone needs to be rebooted. Keep the phone connected to the PC. The unlock-sequence will resume automatically.", null, false, WPinternalsStatus.WaitingForManualReset);
 
                     await Notifier.WaitForRemoval();
 
@@ -1554,7 +1554,7 @@ namespace WPinternals
                                 SetWorkingStatus("You need to manually reset your phone now!",
                                     "The phone is in emergency mode and you didn't provide an emergency programmer." +
                                     " This phone also doesn't seem to reboot after a timeout, so you got to help a bit." +
-                                    " Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates." +
+                                    " Keep the phone connected to the PC." +
                                     " The unlock-sequence will resume automatically. To prevent this, provide an emergency programmer next time you will unlock a bootloader.",
                                     null, false, WPinternalsStatus.WaitingForManualReset);
                             }
@@ -1570,7 +1570,7 @@ namespace WPinternals
                                 SetWorkingStatus("You need to manually reset your phone now!",
                                     "The phone is in emergency mode and we couldn't start the emergency programmer." +
                                     " This phone also doesn't seem to reboot after a timeout, so you got to help a bit." +
-                                    " Keep the phone connected to the PC. Reboot the phone manually by pressing and holding the power-button of the phone for about 10 seconds until it vibrates." +
+                                    " Keep the phone connected to the PC." +
                                     " The unlock-sequence will resume automatically.",
                                     null, false, WPinternalsStatus.WaitingForManualReset);
                             }
