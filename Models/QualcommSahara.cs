@@ -306,7 +306,26 @@ namespace WPinternals
         {
             LogFile.Log("Starting programmer", LogType.FileAndConsole);
             byte[] DoneCommand = new byte[] { 0x05, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00 };
-            byte[] DoneResponse = Serial.SendCommand(DoneCommand, new byte[] { 0x06, 0x00, 0x00, 0x00 });
+            bool Started = false;
+            int count = 0;
+            do
+            {
+                try
+                {
+                    count++;
+                    byte[] DoneResponse = Serial.SendCommand(DoneCommand, new byte[] { 0x06, 0x00, 0x00, 0x00 });
+                    Started = true;
+                }
+                catch (BadConnectionException)
+                {
+                    LogFile.Log("Problem while starting programmer. Attempting again.", LogType.FileAndConsole);
+                }
+            } while (!Started || count >= 3);
+            if (count >= 3 && !Started)
+            {
+                LogFile.Log("Maximum number of attempts to start the programmer exceeded.", LogType.FileAndConsole);
+                throw new BadConnectionException();
+            }
             LogFile.Log("Programmer being launched on phone", LogType.FileOnly);
         }
     }

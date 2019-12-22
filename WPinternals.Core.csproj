@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Resource Include="Logo.png" />
+    <Resource Include="PhoneReboot.png" />
     <Resource Include="WPinternals.ico" />
     <Resource Include="aerobusy.gif" />
     <Resource Include="Logo-Small.png" />
@@ -42,6 +43,10 @@
     <Content Remove="SB" />
     <Content Remove="SBMSM" />
     <Content Remove="SBA" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="PhoneReboot.png" />
   </ItemGroup>
 
   <ItemGroup>

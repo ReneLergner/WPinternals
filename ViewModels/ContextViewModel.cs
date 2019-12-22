@@ -123,7 +123,7 @@ namespace WPinternals
 
         internal void SetWorkingStatus(string Message, string SubMessage, ulong? MaxProgressValue, bool ShowAnimation = true, WPinternalsStatus Status = WPinternalsStatus.Undefined)
         {
-            ActivateSubContext(new BusyViewModel(Message, SubMessage, MaxProgressValue, UIContext: UIContext, ShowAnimation: ShowAnimation));
+            ActivateSubContext(new BusyViewModel(Message, SubMessage, MaxProgressValue, UIContext: UIContext, ShowAnimation: ShowAnimation, ShowRebootHelp: Status == WPinternalsStatus.WaitingForManualReset));
         }
 
         internal void UpdateWorkingStatus(string Message, string SubMessage, ulong? CurrentProgressValue, WPinternalsStatus Status = WPinternalsStatus.Undefined)
@@ -147,6 +147,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                     }
                 }
+                Busy.SetShowRebootHelp(Status == WPinternalsStatus.WaitingForManualReset);
             }
         }
     }

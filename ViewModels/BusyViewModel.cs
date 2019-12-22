@@ -29,7 +29,7 @@ namespace WPinternals
         internal ProgressUpdater ProgressUpdater = null;
 
         // UIContext can be passed to BusyViewModel, when it needs to update progress-controls and it is created on a worker-thread.
-        internal BusyViewModel(string Message, string SubMessage = null, ulong? MaxProgressValue = null, SynchronizationContext UIContext = null, bool ShowAnimation = true)
+        internal BusyViewModel(string Message, string SubMessage = null, ulong? MaxProgressValue = null, SynchronizationContext UIContext = null, bool ShowAnimation = true, bool ShowRebootHelp = false)
         {
             LogFile.Log(Message);
 
@@ -41,6 +41,7 @@ namespace WPinternals
             this.Message = Message;
             this.SubMessage = SubMessage;
             this.ShowAnimation = ShowAnimation;
+            this.ShowRebootHelp = ShowRebootHelp;
             if (MaxProgressValue != null)
             {
                 ProgressPercentage = 0;
@@ -62,6 +63,11 @@ namespace WPinternals
                     }
                 });
             }
+        }
+
+        internal void SetShowRebootHelp(bool Value)
+        {
+            ShowRebootHelp = Value;
         }
 
         internal void SetProgress(ulong Value)
@@ -188,5 +194,21 @@ namespace WPinternals
             }
         }
 
+        private bool _ShowRebootHelp = false;
+        public bool ShowRebootHelp
+        {
+            get
+            {
+                return _ShowRebootHelp;
+            }
+            set
+            {
+                if (_ShowRebootHelp != value)
+                {
+                    _ShowRebootHelp = value;
+                    OnPropertyChanged("ShowRebootHelp");
+                }
+            }
+        }
     }
 }

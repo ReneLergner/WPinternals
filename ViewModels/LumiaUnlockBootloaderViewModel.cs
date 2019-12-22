@@ -133,14 +133,14 @@ namespace WPinternals
             ExitSuccess("Bootloader restored successfully!");
         }
 
-        internal static async Task LumiaV2UnlockUEFI(PhoneNotifierViewModel Notifier, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null)
+        internal static async Task LumiaV2UnlockUEFI(PhoneNotifierViewModel Notifier, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, bool ReUnlockDevice = false)
         {
             if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
             if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
             if (ExitSuccess == null) ExitSuccess = (m, s) => { };
             if (ExitFailure == null) ExitFailure = (m, s) => { };
 
-            await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
+            await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure, ReUnlockDevice: ReUnlockDevice);
 
             SetWorkingStatus("Booting phone...");
             await Notifier.WaitForArrival();
@@ -1625,7 +1625,7 @@ namespace WPinternals
         //
         // Assumes phone in Flash mode
         //
-        internal static async Task LumiaUnlockUEFI(PhoneNotifierViewModel Notifier, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, bool ExperimentalSpecBEFIESPUnlock = false, bool ExperimentalSpecAEFIESPUnlock = true)
+        internal static async Task LumiaUnlockUEFI(PhoneNotifierViewModel Notifier, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, bool ExperimentalSpecBEFIESPUnlock = false, bool ExperimentalSpecAEFIESPUnlock = true, bool ReUnlockDevice = false)
         {
             LogFile.BeginAction("UnlockBootloader");
             NokiaFlashModel FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
@@ -1705,8 +1705,30 @@ namespace WPinternals
                     Partition BACKUP_EFIESP = GPT.GetPartition("BACKUP_EFIESP");
                     Partition EFIESP;
 
-                    if (BACKUP_EFIESP == null)
+                    if (BACKUP_EFIESP == null && !ReUnlockDevice)
                     {
+                        /*
+                         * Before:
+                         * 
+                         *  ___________________________________________
+                         * |                                           |
+                         * |                  EFIESP                   |
+                         * |                 Original                  |
+                         * |___________________________________________|
+                         * 
+                         */
+
+                        /*
+                         * After:
+                         * 
+                         *  ___________________________________________
+                         * |                    |                      |
+                         * |    BACKUP_EFIESP   |        EFIESP        |
+                         * |      Original      |       Unlocked       |
+                         * |____________________|______________________|
+                         * 
+                         */
+
                         BACKUP_EFIESP = GPT.GetPartition("EFIESP");
                         Guid OriginalPartitionTypeGuid = BACKUP_EFIESP.PartitionTypeGuid;
                         Guid OriginalPartitionGuid = BACKUP_EFIESP.PartitionGuid;
@@ -1722,6 +1744,43 @@ namespace WPinternals
                         EFIESP.FirstSector = BACKUP_EFIESP.LastSector + 1;
                         EFIESP.LastSector = EFIESP.FirstSector + ((OriginalEfiespSizeInSectors) / 2) - 1; // Original is 0x10000
                         GPT.Partitions.Add(EFIESP);
+                        GPTChanged = true;
+                    }
+                    if (BACKUP_EFIESP == null && ReUnlockDevice)
+                    {
+                        /*
+                         * Before:
+                         * 
+                         *  ___________________________________________
+                         * |                    |                      |
+                         * |       EFIESP             BACKUP_EFIESP    |
+                         * |      Unlocked              Original       |
+                         * |____________________|______________________|
+                         * 
+                         */
+
+                        /*
+                         * After:
+                         * 
+                         *  ___________________________________________
+                         * |                    |                      |
+                         * |       EFIESP       |     BACKUP_EFIESP    |
+                         * |      Unlocked      |       Original       |
+                         * |____________________|______________________|
+                         * 
+                         */
+
+                        EFIESP = GPT.GetPartition("EFIESP");
+                        EFIESP.LastSector = EFIESP.FirstSector + ((OriginalEfiespSizeInSectors) / 2) - 1; // Original is 0x10000
+
+                        BACKUP_EFIESP = new Partition();
+                        BACKUP_EFIESP.Name = "BACKUP_EFIESP";
+                        BACKUP_EFIESP.Attributes = EFIESP.Attributes;
+                        BACKUP_EFIESP.PartitionGuid = Guid.NewGuid();
+                        BACKUP_EFIESP.PartitionTypeGuid = Guid.NewGuid();
+                        BACKUP_EFIESP.FirstSector = EFIESP.LastSector + 1;
+                        BACKUP_EFIESP.LastSector = BACKUP_EFIESP.FirstSector + ((OriginalEfiespSizeInSectors) / 2) - 1; // Original is 0x10000
+                        GPT.Partitions.Add(BACKUP_EFIESP);
                         GPTChanged = true;
                     }
                     EFIESP = GPT.GetPartition("EFIESP");
@@ -1896,7 +1955,24 @@ namespace WPinternals
                     byte[] BackupUnlockedEFIESP = new byte[UnlockedEFIESP.Length];
                     Buffer.BlockCopy(BackupEFIESP, 0, BackupUnlockedEFIESP, 0, BackupEFIESP.Length);
 
-                    LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
+                    try
+                    {
+                        LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogFile.Log("Exception: " + ex.GetType().ToString(), LogType.FileOnly);
+                        LogFile.Log("It seems that the backed up EFIESP partition is invalid.", LogType.FileOnly);
+                        LogFile.Log("Using the FFU partition as a failsafe.", LogType.FileOnly);
+
+                        BackupEFIESP = ProfileFFU.GetPartition("EFIESP");
+
+                        // Copy the backed up unlocked EFIESP for future use
+                        BackupUnlockedEFIESP = new byte[UnlockedEFIESP.Length];
+                        Buffer.BlockCopy(BackupEFIESP, 0, BackupUnlockedEFIESP, 0, BackupEFIESP.Length);
+
+                        LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
+                    }
 
                     SetWorkingStatus("Boot optimization...", null, null);
 
@@ -1922,15 +1998,72 @@ namespace WPinternals
 
                     ((NokiaFlashModel)Notifier.CurrentModel).SwitchToFlashAppContext();
 
-                    // EFIESP is appended at the end of the GPT
-                    // BACKUP_EFIESP is at original location in GPT
-                    Partition EFIESP = GPT.GetPartition("EFIESP");
-                    UInt32 OriginalEfiespFirstSector = (UInt32)BACKUP_EFIESP.FirstSector;
-                    BACKUP_EFIESP.Name = "EFIESP";
-                    BACKUP_EFIESP.LastSector = OriginalEfiespLastSector;
-                    BACKUP_EFIESP.PartitionGuid = EFIESP.PartitionGuid;
-                    BACKUP_EFIESP.PartitionTypeGuid = EFIESP.PartitionTypeGuid;
-                    GPT.Partitions.Remove(EFIESP);
+                    UInt32 OriginalEfiespFirstSector;
+                    if (!ReUnlockDevice)
+                    {
+                        /*
+                         * Before:
+                         * 
+                         *  ___________________________________________
+                         * |                    |                      |
+                         * |    BACKUP_EFIESP   |        EFIESP        |
+                         * |      Original      |       Unlocked       |
+                         * |____________________|______________________|
+                         * 
+                         */
+
+                        /*
+                         * After:
+                         * 
+                         *  ___________________________________________
+                         * |                    |                      |
+                         * |       EFIESP             BACKUP_EFIESP    |
+                         * |      Unlocked              Original       |
+                         * |____________________|______________________|
+                         * 
+                         */
+
+                        // EFIESP is appended at the end of the GPT
+                        // BACKUP_EFIESP is at original location in GPT
+                        Partition EFIESP = GPT.GetPartition("EFIESP");
+                        OriginalEfiespFirstSector = (UInt32)BACKUP_EFIESP.FirstSector;
+                        BACKUP_EFIESP.Name = "EFIESP";
+                        BACKUP_EFIESP.LastSector = OriginalEfiespLastSector;
+                        BACKUP_EFIESP.PartitionGuid = EFIESP.PartitionGuid;
+                        BACKUP_EFIESP.PartitionTypeGuid = EFIESP.PartitionTypeGuid;
+                        GPT.Partitions.Remove(EFIESP);
+                    }
+                    else
+                    {
+                        /*
+                         * Before:
+                         * 
+                         *  ___________________________________________
+                         * |                    |                      |
+                         * |       EFIESP       |     BACKUP_EFIESP    |
+                         * |      Unlocked      |       Original       |
+                         * |____________________|______________________|
+                         * 
+                         */
+
+                        /*
+                         * After:
+                         * 
+                         *  ___________________________________________
+                         * |                    |                      |
+                         * |       EFIESP             BACKUP_EFIESP    |
+                         * |      Unlocked              Original       |
+                         * |____________________|______________________|
+                         * 
+                         */
+
+                        // EFIESP is expended to its full size
+                        // BACKUP_EFIESP is removed
+                        Partition EFIESP = GPT.GetPartition("EFIESP");
+                        OriginalEfiespFirstSector = (UInt32)EFIESP.FirstSector;
+                        EFIESP.LastSector = OriginalEfiespLastSector;
+                        GPT.Partitions.Remove(BACKUP_EFIESP);
+                    }
 
                     Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
                     if (IsUnlockedFlag == null)

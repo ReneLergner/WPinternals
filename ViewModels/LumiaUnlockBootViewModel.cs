@@ -192,14 +192,16 @@ namespace WPinternals
                             }
                             else
                             {
+                                bool AlreadyUnlocked = false;
                                 if (DoUnlock)
                                 {
                                     NokiaFlashModel FlashModel = (NokiaFlashModel)PhoneNotifier.CurrentModel;
                                     GPT GPT = FlashModel.ReadGPT();
                                     if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
                                     {
-                                        ExitMessage("Phone is already unlocked", null);
-                                        return;
+                                        //ExitMessage("Phone is already unlocked", null);
+                                        //return;
+                                        AlreadyUnlocked = true;
                                     }
                                 }
 
@@ -237,8 +239,10 @@ namespace WPinternals
                                             {
                                                 if (DoFixBoot)
                                                     await LumiaV2UnlockBootViewModel.LumiaV2FixBoot(PhoneNotifier, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                                else
+                                                else if (!AlreadyUnlocked)
                                                     await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                                else
+                                                    await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage, true);
                                             });
                                     }
                                     else
@@ -278,7 +282,18 @@ namespace WPinternals
 
                         // If resources are not confirmed yet, then display view with device info and request for resources.
                         QualcommDownload Download = new QualcommDownload((QualcommSerial)PhoneNotifier.CurrentModel);
-                        byte[] QualcommRootKeyHash = Download.GetRKH();
+                        byte[] QualcommRootKeyHash;
+
+                        try
+                        {
+                            QualcommRootKeyHash = Download.GetRKH();
+                        }
+                        catch (BadConnectionException)
+                        {
+                            // This is a Spec B device
+                            break;
+                        }
+
                         if (RootKeyHash == null)
                             RootKeyHash = QualcommRootKeyHash;
                         else if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, QualcommRootKeyHash))
