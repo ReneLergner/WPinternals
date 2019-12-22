@@ -1933,7 +1933,7 @@ namespace WPinternals
                     }
 
                     if (IsPhoneInBadMassStorageMode)
-                        ExitFailure("Failed to unlock the bootloader due to misbahaving driver. Wait for phone to boot to Windows and then try again.", "The Mass Storage driver of the PC failed to start. Unfortunately this happens sometimes. After the phone is fully booted again, you can retry to unlock the bootloader.");
+                        ExitFailure("Failed to unlock the bootloader due to misbehaving driver. Wait for phone to boot to Windows and then try again.", "The Mass Storage driver of the PC failed to start. Unfortunately this happens sometimes. After the phone is fully booted again, you can retry to unlock the bootloader.");
                     else
                         ExitFailure("Failed to unlock the bootloader", "It is not possible to unlock the bootloader straight after flashing. NOTE: Fully reboot the phone and then properly shutdown the phone, before you can try to unlock again!");
 
