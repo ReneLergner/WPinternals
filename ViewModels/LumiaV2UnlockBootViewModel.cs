@@ -704,7 +704,11 @@ namespace WPinternals
             //
             // If you do not order payloads like this, you will get an error, most likely hash mismatch
             //
-            FlashingPayload[] payloads = GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Count()).ToArray();
+            FlashingPayload[] payloads = new FlashingPayload[0];
+            if (FlashParts != null)
+            {
+                payloads = GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Count()).ToArray();
+            }
 
             bool AssumeImageHeaderFallsInGap = true;
             bool AllocateAsyncBuffersOnPhone = true;
