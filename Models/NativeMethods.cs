@@ -267,10 +267,8 @@ namespace WPinternals
         public static extern bool DeviceIoControl(
             IntPtr hDevice,
             uint IoControlCode,
-            [MarshalAs(UnmanagedType.AsAny)]
             [In] object InBuffer,
             uint nInBufferSize,
-            [MarshalAs(UnmanagedType.AsAny)]
             [Out] object OutBuffer,
             uint nOutBufferSize,
             ref uint pBytesReturned,

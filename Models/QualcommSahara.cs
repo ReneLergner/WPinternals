@@ -320,7 +320,7 @@ namespace WPinternals
                 {
                     LogFile.Log("Problem while starting programmer. Attempting again.", LogType.FileAndConsole);
                 }
-            } while (!Started || count >= 3);
+            } while (!Started || count < 3);
             if (count >= 3 && !Started)
             {
                 LogFile.Log("Maximum number of attempts to start the programmer exceeded.", LogType.FileAndConsole);

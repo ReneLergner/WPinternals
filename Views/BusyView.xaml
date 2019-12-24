@@ -48,16 +48,18 @@ DEALINGS IN THE SOFTWARE.
                 </TextBlock.Foreground>
             </TextBlock>
             <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Text="{Binding SubMessage}" Visibility="{Binding Path=SubMessage, Converter={StaticResource ObjectToVisibilityConverter}}" Margin="0,10,0,0" TextWrapping="WrapWithOverflow" />
-            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0" Visibility="{Binding Path=ShowRebootHelp, Converter={StaticResource VisibilityConverter}}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Image x:Name="RebootImage" Source="pack://application:,,,/PhoneReboot.png" Height="200"/>
-                <StackPanel Margin="20,0,0,0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Text="To reboot your device manually, press the power and volume down button as shown in the picture at the same time until the phone vibrates, then release both buttons. The phone will get automatically detected by the tool and the process will continue where it left off." TextWrapping="WrapWithOverflow" />
-                </StackPanel>
-            </Grid>
+            <Expander Header="Reboot instructions" HorizontalContentAlignment="Stretch" Template="{DynamicResource TopicExpanderTemplate}" Margin="20,10,20,0" Visibility="{Binding Path=ShowRebootHelp, Converter={StaticResource VisibilityConverter}}">
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image x:Name="RebootImage" Source="pack://application:,,,/PhoneReboot.png" Height="200"/>
+                    <StackPanel Margin="20,0,0,0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Text="To reboot your device manually, press the power and volume down button as shown in the picture at the same time until the phone vibrates, then release both buttons. The phone will get automatically detected by the tool and the process will continue where it left off." TextWrapping="WrapWithOverflow" />
+                    </StackPanel>
+                </Grid>
+            </Expander>
         </StackPanel>
     </Border>
 </UserControl>

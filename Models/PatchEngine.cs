@@ -413,6 +413,8 @@ namespace WPinternals
         {
             if (FilePath.Contains(':'))
             {
+                FileInfo fileInfo = new FileInfo(FilePath);
+
                 // Enable Take Ownership AND Restore ownership to original owner
                 // Take Ownership Privilge is not enough.
                 // We need Restore Privilege.
@@ -427,17 +429,18 @@ namespace WPinternals
                 }
 
                 // Backup original owner and ACL
-
-                OriginalACL = new FileSecurity(FilePath, AccessControlSections.Owner | AccessControlSections.Group | AccessControlSections.Access);
+                OriginalACL = fileInfo.GetAccessControl();
 
                 // And take the original security to create new security rules.
-                FileSecurity NewACL = new FileSecurity(FilePath, AccessControlSections.Owner | AccessControlSections.Group | AccessControlSections.Access);
+                FileSecurity NewACL = fileInfo.GetAccessControl();
 
                 // Take ownership
                 NewACL.SetOwner(WindowsIdentity.GetCurrent().User);
+                fileInfo.SetAccessControl(NewACL);
 
                 // And create a new access rule
                 NewACL.SetAccessRule(new FileSystemAccessRule(WindowsIdentity.GetCurrent().User, FileSystemRights.FullControl, AccessControlType.Allow));
+                fileInfo.SetAccessControl(NewACL);
 
                 // Open the file for patching
                 Stream = new FileStream(FilePath, FileMode.Open, FileAccess.ReadWrite);
@@ -457,10 +460,13 @@ namespace WPinternals
 
             if (FilePath.Contains(':'))
             {
+                FileInfo fileInfo = new FileInfo(FilePath);
+
                 // Restore original owner and access rules.
                 // The OriginalACL cannot be reused directly.
-                FileSecurity NewACL = new FileSecurity(FilePath, AccessControlSections.Owner | AccessControlSections.Group | AccessControlSections.Access);
+                FileSecurity NewACL = fileInfo.GetAccessControl();
                 NewACL.SetSecurityDescriptorBinaryForm(OriginalACL.GetSecurityDescriptorBinaryForm());
+                fileInfo.SetAccessControl(NewACL);
 
                 // Revert to self
                 RestorePrivilege.Revert();

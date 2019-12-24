@@ -155,7 +155,8 @@ namespace WPinternals
                 FlowDirection.LeftToRight,
                 new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
                 FontSize,
-                Foreground
+                Foreground,
+                100 / 96
             );
 
             resultSize.Height = formatted.Height;
@@ -175,7 +176,8 @@ namespace WPinternals
                 FlowDirection.LeftToRight,
                 new Typeface(CaptionTextBlock.FontFamily, CaptionTextBlock.FontStyle, CaptionTextBlock.FontWeight, CaptionTextBlock.FontStretch),
                 FontSize,
-                Foreground
+                Foreground,
+                100 / 96
                 );
             double CaptionWidth = formatted.Width;
             if (CaptionWidth > 0)
@@ -203,7 +205,8 @@ namespace WPinternals
                         FlowDirection.LeftToRight,
                         new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
                         FontSize,
-                        Foreground
+                        Foreground,
+                        100 / 96
                         );
 
             if (NewWidth < 0)
@@ -275,7 +278,8 @@ namespace WPinternals
                         FlowDirection.LeftToRight,
                         new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
                         FontSize,
-                        Foreground
+                        Foreground,
+                        100 / 96
                         );
 
                     widthOK = formatted.Width < MaxWidth;
