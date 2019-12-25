@@ -53,7 +53,7 @@ DEALINGS IN THE SOFTWARE.
                             </Run.Text>
                         </Run>
                         <LineBreak />
-                        <Run Text="Copyright © 2014 - 2018 by Heathcliff74" />
+                        <Run Text="Copyright © 2014 - 2019 by Heathcliff74" />
                         <LineBreak />
                         <Hyperlink NavigateUri="http://www.wpinternals.net">www.wpinternals.net</Hyperlink>
                         <LineBreak />

@@ -45,7 +45,9 @@ namespace WPinternals
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
+#if NETCORE
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+#endif
 
             if (Environment.GetCommandLineArgs().Count() > 1)
                 CommandLine.OpenConsole();

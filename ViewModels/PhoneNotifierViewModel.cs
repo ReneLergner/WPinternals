@@ -149,6 +149,7 @@ namespace WPinternals
 
         void LumiaNotifier_Arrival(object sender, USBEvent e)
         {
+            LogFile.Log("A device arrived: " + e.DevicePath, LogType.FileOnly);
             try
             {
                 if ((e.DevicePath.IndexOf("VID_0421&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||

@@ -610,6 +610,12 @@ namespace WPinternals
                         {
                             FailedToStartProgrammer = true;
                         }
+                        catch (Exception ex)
+                        {
+                            LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                            LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                            FailedToStartProgrammer = true;
+                        }
                     }
 
                     if (ProgrammerPath == null || FailedToStartProgrammer)
@@ -626,6 +632,12 @@ namespace WPinternals
                             catch (TimeoutException)
                             {
                                 Timeout = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                                FailedToStartProgrammer = true;
                             }
                         }
                         if (!AutoEmergencyReset || Timeout)
@@ -1287,6 +1299,12 @@ namespace WPinternals
                                     {
                                         Timeout = true;
                                     }
+                                    catch (Exception ex)
+                                    {
+                                        LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                                        LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                                        FailedToStartProgrammer = true;
+                                    }
                                 }
                                 if (!AutoEmergencyReset || Timeout)
                                 {
@@ -1539,6 +1557,12 @@ namespace WPinternals
                             catch (TimeoutException)
                             {
                                 Timeout = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                                FailedToStartProgrammer = true;
                             }
                         }
                         if (!AutoEmergencyReset || Timeout)

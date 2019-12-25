@@ -149,6 +149,7 @@ namespace WPinternals
         {
             var resultSize = new Size(availableSize.Width, 0);
 
+#if NETCORE
             FormattedText formatted = new FormattedText(
                 "TEST",
                 CultureInfo.CurrentCulture,
@@ -158,6 +159,16 @@ namespace WPinternals
                 Foreground,
                 100 / 96
             );
+#else
+            FormattedText formatted = new FormattedText(
+                "TEST",
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
+                FontSize,
+                Foreground
+            );
+#endif
 
             resultSize.Height = formatted.Height;
 
@@ -170,6 +181,7 @@ namespace WPinternals
                 return;
 
             CaptionTextBlock.Text = Caption;
+#if NETCORE
             FormattedText formatted = new FormattedText(
                 CaptionTextBlock.Text,
                 CultureInfo.CurrentCulture,
@@ -179,6 +191,16 @@ namespace WPinternals
                 Foreground,
                 100 / 96
                 );
+#else
+            FormattedText formatted = new FormattedText(
+                CaptionTextBlock.Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(CaptionTextBlock.FontFamily, CaptionTextBlock.FontStyle, CaptionTextBlock.FontWeight, CaptionTextBlock.FontStretch),
+                FontSize,
+                Foreground
+                );
+#endif
             double CaptionWidth = formatted.Width;
             if (CaptionWidth > 0)
                 CaptionWidth += 10;
@@ -199,6 +221,7 @@ namespace WPinternals
 
             // Calculate the new ActualWidth
             // We can't use PathTextBlock.ActualWidth yet, because LayoutUpdated event has not yet been triggered
+#if NETCORE
             formatted = new FormattedText(
                         PathTextBlock.Text,
                         CultureInfo.CurrentCulture,
@@ -208,7 +231,16 @@ namespace WPinternals
                         Foreground,
                         100 / 96
                         );
-
+#else
+            formatted = new FormattedText(
+                        PathTextBlock.Text,
+                        CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
+                        FontSize,
+                        Foreground
+                        );
+#endif
             if (NewWidth < 0)
                 PathTextBlock.Width = 0;
             else if (formatted.Width > NewWidth)
@@ -272,6 +304,7 @@ namespace WPinternals
 
                 do
                 {
+#if NETCORE
                     formatted = new FormattedText(
                         "{0}...\\{1}".FormatWith(directory, filename),
                         CultureInfo.CurrentCulture,
@@ -281,6 +314,16 @@ namespace WPinternals
                         Foreground,
                         100 / 96
                         );
+#else
+                    formatted = new FormattedText(
+                        "{0}...\\{1}".FormatWith(directory, filename),
+                        CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
+                        FontSize,
+                        Foreground
+                        );
+#endif
 
                     widthOK = formatted.Width < MaxWidth;
 
