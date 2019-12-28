@@ -67,6 +67,9 @@ namespace WPinternals
                 case "Flash":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Flash);
                     break;
+                case "Shutdown":
+                    RequestModeSwitch(null);
+                    break;
                 default:
                     return;
             }

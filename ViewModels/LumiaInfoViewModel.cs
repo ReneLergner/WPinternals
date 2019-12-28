@@ -68,6 +68,7 @@ namespace WPinternals
                 case null:
                 case PhoneInterfaces.Lumia_Bootloader:
                     ActivateSubContext(null);
+                    //ActivateSubContext(new NokiaBootloaderViewModel((NokiaFlashModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
                     break;
                 case PhoneInterfaces.Lumia_Normal:
                     ActivateSubContext(new NokiaNormalViewModel((NokiaPhoneModel)CurrentModel, ModeSwitchRequestCallback));

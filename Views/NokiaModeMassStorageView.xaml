@@ -90,6 +90,27 @@ DEALINGS IN THE SOFTWARE.
                         <Hyperlink NavigateUri="Flash">Switch to Flash-mode</Hyperlink>
                         <LineBreak />
                         <Run Text="This is the interface that can be used to flash a new ROM image. It can also be used to retrieve additional info and security status." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Hyperlink NavigateUri="Shutdown">Shutdown the phone</Hyperlink>
+                        <LineBreak />
+                        <Run Text="This will shutdown your phone. After selecting this option, you'll need to unplug your phone from your computer." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Warning 1: " Foreground="Red" FontWeight="Bold"/>
+                        <Run Text="Be very careful with altering files. You can easily brick your phone, when you make invalid changes to the file-system of the phone." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Warning 2: " Foreground="Red" FontWeight="Bold"/>
+                        <Run Text="If you try to access a partition and it cannot be accessed, then DO NOT FORMAT IT! Also when you are asked to format it, DON'T DO THAT!" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Warning 3: " Foreground="Red" FontWeight="Bold"/>
+                        <Run Text="While in Mass Storage Mode the phone-battery will not charge. When battery is low, the phone will automatically reboot to Normal Mode." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Warning 4: " Foreground="Red" FontWeight="Bold"/>
+                        <Run Text="Never format or delete the boot-partitions! Take special care with the DPP partition. Do not format or delete this partition, bacause there is no known method to recover the phone after that (except with special equipment to access eMMC directly)." />
                     </local:Paragraph>
                 </FlowDocument>
             </local:FlowDocumentScrollViewerNoMouseWheel>

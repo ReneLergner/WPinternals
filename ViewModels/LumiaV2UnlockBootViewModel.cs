@@ -317,7 +317,7 @@ namespace WPinternals
 
                 Partition TargetPartition = GPT.GetPartition(PartitionName);
                 if (TargetPartition == null)
-                    throw new WPinternalsException("Target partition not found!");
+                    throw new WPinternalsException("Target partition not found!", "Couldn't find \"" + PartitionName + "\" from the device GPT.");
                 LogFile.Log("Target-partition found at sector: 0x" + TargetPartition.FirstSector.ToString("X8") + " - 0x" + TargetPartition.LastSector.ToString("X8"), LogType.FileAndConsole);
 
                 bool IsUnlocked = false;
@@ -498,7 +498,7 @@ namespace WPinternals
             FFU FFU = new FFU(FFUPath);
             UInt32 UpdateType = ByteOperations.ReadUInt32(FFU.StoreHeader, 0);
             if (UpdateType != 0)
-                throw new WPinternalsException("Only Full Flash images supported");
+                throw new WPinternalsException("Only Full Flash images supported", "The provided FFU file reports that it doesn't support Full Flash updates, but may support something else such as Partial Flash updates. This is not supported.");
 
             if (FlashParts != null)
             {
@@ -519,9 +519,9 @@ namespace WPinternals
             }
 
             if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
-                throw new WPinternalsException("Flash failed!", "Protocols not supported");
+                throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that it does not support the Protocol Sync V2.");
             if (Info.FlashAppProtocolVersionMajor < 2) // Old phones do not support the hack. These phones have Flash protocol 1.x.
-                throw new WPinternalsException("Flash failed!", "Protocols not supported");
+                throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that Flash App communication protocol is lower than 2. Reported version by the phone: " + Info.FlashAppProtocolVersionMajor + ".");
             UEFI UEFI = new UEFI(FFU.GetPartition("UEFI"));
             string BootMgrName = UEFI.EFIs.Where(efi => ((efi.Name != null) && (efi.Name.Contains("BootMgrApp")))).First().Name;
             UInt32 EstimatedSizeOfMemGap = (UInt32)UEFI.GetFile(BootMgrName).Length;
@@ -689,7 +689,7 @@ namespace WPinternals
                 #endregion
 
                 if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader))
-                    throw new WPinternalsException("Phone is in wrong mode");
+                    throw new WPinternalsException("Phone is in wrong mode", "The phone should have been detected in bootloader or flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 Model = (NokiaFlashModel)Notifier.CurrentModel;
                 UpdateWorkingStatus("Initializing flash...", null, null);
             }
@@ -2076,7 +2076,7 @@ namespace WPinternals
                 App.PatchEngine.TargetPath = ((MassStorage)Notifier.CurrentModel).Drive + "\\";
                 bool PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                 if (!PatchResult)
-                    throw new WPinternalsException("Patch failed");
+                    throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the MainOS partition of your phone. Make sure your phone runs a supported Operating System version.");
                 LogFile.Log("Fixed bootloader", LogType.FileAndConsole);
                 LogFile.Log("The phone is left in Mass Storage mode", LogType.FileAndConsole);
                 LogFile.Log("Press and hold the power-button of the phone for at least 10 seconds to reset the phone", LogType.FileAndConsole);

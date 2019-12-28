@@ -55,7 +55,7 @@ namespace WPinternals
                     Info.Log(LogType.ConsoleOnly);
                     await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Qualcomm_Download);
                     if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download)
-                        throw new WPinternalsException("Switching mode failed.");
+                        throw new WPinternalsException("Switching mode failed.", "Could not switch the phone to Qualcomm Emergency 9008.");
                     LogFile.Log("Phone is in emergency mode.", LogType.FileAndConsole);
                 }
 

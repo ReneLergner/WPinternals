@@ -262,7 +262,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
 
                     NewGPT = ((NokiaFlashModel)Notifier.CurrentModel).ReadGPT();
 
@@ -272,7 +272,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
                 else
                 {
@@ -501,7 +501,7 @@ namespace WPinternals
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download)
                             await Notifier.WaitForArrival();
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download)
-                            throw new WPinternalsException("Phone failed to switch to DLOAD.");
+                            throw new WPinternalsException("Phone failed to switch to emergency download mode.");
                     }
 
                     // Send loader
@@ -512,7 +512,7 @@ namespace WPinternals
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
                             await Notifier.WaitForArrival();
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
-                            throw new WPinternalsException("Phone failed to switch to DLOAD.");
+                            throw new WPinternalsException("Phone failed to switch to emergency flash mode.");
                     }
 
                     // Flash bootloader
@@ -584,7 +584,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader && Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
 
                     if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                     {
@@ -593,7 +593,7 @@ namespace WPinternals
                 }
                 else
                 {
-                    throw new WPinternalsException("Phone is in an unexpected mode.");
+                    throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash, download, or emergency flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
 
                 SetWorkingStatus("Rebooting phone...");
@@ -603,7 +603,7 @@ namespace WPinternals
                     await Notifier.WaitForArrival();
 
                 if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader && Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                    throw new WPinternalsException("Phone is in an unexpected mode.");
+                    throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
 
                 NokiaFlashModel FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
                 if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash && FlashModel.ReadParam("FS")[3] > 0)
@@ -750,7 +750,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
 
                     NewGPT = ((NokiaFlashModel)Notifier.CurrentModel).ReadGPT();
 
@@ -760,7 +760,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
                 else
                 {
@@ -1122,7 +1122,7 @@ namespace WPinternals
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download)
                             await Notifier.WaitForArrival();
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download)
-                            throw new WPinternalsException("Phone failed to switch to DLOAD.");
+                            throw new WPinternalsException("Phone failed to switch to emergency download mode.");
                     }
 
                     // Send loader
@@ -1133,7 +1133,7 @@ namespace WPinternals
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
                             await Notifier.WaitForArrival();
                         if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
-                            throw new WPinternalsException("Phone failed to switch to DLOAD.");
+                            throw new WPinternalsException("Phone failed to switch to emergency flash mode.");
                     }
 
                     // Flash bootloader
@@ -1211,7 +1211,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader && Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
 
                     if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                     {
@@ -1222,7 +1222,7 @@ namespace WPinternals
                 }
                 else
                 {
-                    throw new WPinternalsException("Phone is in an unexpected mode.");
+                    throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash, download or emergency flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
 
                 await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, FFUPath, LoadersPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, null, (string Message, string SubMessage) =>
@@ -1346,7 +1346,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
 
                 byte[] GPTChunk = GetGptChunk(((NokiaFlashModel)Notifier.CurrentModel), 0x20000);
@@ -1368,7 +1368,7 @@ namespace WPinternals
                         await Notifier.WaitForArrival();
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                        throw new WPinternalsException("Phone is in an unexpected mode.");
+                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
 
                 if (IsSpecB || IsUnlockedPartitionSBL3 != null)
@@ -1794,7 +1794,7 @@ namespace WPinternals
 
                     Partition EFIESPPartition = GPT.GetPartition("EFIESP");
                     if (EFIESPPartition == null)
-                        throw new WPinternalsException("EFIESP partition not found!");
+                        throw new WPinternalsException("EFIESP partition not found!", "No EFIESP partition was found in the provided FFU's GPT.");
 
                     if ((UInt64)UnlockedEFIESP.Length != (EFIESPPartition.SizeInSectors * 0x200))
                         throw new WPinternalsException("New EFIESP partition has wrong size. Size = 0x" + UnlockedEFIESP.Length.ToString("X8") + ". Expected size = 0x" + (EFIESPPartition.SizeInSectors * 0x200).ToString("X8"));
@@ -1866,7 +1866,7 @@ namespace WPinternals
                     await Notifier.WaitForArrival();
 
                 if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
-                    throw new WPinternalsException("Error: Phone is in wrong mode");
+                    throw new WPinternalsException("Error: Phone is in wrong mode", "The phone should have been detected in bootloader or flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
 
                 if (!IsSpecB && !SBL3Eng)
                 {
@@ -1994,7 +1994,7 @@ namespace WPinternals
 
                     await Notifier.WaitForArrival();
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                        throw new WPinternalsException("Phone is in wrong mode");
+                        throw new WPinternalsException("Phone is in wrong mode", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
 
                     ((NokiaFlashModel)Notifier.CurrentModel).SwitchToFlashAppContext();
 
@@ -2140,7 +2140,7 @@ namespace WPinternals
 
                         await Notifier.WaitForArrival();
                         if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                            throw new WPinternalsException("Phone is in wrong mode");
+                            throw new WPinternalsException("Phone is in wrong mode", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                     }
                     ((NokiaFlashModel)Notifier.CurrentModel).SwitchToFlashAppContext();
 
@@ -2356,7 +2356,7 @@ namespace WPinternals
 
                     PatchResult = App.PatchEngine.Patch(PatchDefinition);
                     if (!PatchResult)
-                        throw new WPinternalsException("Failed to patch bootloader");
+                        throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
                 }
 
                 LogFile.Log("Edit BCD");

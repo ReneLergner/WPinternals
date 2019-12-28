@@ -347,6 +347,12 @@ namespace WPinternals
                             ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
                             LogFile.Log("Rebooting phone to Flash mode...", LogType.FileAndConsole);
                             break;
+                        case null:
+                            ((MassStorage)CurrentModel).Reboot();
+                            PhoneNotifier.NewDeviceArrived += NewDeviceArrivedFromMassStorageMode;
+                            ModeSwitchProgressWrapper("First rebooting phone to Flash mode...", null);
+                            LogFile.Log("First rebooting phone to Bootloader mode...", LogType.FileAndConsole);
+                            break;
                         default:
                             return;
                     }
@@ -389,6 +395,9 @@ namespace WPinternals
                             case PhoneInterfaces.Lumia_Normal:
                                 ModeSwitchErrorWrapper("Failed to switch to Normal mode");
                                 break;
+                            case null:
+                                ModeSwitchSuccessWrapper();
+                                break;
                         }
                     }
                 });
@@ -405,6 +414,9 @@ namespace WPinternals
                         break;
                     case PhoneInterfaces.Lumia_Normal:
                         ModeSwitchErrorWrapper("Failed to switch to Normal mode");
+                        break;
+                    case null:
+                        ModeSwitchErrorWrapper("Failed to shutdown");
                         break;
                 }
             }

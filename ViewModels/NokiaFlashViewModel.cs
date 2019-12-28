@@ -125,6 +125,11 @@ namespace WPinternals
                             Array.Copy(RawPublicID, 4, PublicID, 0, RawPublicID.Length - 4);
                             LogFile.Log("Public ID: " + Converter.ConvertHexToString(PublicID, " "));
                         }
+                        else
+                        {
+                            PublicID = new byte[20];
+                            LogFile.Log("Public ID: " + Converter.ConvertHexToString(PublicID, " "));
+                        }
                         RootKeyHash = CurrentModel.ReadParam("RRKH");
                         if (RootKeyHash != null)
                             LogFile.Log("Root Key Hash: " + Converter.ConvertHexToString(RootKeyHash, " "));
@@ -153,50 +158,66 @@ namespace WPinternals
 
                         byte[] CID = CurrentModel.ReadParam("CID");
                         byte[] EMS = CurrentModel.ReadParam("EMS");
-                        UInt16 MID = (UInt16)(((UInt16)CID[0] << 8) + CID[1]);
-                        UInt64 MemSize = (UInt64)(((UInt32)EMS[0] << 24) + ((UInt32)EMS[1] << 16) + ((UInt32)EMS[2] << 8) + EMS[3]) * 0x200;
-                        double MemSizeDouble = (double)MemSize / 1024 / 1024 / 1024;
-                        MemSizeDouble = (double)(int)(MemSizeDouble * 10) / 10;
-                        string Manufacturer = null;
-                        switch (MID)
+                        if (CID != null && EMS != null)
                         {
-                            case 0x0002:
-                            case 0x0045:
-                                Manufacturer = "SanDisk";
-                                break;
-                            case 0x0011:
-                                Manufacturer = "Toshiba";
-                                break;
-                            case 0x0013:
-                                Manufacturer = "Micron";
-                                break;
-                            case 0x0015:
-                                Manufacturer = "Samsung";
-                                break;
-                            case 0x0090:
-                                Manufacturer = "Hynix";
-                                break;
-                            case 0x0070:
-                                Manufacturer = "Kingston";
-                                break;
-                            case 0x00EC:
-                                Manufacturer = "GigaDevice";
-                                break;
+                            UInt16 MID = (UInt16)(((UInt16)CID[0] << 8) + CID[1]);
+                            UInt64 MemSize = (UInt64)(((UInt32)EMS[0] << 24) + ((UInt32)EMS[1] << 16) + ((UInt32)EMS[2] << 8) + EMS[3]) * 0x200;
+                            double MemSizeDouble = (double)MemSize / 1024 / 1024 / 1024;
+                            MemSizeDouble = (double)(int)(MemSizeDouble * 10) / 10;
+                            string Manufacturer = null;
+                            switch (MID)
+                            {
+                                case 0x0002:
+                                case 0x0045:
+                                    Manufacturer = "SanDisk";
+                                    break;
+                                case 0x0011:
+                                    Manufacturer = "Toshiba";
+                                    break;
+                                case 0x0013:
+                                    Manufacturer = "Micron";
+                                    break;
+                                case 0x0015:
+                                    Manufacturer = "Samsung";
+                                    break;
+                                case 0x0090:
+                                    Manufacturer = "Hynix";
+                                    break;
+                                case 0x0070:
+                                    Manufacturer = "Kingston";
+                                    break;
+                                case 0x00EC:
+                                    Manufacturer = "GigaDevice";
+                                    break;
+                            }
+                            if (Manufacturer == null)
+                                eMMC = MemSizeDouble.ToString() + " GB";
+                            else
+                                eMMC = Manufacturer + " " + MemSizeDouble.ToString() + " GB";
+                            SamsungWarningVisible = (MID == 0x0015);
                         }
-                        if (Manufacturer == null)
-                            eMMC = MemSizeDouble.ToString() + " GB";
                         else
-                            eMMC = Manufacturer + " " + MemSizeDouble.ToString() + " GB";
-                        SamsungWarningVisible = (MID == 0x0015);
+                        {
+                            eMMC = "Unknown";
+                            SamsungWarningVisible = true;
+                        }
 
-                        int chargecurrent = CurrentModel.ReadCurrentChargeCurrent().Value;
+                        int? chargecurrent = CurrentModel.ReadCurrentChargeCurrent();
 
-                        if (chargecurrent < 0)
-                            ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + ((-1) * CurrentModel.ReadCurrentChargeCurrent()) + " mA (discharging)";
+                        if (chargecurrent.HasValue)
+                        {
+                            if (chargecurrent < 0)
+                                ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + ((-1) * CurrentModel.ReadCurrentChargeCurrent()) + " mA (discharging)";
+                            else
+                                ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + CurrentModel.ReadCurrentChargeCurrent() + " mA (charging)";
+
+                            LogFile.Log("Charging status: " + ChargingStatus);
+                        }
                         else
-                            ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + CurrentModel.ReadCurrentChargeCurrent() + " mA (charging)";
-
-                        LogFile.Log("Charging status: " + ChargingStatus);
+                        {
+                            ChargingStatus = "Unknown";
+                            LogFile.Log("Charging status: " + ChargingStatus);
+                        }
 
                         PhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
                         if (Info.FlashAppProtocolVersionMajor < 2)
@@ -210,6 +231,53 @@ namespace WPinternals
 
                         ProductType = Info.Type;
                         LogFile.Log("ProductType: " + ProductType);
+
+                        if (RootKeyHash == null)
+                        {
+                            LogFile.Log("Root Key Hash was null. Gathering information from an alternative source.");
+
+                            RootKeyHash = Info.RKH;
+
+                            if (RootKeyHash != null)
+                                LogFile.Log("Root Key Hash: " + Converter.ConvertHexToString(RootKeyHash, " "));
+                            else
+                            {
+                                RootKeyHash = new byte[32];
+                                LogFile.Log("Root Key Hash: " + Converter.ConvertHexToString(RootKeyHash, " "));
+                            }
+                        }
+
+                        if (PlatformName == null)
+                        {
+                            LogFile.Log("Platform Name was null. Gathering information from an alternative source.");
+
+                            PlatformName = Info.PlatformID;
+                            LogFile.Log("Platform Name: " + PlatformName);
+                        }
+
+                        if (SecurityStatus == null)
+                        {
+                            LogFile.Log("Security Status was null. Gathering information from an alternative source.");
+
+                            PlatformSecureBootStatus = Info.PlatformSecureBootEnabled;
+                            LogFile.Log("Platform Secure Boot Status: " + PlatformSecureBootStatus.ToString());
+                            UefiSecureBootStatus = Info.UefiSecureBootEnabled;
+                            LogFile.Log("Uefi Secure Boot Status: " + UefiSecureBootStatus.ToString());
+                            EffectiveSecureBootStatus = Info.PlatformSecureBootEnabled && Info.UefiSecureBootEnabled;
+                            LogFile.Log("Effective Secure Boot Status: " + EffectiveSecureBootStatus.ToString());
+
+                            BootloaderSecurityQfuseStatus = Info.SecureFfuEnabled;
+                            LogFile.Log("Bootloader Security Qfuse Status: " + BootloaderSecurityQfuseStatus.ToString());
+                            BootloaderSecurityAuthenticationStatus = Info.Authenticated;
+                            LogFile.Log("Bootloader Security Authentication Status: " + BootloaderSecurityAuthenticationStatus.ToString());
+                            BootloaderSecurityRdcStatus = Info.RdcPresent;
+                            LogFile.Log("Bootloader Security Rdc Status: " + BootloaderSecurityRdcStatus.ToString());
+                            EffectiveBootloaderSecurityStatus = Info.SecureFfuEnabled && !Info.Authenticated && !Info.RdcPresent;
+                            LogFile.Log("Effective Bootloader Security Status: " + EffectiveBootloaderSecurityStatus.ToString());
+
+                            NativeDebugStatus = !Info.JtagDisabled;
+                            LogFile.Log("Native Debug Status: " + NativeDebugStatus.ToString());
+                        }
                     }
                     catch
                     {

@@ -52,17 +52,21 @@ namespace WPinternals
             if (Environment.GetCommandLineArgs().Count() > 1)
                 CommandLine.OpenConsole();
 
-            if (!mutex.WaitOne(0, false))
+            try
             {
-                if (Environment.GetCommandLineArgs().Count() > 1)
+                if (!mutex.WaitOne(0, false))
                 {
-                    Console.WriteLine("Windows Phone Internals is already running");
-                    CommandLine.CloseConsole();
+                    if (Environment.GetCommandLineArgs().Count() > 1)
+                    {
+                        Console.WriteLine("Windows Phone Internals is already running");
+                        CommandLine.CloseConsole();
+                    }
+                    else
+                        MessageBox.Show("Windows Phone Internals is already running.", "Windows Phone Internals", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    Environment.Exit(0);
                 }
-                else
-                    MessageBox.Show("Windows Phone Internals is already running.", "Windows Phone Internals", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                Environment.Exit(0);
             }
+            catch (AbandonedMutexException) { };
 
             Registration.CheckExpiration();
 

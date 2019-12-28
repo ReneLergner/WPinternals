@@ -399,7 +399,7 @@ namespace WPinternals
         internal FilePatcher(string FilePath, Stream FileStream)
         {
             if (!FileStream.CanSeek || !FileStream.CanWrite)
-                throw new WPinternalsException("Incorrect filestream");
+                throw new WPinternalsException("Incorrect filestream", "The provided file stream for patching does not support seeking and/or writing.");
 
             this.FilePath = FilePath;
             this.Stream = FileStream;

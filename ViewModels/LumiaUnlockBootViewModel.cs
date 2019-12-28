@@ -134,11 +134,14 @@ namespace WPinternals
                             TestPos = 1;
 
                             UefiSecurityStatusResponse SecurityStatus = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadSecurityStatus();
-                            IsBootLoaderUnlocked = (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+                            if (SecurityStatus != null)
+                                IsBootLoaderUnlocked = (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
 
                             TestPos = 2;
 
                             PhoneInfo Info = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
+                            if (SecurityStatus == null)
+                                IsBootLoaderUnlocked = (Info.Authenticated || Info.RdcPresent || !Info.SecureFfuEnabled);
 
                             TestPos = 3;
 
@@ -255,7 +258,7 @@ namespace WPinternals
                                             if (FFUs.Count() > 0)
                                                 ProfileFFU = new FFU(FFUs[0].Path);
                                             else
-                                                throw new WPinternalsException("Profile FFU missing");
+                                                throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
 
                                             LogFile.Log("Profile FFU: " + ProfileFFU.Path);
 

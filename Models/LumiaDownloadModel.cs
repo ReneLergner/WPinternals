@@ -117,7 +117,7 @@ namespace WPinternals
             }
 
             if (Package == null)
-                throw new WPinternalsException("FFU not found");
+                throw new WPinternalsException("FFU not found", "No FFU has been found in the remote software repository for the requested model.");
 
             FoundProductType = Package.manufacturerHardwareModel[0];
 
@@ -207,7 +207,7 @@ namespace WPinternals
             }
 
             if (Package == null)
-                throw new WPinternalsException("ENOSW package not found");
+                throw new WPinternalsException("ENOSW package not found", "No ENOSW package has been found in the remote software repository for the requested model.");
 
             SoftwareFile FileInfo = Package.files.Where(f => f.fileName.EndsWith(".secwim", StringComparison.OrdinalIgnoreCase)).First();
 
@@ -230,7 +230,7 @@ namespace WPinternals
             }
 
             if (DPLUrl == "")
-                throw new WPinternalsException("DPL not found");
+                throw new WPinternalsException("DPL not found", "No DPL has been found in the remote software repository for the requested model.");
 
             Task<string> GetDPLStrTask = HttpClient.GetStringAsync(DPLUrl);
             GetDPLStrTask.Wait();

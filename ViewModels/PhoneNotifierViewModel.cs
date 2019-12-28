@@ -165,8 +165,8 @@ namespace WPinternals
                     NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                 }
                 else if ((e.DevicePath.IndexOf("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        (e.DevicePath.IndexOf("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_0421&PID_06FC is for Lumia 930
-                        (e.DevicePath.IndexOf("vid_045e&pid_0a00", StringComparison.OrdinalIgnoreCase) >= 0)) // vid_045e & pid_0a00 & mi_03 = Lumia 950 XL normal mode
+                         (e.DevicePath.IndexOf("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_0421&PID_06FC is for Lumia 930
+                         (e.DevicePath.IndexOf("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase) >= 0)) // vid_045e & pid_0a00 & mi_03 = Lumia 950 XL normal mode
                 {
                     if (((USBNotifier)sender).Guid == OldCombiInterfaceGuid)
                     {
@@ -215,24 +215,31 @@ namespace WPinternals
                     }
                 }
                 else if ((e.DevicePath.IndexOf("VID_0421&PID_066E", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (e.DevicePath.IndexOf("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase) >= 0) ||  // VID_0421&PID_0714 is for Lumia 930
-                    (e.DevicePath.IndexOf("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0)) // VID_045E&PID_0A02 is for Lumia 950
+                         (e.DevicePath.IndexOf("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase) >= 0) ||  // VID_0421&PID_0714 is for Lumia 930
+                         (e.DevicePath.IndexOf("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0)) // VID_045E&PID_0A02 is for Lumia 950
                 {
                     CurrentModel = new NokiaFlashModel(e.DevicePath);
                     ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                    // Attempt to request a param.
-                    // When it succeeds we have full Flash mode.
-                    // When it fails we are in a limited Flash mode, like Bootmanager or Hardreset-screen.
-                    // Limited Flash mode only supports boot-commands; not querying info.
-                    byte[] QueryResult = ((NokiaFlashModel)CurrentModel).ReadParam("SS");
-                    if (QueryResult == null)
+                    FlashAppType type = ((NokiaFlashModel)CurrentModel).GetFlashAppType();
+                    LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);
+
+                    if (type == FlashAppType.BootManager)
                     {
                         CurrentInterface = PhoneInterfaces.Lumia_Bootloader;
                         LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                         LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
                         LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
                         LogFile.Log("Mode: Bootloader", LogType.FileAndConsole);
+                        NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+                    }
+                    else if (type == FlashAppType.PhoneInfoApp)
+                    {
+                        CurrentInterface = PhoneInterfaces.Lumia_Bootloader;
+                        LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
+                        LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
+                        LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                        LogFile.Log("Mode: Bootloader (Phone Info)", LogType.FileAndConsole);
                         NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                     }
                     else
@@ -246,8 +253,8 @@ namespace WPinternals
                         NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                     }
                 }
-                else if ((e.DevicePath.IndexOf(@"disk&ven_qualcomm&prod_mmc_storage", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (e.DevicePath.IndexOf(@"DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase) >= 0))
+                else if ((e.DevicePath.IndexOf(@"DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                         (e.DevicePath.IndexOf(@"DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase) >= 0))
                 {
 #if DEBUG
                     LogFile.Log("Mass storage arrived: " + e.DevicePath, LogType.FileOnly);
@@ -266,11 +273,14 @@ namespace WPinternals
                             {
                                 MassStorage NewModel = new MassStorage(e.DevicePath);
 
-                                if (!string.IsNullOrEmpty(Qcom9006DevicePath))
-                                    NewModel.AttachQualcommSerial(Qcom9006DevicePath);
-
                                 if (NewModel.Drive != null) // When logical drive is already known, we use this model. Or else we wait for the logical drive to arrive.
                                 {
+                                    if (!string.IsNullOrEmpty(Qcom9006DevicePath))
+                                    {
+                                        LogFile.Log("Found 9006 device previously on: " + Qcom9006DevicePath, LogType.FileOnly);
+                                        LogFile.Log("Attaching 9006 device", LogType.FileOnly);
+                                        NewModel.AttachQualcommSerial(Qcom9006DevicePath);
+                                    }
                                     CurrentInterface = PhoneInterfaces.Lumia_MassStorage;
                                     CurrentModel = NewModel;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
@@ -301,11 +311,14 @@ namespace WPinternals
                             {
                                 MassStorage NewModel = new MassStorage(e.DevicePath);
 
-                                if (!string.IsNullOrEmpty(Qcom9006DevicePath))
-                                    NewModel.AttachQualcommSerial(Qcom9006DevicePath);
-
                                 if (NewModel.Drive != null) // When logical drive is already known, we use this model. Or else we wait for the logical drive to arrive.
                                 {
+                                    if (!string.IsNullOrEmpty(Qcom9006DevicePath))
+                                    {
+                                        LogFile.Log("Found 9006 device previously on: " + Qcom9006DevicePath, LogType.FileOnly);
+                                        LogFile.Log("Attaching 9006 device", LogType.FileOnly);
+                                        NewModel.AttachQualcommSerial(Qcom9006DevicePath);
+                                    }
                                     CurrentInterface = PhoneInterfaces.Lumia_MassStorage;
                                     CurrentModel = NewModel;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
@@ -355,12 +368,28 @@ namespace WPinternals
                     // It is a slightly different version of the Qualcomm Emergency interface, which is implemented in SBL3.
                     // One important difference is that the base address for sending a loader is not 0x2A000000, but it is 0x82F00000.
 
+                    Qcom9006DevicePath = e.DevicePath;
+
                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
-                    LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
+                    LogFile.Log("Device path: " + Qcom9006DevicePath, LogType.FileOnly);
                     LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
                     LogFile.Log("Mode: Qualcomm Emergency 9006", LogType.FileAndConsole);
 
-                    Qcom9006DevicePath = e.DevicePath;
+                    if (CurrentModel is MassStorage)
+                    {
+                        LogFile.Log("Found Mass Storage device previously", LogType.FileOnly);
+                        LogFile.Log("Attaching 9006 device", LogType.FileOnly);
+                        ((MassStorage)CurrentModel).AttachQualcommSerial(Qcom9006DevicePath);
+                    }
+                }
+                else if (e.DevicePath.IndexOf("VID_05C6&PID_F006", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    // This is part of the charging inteface.
+
+                    LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
+                    LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
+                    LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                    LogFile.Log("Mode: Qualcomm Emergency Charging F006", LogType.FileAndConsole);
                 }
             }
             catch (Exception Ex)
@@ -386,14 +415,15 @@ namespace WPinternals
             if (
                 (e.DevicePath.IndexOf("VID_0421&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_0421&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                (e.DevicePath.IndexOf("VID_045E&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_0421&PID_066E", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("vid_045e&pid_0a00", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                (e.DevicePath.IndexOf("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf(@"disk&ven_qualcomm&prod_mmc_storage", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                (e.DevicePath.IndexOf(@"DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf(@"DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase) >= 0)
             )
             {

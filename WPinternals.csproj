@@ -928,6 +928,8 @@
     <Compile Include="ViewModels\BusyViewModel.cs" />
     <Compile Include="ViewModels\DisclaimerAndNdaViewModel.cs" />
     <Compile Include="ViewModels\DownloadsViewModel.cs" />
+    <Compile Include="ViewModels\NokiaBootloaderViewModel.cs" />
+    <Compile Include="ViewModels\NokiaModeBootloaderViewModel.cs" />
     <Compile Include="ViewModels\RegistrationViewModel.cs" />
     <Compile Include="ViewModels\DisclaimerViewModel.cs" />
     <Compile Include="ViewModels\DumpRomTargetSelectionViewModel.cs" />
@@ -965,6 +967,12 @@
     </Compile>
     <Compile Include="Views\DisclaimerAndNdaView.xaml.cs">
       <DependentUpon>DisclaimerAndNdaView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NokiaBootloaderView.xaml.cs">
+      <DependentUpon>NokiaBootloaderView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NokiaModeBootloaderView.xaml.cs">
+      <DependentUpon>NokiaModeBootloaderView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RegistrationView.xaml.cs">
       <DependentUpon>RegistrationView.xaml</DependentUpon>
@@ -1086,6 +1094,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DisclaimerAndNdaView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\NokiaBootloaderView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\NokiaModeBootloaderView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

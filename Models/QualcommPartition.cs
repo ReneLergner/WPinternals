@@ -88,7 +88,7 @@ namespace WPinternals
                     HeaderOffset = ImageOffset + 8;
                 }
                 else
-                    throw new WPinternalsException("Invalid programmer");
+                    throw new WPinternalsException("Invalid programmer", "The type of elf image could not be determined from the provided programmer.");
             }
             else if (ByteOperations.FindPattern(Binary, Offset, (uint)LongHeaderPattern.Length, LongHeaderPattern, LongHeaderMask, null) == null)
             {

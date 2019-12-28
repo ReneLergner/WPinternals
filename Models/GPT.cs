@@ -53,7 +53,7 @@ namespace WPinternals
             this.GPTBuffer = GPTBuffer;
             UInt32? TempHeaderOffset = ByteOperations.FindAscii(GPTBuffer, "EFI PART");
             if (TempHeaderOffset == null)
-                throw new WPinternalsException("Bad GPT");
+                throw new WPinternalsException("Bad GPT", "The GPT read isn't valid. Couldn't find the text \"EFI PART\".");
             HeaderOffset = (UInt32)TempHeaderOffset;
             HeaderSize = ByteOperations.ReadUInt32(GPTBuffer, HeaderOffset + 0x0C);
             TableOffset = HeaderOffset + 0x200;
@@ -63,7 +63,7 @@ namespace WPinternals
             PartitionEntrySize = ByteOperations.ReadUInt32(GPTBuffer, HeaderOffset + 0x54);
             TableSize = MaxPartitions * PartitionEntrySize;
             if ((TableOffset + TableSize) > GPTBuffer.Length)
-                throw new WPinternalsException("Bad GPT");
+                throw new WPinternalsException("Bad GPT", "The GPT read isn't valid. The sizes defined in the GPT header exceed the provided GPT size.");
 
             UInt32 PartitionOffset = TableOffset;
 
@@ -100,7 +100,7 @@ namespace WPinternals
             Partition SBL2 = Partitions.Where(p => (p.Name == "SBL2")).FirstOrDefault();
 
             if ((SBL1 == null) || (SBL2 == null))
-                throw new WPinternalsException("Bad GPT");
+                throw new WPinternalsException("Bad GPT", "Can't patch GPT for the Secure Boot hack for Spec A devices. The provided GPT does not include a SBL1 and/or SBL2 partition.");
 
             if (HackPartition == null)
             {
@@ -133,7 +133,7 @@ namespace WPinternals
             Partition SBL2 = Partitions.Where(p => (p.Name == "SBL2")).FirstOrDefault();
 
             if ((SBL1 == null) || (SBL2 == null))
-                throw new WPinternalsException("Bad GPT");
+                throw new WPinternalsException("Bad GPT", "Can't un-patch GPT for the Secure Boot hack for Spec A devices. The provided GPT does not include a SBL1 and/or SBL2 partition.");
 
             if (HackPartition != null)
             {
@@ -224,7 +224,7 @@ namespace WPinternals
 
                             if (NewPartition.LastSector == 0)
                             {
-                                throw new WPinternalsException("Unknown length for partition \"" + NewPartition.Name + "\"");
+                                throw new WPinternalsException("Unknown length for partition \"" + NewPartition.Name + "\". The last sector property is set to 0 and the partition doesn't exist on the device currently.");
                             }
                         }
                         else
@@ -234,9 +234,9 @@ namespace WPinternals
                             // If the location of the new partition is specified, it must be the same as the current partition.
 
                             if ((NewPartition.FirstSector != 0) && (NewPartition.FirstSector != OldPartition.FirstSector))
-                                throw new WPinternalsException("Incorrect location for partition \"" + NewPartition.Name + "\"");
+                                throw new WPinternalsException("Incorrect location for partition \"" + NewPartition.Name + "\". A partition defined in the xml file got its boundaries updated, but as the partition isn't provided in the archive, it is not possible to relocate it.");
                             if ((NewPartition.LastSector != 0) && (NewPartition.LastSector != OldPartition.LastSector))
-                                throw new WPinternalsException("Incorrect length for partition \"" + NewPartition.Name + "\"");
+                                throw new WPinternalsException("Incorrect length for partition \"" + NewPartition.Name + "\". A partition defined in the xml file got its boundaries updated, but as the partition isn't provided in the archive, it is not possible to relocate it.");
 
                             NewPartition.FirstSector = OldPartition.FirstSector;
                             NewPartition.LastSector = OldPartition.LastSector;
@@ -264,7 +264,7 @@ namespace WPinternals
                         else
                         {
                             if (NewPartition.SizeInSectors != StreamLengthInSectors)
-                                throw new WPinternalsException("Inconsistent length specified for partition \"" + NewPartition.Name + "\"");
+                                throw new WPinternalsException("Inconsistent length specified for partition \"" + NewPartition.Name + "\". The provided partition in the archive does not match the length specified in the xml file.");
                         }
                     }
                 }
@@ -283,7 +283,7 @@ namespace WPinternals
 
                         if (NewPartition.LastSector == 0)
                         {
-                            throw new WPinternalsException("Unknown length for partition \"" + NewPartition.Name + "\"");
+                            throw new WPinternalsException("Unknown length for partition \"" + NewPartition.Name + "\". The last sector property is set to 0 and the partition doesn't exist on the device currently.");
                         }
                     }
                     else
@@ -293,9 +293,9 @@ namespace WPinternals
                         // If the location of the new partition is specified, it must be the same as the current partition.
 
                         if ((NewPartition.FirstSector != 0) && (NewPartition.FirstSector != OldPartition.FirstSector))
-                            throw new WPinternalsException("Incorrect location for partition \"" + NewPartition.Name + "\"");
+                            throw new WPinternalsException("Incorrect location for partition \"" + NewPartition.Name + "\". A partition defined in the xml file got its boundaries updated, but as the partition isn't provided in the archive, it is not possible to relocate it.");
                         if ((NewPartition.LastSector != 0) && (NewPartition.LastSector != OldPartition.LastSector))
-                            throw new WPinternalsException("Incorrect length for partition \"" + NewPartition.Name + "\"");
+                            throw new WPinternalsException("Incorrect length for partition \"" + NewPartition.Name + "\". A partition defined in the xml file got its boundaries updated, but as the partition isn't provided in the archive, it is not possible to relocate it.");
 
                         NewPartition.FirstSector = OldPartition.FirstSector;
                         NewPartition.LastSector = OldPartition.LastSector;
@@ -348,7 +348,7 @@ namespace WPinternals
 
                 // Sanity check
                 if (NewPartition.FirstSector < LowestSector)
-                    throw new WPinternalsException("Bad sector alignment for partition: " + NewPartition.Name);
+                    throw new WPinternalsException("Bad sector alignment for partition: " + NewPartition.Name + ". The partition is located before DPP.");
 
                 Partition CurrentPartition = this.GetPartition(NewPartition.Name);
                 if (CurrentPartition == null)
@@ -426,7 +426,7 @@ namespace WPinternals
                             MaxPartitionSizeInSectors = NextPartition.FirstSector - OldPartition.FirstSector;
                         if (StreamLengthInSectors > MaxPartitionSizeInSectors)
                         {
-                            throw new WPinternalsException("Incorrect length for partition \"" + OldPartition.Name + "\"");
+                            throw new WPinternalsException("Incorrect length for partition \"" + OldPartition.Name + "\". The provided partition in the archive does not match the length specified in the xml file.");
                         }
 
                         if (OldPartition.SizeInSectors != StreamLengthInSectors)
@@ -528,7 +528,7 @@ namespace WPinternals
                 }
 
                 if (RevisePartition.LastSector >= 0xF400)
-                    throw new WPinternalsException("Unsupported partition layout!");
+                    throw new WPinternalsException("Unsupported partition layout!", "The last sector of one of the BACKUP partitions defined in GPT exceeds the maximum threshold expected in order to restore BACKUP partitions to the device.");
             }
 
         }

@@ -235,7 +235,7 @@ namespace WPinternals
             if (Response == null)
                 throw new BadConnectionException();
             if (Response.Length == 4)
-                throw new WPinternalsException("Flash protocol v2 not supported");
+                throw new WPinternalsException("Flash protocol v2 not supported", "The device reported that the Flash protocol v2 was not supported while sending the FFU header.");
             int ResultCode = (Response[6] << 8) + Response[7];
             if (ResultCode != 0)
                 ThrowFlashError(ResultCode);
@@ -345,7 +345,7 @@ namespace WPinternals
                     ThrowFlashError(ResultCode);
             }
             else
-                throw new WPinternalsException("Specified partition cannot be backupped to RAM");
+                throw new WPinternalsException("Specified partition cannot be backupped to RAM", "Partition name: \"" + PartitionName + "\".");
         }
 
         public void LoadMmosBinary(UInt32 TotalLength, UInt32 Offset, bool SkipMmosSupportCheck, byte[] MmosPart)
@@ -450,7 +450,7 @@ namespace WPinternals
 
             PhoneInfo Info = ReadPhoneInfo();
             if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV1 | (ushort)FfuProtocol.ProtocolSyncV2)) == 0)
-                throw new WPinternalsException("Flash failed!", "Protocols not supported");
+                throw new WPinternalsException("Flash failed!", "Protocols not supported. The device reports that both Protocol Sync v1 and Protocol Sync v2 are not supported for FFU flashing. Is this an old device?");
 
             UInt64 CombinedFFUHeaderSize = FFU.HeaderSize;
             byte[] FfuHeader = new byte[CombinedFFUHeaderSize];
@@ -518,7 +518,7 @@ namespace WPinternals
 
             PhoneInfo Info = ReadPhoneInfo();
             if (!Info.MmosOverUsbSupported)
-                throw new WPinternalsException("Flash failed!", "Protocols not supported");
+                throw new WPinternalsException("Flash failed!", "Protocols not supported. The device reports that loading Microsoft Manufacturing Operating System over USB is not supported.");
 
             FileInfo info = new FileInfo(MMOSPath);
             uint length = uint.Parse(info.Length.ToString());
@@ -986,7 +986,7 @@ namespace WPinternals
             if (Response == null)
                 throw new BadConnectionException();
             if (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKI")
-                throw new WPinternalsException("Bad response from phone!");
+                throw new WPinternalsException("Bad response from phone!", "The phone did not answer properly to the Hello message sent.");
         }
 
         internal UInt16 ReadSecureFfuSupportedProtocolMask()
@@ -1199,7 +1199,7 @@ namespace WPinternals
                     LogFile.Log("Product code: " + ProductCode, Type);
                 if (RKH != null)
                     LogFile.Log("Root key hash: " + Converter.ConvertHexToString(RKH, ""), Type);
-                if (Firmware.Length > 0)
+                if (Firmware != null && Firmware.Length > 0)
                     LogFile.Log("Firmware version: " + Firmware, Type);
                 if (!(Type == LogType.ConsoleOnly) && (Imei != null))
                     LogFile.Log("IMEI: " + Imei, LogType.FileOnly);

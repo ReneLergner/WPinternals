@@ -19,6 +19,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,12 +33,39 @@ namespace WPinternals
     /// </summary>
     public partial class Empty : UserControl
     {
+        static PhoneNotifierViewModel PhoneNotifier;
+        static SynchronizationContext UIContext;
+
         // Dependency injection is not possible here, because this ViewModel is used in a Style.
         public Empty()
         {
             InitializeComponent();
 
             InterruptBoot = App.InterruptBoot;
+            UIContext = SynchronizationContext.Current;
+
+            // Setting these properties in XAML results in an error. Why?
+            GifImage.GifSource = @"/aerobusy.gif";
+            GifImage.AutoStart = true;
+
+            Loaded += Empty_Loaded;
+            Unloaded += Empty_Unloaded;
+        }
+
+        private void Empty_Unloaded(object sender, RoutedEventArgs e)
+        {
+            PhoneNotifier.NewDeviceArrived -= PhoneNotifier_NewDeviceArrived;
+        }
+
+        private void Empty_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Find the phone notifier
+            DependencyObject obj = (DependencyObject)sender;
+            while (!(obj is MainWindow))
+                obj = VisualTreeHelper.GetParent(obj);
+            PhoneNotifier = ((MainViewModel)(((MainWindow)obj).DataContext)).PhoneNotifier;
+
+            PhoneNotifier.NewDeviceArrived += PhoneNotifier_NewDeviceArrived;
         }
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
@@ -81,12 +109,6 @@ namespace WPinternals
 
             if ((bool)e.NewValue)
             {
-                // Find the phone notifier
-                DependencyObject obj = d;
-                while (!(obj is MainWindow))
-                    obj = VisualTreeHelper.GetParent(obj);
-                PhoneNotifierViewModel PhoneNotifier = ((MainViewModel)(((MainWindow)obj).DataContext)).PhoneNotifier;
-
                 if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                 {
                     App.InterruptBoot = false;
@@ -94,6 +116,31 @@ namespace WPinternals
                     Task.Run(() => SwitchModeViewModel.SwitchTo(PhoneNotifier, PhoneInterfaces.Lumia_Flash));
                 }
             }
+        }
+
+        internal void PhoneNotifier_NewDeviceArrived(ArrivalEventArgs Args)
+        {
+            if (App.InterruptBoot && Args.NewInterface == PhoneInterfaces.Lumia_Bootloader)
+            {
+                App.InterruptBoot = false;
+                LogFile.Log("Found Lumia BootMgr and user forced to interrupt the boot process. Force to Flash-mode.");
+                Task.Run(() => SwitchModeViewModel.SwitchTo(PhoneNotifier, PhoneInterfaces.Lumia_Flash));
+            }
+
+            UIContext.Send(s =>
+            {
+                if (!App.InterruptBoot && Args.NewInterface == PhoneInterfaces.Lumia_Bootloader)
+                {
+                    StatusText.Content = "Phone is booting...";
+                    GifImage.Visibility = Visibility.Visible;
+                }
+
+                if (!App.InterruptBoot && Args.NewInterface != PhoneInterfaces.Lumia_Bootloader)
+                {
+                    StatusText.Content = "Waiting for connection with phone...";
+                    GifImage.Visibility = Visibility.Collapsed;
+                }
+            }, null);
         }
     }
 }

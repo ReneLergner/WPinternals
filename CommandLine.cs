@@ -465,7 +465,7 @@ namespace WPinternals
                                 if (FFUs.Count() > 0)
                                     ProfileFFU = new FFU(FFUs[0].Path);
                                 else
-                                    throw new WPinternalsException("Profile FFU missing");
+                                    throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
                             }
                             LogFile.Log("Profile FFU: " + ProfileFFU.Path);
 
@@ -601,7 +601,7 @@ namespace WPinternals
                                 if (FFUs.Count() > 0)
                                     ProfileFFU = new FFU(FFUs[0].Path);
                                 else
-                                    throw new WPinternalsException("Profile FFU missing");
+                                    throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
                             }
                             LogFile.Log("Profile FFU: " + ProfileFFU.Path);
 
@@ -611,7 +611,7 @@ namespace WPinternals
                                 if (FFUs.Count() > 0)
                                     SupportedFFU = new FFU(FFUs[0].Path);
                                 else
-                                    throw new WPinternalsException("No donor-FFU found with supported OS version");
+                                    throw new WPinternalsException("No donor-FFU found with supported OS version", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
                             }
 
                             await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFU.Path, null, SupportedFFU.Path);
@@ -695,7 +695,7 @@ namespace WPinternals
                             App.PatchEngine.TargetPath = Drive + "\\";
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
-                                throw new WPinternalsException("Patch failed");
+                                throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the MainOS partition of your phone. Make sure your phone runs a supported Operating System version.");
                             LogFile.Log("Fixed bootloader", LogType.FileAndConsole);
                             LogFile.Log("The phone is left in Mass Storage mode", LogType.FileAndConsole);
                             LogFile.Log("Press and hold the power-button of the phone for at least 10 seconds to reset the phone", LogType.FileAndConsole);
@@ -721,14 +721,14 @@ namespace WPinternals
                             App.PatchEngine.TargetPath = Drive + "\\EFIESP\\";
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                             if (!PatchResult)
-                                throw new WPinternalsException("Patch failed");
+                                throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the EFIESP partition of your phone. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported.");
                             App.PatchEngine.TargetPath = Drive + "\\";
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
-                                throw new WPinternalsException("Patch failed");
+                                throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the MainOS partition of your phone. Make sure your phone runs a supported Operating System version.");
                             PatchResult = App.PatchEngine.Patch("RootAccess-MainOS");
                             if (!PatchResult)
-                                throw new WPinternalsException("Patch failed");
+                                throw new WPinternalsException("Patch failed", "An error occured while modifying Operating System files on the MainOS partition of your phone for Root Access. Make sure your phone runs a supported Operating System version.");
                             LogFile.Log("Root Access enabled!", LogType.FileAndConsole);
                             LogFile.Log("The phone is left in Mass Storage mode", LogType.FileAndConsole);
                             LogFile.Log("Press and hold the power-button of the phone for at least 10 seconds to reset the phone", LogType.FileAndConsole);
@@ -785,7 +785,7 @@ namespace WPinternals
                             App.PatchEngine.TargetImage = UnlockedEFIESPFileSystem;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                             if (!PatchResult)
-                                throw new WPinternalsException("Failed to patch bootloader");
+                                throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
 
                             // Edit BCD
                             LogFile.Log("Edit BCD");
@@ -820,7 +820,7 @@ namespace WPinternals
                                 App.PatchEngine.TargetImage = UnlockedMainOsFileSystem;
                                 PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                                 if (!PatchResult)
-                                    throw new WPinternalsException("Failed to patch MainOS");
+                                    throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
                             }
                         }
                         LogFile.Log("Bootloader unlocked on image", LogType.FileAndConsole);
@@ -863,7 +863,7 @@ namespace WPinternals
                             App.PatchEngine.TargetImage = UnlockedEFIESPFileSystem;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                             if (!PatchResult)
-                                throw new WPinternalsException("Failed to patch bootloader");
+                                throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
 
                             // Edit BCD
                             LogFile.Log("Edit BCD");
@@ -896,10 +896,10 @@ namespace WPinternals
                             App.PatchEngine.TargetImage = UnlockedMainOsFileSystem;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
-                                throw new WPinternalsException("Failed to patch MainOS");
+                                throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
                             PatchResult = App.PatchEngine.Patch("RootAccess-MainOS");
                             if (!PatchResult)
-                                throw new WPinternalsException("Failed to patch MainOS");
+                                throw new WPinternalsException("Failed to patch MainOS", "An error occured while modifying Operating System files on the MainOS partition you provided for Root Access. Make sure your phone runs a supported Operating System version.");
                         }
                         LogFile.Log("Root access enabled on image", LogType.FileAndConsole);
                         break;
@@ -942,7 +942,7 @@ namespace WPinternals
                         App.PatchEngine.TargetPath = EfiEspImagePath;
                         PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                         if (!PatchResult)
-                            throw new WPinternalsException("Failed to patch bootloader");
+                            throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
 
                         // Edit BCD
                         LogFile.Log("Edit BCD");
@@ -972,7 +972,7 @@ namespace WPinternals
                             App.PatchEngine.TargetPath = MainOsImagePath;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
-                                throw new WPinternalsException("Failed to patch MainOS");
+                                throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
                         }
                         LogFile.Log("Bootloader unlocked on image", LogType.FileAndConsole);
                         break;
@@ -1010,7 +1010,7 @@ namespace WPinternals
                         App.PatchEngine.TargetPath = EfiEspImagePath;
                         PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                         if (!PatchResult)
-                            throw new WPinternalsException("Failed to patch bootloader");
+                            throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
 
                         // Edit BCD
                         LogFile.Log("Edit BCD");
@@ -1038,10 +1038,10 @@ namespace WPinternals
                         App.PatchEngine.TargetPath = MainOsImagePath;
                         PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                         if (!PatchResult)
-                            throw new WPinternalsException("Failed to patch MainOS");
+                            throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
                         PatchResult = App.PatchEngine.Patch("RootAccess-MainOS");
                         if (!PatchResult)
-                            throw new WPinternalsException("Failed to patch MainOS");
+                            throw new WPinternalsException("Failed to patch MainOS", "An error occured while modifying Operating System files on the MainOS partition you provided for Root Access. Make sure your phone runs a supported Operating System version.");
                         LogFile.Log("Root access enabled on image", LogType.FileAndConsole);
                         break;
                     case "downloadffu":
@@ -1362,7 +1362,7 @@ namespace WPinternals
                             App.Config.AddFfuToRepository(FFUFilePath);
 
                             if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
-                                throw new WPinternalsException("Unable to find compatible FFU");
+                                throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
                         }
                         Notifier.Stop();
                         break;
@@ -1443,7 +1443,7 @@ namespace WPinternals
                             App.Config.AddFfuToRepository(FFUFilePath);
 
                             if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
-                                throw new WPinternalsException("Unable to find compatible FFU");
+                                throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
                         }
                         break;
                     case "downloadallbyproductcode":
@@ -1523,7 +1523,7 @@ namespace WPinternals
                             App.Config.AddFfuToRepository(FFUFilePath);
 
                             if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
-                                throw new WPinternalsException("Unable to find compatible FFU");
+                                throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
                         }
                         break;
                     case "downloadallbyoperatorcode":
@@ -1605,7 +1605,7 @@ namespace WPinternals
                             App.Config.AddFfuToRepository(FFUFilePath);
 
                             if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
-                                throw new WPinternalsException("Unable to find compatible FFU");
+                                throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
                         }
                         break;
                     default:
