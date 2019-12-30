@@ -143,6 +143,14 @@ namespace WPinternals
                             if (SecurityStatus == null)
                                 IsBootLoaderUnlocked = (Info.Authenticated || Info.RdcPresent || !Info.SecureFfuEnabled);
 
+                            if (RootKeyHash == null)
+                            {
+                                RootKeyHash = Info.RKH;
+
+                                if (RootKeyHash == null)
+                                    RootKeyHash = new byte[32];
+                            }
+
                             TestPos = 3;
 
                             if (Info.FlashAppProtocolVersionMajor < 2)

@@ -156,10 +156,12 @@ namespace WPinternals
             return Result;
         }
 
-        internal bool IsBootLoaderUnlocked()
+        internal bool? IsBootLoaderUnlocked()
         {
             UefiSecurityStatusResponse SecurityStatus = ReadSecurityStatus();
-            return (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+            if (SecurityStatus != null)
+                return (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+            return null;
         }
 
         public TerminalResponse GetTerminalResponse()
@@ -651,7 +653,8 @@ namespace WPinternals
 
         internal void WriteGPT(GPT NewGPT)
         {
-            if (!IsBootLoaderUnlocked())
+            bool? unlocked = IsBootLoaderUnlocked();
+            if (unlocked.HasValue && !unlocked.Value)
                 throw new InvalidOperationException("Bootloader is not unlocked!");
 
             byte[] Buffer = NewGPT.Rebuild();
@@ -690,7 +693,8 @@ namespace WPinternals
 
         private void FlashRawPartition(string Path, Stream Stream, string PartitionName, Action<int, TimeSpan?> ProgressUpdateCallback, ProgressUpdater UpdaterPerSector)
         {
-            if (!IsBootLoaderUnlocked())
+            bool? unlocked = IsBootLoaderUnlocked();
+            if (unlocked.HasValue && !unlocked.Value)
                 throw new InvalidOperationException("Bootloader is not unlocked!");
 
             GPT GPT = ReadGPT();
