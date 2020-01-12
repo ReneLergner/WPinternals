@@ -210,7 +210,9 @@ namespace WPinternals
                                     GPT GPT = FlashModel.ReadGPT();
                                     if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
                                     {
-                                        AlreadyUnlocked = true;
+                                        ExitMessage("Phone is already unlocked", null);
+                                        return;
+                                        //AlreadyUnlocked = true;
                                     }
                                 }
 
