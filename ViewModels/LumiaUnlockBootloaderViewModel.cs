@@ -104,33 +104,42 @@ namespace WPinternals
             if (ExitSuccess == null) ExitSuccess = (m, s) => { };
             if (ExitFailure == null) ExitFailure = (m, s) => { };
 
-            await LumiaUnlockBootloaderViewModel.LumiaRelockUEFI(Notifier, FFUPath, DoResetFirst, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
-
-            SetWorkingStatus("Booting phone...");
-            await Notifier.WaitForArrival();
-
-            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
-
-            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
-                await Notifier.WaitForArrival();
-
-            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
-
-            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
-                await Notifier.WaitForArrival();
-
-            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
-
-            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+            ExitFailure tmpExitFailure = (m, s) =>
             {
-                ExitFailure("Failed to relock phone", "Your phone is half relocked. You may need to reflash a stock ROM");
-                return;
-            }
+                ExitFailure(m, s);
+            };
 
-            ExitSuccess("Bootloader restored successfully!");
+            ExitSuccess tmpExitSuccess = async (m, s) =>
+            {
+                SetWorkingStatus("Booting phone...");
+                await Notifier.WaitForArrival();
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                    ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+                    await Notifier.WaitForArrival();
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                    ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+                    await Notifier.WaitForArrival();
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                    ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+                {
+                    ExitFailure("Failed to relock phone", "Your phone is half relocked. You may need to reflash a stock ROM");
+                    return;
+                }
+
+                ExitSuccess("Bootloader restored successfully!");
+            };
+
+            await LumiaUnlockBootloaderViewModel.LumiaRelockUEFI(Notifier, FFUPath, DoResetFirst, SetWorkingStatus, UpdateWorkingStatus, tmpExitSuccess, tmpExitFailure);
+
         }
 
         internal static async Task LumiaV2UnlockUEFI(PhoneNotifierViewModel Notifier, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, bool ReUnlockDevice = false)
@@ -140,33 +149,42 @@ namespace WPinternals
             if (ExitSuccess == null) ExitSuccess = (m, s) => { };
             if (ExitFailure == null) ExitFailure = (m, s) => { };
 
-            await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure, ReUnlockDevice: ReUnlockDevice);
-
-            SetWorkingStatus("Booting phone...");
-            await Notifier.WaitForArrival();
-
-            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
-
-            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
-                await Notifier.WaitForArrival();
-
-            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
-
-            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
-                await Notifier.WaitForArrival();
-
-            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
-
-            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+            ExitFailure tmpExitFailure = (m, s) => 
             {
-                ExitFailure("Failed to unlock phone", "Your phone is half unlocked. You may need to reflash a stock ROM");
-                return;
-            }
+                ExitFailure(m, s);
+            };
 
-            ExitSuccess("Bootloader unlocked successfully!", null);
+            ExitSuccess tmpExitSuccess = async (m, s) => 
+            {
+                SetWorkingStatus("Booting phone...");
+                await Notifier.WaitForArrival();
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                    ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+                    await Notifier.WaitForArrival();
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                    ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+                    await Notifier.WaitForArrival();
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                    ((NokiaFlashModel)Notifier.CurrentModel).ContinueBoot();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Normal)
+                {
+                    ExitFailure("Failed to unlock phone", "Your phone is half unlocked. You may need to reflash a stock ROM");
+                    return;
+                }
+
+                ExitSuccess("Bootloader unlocked successfully!", null);
+            };
+
+            await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, tmpExitSuccess, tmpExitFailure, ReUnlockDevice: ReUnlockDevice);
+
         }
 
         // Magic!
@@ -1278,7 +1296,7 @@ namespace WPinternals
 
             PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
             FlashAppType OriginalAppType = Info.App;
-            bool Switch = ((Info.App != FlashAppType.BootManager) && Info.SecureFfuEnabled && !Info.Authenticated && !Info.RdcPresent);
+            bool Switch = ((Info.App != FlashAppType.BootManager) && Info.IsBootloaderSecure);
             if (Switch)
                 FlashModel.SwitchToBootManagerContext();
 
@@ -1608,15 +1626,14 @@ namespace WPinternals
                 }
 
                 LogFile.Log("Phone is relocked", LogType.FileAndConsole);
+                LogFile.EndAction("RelockPhone");
+                ExitSuccess("Phone is relocked", null);
             }
             catch (Exception Ex)
             {
                 LogFile.LogException(Ex);
-                ExitFailure("Error: " + Ex.Message, null);
-            }
-            finally
-            {
                 LogFile.EndAction("RelockPhone");
+                ExitFailure("Error: " + Ex.Message, null);
             }
         }
 
@@ -1640,14 +1657,12 @@ namespace WPinternals
                 PhoneInfo Info = FlashModel.ReadPhoneInfo();
                 bool IsSpecB = Info.FlashAppProtocolVersionMajor >= 2;
 
-                bool IsBootLoaderSecure = !Info.Authenticated && !Info.RdcPresent && Info.SecureFfuEnabled;
-
                 if (ProfileFFUPath == null)
                     throw new ArgumentNullException("Profile FFU path is missing");
 
                 FFU ProfileFFU = new FFU(ProfileFFUPath);
 
-                if (IsBootLoaderSecure)
+                if (Info.IsBootloaderSecure)
                 {
                     if (!Info.PlatformID.StartsWith(ProfileFFU.PlatformID, StringComparison.OrdinalIgnoreCase))
                         throw new ArgumentNullException("Profile FFU has wrong Platform ID for connected phone");
@@ -1677,12 +1692,90 @@ namespace WPinternals
 
                 LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, UnlockedEFIESP, IsSpecB);
 
-                // Create backup-partition for EFIESP
                 byte[] GPTChunk = GetGptChunk(FlashModel, (UInt32)ProfileFFU.ChunkSize);
                 byte[] GPTChunkBackup = new byte[GPTChunk.Length];
                 Buffer.BlockCopy(GPTChunk, 0, GPTChunkBackup, 0, GPTChunk.Length);
                 GPT GPT = new GPT(GPTChunk);
                 bool GPTChanged = false;
+
+                LogFile.Log("Enabling Test Signing", LogType.FileAndConsole);
+                SetWorkingStatus("Enabling Test Signing", null, null);
+
+                List<FlashPart> Parts = new List<FlashPart>();
+                FlashPart Part;
+
+                // Now add NV partition
+                Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
+                Partition UEFI_BS_NV;
+                if (BACKUP_BS_NV == null)
+                {
+                    BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
+                    Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
+                    Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
+                    BACKUP_BS_NV.Name = "BACKUP_BS_NV";
+                    BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
+                    BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
+                    UEFI_BS_NV = new Partition();
+                    UEFI_BS_NV.Name = "UEFI_BS_NV";
+                    UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
+                    UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
+                    UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
+                    UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
+                    UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
+                    GPT.Partitions.Add(UEFI_BS_NV);
+                    GPTChanged = true;
+                }
+                Part = new FlashPart();
+                Partition TargetPartition = GPT.GetPartition("UEFI_BS_NV");
+                Part.StartSector = (UInt32)TargetPartition.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
+                string SBRes = IsSpecB ? "WPinternals.SB" : "WPinternals.SBA";
+                Part.Stream = new SeekableStream(() =>
+                {
+                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+                    // Magic!
+                    // The SB(A) resource is a compressed version of a raw NV-variable-partition.
+                    // In this partition the SecureBoot variable is disabled.
+                    // It overwrites the variable in a different NV-partition than where this variable is stored usually.
+                    // This normally leads to endless-loops when the NV-variables are enumerated.
+                    // But the partition contains an extra hack to break out the endless loops.
+                    var stream = assembly.GetManifestResourceStream(SBRes);
+
+                    return new DecompressedStream(stream);
+                });
+                Parts.Add(Part);
+
+                if (GPTChanged)
+                {
+                    GPT.Rebuild();
+                    Part = new FlashPart();
+                    Part.StartSector = 0;
+                    Part.Stream = new MemoryStream(GPTChunk);
+                    Parts.Add(Part);
+                }
+
+                foreach (FlashPart _part in Parts)
+                {
+                    _part.ProgressText = "Enabling Test Signing...";
+                }
+
+                await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+
+                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
+                    await Notifier.WaitForArrival();
+
+                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
+                    throw new WPinternalsException("Error: Phone is in wrong mode", "The phone should have been detected in bootloader or flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                {
+                    FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+                    FlashModel.SwitchToFlashAppContext();
+                }
+
+                GPTChanged = false;
+
+                // Create backup-partition for EFIESP
 
                 bool SBL3Eng = GPT.GetPartition("IS_UNLOCKED_SBL3") != null;
 
@@ -1695,8 +1788,8 @@ namespace WPinternals
                 if (!IsSpecB && !SBL3Eng)
                     ShouldApplyOldEFIESPMethod = false;
 
-                List<FlashPart> Parts = ShouldApplyOldEFIESPMethod ? new List<FlashPart>() : LumiaUnlockBootloaderViewModel.LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
-                FlashPart Part;
+                Parts = ShouldApplyOldEFIESPMethod ? new List<FlashPart>() : LumiaUnlockBootloaderViewModel.LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
+                Part = null;
 
                 UInt32 OriginalEfiespSizeInSectors = (UInt32)GPT.GetPartition("EFIESP").SizeInSectors;
                 UInt32 OriginalEfiespLastSector = (UInt32)GPT.GetPartition("EFIESP").LastSector;
@@ -1805,52 +1898,6 @@ namespace WPinternals
                     Parts.Add(Part);
                 }
 
-                if (IsSpecB)
-                    Parts[0].ProgressText = "Flashing unlocked bootloader (part 1)...";
-                else
-                    Parts[0].ProgressText = "Flashing unlocked bootloader (part 2)...";
-
-                // Now add NV partition
-                Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
-                Partition UEFI_BS_NV;
-                if (BACKUP_BS_NV == null)
-                {
-                    BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
-                    Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
-                    Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
-                    BACKUP_BS_NV.Name = "BACKUP_BS_NV";
-                    BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
-                    BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                    UEFI_BS_NV = new Partition();
-                    UEFI_BS_NV.Name = "UEFI_BS_NV";
-                    UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                    UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                    UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                    UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
-                    UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
-                    GPT.Partitions.Add(UEFI_BS_NV);
-                    GPTChanged = true;
-                }
-                Part = new FlashPart();
-                Partition TargetPartition = GPT.GetPartition("UEFI_BS_NV");
-                Part.StartSector = (UInt32)TargetPartition.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
-                string SBRes = IsSpecB ? "WPinternals.SB" : "WPinternals.SBA";
-                Part.Stream = new SeekableStream(() =>
-                {
-                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
-                    // Magic!
-                    // The SB(A) resource is a compressed version of a raw NV-variable-partition.
-                    // In this partition the SecureBoot variable is disabled.
-                    // It overwrites the variable in a different NV-partition than where this variable is stored usually.
-                    // This normally leads to endless-loops when the NV-variables are enumerated.
-                    // But the partition contains an extra hack to break out the endless loops.
-                    var stream = assembly.GetManifestResourceStream(SBRes);
-
-                    return new DecompressedStream(stream);
-                });
-                Parts.Add(Part);
-
                 if (GPTChanged)
                 {
                     GPT.Rebuild();
@@ -1860,7 +1907,19 @@ namespace WPinternals
                     Parts.Add(Part);
                 }
 
-                await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                foreach (FlashPart _part in Parts)
+                {
+                    if (IsSpecB)
+                    {
+                        _part.ProgressText = "Flashing unlocked bootloader (part 1)...";
+                    }
+                    else
+                    {
+                        _part.ProgressText = "Flashing unlocked bootloader (part 2)...";
+                    }
+                }
+
+                await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
 
                 if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
                     await Notifier.WaitForArrival();
@@ -1969,7 +2028,7 @@ namespace WPinternals
 
                         // Copy the backed up unlocked EFIESP for future use
                         BackupUnlockedEFIESP = new byte[UnlockedEFIESP.Length];
-                        Buffer.BlockCopy(BackupEFIESP, 0, BackupUnlockedEFIESP, 0, BackupEFIESP.Length);
+                        Buffer.BlockCopy(BackupEFIESP, 0, BackupUnlockedEFIESP, 0, UnlockedEFIESP.Length);
 
                         LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
                     }
@@ -2083,7 +2142,6 @@ namespace WPinternals
                     Part = new FlashPart();
                     Part.StartSector = 0;
                     Part.Stream = new MemoryStream(GPTChunk);
-                    Part.ProgressText = "Flashing unlocked bootloader (part 2)...";
                     Parts.Add(Part);
                     Part = new FlashPart();
                     Part.StartSector = OriginalEfiespFirstSector;
@@ -2093,6 +2151,11 @@ namespace WPinternals
                     Part.StartSector = OriginalEfiespFirstSector + ((OriginalEfiespSizeInSectors) / 2);
                     Part.Stream = new MemoryStream(BackupEFIESP);
                     Parts.Add(Part);
+
+                    foreach (FlashPart _part in Parts)
+                    {
+                        _part.ProgressText = "Flashing unlocked bootloader (part 2)...";
+                    }
 
                     await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
                 }
@@ -2146,10 +2209,17 @@ namespace WPinternals
 
                     Parts = LumiaUnlockBootloaderViewModel.LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
 
-                    if (IsSpecB)
-                        Parts[0].ProgressText = "Flashing unlocked bootloader (part 2)...";
-                    else
-                        Parts[0].ProgressText = "Flashing unlocked bootloader (part 3)...";
+                    foreach (FlashPart _part in Parts)
+                    {
+                        if (IsSpecB)
+                        {
+                            _part.ProgressText = "Flashing unlocked bootloader (part 2)...";
+                        }
+                        else
+                        {
+                            _part.ProgressText = "Flashing unlocked bootloader (part 3)...";
+                        }
+                    }
 
                     await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
 
@@ -2157,14 +2227,22 @@ namespace WPinternals
                         ((NokiaFlashModel)Notifier.CurrentModel).ResetPhone();
                 }
 
+                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
+                    await Notifier.WaitForArrival();
+
+                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
+                    throw new WPinternalsException("Error: Phone is in wrong mode", "The phone should have been detected in bootloader or flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
+
                 LogFile.Log("Bootloader unlocked!", LogType.FileAndConsole);
+                LogFile.EndAction("UnlockBootloader");
+                ExitSuccess("Bootloader unlocked!", null);
             }
             catch (Exception Ex)
             {
                 LogFile.LogException(Ex);
+                LogFile.EndAction("UnlockBootloader");
                 ExitFailure(Ex.Message, Ex is WPinternalsException ? ((WPinternalsException)Ex).SubMessage : null);
             }
-            LogFile.EndAction("UnlockBootloader");
         }
 
         // Magic!

@@ -72,7 +72,7 @@ namespace WPinternals
 
                 SetWorkingStatus("Scanning for flashing-profile", "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", null, Status: WPinternalsStatus.Scanning);
 
-                await LumiaV2CustomFlash(Notifier, FFUPath, false, !Info.SecureFfuEnabled || Info.RdcPresent || Info.Authenticated, null, DoResetFirst, Experimental: Experimental, SetWorkingStatus:
+                await LumiaV2CustomFlash(Notifier, FFUPath, false, !Info.IsBootloaderSecure, null, DoResetFirst, Experimental: Experimental, SetWorkingStatus:
                     (m, s, v, a, st) =>
                     {
                         if (st == WPinternalsStatus.SwitchingMode)
@@ -440,8 +440,47 @@ namespace WPinternals
             await LumiaV2CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, Parts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental);
         }
 
+        internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null)
+        {
+            NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
+            PhoneInfo Info = Model.ReadPhoneInfo();
+
+
+            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, 131072u);
+
+            GPT GPT = new GPT(GPTChunk);
+
+            Partition UefiBSNV = GPT.GetPartition("UEFI_BS_NV");
+
+            bool UseOlderExploit = Info.UefiSecureBootEnabled;
+
+            if (!UseOlderExploit && ClearFlashingStatusAtEnd)
+            {
+                if (FlashParts == null)
+                {
+                    UseOlderExploit = true;
+                }
+                else
+                {
+                    foreach (var part in FlashParts)
+                    {
+                        if (part.StartSector >= UefiBSNV.FirstSector && part.StartSector <= UefiBSNV.LastSector)
+                        {
+                            UseOlderExploit = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (UseOlderExploit || !ClearFlashingStatusAtEnd)
+                await LumiaV20CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, FlashParts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure, ProgrammerPath);
+            else
+                await LumiaV3FlashRomViewModel.LumiaV3CustomFlash(Notifier, FlashParts, CheckSectorAlignment, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
+        }
+
         // Magic!
-        internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null) //, string LoaderPath = null)
+        internal async static Task LumiaV20CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null) //, string LoaderPath = null)
         {
             // Both SecurityHeader and StoreHeader need to be modified.
             // Those should both not fall in a memory-gap to allow modification.
@@ -528,7 +567,7 @@ namespace WPinternals
             byte Options = 0;
             if (SkipWrite)
                 Options = (byte)FlashOptions.SkipWrite;
-            if (!Info.SecureFfuEnabled || Info.Authenticated || Info.RdcPresent)
+            if (!Info.IsBootloaderSecure)
                 Options = (byte)((FlashOptions)Options | FlashOptions.SkipSignatureCheck);
 
             // Gap fill calculation:
@@ -1801,6 +1840,8 @@ namespace WPinternals
             bool IsUnlocked = false;
             bool GPTChanged = false;
 
+            bool ClearFlashingStatus = true;
+
             if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
             if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
             if (ExitSuccess == null) ExitSuccess = (m, s) => { };
@@ -1896,6 +1937,7 @@ namespace WPinternals
                                                     IsUnlockedFlag.LastSector = 0x40;
                                                     GPT.Partitions.Add(IsUnlockedFlag);
                                                     GPTChanged = true;
+                                                    ClearFlashingStatus = false;
                                                 }
                                             }
                                             else
@@ -1905,6 +1947,7 @@ namespace WPinternals
                                                 {
                                                     GPT.Partitions.Remove(IsUnlockedFlag);
                                                     GPTChanged = true;
+                                                    ClearFlashingStatus = false;
                                                 }
                                             }
                                         }
@@ -1952,46 +1995,81 @@ namespace WPinternals
                             return;
                         }
 
-                        // Now add NV partition
-                        Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
-                        Partition UEFI_BS_NV;
-                        if (BACKUP_BS_NV == null)
+                        if (!ClearFlashingStatus)
                         {
-                            BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
-                            Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
-                            Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
-                            BACKUP_BS_NV.Name = "BACKUP_BS_NV";
-                            BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
-                            BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                            UEFI_BS_NV = new Partition();
-                            UEFI_BS_NV.Name = "UEFI_BS_NV";
-                            UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                            UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                            UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                            UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
-                            UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
-                            GPT.Partitions.Add(UEFI_BS_NV);
-                            GPTChanged = true;
+                            if (!IsUnlocked)
+                            {
+                                // Undo secure boot exploit
+                                Partition NvBackupPartition = GPT.GetPartition("BACKUP_BS_NV");
+                                if (NvBackupPartition != null)
+                                {
+                                    // This must be a left over of a half unlocked bootloader
+                                    Partition NvPartition = GPT.GetPartition("UEFI_BS_NV");
+                                    NvBackupPartition.Name = "UEFI_BS_NV";
+                                    NvBackupPartition.PartitionGuid = NvPartition.PartitionGuid;
+                                    NvBackupPartition.PartitionTypeGuid = NvPartition.PartitionTypeGuid;
+                                    GPT.Partitions.Remove(NvPartition);
+                                    GPTChanged = true;
+                                }
+
+                                PhoneInfo Info = FlashModel.ReadPhoneInfo(false);
+
+                                // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
+                                if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)
+                                {
+                                    // ClearNV
+                                    Part = new FlashPart();
+                                    Partition Target2 = GPT.GetPartition("UEFI_BS_NV");
+                                    Part.StartSector = (UInt32)Target2.FirstSector;
+                                    Part.Stream = new MemoryStream(new byte[0x40000]);
+                                    Parts.Add(Part);
+                                }
+                            }
+                            else
+                            {
+                                // Now add NV partition
+                                Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
+                                Partition UEFI_BS_NV;
+                                if (BACKUP_BS_NV == null)
+                                {
+                                    BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
+                                    Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
+                                    Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
+                                    BACKUP_BS_NV.Name = "BACKUP_BS_NV";
+                                    BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
+                                    BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
+                                    UEFI_BS_NV = new Partition();
+                                    UEFI_BS_NV.Name = "UEFI_BS_NV";
+                                    UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
+                                    UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
+                                    UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
+                                    UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
+                                    UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
+                                    GPT.Partitions.Add(UEFI_BS_NV);
+                                    GPTChanged = true;
+                                }
+
+                                Part = new FlashPart();
+                                Target = GPT.GetPartition("UEFI_BS_NV");
+                                Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
+                                Part.Stream = new SeekableStream(() =>
+                                {
+                                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+
+                                    // Magic!
+                                    // The SB resource is a compressed version of a raw NV-variable-partition.
+                                    // In this partition the SecureBoot variable is disabled.
+                                    // It overwrites the variable in a different NV-partition than where this variable is stored usually.
+                                    // This normally leads to endless-loops when the NV-variables are enumerated.
+                                    // But the partition contains an extra hack to break out the endless loops.
+                                    var stream = assembly.GetManifestResourceStream("WPinternals.SB");
+
+                                    return new DecompressedStream(stream);
+                                });
+                                Parts.Add(Part);
+                            }
                         }
-                        Part = new FlashPart();
-                        Target = GPT.GetPartition("UEFI_BS_NV");
-                        Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
-                        Part.Stream = new SeekableStream(() =>
-                        {
-                            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
-
-                            // Magic!
-                            // The SB resource is a compressed version of a raw NV-variable-partition.
-                            // In this partition the SecureBoot variable is disabled.
-                            // It overwrites the variable in a different NV-partition than where this variable is stored usually.
-                            // This normally leads to endless-loops when the NV-variables are enumerated.
-                            // But the partition contains an extra hack to break out the endless loops.
-                            var stream = assembly.GetManifestResourceStream("WPinternals.SB");
-
-                            return new DecompressedStream(stream);
-                        });
-                        Parts.Add(Part);
 
                         if (GPTChanged)
                         {
@@ -2037,7 +2115,7 @@ namespace WPinternals
                             });
 
                             // Do actual flashing!
-                            await LumiaV2CustomFlash(Notifier, null, false, false, Parts, true, false, false, true, false, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
+                            await LumiaV2CustomFlash(Notifier, null, false, false, Parts, true, ClearFlashingStatus, false, true, false, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
                         }
                         else
                         {
@@ -2116,6 +2194,7 @@ namespace WPinternals
             Partition Partition;
             bool IsUnlocked = false;
             bool GPTChanged = false;
+            bool ClearFlashingStatus = true;
 
             if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
             if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
@@ -2155,6 +2234,7 @@ namespace WPinternals
                             IsUnlockedFlag.LastSector = 0x40;
                             GPT.Partitions.Add(IsUnlockedFlag);
                             GPTChanged = true;
+                            ClearFlashingStatus = false;
                         }
                     }
                     else
@@ -2164,6 +2244,7 @@ namespace WPinternals
                         {
                             GPT.Partitions.Remove(IsUnlockedFlag);
                             GPTChanged = true;
+                            ClearFlashingStatus = false;
                         }
                     }
                 }
@@ -2230,45 +2311,81 @@ namespace WPinternals
                         return;
                     }
 
-                    // Now add NV partition
-                    Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
-                    Partition UEFI_BS_NV;
-                    if (BACKUP_BS_NV == null)
+                    if (!ClearFlashingStatus)
                     {
-                        BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
-                        Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
-                        Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
-                        BACKUP_BS_NV.Name = "BACKUP_BS_NV";
-                        BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
-                        BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                        UEFI_BS_NV = new Partition();
-                        UEFI_BS_NV.Name = "UEFI_BS_NV";
-                        UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                        UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                        UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                        UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
-                        UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
-                        GPT.Partitions.Add(UEFI_BS_NV);
-                        GPTChanged = true;
+                        if (!IsUnlocked)
+                        {
+                            // Undo secure boot exploit
+                            Partition NvBackupPartition = GPT.GetPartition("BACKUP_BS_NV");
+                            if (NvBackupPartition != null)
+                            {
+                                // This must be a left over of a half unlocked bootloader
+                                Partition NvPartition = GPT.GetPartition("UEFI_BS_NV");
+                                NvBackupPartition.Name = "UEFI_BS_NV";
+                                NvBackupPartition.PartitionGuid = NvPartition.PartitionGuid;
+                                NvBackupPartition.PartitionTypeGuid = NvPartition.PartitionTypeGuid;
+                                GPT.Partitions.Remove(NvPartition);
+                                GPTChanged = true;
+                            }
+
+                            PhoneInfo Info = FlashModel.ReadPhoneInfo(false);
+
+                            // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
+                            if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)
+                            {
+                                // ClearNV
+                                Part = new FlashPart();
+                                Partition Target2 = GPT.GetPartition("UEFI_BS_NV");
+                                Part.StartSector = (UInt32)Target2.FirstSector;
+                                Part.Stream = new MemoryStream(new byte[0x40000]);
+                                Parts.Add(Part);
+                            }
+                        }
+                        else
+                        {
+                            // Now add NV partition
+                            Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
+                            Partition UEFI_BS_NV;
+                            if (BACKUP_BS_NV == null)
+                            {
+                                BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
+                                Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
+                                Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
+                                BACKUP_BS_NV.Name = "BACKUP_BS_NV";
+                                BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
+                                BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
+                                UEFI_BS_NV = new Partition();
+                                UEFI_BS_NV.Name = "UEFI_BS_NV";
+                                UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
+                                UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
+                                UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
+                                UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
+                                UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
+                                GPT.Partitions.Add(UEFI_BS_NV);
+                                GPTChanged = true;
+                            }
+
+                            Part = new FlashPart();
+                            Target = GPT.GetPartition("UEFI_BS_NV");
+                            Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
+                            Part.Stream = new SeekableStream(() =>
+                            {
+                                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+
+                                // Magic!
+                                // The SB resource is a compressed version of a raw NV-variable-partition.
+                                // In this partition the SecureBoot variable is disabled.
+                                // It overwrites the variable in a different NV-partition than where this variable is stored usually.
+                                // This normally leads to endless-loops when the NV-variables are enumerated.
+                                // But the partition contains an extra hack to break out the endless loops.
+                                var stream = assembly.GetManifestResourceStream("WPinternals.SB");
+
+                                return new DecompressedStream(stream);
+                            });
+                            Parts.Add(Part);
+                        }
                     }
-                    Part = new FlashPart();
-                    Target = GPT.GetPartition("UEFI_BS_NV");
-                    Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
-                    Part.Stream = new SeekableStream(() =>
-                    {
-                        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
-                        // Magic!
-                        // The SB resource is a compressed version of a raw NV-variable-partition.
-                        // In this partition the SecureBoot variable is disabled.
-                        // It overwrites the variable in a different NV-partition than where this variable is stored usually.
-                        // This normally leads to endless-loops when the NV-variables are enumerated.
-                        // But the partition contains an extra hack to break out the endless loops.
-                        var stream = assembly.GetManifestResourceStream("WPinternals.SB");
-
-                        return new DecompressedStream(stream);
-                    });
-                    Parts.Add(Part);
 
                     if (GPTChanged)
                     {
@@ -2318,7 +2435,7 @@ namespace WPinternals
                     }
 
                     // Do actual flashing!
-                    await LumiaV2CustomFlash(Notifier, null, false, false, Parts, true, false, false, true, false, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
+                    await LumiaV2CustomFlash(Notifier, null, false, false, Parts, true, ClearFlashingStatus, false, true, false, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
                 }
                 else
                 {

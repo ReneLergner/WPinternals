@@ -670,7 +670,7 @@ namespace WPinternals
                             Info = FlashModel.ReadPhoneInfo();
                             Info.Log(LogType.ConsoleOnly);
                             LogFile.Log("Flashing FFU...", LogType.FileAndConsole);
-                            await Task.Run(() => FlashModel.FlashFFU(new FFU(FFUPath), true, (byte)((Info.RdcPresent || !Info.SecureFfuEnabled || Info.Authenticated) ? FlashOptions.SkipSignatureCheck : 0)));
+                            await Task.Run(() => FlashModel.FlashFFU(new FFU(FFUPath), true, (byte)(!Info.IsBootloaderSecure ? FlashOptions.SkipSignatureCheck : 0)));
                             LogFile.Log("FFU flashed successfully", LogType.FileAndConsole);
                             Notifier.Stop();
                         }
@@ -1608,6 +1608,24 @@ namespace WPinternals
                                 throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
                         }
                         break;
+                    case "rewritepartitionsfrommassstorage":
+                        if (args.Length < 2)
+                            throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RewritePartitionsFromMassStorage <Path to folder containing img partitions> \n The name of the imgs must be the partition names. For example, DPP.img will get written to the DPP partition.");
+
+                        await TestCode.RewriteParts(args[2]);
+                        break;
+                    case "restoregptusingedl":
+                        if (args.Length < 3)
+                            throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RestoreGPTUsingEDL <Path to GPT.bin to be flashed at sector 1 (minus the MBR at sector 0)> <Loaders path>");
+
+                        await TestCode.RecoverBadGPT(args[2], args[3]);
+                        break;
+                    case "restoregptusingmassstorage":
+                        if (args.Length < 2)
+                            throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RestoreGPTUsingMassStorage <Path to GPT.bin to be flashed at sector 1 (minus the MBR at sector 0)>");
+
+                        await TestCode.RewriteGPT(args[2]);
+                        break;
                     default:
                         LogFile.Log("", LogType.ConsoleOnly);
                         LogFile.Log("WPinternals commandline usage:", LogType.ConsoleOnly);
@@ -1671,6 +1689,9 @@ namespace WPinternals
                         LogFile.Log("                <Optional: Destination folder>", LogType.ConsoleOnly);
                         LogFile.Log("WPinternals -DumpUEFI <UEFI binary or FFU file> <Destination folder>", LogType.ConsoleOnly);
                         LogFile.Log("WPinternals -TestProgrammer <EDE file>", LogType.ConsoleOnly);
+                        LogFile.Log("WPinternals -RewritePartitionsFromMassStorage <Path to folder containing img partitions>", LogType.ConsoleOnly);
+                        LogFile.Log("WPinternals -RestoreGPTUsingEDL <Path to GPT.bin to be flashed at sector 1 (minus the MBR at sector 0)> <Loaders path>", LogType.ConsoleOnly);
+                        LogFile.Log("WPinternals -RestoreGPTUsingMassStorage <Path to GPT.bin to be flashed at sector 1 (minus the MBR at sector 0)>", LogType.ConsoleOnly);
                         break;
                 }
             }

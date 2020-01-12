@@ -272,7 +272,7 @@ namespace WPinternals
                             LogFile.Log("Bootloader Security Authentication Status: " + BootloaderSecurityAuthenticationStatus.ToString());
                             BootloaderSecurityRdcStatus = Info.RdcPresent;
                             LogFile.Log("Bootloader Security Rdc Status: " + BootloaderSecurityRdcStatus.ToString());
-                            EffectiveBootloaderSecurityStatus = Info.SecureFfuEnabled && !Info.Authenticated && !Info.RdcPresent;
+                            EffectiveBootloaderSecurityStatus = !Info.IsBootloaderSecure;
                             LogFile.Log("Effective Bootloader Security Status: " + EffectiveBootloaderSecurityStatus.ToString());
 
                             NativeDebugStatus = !Info.JtagDisabled;

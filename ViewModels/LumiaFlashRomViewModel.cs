@@ -527,6 +527,8 @@ namespace WPinternals
                         FlashParts.Add(Part);
                     }
 
+                    bool ClearFlashingStatus = true;
+
                     // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
                     if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)
                     {
@@ -536,13 +538,15 @@ namespace WPinternals
                         Part.StartSector = (UInt32)Target.FirstSector;
                         Part.Stream = new MemoryStream(new byte[0x40000]);
                         FlashParts.Add(Part);
+
+                        ClearFlashingStatus = false;
                     }
 
                     if (FlashParts.Count > 0)
                     {
                         ActivateSubContext(new BusyViewModel("Restoring bootloader..."));
                         WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
-                        LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, FFUPath, false, false, FlashParts, true, ClearFlashingStatusAtEnd: false,
+                        LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, FFUPath, false, false, FlashParts, true, ClearFlashingStatusAtEnd: ClearFlashingStatus,
                             SetWorkingStatus: (m, s, v, a, st) =>
                             {
                                 if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
@@ -583,7 +587,7 @@ namespace WPinternals
                     BusyViewModel Busy = new BusyViewModel("Flashing original FFU...", MaxProgressValue: FFU.TotalChunkCount, UIContext: UIContext);
                     ActivateSubContext(Busy);
                     byte Options = 0;
-                    if (!Info.SecureFfuEnabled || Info.Authenticated || Info.RdcPresent)
+                    if (!Info.IsBootloaderSecure)
                         Options = (byte)((FlashOptions)Options | FlashOptions.SkipSignatureCheck);
                     Phone.FlashFFU(FFU, Busy.ProgressUpdater, true, Options);
                 }

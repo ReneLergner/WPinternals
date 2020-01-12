@@ -141,7 +141,7 @@ namespace WPinternals
 
                             PhoneInfo Info = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
                             if (SecurityStatus == null)
-                                IsBootLoaderUnlocked = (Info.Authenticated || Info.RdcPresent || !Info.SecureFfuEnabled);
+                                IsBootLoaderUnlocked = !Info.IsBootloaderSecure;
 
                             if (RootKeyHash == null)
                             {
@@ -210,8 +210,6 @@ namespace WPinternals
                                     GPT GPT = FlashModel.ReadGPT();
                                     if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
                                     {
-                                        //ExitMessage("Phone is already unlocked", null);
-                                        //return;
                                         AlreadyUnlocked = true;
                                     }
                                 }

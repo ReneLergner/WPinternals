@@ -928,6 +928,7 @@
     <Compile Include="ViewModels\BusyViewModel.cs" />
     <Compile Include="ViewModels\DisclaimerAndNdaViewModel.cs" />
     <Compile Include="ViewModels\DownloadsViewModel.cs" />
+    <Compile Include="ViewModels\LumiaV3FlashRomViewModel.cs" />
     <Compile Include="ViewModels\NokiaBootloaderViewModel.cs" />
     <Compile Include="ViewModels\NokiaModeBootloaderViewModel.cs" />
     <Compile Include="ViewModels\RegistrationViewModel.cs" />

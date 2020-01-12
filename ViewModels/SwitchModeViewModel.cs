@@ -641,7 +641,7 @@ namespace WPinternals
                 GPT GPT = FlashModel.ReadGPT();
                 IsUnlockedNew = ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null) || (GPT.GetPartition("BACKUP_BS_NV") != null));
             }
-            bool IsOriginalEngineeringLumia = ((!Info.SecureFfuEnabled || Info.Authenticated || Info.RdcPresent) && !IsUnlockedNew);
+            bool IsOriginalEngineeringLumia = (!Info.IsBootloaderSecure && !IsUnlockedNew);
 
             if (IsOldLumia || IsOriginalEngineeringLumia)
             {
@@ -650,7 +650,7 @@ namespace WPinternals
                 byte[] RebootToMassStorageCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x4D }; // NOKM
                 IsSwitchingInterface = true;
                 byte[] RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToMassStorageCommand);
-                if ((RebootCommandResult != null) && (RebootCommandResult.Length == 4)) // This means fail: NOKU (unknow command)
+                if ((RebootCommandResult != null) && (RebootCommandResult.Length == 4)) // This means fail: NOKU (unknown command)
                 {
                     BootModeFlagCommand[0x0F] = 0x4D;
                     byte[] BootFlagResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(BootModeFlagCommand);

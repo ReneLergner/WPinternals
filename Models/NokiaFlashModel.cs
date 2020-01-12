@@ -620,7 +620,7 @@ namespace WPinternals
 
             PhoneInfo Info = ReadPhoneInfo(ExtendedInfo: false);
             FlashAppType OriginalAppType = Info.App;
-            bool Switch = ((Info.App != FlashAppType.BootManager) && Info.SecureFfuEnabled && !Info.Authenticated && !Info.RdcPresent);
+            bool Switch = ((Info.App != FlashAppType.BootManager) && Info.IsBootloaderSecure);
             if (Switch)
                 SwitchToBootManagerContext();
 
@@ -943,6 +943,8 @@ namespace WPinternals
                 Result.State = PhoneInfoState.Extended;
             }
 
+            Result.IsBootloaderSecure = !(Info.Authenticated || Info.RdcPresent || !Info.SecureFfuEnabled);
+
             if (!PhoneInfoLogged)
                 Result.Log(LogType.FileOnly);
 
@@ -1193,6 +1195,8 @@ namespace WPinternals
         public bool UefiSecureBootEnabled;
         public bool SecondaryHardwareKeyPresent;
 
+        public bool IsBootloaderSecure;
+
         internal void Log(LogType Type)
         {
             if (State == PhoneInfoState.Extended)
@@ -1227,12 +1231,12 @@ namespace WPinternals
                     break;
             }
 
-            LogFile.Log("SecureBoot: " + ((!PlatformSecureBootEnabled || !UefiSecureBootEnabled) ? "Disabled" : "Enabled"), Type);
+            LogFile.Log("SecureBoot: " + ((!PlatformSecureBootEnabled || !UefiSecureBootEnabled) ? "Disabled" : "Enabled") + " (Platform Secure Boot: " + (PlatformSecureBootEnabled ? "Enabled" : "Disabled") + ", UEFI Secure Boot: " + (PlatformSecureBootEnabled ? "Enabled" : "Disabled") + ")", Type);
 
             if ((Type == LogType.ConsoleOnly) || (Type == LogType.FileAndConsole))
-                LogFile.Log("Flash app security: " + ((!SecureFfuEnabled || RdcPresent || Authenticated) ? "Disabled" : "Enabled"), LogType.ConsoleOnly);
+                LogFile.Log("Flash app security: " + (!IsBootloaderSecure ? "Disabled" : "Enabled"), LogType.ConsoleOnly);
             if ((Type == LogType.FileOnly) || (Type == LogType.FileAndConsole))
-                LogFile.Log("Flash app security: " + ((!SecureFfuEnabled || RdcPresent || Authenticated) ? "Disabled" : "Enabled") + " (FFU security: " + (SecureFfuEnabled ? "Enabled" : "Disabled") + ", RDC: " + (RdcPresent ? "Present" : "Not found") + ", Authenticated: " + (Authenticated ? "True" : "False") + ")", LogType.FileOnly);
+                LogFile.Log("Flash app security: " + (!IsBootloaderSecure ? "Disabled" : "Enabled") + " (FFU security: " + (SecureFfuEnabled ? "Enabled" : "Disabled") + ", RDC: " + (RdcPresent ? "Present" : "Not found") + ", Authenticated: " + (Authenticated ? "True" : "False") + ")", LogType.FileOnly);
 
             LogFile.Log("JTAG: " + (JtagDisabled ? "Disabled" : "Enabled"), Type);
         }

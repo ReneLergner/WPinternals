@@ -229,13 +229,22 @@ namespace WPinternals
                     }
                     else if ((e.DevicePath.IndexOf("&PID_066E", StringComparison.OrdinalIgnoreCase) >= 0) ||
                              (e.DevicePath.IndexOf("&PID_0714", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_0421&PID_0714 is for Lumia 930
-                             (e.DevicePath.IndexOf("&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0))   // VID_045E&PID_0A02 is for Lumia 950
+                             (e.DevicePath.IndexOf("&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_045E&PID_0A02 is for Lumia 950
+                             (e.DevicePath.IndexOf("&PID_05EE", StringComparison.OrdinalIgnoreCase) >= 0))   // VID_0421&PID_05EE is for early RX100
                     {
                         CurrentModel = new NokiaFlashModel(e.DevicePath);
                         ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                        FlashAppType type = ((NokiaFlashModel)CurrentModel).GetFlashAppType();
-                        LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);
+                        FlashAppType type = FlashAppType.FlashApp;
+                        try
+                        {
+                            type = ((NokiaFlashModel)CurrentModel).GetFlashAppType();
+                            LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);
+                        }
+                        catch
+                        {
+                            LogFile.Log("Flash App Type could not be determined, assuming " + type.ToString(), LogType.FileOnly);
+                        }
 
                         switch (type)
                         {
@@ -406,6 +415,7 @@ namespace WPinternals
                 (e.DevicePath.IndexOf("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_0421&PID_066E", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                (e.DevicePath.IndexOf("VID_0421&PID_05EE", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0) ||
                 (e.DevicePath.IndexOf("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase) >= 0) ||

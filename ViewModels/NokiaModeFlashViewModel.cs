@@ -77,7 +77,7 @@ namespace WPinternals
                             }
                             else
                             {
-                                EffectiveBootloaderSecurityStatus = Info.SecureFfuEnabled && !Info.Authenticated && !Info.RdcPresent;
+                                EffectiveBootloaderSecurityStatus = !Info.IsBootloaderSecure;
                             }
                         }
                         else
