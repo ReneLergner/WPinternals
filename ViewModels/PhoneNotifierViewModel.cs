@@ -301,6 +301,12 @@ namespace WPinternals
                         {
                             if (!(CurrentModel is MassStorage))
                             {
+                                // Wait 1 second to make sure MainOS is loaded
+                                // In case of multiple drive letters being assigned to the phone by the user
+                                // MainOS may take a while to show up and we may accidentally catch up a letter that is
+                                // not for MainOS.
+                                Task.Delay(1000).Wait();
+
                                 MassStorage NewModel = new MassStorage(e.DevicePath);
 
                                 if (NewModel.Drive != null) // When logical drive is already known, we use this model. Or else we wait for the logical drive to arrive.
