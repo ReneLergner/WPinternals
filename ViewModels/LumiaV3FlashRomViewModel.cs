@@ -11,7 +11,6 @@ namespace WPinternals
 {
     internal class LumiaV3FlashRomViewModel : ContextViewModel
     {
-
         private static void RoundUpToChunks(Stream stream, UInt32 chunkSize)
         {
             Int64 Size = stream.Length;
@@ -116,9 +115,9 @@ namespace WPinternals
             byte[] hash = new SHA1Managed().ComputeHash(hashData);
 
             byte[] catalog = new byte[catalog_first_part.Length + hash.Length + catalog_second_part.Length];
-            System.Buffer.BlockCopy(catalog_first_part, 0, catalog, 0, catalog_first_part.Length);
-            System.Buffer.BlockCopy(hash, 0, catalog, catalog_first_part.Length, hash.Length);
-            System.Buffer.BlockCopy(catalog_second_part, 0, catalog, catalog_first_part.Length + hash.Length, catalog_second_part.Length);
+            Buffer.BlockCopy(catalog_first_part, 0, catalog, 0, catalog_first_part.Length);
+            Buffer.BlockCopy(hash, 0, catalog, catalog_first_part.Length, hash.Length);
+            Buffer.BlockCopy(catalog_second_part, 0, catalog, catalog_first_part.Length + hash.Length, catalog_second_part.Length);
 
             return catalog;
         }
@@ -236,10 +235,18 @@ namespace WPinternals
                     store.WriteDescriptorLength += payload.GetStoreHeaderSize();
                 }
 
+                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, 0x20000);
+                GPT GPT = new GPT(GPTChunk);
+                UInt64 PlatEnd = 0;
+                if (GPT.Partitions.Any(x => x.Name == "PLAT"))
+                {
+                    PlatEnd = GPT.GetPartition("PLAT").LastSector;
+                }
+
                 foreach (LumiaV2UnlockBootViewModel.FlashingPayload payload in payloads)
                 {
-                    /*if (payload.TargetLocations.First() > PlatEnd)
-                        break;*/
+                    if (payload.TargetLocations.First() > PlatEnd)
+                        break;
                     store.FlashOnlyTableIndex += 1;
                 }
 
@@ -303,7 +310,7 @@ namespace WPinternals
                 BinaryWriter bw = new BinaryWriter(new MemoryStream(HashTable));
 
                 SHA256 crypto = SHA256.Create();
-                for (int i = 0; i < Headerstream1.Length / chunkSize; i++)
+                for (Int32 i = 0; i < Headerstream1.Length / chunkSize; i++)
                 {
                     byte[] buffer = new byte[chunkSize];
                     Headerstream1.Read(buffer, 0, (Int32)chunkSize);
@@ -311,7 +318,7 @@ namespace WPinternals
                     bw.Write(hash, 0, hash.Length);
                 }
 
-                for (int i = 0; i < Headerstream2.Length / chunkSize; i++)
+                for (Int32 i = 0; i < Headerstream2.Length / chunkSize; i++)
                 {
                     byte[] buffer = new byte[chunkSize];
                     Headerstream2.Read(buffer, 0, (Int32)chunkSize);
@@ -372,12 +379,12 @@ namespace WPinternals
                 retstream.Seek(0, SeekOrigin.Begin);
 
                 byte[] FfuHeader = new byte[retstream.Length];
-                await retstream.ReadAsync(FfuHeader, 0, (int)retstream.Length);
+                await retstream.ReadAsync(FfuHeader, 0, (Int32)retstream.Length);
                 retstream.Close();
 
-                byte Options = 0;
+                Byte Options = 0;
                 if (!Info.IsBootloaderSecure)
-                    Options = (byte)((FlashOptions)Options | FlashOptions.SkipSignatureCheck);
+                    Options = (Byte)((FlashOptions)Options | FlashOptions.SkipSignatureCheck);
 
                 LogFile.Log("Flash in progress...", LogType.ConsoleOnly);
                 SetWorkingStatus("Flashing...", null, (UInt64?)payloads.Count(), Status: WPinternalsStatus.Flashing);
@@ -385,11 +392,15 @@ namespace WPinternals
                 Model.SendFfuHeaderV1(FfuHeader, Options);
 
                 UInt64 counter = 0;
+                Int32 numberOfPayloadsToSendAtOnce = 1;
+                if ((Info.SecureFfuSupportedProtocolMask & (UInt16)FfuProtocol.ProtocolSyncV2) != 0)
+                {
+                    numberOfPayloadsToSendAtOnce = (Int32)Math.Round((Double)Info.WriteBufferSize / chunkSize);
+                }
 
-                int numberOfPayloadsToSendAtOnce = (int)Math.Round((double)Info.WriteBufferSize / chunkSize);
                 byte[] payloadBuffer;
 
-                for (int i = 0; i < payloads.Count(); i+= numberOfPayloadsToSendAtOnce)
+                for (Int32 i = 0; i < payloads.Count(); i+= numberOfPayloadsToSendAtOnce)
                 {
                     if (i + numberOfPayloadsToSendAtOnce - 1 >= payloads.Count())
                     {
@@ -400,12 +411,12 @@ namespace WPinternals
 
                     string ProgressText = "Flashing resources";
 
-                    for (int j = 0; j < numberOfPayloadsToSendAtOnce; j++)
+                    for (Int32 j = 0; j < numberOfPayloadsToSendAtOnce; j++)
                     {
                         LumiaV2UnlockBootViewModel.FlashingPayload payload = payloads[i + j];
 
                         UInt32 StreamIndex = payload.StreamIndexes.First();
-                        FlashPart flashPart = FlashParts[(int)StreamIndex];
+                        FlashPart flashPart = FlashParts[(Int32)StreamIndex];
 
                         if (flashPart.ProgressText != null)
                             ProgressText = flashPart.ProgressText;
@@ -416,7 +427,15 @@ namespace WPinternals
                         counter++;
                     }
 
-                    Model.SendFfuPayloadV2(payloadBuffer, int.Parse((counter * 100 / (ulong)payloads.Count()).ToString()));
+                    if ((Info.SecureFfuSupportedProtocolMask & (ushort)FfuProtocol.ProtocolSyncV2) != 0)
+                    {
+                        Model.SendFfuPayloadV2(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Count()).ToString()));
+                    }
+                    else
+                    {
+                        Model.SendFfuPayloadV1(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Count()).ToString()));
+                    }
+
                     UpdateWorkingStatus(ProgressText, null, counter, WPinternalsStatus.Flashing);
                 }
 

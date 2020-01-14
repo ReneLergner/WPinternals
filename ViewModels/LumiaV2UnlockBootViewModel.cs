@@ -445,7 +445,6 @@ namespace WPinternals
             NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
             PhoneInfo Info = Model.ReadPhoneInfo();
 
-
             byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, 131072u);
 
             GPT GPT = new GPT(GPTChunk);
@@ -474,13 +473,13 @@ namespace WPinternals
             }
 
             if (UseOlderExploit || !ClearFlashingStatusAtEnd)
-                await LumiaV20CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, FlashParts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure, ProgrammerPath);
+                await LumiaV2CustomFlashInternal(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, FlashParts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure, ProgrammerPath);
             else
                 await LumiaV3FlashRomViewModel.LumiaV3CustomFlash(Notifier, FlashParts, CheckSectorAlignment, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
         }
 
         // Magic!
-        internal async static Task LumiaV20CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null) //, string LoaderPath = null)
+        internal async static Task LumiaV2CustomFlashInternal(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null) //, string LoaderPath = null)
         {
             // Both SecurityHeader and StoreHeader need to be modified.
             // Those should both not fall in a memory-gap to allow modification.
