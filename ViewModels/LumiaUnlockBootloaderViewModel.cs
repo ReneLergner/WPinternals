@@ -373,15 +373,22 @@ namespace WPinternals
                     {
                         throw new Exception("Error: Root Key Hash could not be retrieved from the phone.");
                     }
-                    if (SBL1.RootKeyHash == null)
+
+                    // Make sure the RootKeyHash is not blank
+                    // If the RootKeyHash is blank, this is an engineering device, and it will accept any RKH
+                    // We expect the user to know what he is doing in such case and we will ignore checks
+                    if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, new byte[RootKeyHash.Length]))
                     {
-                        throw new Exception("Error: Root Key Hash could not be retrieved from FFU file.");
-                    }
-                    if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, SBL1.RootKeyHash))
-                    {
-                        LogFile.Log("Phone: " + Converter.ConvertHexToString(RootKeyHash, ""));
-                        LogFile.Log("SBL1: " + Converter.ConvertHexToString(SBL1.RootKeyHash, ""));
-                        throw new Exception("Error: Root Key Hash from phone and from FFU file do not match!");
+                        if (SBL1.RootKeyHash == null)
+                        {
+                            throw new Exception("Error: Root Key Hash could not be retrieved from FFU file.");
+                        }
+                        if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, SBL1.RootKeyHash))
+                        {
+                            LogFile.Log("Phone: " + Converter.ConvertHexToString(RootKeyHash, ""));
+                            LogFile.Log("SBL1: " + Converter.ConvertHexToString(SBL1.RootKeyHash, ""));
+                            throw new Exception("Error: Root Key Hash from phone and from FFU file do not match!");
+                        }
                     }
                 }
 
@@ -870,15 +877,22 @@ namespace WPinternals
                     {
                         throw new Exception("Error: Root Key Hash could not be retrieved from the phone.");
                     }
-                    if (SBL1.RootKeyHash == null)
+
+                    // Make sure the RootKeyHash is not blank
+                    // If the RootKeyHash is blank, this is an engineering device, and it will accept any RKH
+                    // We expect the user to know what he is doing in such case and we will ignore checks
+                    if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, new byte[RootKeyHash.Length]))
                     {
-                        throw new Exception("Error: Root Key Hash could not be retrieved from FFU file.");
-                    }
-                    if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, SBL1.RootKeyHash))
-                    {
-                        LogFile.Log("Phone: " + Converter.ConvertHexToString(RootKeyHash, ""));
-                        LogFile.Log("SBL1: " + Converter.ConvertHexToString(SBL1.RootKeyHash, ""));
-                        throw new Exception("Error: Root Key Hash from phone and from FFU file do not match!");
+                        if (SBL1.RootKeyHash == null)
+                        {
+                            throw new Exception("Error: Root Key Hash could not be retrieved from FFU file.");
+                        }
+                        if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, SBL1.RootKeyHash))
+                        {
+                            LogFile.Log("Phone: " + Converter.ConvertHexToString(RootKeyHash, ""));
+                            LogFile.Log("SBL1: " + Converter.ConvertHexToString(SBL1.RootKeyHash, ""));
+                            throw new Exception("Error: Root Key Hash from phone and from FFU file do not match!");
+                        }
                     }
                 }
 
