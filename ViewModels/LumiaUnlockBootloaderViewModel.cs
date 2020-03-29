@@ -698,9 +698,6 @@ namespace WPinternals
                 if ((FFUPath == null) || (FFUPath.Length == 0))
                     throw new ArgumentNullException("FFU path is missing");
 
-                if ((LoadersPath == null) || (LoadersPath.Length == 0))
-                    throw new Exception("Error: Path for Loaders is mandatory.");
-
                 bool DumpPartitions = false;
                 string DumpFilePrefix = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\") + DateTime.Now.ToString("yyyy-MM-dd hh.mm.ss") + " - ";
                 bool IsBootLoaderUnlocked = false;
@@ -726,6 +723,12 @@ namespace WPinternals
 
                     UefiSecurityStatusResponse SecurityStatus = ((NokiaFlashModel)Notifier.CurrentModel).ReadSecurityStatus();
                     IsBootLoaderUnlocked = (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+                }
+
+                if (!IsBootLoaderUnlocked)
+                {
+                    if ((LoadersPath == null) || (LoadersPath.Length == 0))
+                        throw new Exception("Error: Path for Loaders is mandatory.");
                 }
 
                 FFU SupportedFFU = null;
