@@ -136,7 +136,7 @@ namespace WPinternals
                 FileUrl = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
                 if (FileUrl != null)
                 {
-                    FfuUrl = FileUrl.url;
+                    FfuUrl = FileUrl.url.Replace("sr.azureedge.net", "softwarerepo.blob.core.windows.net");
                 }
             }
 
@@ -225,7 +225,7 @@ namespace WPinternals
                 FileUrlDPL = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
                 if (FileUrlDPL != null)
                 {
-                    DPLUrl = FileUrlDPL.url;
+                    DPLUrl = FileUrlDPL.url.Replace("sr.azureedge.net", "softwarerepo.blob.core.windows.net");
                 }
             }
 
@@ -266,7 +266,7 @@ namespace WPinternals
                 FileUrl = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
                 if (FileUrl != null)
                 {
-                    ENOSWUrl = FileUrl.url;
+                    ENOSWUrl = FileUrl.url.Replace("sr.azureedge.net", "softwarerepo.blob.core.windows.net");
                 }
             }
 
