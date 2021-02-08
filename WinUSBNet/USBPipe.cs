@@ -1,6 +1,6 @@
-﻿/*  WinUSBNet library
+/*  WinUSBNet library
  *  (C) 2010 Thomas Bleeker (www.madwizard.org)
- *  
+ *
  *  Licensed under the MIT license, see license.txt or:
  *  http://www.opensource.org/licenses/mit-license.php
  */
@@ -139,29 +139,29 @@ namespace MadWizard.WinUSBNet
         private void CheckReadParams(byte[] buffer, int offset, int length)
         {
             if (!IsIn)
-                // throw new NotSupportedException("Cannot read from a pipe with OUT direction.");
-                LogAndThrowException(new NotSupportedException("Cannot read from a pipe with OUT direction."));
+                // throw new ArgumentOutOfRangeException("Offset of data to read is outside the buffer boundaries.");
+                LogAndThrowException(new ArgumentOutOfRangeException("Offset of data to read is outside the buffer boundaries."));
 
             int bufferLength = buffer.Length;
             if (offset < 0 || offset >= bufferLength)
-                // throw new ArgumentOutOfRangeException("Offset of data to read is outside the buffer boundaries.");
+                // throw new ArgumentOutOfRangeException(nameof(offset), "Offset of data to read is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Offset of data to read is outside the buffer boundaries."));
             if (length < 0 || (offset + length) > bufferLength)
-                // throw new ArgumentOutOfRangeException("Length of data to read is outside the buffer boundaries.");
+                // throw new ArgumentOutOfRangeException(nameof(length), "Length of data to read is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Length of data to read is outside the buffer boundaries."));
         }
         private void CheckWriteParams(byte[] buffer, int offset, int length)
         {
             if (!IsOut)
-                // throw new NotSupportedException("Cannot write to a pipe with IN direction.");
+                //throw new NotSupportedException("Cannot write to a pipe with IN direction.");
                 LogAndThrowException(new NotSupportedException("Cannot write to a pipe with IN direction."));
 
             int bufferLength = buffer.Length;
             if (offset < 0 || offset >= bufferLength)
-                // throw new ArgumentOutOfRangeException("Offset of data to write is outside the buffer boundaries.");
+                // throw new ArgumentOutOfRangeException(nameof(offset), "Offset of data to write is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Offset of data to write is outside the buffer boundaries."));
             if (length < 0 || (offset + length) > bufferLength)
-                // throw new ArgumentOutOfRangeException("Length of data to write is outside the buffer boundaries.");
+                // throw new ArgumentOutOfRangeException(nameof(length), "Length of data to write is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Length of data to write is outside the buffer boundaries."));
         }
 
@@ -171,11 +171,11 @@ namespace MadWizard.WinUSBNet
         /// <param name="length">Length of the data to transfer.</param>
         /// <param name="userCallback">An optional asynchronous callback, to be called when the operation is complete. Can be null if no callback is required.</param>
         /// <param name="stateObject">A user-provided object that distinguishes this particular asynchronous operation. Can be null if not required.</param>
-        /// <returns>An <see cref="IAsyncResult"/> object repesenting the asynchronous operation, which could still be pending.</returns>
+        /// <returns>An <see cref="IAsyncResult"/> object representing the asynchronous operation, which could still be pending.</returns>
         /// <remarks>This method always completes immediately even if the operation is still pending. The <see cref="IAsyncResult"/> object returned represents the operation
         /// and must be passed to <see cref="EndRead"/> to retrieve the result of the operation. For every call to this method a matching call to
         /// <see cref="EndRead"/> must be made. When <paramref name="userCallback"/> specifies a callback function, this function will be called when the operation is completed. The optional
-        /// <paramref name="stateObject"/> parameter can be used to pass user-defined information to this callback or the <see cref="IAsyncResult"/>. The <see cref="IAsyncResult"/> 
+        /// <paramref name="stateObject"/> parameter can be used to pass user-defined information to this callback or the <see cref="IAsyncResult"/>. The <see cref="IAsyncResult"/>
         /// also provides an event handle (<see cref="IAsyncResult.AsyncWaitHandle" />) that will be triggered when the operation is complete as well.
         /// </remarks>
         public IAsyncResult BeginRead(byte[] buffer, int offset, int length, AsyncCallback userCallback, object stateObject)
@@ -189,9 +189,8 @@ namespace MadWizard.WinUSBNet
             }
             catch (API.APIException e)
             {
-                if (result != null)
-                    result.Dispose();
-                // throw new USBException("Failed to read from pipe.", e);
+                result.Dispose();
+                //throw new USBException("Failed to read from pipe.", e);
                 LogAndThrowException(new USBException("Failed to read from pipe.", e));
             }
             catch (Exception e)
@@ -208,13 +207,13 @@ namespace MadWizard.WinUSBNet
         /// <summary>
         /// Waits for a pending asynchronous read operation to complete.
         /// </summary>
-        /// <param name="asyncResult">The <see cref="IAsyncResult"/> object representing the asynchonous operation,
+        /// <param name="asyncResult">The <see cref="IAsyncResult"/> object representing the asynchronous operation,
         /// as returned by <see cref="BeginRead"/>.</param>
         /// <returns>The number of bytes transfered during the operation.</returns>
         /// <remarks>Every call to <see cref="BeginRead"/> must have a matching call to <see cref="EndRead"/> to dispose
-        /// of any resources used and to retrieve the result of the operation. When the operation was successful the method returns the number 
-        /// of bytes that were transfered. If an error occurred during the operation this method will throw the exceptions that would 
-        /// otherwise have ocurred during the operation. If the operation is not yet finished EndWrite will wait for the 
+        /// of any resources used and to retrieve the result of the operation. When the operation was successful the method returns the number
+        /// of bytes that were transfered. If an error occurred during the operation this method will throw the exceptions that would
+        /// otherwise have occurred during the operation. If the operation is not yet finished EndWrite will wait for the
         /// operation to finish before returning.</remarks>
         public int EndRead(IAsyncResult asyncResult)
         {
@@ -285,11 +284,11 @@ namespace MadWizard.WinUSBNet
         /// <param name="length">Length of the data to transfer.</param>
         /// <param name="userCallback">An optional asynchronous callback, to be called when the operation is complete. Can be null if no callback is required.</param>
         /// <param name="stateObject">A user-provided object that distinguishes this particular asynchronous operation. Can be null if not required.</param>
-        /// <returns>An <see cref="IAsyncResult"/> object repesenting the asynchronous operation, which could still be pending.</returns>
+        /// <returns>An <see cref="IAsyncResult"/> object representing the asynchronous operation, which could still be pending.</returns>
         /// <remarks>This method always completes immediately even if the operation is still pending. The <see cref="IAsyncResult"/> object returned represents the operation
         /// and must be passed to <see cref="EndWrite"/> to retrieve the result of the operation. For every call to this method a matching call to
         /// <see cref="EndWrite"/> must be made. When <paramref name="userCallback"/> specifies a callback function, this function will be called when the operation is completed. The optional
-        /// <paramref name="stateObject"/> parameter can be used to pass user-defined information to this callback or the <see cref="IAsyncResult"/>. The <see cref="IAsyncResult"/> 
+        /// <paramref name="stateObject"/> parameter can be used to pass user-defined information to this callback or the <see cref="IAsyncResult"/>. The <see cref="IAsyncResult"/>
         /// also provides an event handle (<see cref="IAsyncResult.AsyncWaitHandle" />) that will be triggered when the operation is complete as well.
         /// </remarks>
         public IAsyncResult BeginWrite(byte[] buffer, int offset, int length, AsyncCallback userCallback, object stateObject)
@@ -327,13 +326,13 @@ namespace MadWizard.WinUSBNet
         /// <summary>
         /// Waits for a pending asynchronous write operation to complete.
         /// </summary>
-        /// <param name="asyncResult">The <see cref="IAsyncResult"/> object representing the asynchonous operation,
+        /// <param name="asyncResult">The <see cref="IAsyncResult"/> object representing the asynchronous operation,
         /// as returned by <see cref="BeginWrite"/>.</param>
         /// <returns>The number of bytes transfered during the operation.</returns>
         /// <remarks>Every call to <see cref="BeginWrite"/> must have a matching call to <see cref="EndWrite"/> to dispose
-        /// of any resources used and to retrieve the result of the operation. When the operation was successful the method returns the number 
-        /// of bytes that were transfered. If an error occurred during the operation this method will throw the exceptions that would 
-        /// otherwise have ocurred during the operation. If the operation is not yet finished EndWrite will wait for the 
+        /// of any resources used and to retrieve the result of the operation. When the operation was successful the method returns the number
+        /// of bytes that were transfered. If an error occurred during the operation this method will throw the exceptions that would
+        /// otherwise have occurred during the operation. If the operation is not yet finished EndWrite will wait for the
         /// operation to finish before returning.</remarks>
         public void EndWrite(IAsyncResult asyncResult)
         {

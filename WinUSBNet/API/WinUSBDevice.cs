@@ -1,6 +1,6 @@
 /*  WinUSBNet library
  *  (C) 2010 Thomas Bleeker (www.madwizard.org)
- *  
+ *
  *  Licensed under the MIT license, see license.txt or:
  *  http://www.opensource.org/licenses/mit-license.php
  */
@@ -97,23 +97,48 @@ namespace MadWizard.WinUSBNet.API
             return deviceDesc;
         }
 
-        public string GetStringDescriptor(byte index)
+        private int ReadStringDescriptor(byte index, ushort languageID, byte[] buffer)
         {
-            byte[] buffer = new byte[256];
             uint transfered;
             bool success = WinUsb_GetDescriptor(_winUsbHandle, USB_STRING_DESCRIPTOR_TYPE,
-                        index, 0, buffer, (uint)buffer.Length, out transfered);
+                        index, languageID, buffer, (uint)buffer.Length, out transfered);
             if (!success)
-                throw APIException.Win32("Failed to get USB string descriptor (" + index + "): 0x" + Marshal.GetLastWin32Error().ToString("X8"));
+                throw APIException.Win32("Failed to get USB string descriptor (" + index + ").");
 
-            int length = buffer[0] - 2;
-            if (length <= 0)
+            if (transfered == 0)
+                throw new APIException("No data returned when reading USB descriptor.");
+
+            int length = buffer[0];
+            if (length != transfered)
+                throw new APIException("Unexpected length when reading USB descriptor.");
+            return length;
+        }
+
+        public ushort[] GetSupportedLanguageIDs()
+        {
+            byte[] buffer = new byte[256];
+            int length = ReadStringDescriptor(0, 0, buffer);
+            length -= 2; // Skip length byte and descriptor type
+            if (length < 0 || (length % 2) != 0)
+                throw new APIException("Unexpected length when reading supported languages.");
+
+            ushort[] langIDs = new ushort[length / 2];
+            Buffer.BlockCopy(buffer, 2, langIDs, 0, length);
+            return langIDs;
+        }
+
+        public string GetStringDescriptor(byte index, ushort languageID)
+        {
+            byte[] buffer = new byte[256];
+            int length = ReadStringDescriptor(index, languageID, buffer);
+            length -= 2; // Skip length byte and descriptor type
+            if (length < 0)
                 return null;
             char[] chars = System.Text.Encoding.Unicode.GetChars(buffer, 2, length);
             return new string(chars);
         }
 
-        public void ControlTransfer(byte requestType, byte request, ushort value, ushort index, ushort length, byte[] data)
+        public int ControlTransfer(byte requestType, byte request, ushort value, ushort index, ushort length, byte[] data)
         {
             uint bytesReturned = 0;
             WINUSB_SETUP_PACKET setupPacket;
@@ -127,6 +152,7 @@ namespace MadWizard.WinUSBNet.API
             bool success = WinUsb_ControlTransfer(_winUsbHandle, setupPacket, data, length, ref bytesReturned, IntPtr.Zero);
             if (!success) // todo check bytes returned?
                 throw APIException.Win32("Control transfer on WinUSB device failed.");
+            return (int)bytesReturned;
         }
 
 
@@ -227,7 +253,7 @@ namespace MadWizard.WinUSBNet.API
             finally
             {
                 // Save interface handles (will be cleaned by Dispose)
-                // also in case of exception (which is why it is in finally block), 
+                // also in case of exception (which is why it is in finally block),
                 // because some handles might have already been opened and need
                 // to be disposed.
                 _addInterfaces = interfaces.ToArray();

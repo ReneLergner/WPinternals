@@ -1,6 +1,6 @@
-﻿/*  WinUSBNet library
+/*  WinUSBNet library
  *  (C) 2010 Thomas Bleeker (www.madwizard.org)
- *  
+ *
  *  Licensed under the MIT license, see license.txt or:
  *  http://www.opensource.org/licenses/mit-license.php
  */
@@ -61,7 +61,7 @@ namespace MadWizard.WinUSBNet
     }
 
     /// <summary>
-    /// Helper class to receive notifications on USB device changes such as 
+    /// Helper class to receive notifications on USB device changes such as
     /// connecting or removing a device.
     /// </summary>
     public class USBNotifier : IDisposable
@@ -108,11 +108,11 @@ namespace MadWizard.WinUSBNet
         }
 
         /// <summary>
-        /// Constructs a new USBNotifier that will watch for events on 
-        /// devices matching the given interface GUID. A Windows Forms control 
+        /// Constructs a new USBNotifier that will watch for events on
+        /// devices matching the given interface GUID. A Windows Forms control
         /// is needed since the notifier relies on window messages.
         /// </summary>
-        /// <param name="control">A control that will be used internally for device notification messages. 
+        /// <param name="control">A control that will be used internally for device notification messages.
         /// You can use a Form object for example.</param>
         /// <param name="guidString">The interface GUID string of the devices to watch.</param>
         public USBNotifier(string guidString) :
@@ -123,11 +123,11 @@ namespace MadWizard.WinUSBNet
 
 
         /// <summary>
-        /// Constructs a new USBNotifier that will watch for events on 
-        /// devices matching the given interface GUID. A Windows Forms control 
+        /// Constructs a new USBNotifier that will watch for events on
+        /// devices matching the given interface GUID. A Windows Forms control
         /// is needed since the notifier relies on window messages.
         /// </summary>
-        /// <param name="control">A control that will be used internally for device notification messages. 
+        /// <param name="control">A control that will be used internally for device notification messages.
         /// You can use a Form object for example.</param>
         /// <param name="guid">The interface GUID of the devices to watch.</param>
         public USBNotifier(Guid guid)
@@ -146,7 +146,7 @@ namespace MadWizard.WinUSBNet
                 _Arrival(this, new USBEvent(USBEventType.DeviceArrival, _guid, devicePath));
         }
         /// <summary>
-        /// Trigggers the removal event
+        /// Triggers the removal event
         /// </summary>
         /// <param name="devicePath">Device pathname of the device that has been connected</param>
         protected void OnRemoval(string devicePath)
@@ -212,7 +212,7 @@ namespace MadWizard.WinUSBNet
         }
 
         /// <summary>
-        /// Disposes the USBNotifier object and frees all resources. 
+        /// Disposes the USBNotifier object and frees all resources.
         /// Call this method when the object is no longer needed.
         /// </summary>
         public void Dispose()
