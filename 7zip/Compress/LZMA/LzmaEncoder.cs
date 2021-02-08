@@ -5,6 +5,7 @@ using System;
 namespace SevenZip.Compression.LZMA
 {
     using RangeCoder;
+    using System.Threading;
 
     public class Encoder : ICoder, ISetCoderProperties, IWriteCoderProperties
     {
@@ -1271,7 +1272,7 @@ namespace SevenZip.Compression.LZMA
 
 
         public void Code(System.IO.Stream inStream, System.IO.Stream outStream,
-            Int64 inSize, Int64 outSize, ICodeProgress progress)
+            Int64 inSize, Int64 outSize, ICodeProgress progress, CancellationToken? token = null)
         {
             _needReleaseMFStream = false;
             try
@@ -1279,6 +1280,7 @@ namespace SevenZip.Compression.LZMA
                 SetStreams(inStream, outStream, inSize, outSize);
                 while (true)
                 {
+                    token?.ThrowIfCancellationRequested();
                     Int64 processedInSize;
                     Int64 processedOutSize;
                     bool finished;

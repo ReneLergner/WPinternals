@@ -5,6 +5,7 @@ using System;
 namespace SevenZip.Compression.LZMA
 {
     using RangeCoder;
+    using System.Threading;
 
     public class Decoder : ICoder, ISetDecoderProperties // ,System.IO.Stream
     {
@@ -228,7 +229,7 @@ namespace SevenZip.Compression.LZMA
         }
 
         public void Code(System.IO.Stream inStream, System.IO.Stream outStream,
-            Int64 inSize, Int64 outSize, ICodeProgress progress)
+            Int64 inSize, Int64 outSize, ICodeProgress progress, CancellationToken? token = null)
         {
             Init(inStream, outStream);
 
@@ -247,100 +248,111 @@ namespace SevenZip.Compression.LZMA
                 m_OutWindow.PutByte(b);
                 nowPos64++;
             }
-            while (nowPos64 < outSize64)
+
+            try
             {
-                // UInt64 next = Math.Min(nowPos64 + (1 << 18), outSize64);
-                // while(nowPos64 < next)
+                while (nowPos64 < outSize64)
                 {
-                    uint posState = (uint)nowPos64 & m_PosStateMask;
-                    if (m_IsMatchDecoders[(state.Index << Base.kNumPosStatesBitsMax) + posState].Decode(m_RangeDecoder) == 0)
+                    token?.ThrowIfCancellationRequested();
+
+                    // UInt64 next = Math.Min(nowPos64 + (1 << 18), outSize64);
+                    // while(nowPos64 < next)
                     {
-                        byte b;
-                        byte prevByte = m_OutWindow.GetByte(0);
-                        if (!state.IsCharState())
-                            b = m_LiteralDecoder.DecodeWithMatchByte(m_RangeDecoder,
-                                (uint)nowPos64, prevByte, m_OutWindow.GetByte(rep0));
-                        else
-                            b = m_LiteralDecoder.DecodeNormal(m_RangeDecoder, (uint)nowPos64, prevByte);
-                        m_OutWindow.PutByte(b);
-                        state.UpdateChar();
-                        nowPos64++;
-                    }
-                    else
-                    {
-                        uint len;
-                        if (m_IsRepDecoders[state.Index].Decode(m_RangeDecoder) == 1)
+                        uint posState = (uint)nowPos64 & m_PosStateMask;
+                        if (m_IsMatchDecoders[(state.Index << Base.kNumPosStatesBitsMax) + posState].Decode(m_RangeDecoder) == 0)
                         {
-                            if (m_IsRepG0Decoders[state.Index].Decode(m_RangeDecoder) == 0)
-                            {
-                                if (m_IsRep0LongDecoders[(state.Index << Base.kNumPosStatesBitsMax) + posState].Decode(m_RangeDecoder) == 0)
-                                {
-                                    state.UpdateShortRep();
-                                    m_OutWindow.PutByte(m_OutWindow.GetByte(rep0));
-                                    nowPos64++;
-                                    continue;
-                                }
-                            }
+                            byte b;
+                            byte prevByte = m_OutWindow.GetByte(0);
+                            if (!state.IsCharState())
+                                b = m_LiteralDecoder.DecodeWithMatchByte(m_RangeDecoder,
+                                    (uint)nowPos64, prevByte, m_OutWindow.GetByte(rep0));
                             else
+                                b = m_LiteralDecoder.DecodeNormal(m_RangeDecoder, (uint)nowPos64, prevByte);
+                            m_OutWindow.PutByte(b);
+                            state.UpdateChar();
+                            nowPos64++;
+                        }
+                        else
+                        {
+                            uint len;
+                            if (m_IsRepDecoders[state.Index].Decode(m_RangeDecoder) == 1)
                             {
-                                UInt32 distance;
-                                if (m_IsRepG1Decoders[state.Index].Decode(m_RangeDecoder) == 0)
+                                if (m_IsRepG0Decoders[state.Index].Decode(m_RangeDecoder) == 0)
                                 {
-                                    distance = rep1;
+                                    if (m_IsRep0LongDecoders[(state.Index << Base.kNumPosStatesBitsMax) + posState].Decode(m_RangeDecoder) == 0)
+                                    {
+                                        state.UpdateShortRep();
+                                        m_OutWindow.PutByte(m_OutWindow.GetByte(rep0));
+                                        nowPos64++;
+                                        continue;
+                                    }
                                 }
                                 else
                                 {
-                                    if (m_IsRepG2Decoders[state.Index].Decode(m_RangeDecoder) == 0)
-                                        distance = rep2;
+                                    UInt32 distance;
+                                    if (m_IsRepG1Decoders[state.Index].Decode(m_RangeDecoder) == 0)
+                                    {
+                                        distance = rep1;
+                                    }
                                     else
                                     {
-                                        distance = rep3;
-                                        rep3 = rep2;
+                                        if (m_IsRepG2Decoders[state.Index].Decode(m_RangeDecoder) == 0)
+                                            distance = rep2;
+                                        else
+                                        {
+                                            distance = rep3;
+                                            rep3 = rep2;
+                                        }
+                                        rep2 = rep1;
                                     }
-                                    rep2 = rep1;
+                                    rep1 = rep0;
+                                    rep0 = distance;
                                 }
-                                rep1 = rep0;
-                                rep0 = distance;
-                            }
-                            len = m_RepLenDecoder.Decode(m_RangeDecoder, posState) + Base.kMatchMinLen;
-                            state.UpdateRep();
-                        }
-                        else
-                        {
-                            rep3 = rep2;
-                            rep2 = rep1;
-                            rep1 = rep0;
-                            len = Base.kMatchMinLen + m_LenDecoder.Decode(m_RangeDecoder, posState);
-                            state.UpdateMatch();
-                            uint posSlot = m_PosSlotDecoder[Base.GetLenToPosState(len)].Decode(m_RangeDecoder);
-                            if (posSlot >= Base.kStartPosModelIndex)
-                            {
-                                int numDirectBits = (int)((posSlot >> 1) - 1);
-                                rep0 = ((2 | (posSlot & 1)) << numDirectBits);
-                                if (posSlot < Base.kEndPosModelIndex)
-                                    rep0 += BitTreeDecoder.ReverseDecode(m_PosDecoders,
-                                            rep0 - posSlot - 1, m_RangeDecoder, numDirectBits);
-                                else
-                                {
-                                    rep0 += (m_RangeDecoder.DecodeDirectBits(
-                                        numDirectBits - Base.kNumAlignBits) << Base.kNumAlignBits);
-                                    rep0 += m_PosAlignDecoder.ReverseDecode(m_RangeDecoder);
-                                }
+                                len = m_RepLenDecoder.Decode(m_RangeDecoder, posState) + Base.kMatchMinLen;
+                                state.UpdateRep();
                             }
                             else
-                                rep0 = posSlot;
+                            {
+                                rep3 = rep2;
+                                rep2 = rep1;
+                                rep1 = rep0;
+                                len = Base.kMatchMinLen + m_LenDecoder.Decode(m_RangeDecoder, posState);
+                                state.UpdateMatch();
+                                uint posSlot = m_PosSlotDecoder[Base.GetLenToPosState(len)].Decode(m_RangeDecoder);
+                                if (posSlot >= Base.kStartPosModelIndex)
+                                {
+                                    int numDirectBits = (int)((posSlot >> 1) - 1);
+                                    rep0 = ((2 | (posSlot & 1)) << numDirectBits);
+                                    if (posSlot < Base.kEndPosModelIndex)
+                                        rep0 += BitTreeDecoder.ReverseDecode(m_PosDecoders,
+                                                rep0 - posSlot - 1, m_RangeDecoder, numDirectBits);
+                                    else
+                                    {
+                                        rep0 += (m_RangeDecoder.DecodeDirectBits(
+                                            numDirectBits - Base.kNumAlignBits) << Base.kNumAlignBits);
+                                        rep0 += m_PosAlignDecoder.ReverseDecode(m_RangeDecoder);
+                                    }
+                                }
+                                else
+                                    rep0 = posSlot;
+                            }
+                            if (rep0 >= m_OutWindow.TrainSize + nowPos64 || rep0 >= m_DictionarySizeCheck)
+                            {
+                                if (rep0 == 0xFFFFFFFF)
+                                    break;
+                                throw new DataErrorException();
+                            }
+                            m_OutWindow.CopyBlock(rep0, len);
+                            nowPos64 += len;
                         }
-                        if (rep0 >= m_OutWindow.TrainSize + nowPos64 || rep0 >= m_DictionarySizeCheck)
-                        {
-                            if (rep0 == 0xFFFFFFFF)
-                                break;
-                            throw new DataErrorException();
-                        }
-                        m_OutWindow.CopyBlock(rep0, len);
-                        nowPos64 += len;
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+
+            }
+
             m_OutWindow.Flush();
             m_OutWindow.ReleaseStream();
             m_RangeDecoder.ReleaseStream();

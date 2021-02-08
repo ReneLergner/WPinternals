@@ -375,18 +375,18 @@ namespace WPinternals
                     HasChanged = true;
                 }
 
-                if ((NewPartition.PartitionGuid == null) || (NewPartition.PartitionGuid != CurrentPartition.PartitionGuid))
+                if ((NewPartition.PartitionGuid != Guid.Empty) || (NewPartition.PartitionGuid != CurrentPartition.PartitionGuid))
                     HasChanged = true;
-                if (NewPartition.PartitionGuid != null)
+                if (NewPartition.PartitionGuid != Guid.Empty)
                     CurrentPartition.PartitionGuid = NewPartition.PartitionGuid;
-                if (CurrentPartition.PartitionGuid == null)
+                if (CurrentPartition.PartitionGuid != Guid.Empty)
                     CurrentPartition.PartitionGuid = Guid.NewGuid();
 
-                if ((NewPartition.PartitionTypeGuid == null) || (NewPartition.PartitionTypeGuid != CurrentPartition.PartitionTypeGuid))
+                if ((NewPartition.PartitionTypeGuid != Guid.Empty) || (NewPartition.PartitionTypeGuid != CurrentPartition.PartitionTypeGuid))
                     HasChanged = true;
-                if (NewPartition.PartitionTypeGuid != null)
+                if (NewPartition.PartitionTypeGuid != Guid.Empty)
                     CurrentPartition.PartitionTypeGuid = NewPartition.PartitionTypeGuid;
-                if (CurrentPartition.PartitionTypeGuid == null)
+                if (CurrentPartition.PartitionTypeGuid != Guid.Empty)
                     CurrentPartition.PartitionTypeGuid = Guid.NewGuid();
 
                 for (int i = this.Partitions.Count - 1; i >= 0; i--)

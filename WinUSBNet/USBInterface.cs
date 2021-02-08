@@ -1,6 +1,6 @@
-﻿/*  WinUSBNet library
+/*  WinUSBNet library
  *  (C) 2010 Thomas Bleeker (www.madwizard.org)
- *  
+ *
  *  Licensed under the MIT license, see license.txt or:
  *  http://www.opensource.org/licenses/mit-license.php
  */
@@ -73,7 +73,7 @@ namespace MadWizard.WinUSBNet
         /// <summary>
         /// Interface class code as defined in the interface descriptor
         /// This property can be used if the class type is not defined
-        /// int the USBBaseClass enumeraiton
+        /// int the USBBaseClass enumeration
         /// </summary>
         public byte ClassValue
         {

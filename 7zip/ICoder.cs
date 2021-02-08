@@ -1,6 +1,7 @@
 // ICoder.h
 
 using System;
+using System.Threading;
 
 namespace SevenZip
 {
@@ -58,7 +59,7 @@ namespace SevenZip
         /// if input stream is not valid
         /// </exception>
         void Code(System.IO.Stream inStream, System.IO.Stream outStream,
-            Int64 inSize, Int64 outSize, ICodeProgress progress);
+            Int64 inSize, Int64 outSize, ICodeProgress progress, CancellationToken? token = null);
     };
 
     /*
