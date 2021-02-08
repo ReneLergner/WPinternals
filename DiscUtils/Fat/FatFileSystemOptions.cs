@@ -34,6 +34,7 @@ namespace DiscUtils.Fat
 
         internal FatFileSystemOptions()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             FileNameEncoding = Encoding.GetEncoding(437);
         }
 
@@ -45,6 +46,7 @@ namespace DiscUtils.Fat
             }
             else
             {
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 FileNameEncoding = Encoding.GetEncoding(437);
             }
         }

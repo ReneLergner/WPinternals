@@ -166,7 +166,8 @@ namespace WPinternals
                 FlowDirection.LeftToRight,
                 new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
                 FontSize,
-                Foreground
+                Foreground,
+                VisualTreeHelper.GetDpi(this).PixelsPerDip
             );
 #endif
 
@@ -198,7 +199,8 @@ namespace WPinternals
                 FlowDirection.LeftToRight,
                 new Typeface(CaptionTextBlock.FontFamily, CaptionTextBlock.FontStyle, CaptionTextBlock.FontWeight, CaptionTextBlock.FontStretch),
                 FontSize,
-                Foreground
+                Foreground,
+                VisualTreeHelper.GetDpi(this).PixelsPerDip
                 );
 #endif
             double CaptionWidth = formatted.Width;
@@ -238,7 +240,8 @@ namespace WPinternals
                         FlowDirection.LeftToRight,
                         new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
                         FontSize,
-                        Foreground
+                        Foreground,
+                        VisualTreeHelper.GetDpi(this).PixelsPerDip
                         );
 #endif
             if (NewWidth < 0)
@@ -321,7 +324,8 @@ namespace WPinternals
                         FlowDirection.LeftToRight,
                         new Typeface(PathTextBlock.FontFamily, PathTextBlock.FontStyle, PathTextBlock.FontWeight, PathTextBlock.FontStretch),
                         FontSize,
-                        Foreground
+                        Foreground,
+                        VisualTreeHelper.GetDpi(this).PixelsPerDip
                         );
 #endif
 

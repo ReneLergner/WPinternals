@@ -118,14 +118,12 @@ namespace WPinternals
         [DllImport(
              KERNEL32,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern bool CloseHandle(IntPtr handle);
 
         [DllImport(
              ADVAPI32,
              CharSet = CharSet.Unicode,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern bool AdjustTokenPrivileges(
             [In]     SafeTokenHandle TokenHandle,
             [In]     bool DisableAllPrivileges,
@@ -138,7 +136,6 @@ namespace WPinternals
              ADVAPI32,
              CharSet = CharSet.Auto,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
         bool RevertToSelf();
 
@@ -147,7 +144,6 @@ namespace WPinternals
              EntryPoint = "LookupPrivilegeValueW",
              CharSet = CharSet.Auto,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
         bool LookupPrivilegeValue(
             [In]     string lpSystemName,
@@ -158,7 +154,6 @@ namespace WPinternals
              KERNEL32,
              CharSet = CharSet.Auto,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
         IntPtr GetCurrentProcess();
 
@@ -166,7 +161,6 @@ namespace WPinternals
              KERNEL32,
              CharSet = CharSet.Auto,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
             IntPtr GetCurrentThread();
 
@@ -174,7 +168,6 @@ namespace WPinternals
              ADVAPI32,
              CharSet = CharSet.Unicode,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
         bool OpenProcessToken(
             [In]     IntPtr ProcessToken,
@@ -185,7 +178,6 @@ namespace WPinternals
              (ADVAPI32,
              CharSet = CharSet.Unicode,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
         bool OpenThreadToken(
             [In]     IntPtr ThreadToken,
@@ -197,7 +189,6 @@ namespace WPinternals
             (ADVAPI32,
              CharSet = CharSet.Unicode,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
         bool DuplicateTokenEx(
             [In]    SafeTokenHandle ExistingToken,
@@ -211,7 +202,6 @@ namespace WPinternals
              (ADVAPI32,
              CharSet = CharSet.Unicode,
              SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         internal static extern
         bool SetThreadToken(
             [In]    IntPtr Thread,
@@ -301,8 +291,7 @@ namespace WPinternals
         }
 
         [DllImport(NativeMethods.KERNEL32, SetLastError = true),
-         SuppressUnmanagedCodeSecurity,
-         ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+         SuppressUnmanagedCodeSecurity]
         private static extern bool CloseHandle(IntPtr handle);
 
         override protected bool ReleaseHandle()

@@ -92,6 +92,8 @@ namespace WPinternals
         private Stream stream;
         private bool LeaveOpen;
         private Thread WorkThread;
+        private CancellationTokenSource source;
+        private CancellationToken token;
 
         public LZMACompressionStream(Stream stream, CompressionMode mode, bool LeaveOpen, int DictionarySize, int PosStateBits,
            int LitContextBits, int LitPosBits, int Algorithm, int NumFastBytes, string MatchFinder, bool EndMarker)
@@ -99,6 +101,8 @@ namespace WPinternals
             this.stream = stream;
             this.LeaveOpen = LeaveOpen;
             BufferStream = new PumpStream();
+            source = new CancellationTokenSource();
+            token = source.Token;
 
             if (mode == CompressionMode.Compress)
             {
@@ -130,14 +134,14 @@ namespace WPinternals
 
         private void Encode()
         {
-            Encoder.Code(BufferStream, stream, -1, -1, null);
+            Encoder.Code(BufferStream, stream, -1, -1, null, token);
             if (LeaveOpen == false)
                 stream.Close();
         }
 
         private void Decode()
         {
-            Decoder.Code(stream, BufferStream, -1, -1, null);
+            Decoder.Code(stream, BufferStream, -1, -1, null, token);
             BufferStream.Close();
             if (LeaveOpen == false)
                 stream.Close();
@@ -148,7 +152,11 @@ namespace WPinternals
             if (Encoder != null)
                 BufferStream.Close();
             else if (WorkThread.IsAlive)
-                WorkThread.Abort();
+            {
+                if (source != null)
+                    source.Cancel();
+                WorkThread.Join();
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)

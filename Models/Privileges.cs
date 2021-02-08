@@ -20,8 +20,6 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -93,7 +91,6 @@ namespace WPinternals
         // of privilege names to luids
         //
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         private static Luid LuidFromPrivilege(string privilege)
         {
             Luid luid;
@@ -103,8 +100,6 @@ namespace WPinternals
             //
             // Look up the privilege LUID inside the cache
             //
-
-            RuntimeHelpers.PrepareConstrainedRegions();
 
             try
             {
@@ -205,8 +200,6 @@ namespace WPinternals
                         }
                     }
                 }
-
-                RuntimeHelpers.PrepareConstrainedRegions();
 
                 try
                 {
@@ -382,19 +375,16 @@ namespace WPinternals
         #endregion
 
         #region Public methods and properties
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         public void Enable()
         {
             this.ToggleState(true);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         public void Disable()
         {
             this.ToggleState(false);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         public void Revert()
         {
             int error = 0;
@@ -412,8 +402,6 @@ namespace WPinternals
             }
 
             // This code must be eagerly prepared and non-interruptible.
-
-            RuntimeHelpers.PrepareConstrainedRegions();
 
             try
             {
@@ -492,8 +480,6 @@ namespace WPinternals
 
             Privilege p = new Privilege(privilege);
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-
             try
             {
                 if (enabled)
@@ -520,7 +506,6 @@ namespace WPinternals
         #endregion
 
         #region Private implementation
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         private void ToggleState(bool enable)
         {
             int error = 0;
@@ -541,8 +526,6 @@ namespace WPinternals
 
             // Need to make this block of code non-interruptible so that it would preserve
             // consistency of thread oken state even in the face of catastrophic exceptions
-
-            RuntimeHelpers.PrepareConstrainedRegions();
 
             try
             {
@@ -635,11 +618,8 @@ namespace WPinternals
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private void Reset()
         {
-            RuntimeHelpers.PrepareConstrainedRegions();
-
             try
             {
                 // Payload is in the finally block
