@@ -306,9 +306,6 @@
     <AssemblyOriginatorKeyFile>Heathcliff74.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.IO.Compression" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="app.manifest">
       <SubType>Designer</SubType>
     </None>
@@ -357,10 +354,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.IO.Ports" Version="5.0.0" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+    <PackageReference Include="System.IO.Ports" Version="5.0.1" />
     <PackageReference Include="System.Management" Version="5.0.0" />
+    <PackageReference Include="System.Text.Json" Version="5.0.2" />
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>
