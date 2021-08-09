@@ -25,10 +25,10 @@ namespace WPinternals
 {
     internal class BackupTargetSelectionViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel PhoneNotifier;
-        private Action<string, string, string> BackupCallback;
-        private Action<string> BackupArchiveCallback;
-        private Action<string> BackupArchiveProvisioningCallback;
+        private readonly PhoneNotifierViewModel PhoneNotifier;
+        private readonly Action<string, string, string> BackupCallback;
+        private readonly Action<string> BackupArchiveCallback;
+        private readonly Action<string> BackupArchiveProvisioningCallback;
         internal Action SwitchToUnlockBoot;
 
         internal BackupTargetSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action<string> BackupArchiveCallback, Action<string, string, string> BackupCallback, Action<string> BackupArchiveProvisioningCallback)
@@ -58,7 +58,7 @@ namespace WPinternals
                 if (value != _ArchivePath)
                 {
                     _ArchivePath = value;
-                    OnPropertyChanged("ArchivePath");
+                    OnPropertyChanged(nameof(ArchivePath));
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace WPinternals
                 if (value != _EFIESPPath)
                 {
                     _EFIESPPath = value;
-                    OnPropertyChanged("EFIESPPath");
+                    OnPropertyChanged(nameof(EFIESPPath));
                 }
             }
         }
@@ -92,7 +92,7 @@ namespace WPinternals
                 if (value != _MainOSPath)
                 {
                     _MainOSPath = value;
-                    OnPropertyChanged("MainOSPath");
+                    OnPropertyChanged(nameof(MainOSPath));
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace WPinternals
                 if (value != _DataPath)
                 {
                     _DataPath = value;
-                    OnPropertyChanged("DataPath");
+                    OnPropertyChanged(nameof(DataPath));
                 }
             }
         }
@@ -126,7 +126,7 @@ namespace WPinternals
                 if (value != _ArchiveProvisioningPath)
                 {
                     _ArchiveProvisioningPath = value;
-                    OnPropertyChanged("ArchiveProvisioningPath");
+                    OnPropertyChanged(nameof(ArchiveProvisioningPath));
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace WPinternals
                 if (value != _IsPhoneDisconnected)
                 {
                     _IsPhoneDisconnected = value;
-                    OnPropertyChanged("IsPhoneDisconnected");
+                    OnPropertyChanged(nameof(IsPhoneDisconnected));
                 }
             }
         }
@@ -160,7 +160,7 @@ namespace WPinternals
                 if (value != _IsPhoneInMassStorage)
                 {
                     _IsPhoneInMassStorage = value;
-                    OnPropertyChanged("IsPhoneInMassStorage");
+                    OnPropertyChanged(nameof(IsPhoneInMassStorage));
                 }
             }
         }
@@ -177,7 +177,7 @@ namespace WPinternals
                 if (value != _IsPhoneInOtherMode)
                 {
                     _IsPhoneInOtherMode = value;
-                    OnPropertyChanged("IsPhoneInOtherMode");
+                    OnPropertyChanged(nameof(IsPhoneInOtherMode));
                 }
             }
         }
@@ -187,11 +187,7 @@ namespace WPinternals
         {
             get
             {
-                if (_BackupArchiveCommand == null)
-                {
-                    _BackupArchiveCommand = new DelegateCommand(() => { BackupArchiveCallback(ArchivePath); }, () => ((ArchivePath != null) && (PhoneNotifier.CurrentInterface != null)));
-                }
-                return _BackupArchiveCommand;
+                return _BackupArchiveCommand ??= new DelegateCommand(() => BackupArchiveCallback(ArchivePath), () => ((ArchivePath != null) && (PhoneNotifier.CurrentInterface != null)));
             }
         }
 
@@ -200,11 +196,7 @@ namespace WPinternals
         {
             get
             {
-                if (_BackupCommand == null)
-                {
-                    _BackupCommand = new DelegateCommand(() => { BackupCallback(EFIESPPath, MainOSPath, DataPath); }, () => (((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null)));
-                }
-                return _BackupCommand;
+                return _BackupCommand ??= new DelegateCommand(() => BackupCallback(EFIESPPath, MainOSPath, DataPath), () => (((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null)));
             }
         }
 
@@ -213,11 +205,7 @@ namespace WPinternals
         {
             get
             {
-                if (_BackupArchiveProvisioningCommand == null)
-                {
-                    _BackupArchiveProvisioningCommand = new DelegateCommand(() => { BackupArchiveProvisioningCallback(ArchiveProvisioningPath); }, () => ((ArchiveProvisioningPath != null) && (PhoneNotifier.CurrentInterface != null)));
-                }
-                return _BackupArchiveProvisioningCommand;
+                return _BackupArchiveProvisioningCommand ??= new DelegateCommand(() => BackupArchiveProvisioningCallback(ArchiveProvisioningPath), () => ((ArchiveProvisioningPath != null) && (PhoneNotifier.CurrentInterface != null)));
             }
         }
 
@@ -226,12 +214,12 @@ namespace WPinternals
             PhoneNotifier.NewDeviceArrived -= NewDeviceArrived;
         }
 
-        void NewDeviceArrived(ArrivalEventArgs Args)
+        private void NewDeviceArrived(ArrivalEventArgs Args)
         {
             new Thread(() => EvaluateViewState()).Start();
         }
 
-        void DeviceRemoved()
+        private void DeviceRemoved()
         {
             new Thread(() => EvaluateViewState()).Start();
         }

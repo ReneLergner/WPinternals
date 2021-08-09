@@ -24,8 +24,8 @@ namespace WPinternals
 {
     internal class NokiaModeMassStorageViewModel : ContextViewModel
     {
-        private MassStorage CurrentModel;
-        private Action<PhoneInterfaces?> RequestModeSwitch;
+        private readonly MassStorage CurrentModel;
+        private readonly Action<PhoneInterfaces?> RequestModeSwitch;
 
         internal NokiaModeMassStorageViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces?> RequestModeSwitch)
             : base()
@@ -44,14 +44,16 @@ namespace WPinternals
             set
             {
                 _SupportsReboot = value;
-                OnPropertyChanged("SupportsReboot");
+                OnPropertyChanged(nameof(SupportsReboot));
             }
         }
 
         internal override void EvaluateViewState()
         {
             if (IsActive)
+            {
                 SupportsReboot = CurrentModel.DoesDeviceSupportReboot();
+            }
         }
 
         public void RebootTo(string Mode)

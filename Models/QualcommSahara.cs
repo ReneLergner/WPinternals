@@ -35,7 +35,7 @@ namespace WPinternals
 
     internal class QualcommSahara
     {
-        private QualcommSerial Serial;
+        private readonly QualcommSerial Serial;
 
         public QualcommSahara(QualcommSerial Serial)
         {
@@ -58,8 +58,7 @@ namespace WPinternals
             try
             {
                 Step = 1;
-                byte[] Hello = null;
-                Hello = Serial.GetResponse(new byte[] { 0x01, 0x00, 0x00, 0x00 });
+                byte[] Hello = Serial.GetResponse(new byte[] { 0x01, 0x00, 0x00, 0x00 });
 
                 // Incoming Hello packet:
                 // 00000001 = Hello command id
@@ -91,34 +90,40 @@ namespace WPinternals
                 Serial.SendData(HelloResponse);
 
                 Step = 3;
-                using (System.IO.FileStream FileStream = new System.IO.FileStream(Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                using System.IO.FileStream FileStream = new(Path, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+                while (true)
                 {
-                    while (true)
+                    Step = 4;
+                    byte[] ReadDataRequest = Serial.GetResponse(null);
+                    UInt32 ResponseID = ByteOperations.ReadUInt32(ReadDataRequest, 0);
+                    if (ResponseID == 4)
                     {
-                        Step = 4;
-                        byte[] ReadDataRequest = Serial.GetResponse(null);
-                        UInt32 ResponseID = ByteOperations.ReadUInt32(ReadDataRequest, 0);
-                        if (ResponseID == 4)
-                            break;
-                        if (ResponseID != 3)
-                        {
-                            Step = 5;
-                            throw new BadConnectionException();
-                        }
-
-                        Offset = ByteOperations.ReadUInt32(ReadDataRequest, 0x0C);
-                        Length = ByteOperations.ReadUInt32(ReadDataRequest, 0x10);
-                        if ((ImageBuffer == null) || (ImageBuffer.Length != Length))
-                            ImageBuffer = new byte[Length];
-                        if (FileStream.Position != Offset)
-                            FileStream.Seek(Offset, System.IO.SeekOrigin.Begin);
-
-                        Step = 6;
-                        FileStream.Read(ImageBuffer, 0, (int)Length);
-
-                        Step = 7;
-                        Serial.SendData(ImageBuffer);
+                        break;
                     }
+
+                    if (ResponseID != 3)
+                    {
+                        Step = 5;
+                        throw new BadConnectionException();
+                    }
+
+                    Offset = ByteOperations.ReadUInt32(ReadDataRequest, 0x0C);
+                    Length = ByteOperations.ReadUInt32(ReadDataRequest, 0x10);
+                    if ((ImageBuffer == null) || (ImageBuffer.Length != Length))
+                    {
+                        ImageBuffer = new byte[Length];
+                    }
+
+                    if (FileStream.Position != Offset)
+                    {
+                        FileStream.Seek(Offset, System.IO.SeekOrigin.Begin);
+                    }
+
+                    Step = 6;
+                    FileStream.Read(ImageBuffer, 0, (int)Length);
+
+                    Step = 7;
+                    Serial.SendData(ImageBuffer);
                 }
             }
             catch (Exception Ex)
@@ -128,7 +133,9 @@ namespace WPinternals
             }
 
             if (Result)
+            {
                 LogFile.Log("Programmer loaded into phone memory", LogType.FileOnly);
+            }
 
             return Result;
         }
@@ -232,7 +239,7 @@ namespace WPinternals
                     {
                         Incoming = System.Text.Encoding.ASCII.GetString(Serial.GetResponse(null));
                         LogFile.Log("In: " + Incoming, LogType.FileOnly);
-                    };
+                    }
 
                     LogFile.Log("Incoming Hello-response received", LogType.FileOnly);
                     HandshakeCompleted = true;
@@ -242,9 +249,13 @@ namespace WPinternals
             while (!HandshakeCompleted && (HelloSendCount < 6));
 
             if (HandshakeCompleted)
+            {
                 LogFile.Log("Handshake completed with programmer in testmode", LogType.FileOnly);
+            }
             else
+            {
                 LogFile.Log("Handshake with programmer failed", LogType.FileOnly);
+            }
 
             return HandshakeCompleted;
         }
@@ -253,16 +264,20 @@ namespace WPinternals
         {
             bool SendImageResult = await Task.Run(() => SendImage(ProgrammerPath));
             if (!SendImageResult)
+            {
                 return false;
+            }
 
             await Task.Run(() => StartProgrammer());
 
             bool Connected = await Task.Run(() => ConnectToProgrammerInTestMode());
             if (!Connected)
+            {
                 return false;
+            }
 
             LogFile.Log("Rebooting phone", LogType.FileAndConsole);
-            string Command03 = "<?xml version=\"1.0\" ?><data><power value=\"reset\"/></data>";
+            const string Command03 = "<?xml version=\"1.0\" ?><data><power value=\"reset\"/></data>";
             LogFile.Log("Out: " + Command03, LogType.FileOnly);
             Serial.SendData(System.Text.Encoding.ASCII.GetBytes(Command03));
 

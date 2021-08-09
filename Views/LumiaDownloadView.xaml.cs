@@ -37,23 +37,30 @@ namespace WPinternals
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
-            Hyperlink link = args.Source as Hyperlink;
-            if (link != null)
+            if (args.Source is Hyperlink link)
             {
                 if (link.NavigateUri.ToString() == "UnlockBoot")
-                    (this.DataContext as LumiaFlashRomSourceSelectionViewModel).SwitchToUnlockBoot();
+                {
+                    (this.DataContext as LumiaFlashRomSourceSelectionViewModel)?.SwitchToUnlockBoot();
+                }
                 else if (link.NavigateUri.ToString() == "UnlockRoot")
-                    (this.DataContext as LumiaFlashRomSourceSelectionViewModel).SwitchToUnlockRoot();
+                {
+                    (this.DataContext as LumiaFlashRomSourceSelectionViewModel)?.SwitchToUnlockRoot();
+                }
                 else if (link.NavigateUri.ToString() == "Dump")
-                    (this.DataContext as LumiaFlashRomSourceSelectionViewModel).SwitchToDumpFFU();
+                {
+                    (this.DataContext as LumiaFlashRomSourceSelectionViewModel)?.SwitchToDumpFFU();
+                }
                 else
+                {
                     Process.Start(link.NavigateUri.AbsoluteUri);
+                }
             }
         }
 
         private void Document_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as FlowDocument).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
     }
 }

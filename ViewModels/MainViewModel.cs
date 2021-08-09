@@ -77,9 +77,13 @@ namespace WPinternals
             if (this.PropertyChanged != null)
             {
                 if (MainSyncContext == SynchronizationContext.Current)
+                {
                     PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                }
                 else
+                {
                     MainSyncContext.Post(s => PropertyChanged(this, new PropertyChangedEventArgs(propertyName)), null);
+                }
             }
         }
 
@@ -95,18 +99,18 @@ namespace WPinternals
                 if (_ContextViewModel != value)
                 {
                     if (_ContextViewModel != null)
-                        _ContextViewModel.IsActive = false;
-                    _ContextViewModel = value;
-                    if (_ContextViewModel != null)
                     {
-                        _ContextViewModel.Activate();
+                        _ContextViewModel.IsActive = false;
                     }
-                    OnPropertyChanged("ContextViewModel");
+
+                    _ContextViewModel = value;
+                    _ContextViewModel?.Activate();
+                    OnPropertyChanged(nameof(ContextViewModel));
                 }
             }
         }
 
-        private SynchronizationContext MainSyncContext;
+        private readonly SynchronizationContext MainSyncContext;
 
         public MainViewModel()
         {
@@ -115,11 +119,13 @@ namespace WPinternals
             LogFile.LogApplicationVersion();
 
             // Set global callback for cases where Dependency Injection is not possible.
-            App.NavigateToGettingStarted = () => { GettingStartedCommand.Execute(null); };
-            App.NavigateToUnlockBoot = () => { BootUnlockCommand.Execute(null); };
+            App.NavigateToGettingStarted = () => GettingStartedCommand.Execute(null);
+            App.NavigateToUnlockBoot = () => BootUnlockCommand.Execute(null);
 
             if (Registry.CurrentUser.OpenSubKey("Software\\WPInternals") == null)
+            {
                 Registry.CurrentUser.OpenSubKey("Software", true).CreateSubKey("WPInternals");
+            }
 
             if ((Registration.IsPrerelease) && (Registry.CurrentUser.OpenSubKey("Software\\WPInternals").GetValue("NdaAccepted") == null))
             {
@@ -134,10 +140,12 @@ namespace WPinternals
                 ContextViewModel = new RegistrationViewModel(Registration_Completed, Registration_Failed);
             }
             else
+            {
                 StartOperation();
+            }
         }
 
-        void Disclaimer_Accepted()
+        private void Disclaimer_Accepted()
         {
             ContextViewModel = null;
 
@@ -146,16 +154,18 @@ namespace WPinternals
                 ContextViewModel = new RegistrationViewModel(Registration_Completed, Registration_Failed);
             }
             else
+            {
                 StartOperation();
+            }
         }
 
-        void Registration_Completed()
+        private void Registration_Completed()
         {
             ContextViewModel = null;
             StartOperation();
         }
 
-        void Registration_Failed()
+        private void Registration_Failed()
         {
             ContextViewModel = new MessageViewModel("Registration failed", () => Environment.Exit(0));
             ((MessageViewModel)ContextViewModel).SubMessage = "Check your filewall settings";
@@ -190,10 +200,7 @@ namespace WPinternals
                 ModeViewModel.OnModeSwitchRequested(TargetInterface);
                 ContextViewModel = ModeViewModel;
             },
-            () =>
-            {
-                ContextViewModel = _GettingStartedViewModel;
-            });
+            () => ContextViewModel = _GettingStartedViewModel);
             InfoViewModel.ActivateSubContext(null);
 
             ModeViewModel = new LumiaModeViewModel(PhoneNotifier, SwitchToInfoViewModel);
@@ -280,12 +287,12 @@ namespace WPinternals
             ContextViewModel = ModeViewModel;
         }
 
-        void PhoneNotifier_DeviceRemoved()
+        private void PhoneNotifier_DeviceRemoved()
         {
             InfoViewModel.ActivateSubContext(null);
         }
 
-        void PhoneNotifier_NewDeviceArrived(ArrivalEventArgs Args)
+        private void PhoneNotifier_NewDeviceArrived(ArrivalEventArgs Args)
         {
             PhoneInterfaces? PreviousInterface = LastInterface;
             LastInterface = Args.NewInterface;
@@ -299,10 +306,14 @@ namespace WPinternals
             else
             {
                 if (Args.NewInterface != PhoneInterfaces.Qualcomm_Download)
+                {
                     App.InterruptBoot = false;
+                }
 
                 if (ContextViewModel == null)
+                {
                     ContextViewModel = InfoViewModel;
+                }
                 else if (ContextViewModel.IsFlashModeOperation)
                 {
                     if ((!ContextViewModel.IsSwitchingInterface) && (Args.NewInterface == PhoneInterfaces.Lumia_Bootloader))
@@ -318,7 +329,9 @@ namespace WPinternals
                 else
                 {
                     if ((!ContextViewModel.IsSwitchingInterface) && (Args.NewInterface != PhoneInterfaces.Lumia_Bootloader))
+                    {
                         ContextViewModel = InfoViewModel;
+                    }
                 }
             }
         }
@@ -328,14 +341,7 @@ namespace WPinternals
         {
             get
             {
-                if (_InfoCommand == null)
-                {
-                    _InfoCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = InfoViewModel;
-                    });
-                }
-                return _InfoCommand;
+                return _InfoCommand ??= new DelegateCommand(() => ContextViewModel = InfoViewModel);
             }
         }
 
@@ -344,14 +350,7 @@ namespace WPinternals
         {
             get
             {
-                if (_ModeCommand == null)
-                {
-                    _ModeCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = ModeViewModel;
-                    });
-                }
-                return _ModeCommand;
+                return _ModeCommand ??= new DelegateCommand(() => ContextViewModel = ModeViewModel);
             }
         }
 
@@ -360,14 +359,7 @@ namespace WPinternals
         {
             get
             {
-                if (_BootUnlockCommand == null)
-                {
-                    _BootUnlockCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = BootUnlockViewModel;
-                    });
-                }
-                return _BootUnlockCommand;
+                return _BootUnlockCommand ??= new DelegateCommand(() => ContextViewModel = BootUnlockViewModel);
             }
         }
 
@@ -376,14 +368,7 @@ namespace WPinternals
         {
             get
             {
-                if (_BootRestoreCommand == null)
-                {
-                    _BootRestoreCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = BootRestoreViewModel;
-                    });
-                }
-                return _BootRestoreCommand;
+                return _BootRestoreCommand ??= new DelegateCommand(() => ContextViewModel = BootRestoreViewModel);
             }
         }
 
@@ -392,14 +377,7 @@ namespace WPinternals
         {
             get
             {
-                if (_RootUnlockCommand == null)
-                {
-                    _RootUnlockCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = RootUnlockViewModel;
-                    });
-                }
-                return _RootUnlockCommand;
+                return _RootUnlockCommand ??= new DelegateCommand(() => ContextViewModel = RootUnlockViewModel);
             }
         }
 
@@ -408,14 +386,7 @@ namespace WPinternals
         {
             get
             {
-                if (_RootUndoCommand == null)
-                {
-                    _RootUndoCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = RootRestoreViewModel;
-                    });
-                }
-                return _RootUndoCommand;
+                return _RootUndoCommand ??= new DelegateCommand(() => ContextViewModel = RootRestoreViewModel);
             }
         }
 
@@ -424,14 +395,7 @@ namespace WPinternals
         {
             get
             {
-                if (_BackupCommand == null)
-                {
-                    _BackupCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = BackupViewModel;
-                    });
-                }
-                return _BackupCommand;
+                return _BackupCommand ??= new DelegateCommand(() => ContextViewModel = BackupViewModel);
             }
         }
 
@@ -440,14 +404,7 @@ namespace WPinternals
         {
             get
             {
-                if (_RestoreCommand == null)
-                {
-                    _RestoreCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = RestoreViewModel;
-                    });
-                }
-                return _RestoreCommand;
+                return _RestoreCommand ??= new DelegateCommand(() => ContextViewModel = RestoreViewModel);
             }
         }
 
@@ -456,14 +413,7 @@ namespace WPinternals
         {
             get
             {
-                if (_LumiaFlashRomCommand == null)
-                {
-                    _LumiaFlashRomCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = LumiaFlashRomViewModel;
-                    });
-                }
-                return _LumiaFlashRomCommand;
+                return _LumiaFlashRomCommand ??= new DelegateCommand(() => ContextViewModel = LumiaFlashRomViewModel);
             }
         }
 
@@ -472,14 +422,7 @@ namespace WPinternals
         {
             get
             {
-                if (_DumpRomCommand == null)
-                {
-                    _DumpRomCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = DumpRomViewModel;
-                    });
-                }
-                return _DumpRomCommand;
+                return _DumpRomCommand ??= new DelegateCommand(() => ContextViewModel = DumpRomViewModel);
             }
         }
 
@@ -488,14 +431,7 @@ namespace WPinternals
         {
             get
             {
-                if (_AboutCommand == null)
-                {
-                    _AboutCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = new AboutViewModel();
-                    });
-                }
-                return _AboutCommand;
+                return _AboutCommand ??= new DelegateCommand(() => ContextViewModel = new AboutViewModel());
             }
         }
 
@@ -504,14 +440,7 @@ namespace WPinternals
         {
             get
             {
-                if (_OpenWebSiteCommand == null)
-                {
-                    _OpenWebSiteCommand = new DelegateCommand(() =>
-                    {
-                        Process.Start("www.wpinternals.net");
-                    });
-                }
-                return _OpenWebSiteCommand;
+                return _OpenWebSiteCommand ??= new DelegateCommand(() => Process.Start("www.wpinternals.net"));
             }
         }
 
@@ -520,14 +449,7 @@ namespace WPinternals
         {
             get
             {
-                if (_DonateCommand == null)
-                {
-                    _DonateCommand = new DelegateCommand(() =>
-                    {
-                        Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VY8N7BCBT9CS4");
-                    });
-                }
-                return _DonateCommand;
+                return _DonateCommand ??= new DelegateCommand(() => Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VY8N7BCBT9CS4"));
             }
         }
 
@@ -536,14 +458,7 @@ namespace WPinternals
         {
             get
             {
-                if (_GettingStartedCommand == null)
-                {
-                    _GettingStartedCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = _GettingStartedViewModel;
-                    });
-                }
-                return _GettingStartedCommand;
+                return _GettingStartedCommand ??= new DelegateCommand(() => ContextViewModel = _GettingStartedViewModel);
             }
         }
 
@@ -552,14 +467,7 @@ namespace WPinternals
         {
             get
             {
-                if (_DownloadCommand == null)
-                {
-                    _DownloadCommand = new DelegateCommand(() =>
-                    {
-                        ContextViewModel = DownloadsViewModel;
-                    });
-                }
-                return _DownloadCommand;
+                return _DownloadCommand ??= new DelegateCommand(() => ContextViewModel = DownloadsViewModel);
             }
         }
 
@@ -573,7 +481,7 @@ namespace WPinternals
             set
             {
                 _IsMenuEnabled = value;
-                OnPropertyChanged("IsMenuEnabled");
+                OnPropertyChanged(nameof(IsMenuEnabled));
             }
         }
     }

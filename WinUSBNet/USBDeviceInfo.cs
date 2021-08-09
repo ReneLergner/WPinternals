@@ -87,6 +87,5 @@ namespace MadWizard.WinUSBNet
         {
             _details = details;
         }
-
     }
 }

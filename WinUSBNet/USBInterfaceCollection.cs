@@ -16,7 +16,7 @@ namespace MadWizard.WinUSBNet
     /// </summary>
     public class USBInterfaceCollection : IEnumerable<USBInterface>
     {
-        private USBInterface[] _interfaces;
+        private readonly USBInterface[] _interfaces;
 
         internal USBInterfaceCollection(USBInterface[] interfaces)
         {
@@ -26,7 +26,7 @@ namespace MadWizard.WinUSBNet
         private class USBInterfaceEnumerator : IEnumerator<USBInterface>
         {
             private int _index;
-            private USBInterface[] _interfaces;
+            private readonly USBInterface[] _interfaces;
 
             public USBInterfaceEnumerator(USBInterface[] interfaces)
             {
@@ -44,7 +44,6 @@ namespace MadWizard.WinUSBNet
                 {
                     return _interfaces[_index];
                 }
-
                 catch (IndexOutOfRangeException)
                 {
                     throw new InvalidOperationException();
@@ -58,7 +57,6 @@ namespace MadWizard.WinUSBNet
                     return GetCurrent();
                 }
             }
-
 
             object IEnumerator.Current
             {
@@ -81,7 +79,7 @@ namespace MadWizard.WinUSBNet
         }
 
         /// <summary>
-        /// Finds the first interface with that matches the device class 
+        /// Finds the first interface with that matches the device class
         /// given by the <paramref name="interfaceClass"/> parameter.
         /// </summary>
         /// <param name="interfaceClass">The device class the interface should match</param>
@@ -93,26 +91,30 @@ namespace MadWizard.WinUSBNet
             {
                 USBInterface iface = _interfaces[i];
                 if (iface.BaseClass == interfaceClass)
+                {
                     return iface;
+                }
             }
             return null;
         }
 
         /// <summary>
-        /// Finds all interfaces matching the device class given by the 
+        /// Finds all interfaces matching the device class given by the
         /// <paramref name="interfaceClass"/> parameter.
         /// </summary>
         /// <param name="interfaceClass">The device class the interface should match</param>
-        /// <returns>An array of USBInterface objects matching the device class, or an empty 
+        /// <returns>An array of USBInterface objects matching the device class, or an empty
         /// array if no interface matches.</returns>
         public USBInterface[] FindAll(USBBaseClass interfaceClass)
         {
-            List<USBInterface> matchingInterfaces = new List<USBInterface>();
+            List<USBInterface> matchingInterfaces = new();
             for (int i = 0; i < _interfaces.Length; i++)
             {
                 USBInterface iface = _interfaces[i];
                 if (iface.BaseClass == interfaceClass)
+                {
                     matchingInterfaces.Add(iface);
+                }
             }
             return matchingInterfaces.ToArray();
         }
@@ -141,7 +143,9 @@ namespace MadWizard.WinUSBNet
                 {
                     USBInterface iface = _interfaces[i];
                     if (iface.Number == interfaceNumber)
+                    {
                         return iface;
+                    }
                 }
                 throw new IndexOutOfRangeException(string.Format("No interface with number {0} exists.", interfaceNumber));
             }

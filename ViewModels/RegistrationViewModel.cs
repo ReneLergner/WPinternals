@@ -25,8 +25,8 @@ namespace WPinternals
 {
     internal class RegistrationViewModel : ContextViewModel
     {
-        Action Completed;
-        Action Failed;
+        private readonly Action Completed;
+        private readonly Action Failed;
 
         internal RegistrationViewModel(Action Completed, Action Failed)
             : base()
@@ -40,14 +40,7 @@ namespace WPinternals
         {
             get
             {
-                if (_ExitCommand == null)
-                {
-                    _ExitCommand = new DelegateCommand(() =>
-                    {
-                        Application.Current.Shutdown();
-                    });
-                }
-                return _ExitCommand;
+                return _ExitCommand ??= new DelegateCommand(() => Application.Current.Shutdown());
             }
         }
 
@@ -56,9 +49,7 @@ namespace WPinternals
         {
             get
             {
-                if (_ContinueCommand == null)
-                {
-                    _ContinueCommand = new DelegateCommand(() =>
+                return _ContinueCommand ??= new DelegateCommand(() =>
                     {
                         try
                         {
@@ -80,8 +71,6 @@ namespace WPinternals
                             Failed();
                         }
                     });
-                }
-                return _ContinueCommand;
             }
         }
 
@@ -89,7 +78,7 @@ namespace WPinternals
         {
             get
             {
-                return ((_Name != null) && (_Name.Length >= 2) && (_Email != null) && (_Email.Length >= 5));
+                return (_Name?.Length >= 2) && (_Email?.Length >= 5);
             }
         }
 
@@ -103,8 +92,8 @@ namespace WPinternals
             set
             {
                 _Name = value;
-                OnPropertyChanged("Name");
-                OnPropertyChanged("IsRegistrationComplete");
+                OnPropertyChanged(nameof(Name));
+                OnPropertyChanged(nameof(IsRegistrationComplete));
             }
         }
 
@@ -118,8 +107,8 @@ namespace WPinternals
             set
             {
                 _Email = value;
-                OnPropertyChanged("Email");
-                OnPropertyChanged("IsRegistrationComplete");
+                OnPropertyChanged(nameof(Email));
+                OnPropertyChanged(nameof(IsRegistrationComplete));
             }
         }
 
@@ -133,7 +122,7 @@ namespace WPinternals
             set
             {
                 _SkypeID = value;
-                OnPropertyChanged("SkypeID");
+                OnPropertyChanged(nameof(SkypeID));
             }
         }
 
@@ -147,7 +136,7 @@ namespace WPinternals
             set
             {
                 _TelegramID = value;
-                OnPropertyChanged("TelegramID");
+                OnPropertyChanged(nameof(TelegramID));
             }
         }
     }

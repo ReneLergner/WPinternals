@@ -26,12 +26,12 @@ namespace WPinternals
 {
     internal class LumiaUnlockRootViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel PhoneNotifier;
-        private Action SwitchToUnlockBoot;
-        private Action SwitchToDumpRom;
-        private Action SwitchToFlashRom;
-        private Action Callback;
-        private bool DoUnlock;
+        private readonly PhoneNotifierViewModel PhoneNotifier;
+        private readonly Action SwitchToUnlockBoot;
+        private readonly Action SwitchToDumpRom;
+        private readonly Action SwitchToFlashRom;
+        private readonly Action Callback;
+        private readonly bool DoUnlock;
 
         internal LumiaUnlockRootViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action SwitchToDumpRom, Action SwitchToFlashRom, bool DoUnlock, Action Callback)
             : base()
@@ -50,17 +50,23 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (!IsActive)
+            {
                 return;
+            }
 
             if (DoUnlock)
             {
                 if ((SubContextViewModel == null) || (SubContextViewModel is LumiaUndoRootTargetSelectionViewModel))
+                {
                     ActivateSubContext(new LumiaUnlockRootTargetSelectionViewModel(PhoneNotifier, SwitchToUnlockBoot, SwitchToDumpRom, SwitchToFlashRom, DoUnlockPhone, DoUnlockImage));
+                }
             }
             else
             {
                 if ((SubContextViewModel == null) || (SubContextViewModel is LumiaUnlockRootTargetSelectionViewModel))
+                {
                     ActivateSubContext(new LumiaUndoRootTargetSelectionViewModel(PhoneNotifier, SwitchToUnlockBoot, SwitchToDumpRom, SwitchToFlashRom, DoUnlockPhone, DoUnlockImage));
+                }
             }
         }
 
@@ -103,18 +109,26 @@ namespace WPinternals
             new Thread(() =>
                 {
                     if (DoUnlock)
+                    {
                         LogFile.BeginAction("EnableRootAccess");
+                    }
                     else
+                    {
                         LogFile.BeginAction("DisableRootAccess");
+                    }
 
                     bool Result = false;
 
                     if (EFIESP != null && !HasV11Patches)
                     {
                         if (DoUnlock)
+                        {
                             ActivateSubContext(new BusyViewModel("Enable Root Access on EFIESP..."));
+                        }
                         else
+                        {
                             ActivateSubContext(new BusyViewModel("Disable Root Access on EFIESP..."));
+                        }
 
                         try
                         {
@@ -157,9 +171,13 @@ namespace WPinternals
                     if (MainOS != null)
                     {
                         if (DoUnlock)
+                        {
                             ActivateSubContext(new BusyViewModel("Enable Root Access on MainOS..."));
+                        }
                         else
+                        {
                             ActivateSubContext(new BusyViewModel("Disable Root Access on MainOS..."));
+                        }
 
                         try
                         {
@@ -169,7 +187,9 @@ namespace WPinternals
                                 Result = App.PatchEngine.Patch("RootAccess-MainOS");
 
                                 if (Result)
+                                {
                                     Result = App.PatchEngine.Patch("SecureBootHack-MainOS");
+                                }
 
                                 if (!Result)
                                 {
@@ -182,7 +202,9 @@ namespace WPinternals
                                 App.PatchEngine.Restore("RootAccess-MainOS");
 
                                 if (!HasNewBootloader)
+                                {
                                     App.PatchEngine.Restore("SecureBootHack-MainOS");
+                                }
 
                                 Result = true;
                             }
@@ -206,16 +228,24 @@ namespace WPinternals
                         else
                         {
                             if (DoUnlock)
+                            {
                                 ActivateSubContext(new MessageViewModel("Root Access successfully enabled!", Exit));
+                            }
                             else
+                            {
                                 ActivateSubContext(new MessageViewModel("Root Access successfully disabled!", Exit));
+                            }
                         }
                     }
 
                     if (DoUnlock)
+                    {
                         LogFile.EndAction("EnableRootAccess");
+                    }
                     else
+                    {
                         LogFile.EndAction("DisableRootAccess");
+                    }
                 }).Start();
         }
 
@@ -232,11 +262,11 @@ namespace WPinternals
             MassStorage Phone = (MassStorage)PhoneNotifier.CurrentModel;
             Phone.OpenVolume(false);
             byte[] GPTBuffer = Phone.ReadSectors(1, 33);
-            GPT GPT = new WPinternals.GPT(GPTBuffer);
+            GPT GPT = new(GPTBuffer);
             Partition Partition = GPT.GetPartition("UEFI");
             byte[] UefiBuffer = Phone.ReadSectors(Partition.FirstSector, Partition.LastSector - Partition.FirstSector + 1);
-            UEFI UEFI = new UEFI(UefiBuffer);
-            string BootMgrName = UEFI.EFIs.Where(efi => ((efi.Name != null) && ((efi.Name.Contains("BootMgrApp")) || (efi.Name.Contains("FlashApp"))))).First().Name;
+            UEFI UEFI = new(UefiBuffer);
+            string BootMgrName = UEFI.EFIs.First(efi => ((efi.Name != null) && ((efi.Name.Contains("BootMgrApp")) || (efi.Name.Contains("FlashApp"))))).Name;
             byte[] BootMgr = UEFI.GetFile(BootMgrName);
             // "Header V2"
             Result = (ByteOperations.FindAscii(BootMgr, "Header V2") != null);
@@ -250,7 +280,7 @@ namespace WPinternals
             MassStorage Phone = (MassStorage)PhoneNotifier.CurrentModel;
             Phone.OpenVolume(false);
             byte[] GPTBuffer = Phone.ReadSectors(1, 33);
-            GPT GPT = new WPinternals.GPT(GPTBuffer);
+            GPT GPT = new(GPTBuffer);
             Partition Partition = GPT.GetPartition("BACKUP_BS_NV");
             Result = Partition != null;
             Phone.CloseVolume();

@@ -88,7 +88,9 @@ namespace WPinternals
                     HeaderOffset = ImageOffset + 8;
                 }
                 else
+                {
                     throw new WPinternalsException("Invalid programmer", "The type of elf image could not be determined from the provided programmer.");
+                }
             }
             else if (ByteOperations.FindPattern(Binary, Offset, (uint)LongHeaderPattern.Length, LongHeaderPattern, LongHeaderMask, null) == null)
             {
@@ -104,11 +106,17 @@ namespace WPinternals
             }
 
             if (ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X00) != 0)
+            {
                 ImageOffset = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X00);
+            }
             else if (HeaderType == QualcommPartitionHeaderType.Short)
+            {
                 ImageOffset += 0x28;
+            }
             else
+            {
                 ImageOffset += 0x50;
+            }
 
             ImageAddress = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X04);
             ImageSize = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X08);

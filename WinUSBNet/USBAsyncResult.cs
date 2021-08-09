@@ -11,8 +11,7 @@ namespace MadWizard.WinUSBNet
 {
     internal class USBAsyncResult : IAsyncResult, IDisposable
     {
-        private object _stateObject;
-        private AsyncCallback _userCallback;
+        private readonly AsyncCallback _userCallback;
         private bool _completed;
         private bool _completedSynchronously;
         private ManualResetEvent _waitEvent;
@@ -21,20 +20,14 @@ namespace MadWizard.WinUSBNet
 
         public USBAsyncResult(AsyncCallback userCallback, object stateObject)
         {
-            _stateObject = stateObject;
+            AsyncState = stateObject;
             _userCallback = userCallback;
             _completedSynchronously = false;
             _completed = false;
             _waitEvent = null;
         }
 
-        public object AsyncState
-        {
-            get
-            {
-                return _stateObject;
-            }
-        }
+        public object AsyncState { get; }
 
         public Exception Error
         {
@@ -57,7 +50,9 @@ namespace MadWizard.WinUSBNet
                 lock (this)
                 {
                     if (_waitEvent == null)
+                    {
                         _waitEvent = new ManualResetEvent(_completed);
+                    }
                 }
                 return _waitEvent;
             }
@@ -99,17 +94,19 @@ namespace MadWizard.WinUSBNet
                 _completed = true;
                 _error = error;
                 _bytesTransfered = bytesTransfered;
-                if (_waitEvent != null)
-                    _waitEvent.Set();
+                _waitEvent?.Set();
             }
             if (_userCallback != null)
             {
                 if (synchronousCallback)
+                {
                     RunCallback(null);
+                }
                 else
+                {
                     ThreadPool.QueueUserWorkItem(RunCallback);
+                }
             }
-
         }
         private void RunCallback(object state)
         {
@@ -122,12 +119,9 @@ namespace MadWizard.WinUSBNet
                 // Cleanup managed resources
                 lock (this)
                 {
-                    if (_waitEvent != null)
-                        _waitEvent.Close();
+                    _waitEvent?.Close();
                 }
             }
         }
-
-
     }
 }

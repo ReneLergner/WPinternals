@@ -28,9 +28,9 @@ namespace WPinternals
 {
     internal class BackupViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel PhoneNotifier;
-        private Action Callback;
-        private Action SwitchToUnlockBoot;
+        private readonly PhoneNotifierViewModel PhoneNotifier;
+        private readonly Action Callback;
+        private readonly Action SwitchToUnlockBoot;
 
         internal BackupViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action Callback)
             : base()
@@ -45,7 +45,9 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (!IsActive)
+            {
                 return;
+            }
 
             if (SubContextViewModel == null)
             {
@@ -54,7 +56,9 @@ namespace WPinternals
             }
 
             if (SubContextViewModel is BackupTargetSelectionViewModel)
+            {
                 ((BackupTargetSelectionViewModel)SubContextViewModel).EvaluateViewState();
+            }
         }
 
         internal async void DoBackup(string EFIESPPath, string MainOSPath, string DataPath)
@@ -118,27 +122,27 @@ namespace WPinternals
 
                     Phone.OpenVolume(false);
                     byte[] GPTBuffer = Phone.ReadSectors(1, 33);
-                    GPT GPT = new WPinternals.GPT(GPTBuffer);
+                    GPT GPT = new(GPTBuffer);
                     Partition Partition;
                     try
                     {
                         if (EFIESPPath != null)
                         {
-                            Partition = GPT.Partitions.Where(p => p.Name == "EFIESP").First();
+                            Partition = GPT.Partitions.First(p => p.Name == "EFIESP");
                             TotalSizeSectors += Partition.SizeInSectors;
                             PartitionCount++;
                         }
 
                         if (MainOSPath != null)
                         {
-                            Partition = GPT.Partitions.Where(p => p.Name == "MainOS").First();
+                            Partition = GPT.Partitions.First(p => p.Name == "MainOS");
                             TotalSizeSectors += Partition.SizeInSectors;
                             PartitionCount++;
                         }
 
                         if (DataPath != null)
                         {
-                            Partition = GPT.Partitions.Where(p => p.Name == "Data").First();
+                            Partition = GPT.Partitions.First(p => p.Name == "Data");
                             TotalSizeSectors += Partition.SizeInSectors;
                             PartitionCount++;
                         }
@@ -149,7 +153,7 @@ namespace WPinternals
                         Result = false;
                     }
 
-                    BusyViewModel Busy = new BusyViewModel("Create backup...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
+                    BusyViewModel Busy = new("Create backup...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
                     ProgressUpdater Updater = Busy.ProgressUpdater;
                     ActivateSubContext(Busy);
 
@@ -161,7 +165,7 @@ namespace WPinternals
                             if (EFIESPPath != null)
                             {
                                 i++;
-                                Busy.Message = "Create backup of partition EFIESP (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
+                                Busy.Message = "Create backup of partition EFIESP (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
                                 Phone.BackupPartition("EFIESP", EFIESPPath, Updater);
                             }
                         }
@@ -179,7 +183,7 @@ namespace WPinternals
                             if (MainOSPath != null)
                             {
                                 i++;
-                                Busy.Message = "Create backup of partition MainOS (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
+                                Busy.Message = "Create backup of partition MainOS (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
                                 Phone.BackupPartition("MainOS", MainOSPath, Updater);
                             }
                         }
@@ -197,7 +201,7 @@ namespace WPinternals
                             if (DataPath != null)
                             {
                                 i++;
-                                Busy.Message = "Create backup of partition Data (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
+                                Busy.Message = "Create backup of partition Data (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
                                 Phone.BackupPartition("Data", DataPath, Updater);
                             }
                         }
@@ -230,7 +234,7 @@ namespace WPinternals
                 ActivateSubContext(new BusyViewModel("Initializing backup..."));
 
                 ulong TotalSizeSectors = 0;
-                int PartitionCount = 3;
+                const int PartitionCount = 3;
 
                 MassStorage Phone = (MassStorage)PhoneNotifier.CurrentModel;
 
@@ -238,19 +242,19 @@ namespace WPinternals
                 {
                     Phone.OpenVolume(false);
                     byte[] GPTBuffer = Phone.ReadSectors(1, 33);
-                    GPT GPT = new WPinternals.GPT(GPTBuffer);
+                    GPT GPT = new(GPTBuffer);
 
                     Partition Partition;
 
                     try
                     {
-                        Partition = GPT.Partitions.Where(p => p.Name == "EFIESP").First();
+                        Partition = GPT.Partitions.First(p => p.Name == "EFIESP");
                         TotalSizeSectors += Partition.SizeInSectors;
 
-                        Partition = GPT.Partitions.Where(p => p.Name == "MainOS").First();
+                        Partition = GPT.Partitions.First(p => p.Name == "MainOS");
                         TotalSizeSectors += Partition.SizeInSectors;
 
-                        Partition = GPT.Partitions.Where(p => p.Name == "Data").First();
+                        Partition = GPT.Partitions.First(p => p.Name == "Data");
                         TotalSizeSectors += Partition.SizeInSectors;
                     }
                     catch (Exception Ex)
@@ -259,86 +263,79 @@ namespace WPinternals
                         Result = false;
                     }
 
-                    BusyViewModel Busy = new BusyViewModel("Create backup...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
+                    BusyViewModel Busy = new("Create backup...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
                     ProgressUpdater Updater = Busy.ProgressUpdater;
                     ActivateSubContext(Busy);
                     ZipArchiveEntry Entry;
                     Stream EntryStream = null;
 
-                    using (FileStream FileStream = new FileStream(ArchivePath, FileMode.Create))
+                    using FileStream FileStream = new(ArchivePath, FileMode.Create);
+                    using ZipArchive Archive = new(FileStream, ZipArchiveMode.Create);
+                    int i = 0;
+
+                    if (Result)
                     {
-                        using (ZipArchive Archive = new ZipArchive(FileStream, ZipArchiveMode.Create))
+                        try
                         {
-                            int i = 0;
+                            Entry = Archive.CreateEntry("EFIESP.bin", CompressionLevel.Optimal);
+                            EntryStream = Entry.Open();
+                            i++;
+                            Busy.Message = "Create backup of partition EFIESP (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
+                            Phone.BackupPartition("EFIESP", EntryStream, Updater);
+                        }
+                        catch (Exception Ex)
+                        {
+                            LogFile.LogException(Ex);
+                            Result = false;
+                        }
+                        finally
+                        {
+                            EntryStream?.Close();
+                            EntryStream = null;
+                        }
+                    }
 
-                            if (Result)
-                            {
-                                try
-                                {
-                                    Entry = Archive.CreateEntry("EFIESP.bin", CompressionLevel.Optimal);
-                                    EntryStream = Entry.Open();
-                                    i++;
-                                    Busy.Message = "Create backup of partition EFIESP (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
-                                    Phone.BackupPartition("EFIESP", EntryStream, Updater);
-                                }
-                                catch (Exception Ex)
-                                {
-                                    LogFile.LogException(Ex);
-                                    Result = false;
-                                }
-                                finally
-                                {
-                                    if (EntryStream != null)
-                                        EntryStream.Close();
-                                    EntryStream = null;
-                                }
-                            }
+                    if (Result)
+                    {
+                        try
+                        {
+                            Entry = Archive.CreateEntry("MainOS.bin", CompressionLevel.Optimal);
+                            EntryStream = Entry.Open();
+                            i++;
+                            Busy.Message = "Create backup of partition MainOS (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
+                            Phone.BackupPartition("MainOS", EntryStream, Updater);
+                        }
+                        catch (Exception Ex)
+                        {
+                            LogFile.LogException(Ex);
+                            Result = false;
+                        }
+                        finally
+                        {
+                            EntryStream?.Close();
+                            EntryStream = null;
+                        }
+                    }
 
-                            if (Result)
-                            {
-                                try
-                                {
-                                    Entry = Archive.CreateEntry("MainOS.bin", CompressionLevel.Optimal);
-                                    EntryStream = Entry.Open();
-                                    i++;
-                                    Busy.Message = "Create backup of partition MainOS (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
-                                    Phone.BackupPartition("MainOS", EntryStream, Updater);
-                                }
-                                catch (Exception Ex)
-                                {
-                                    LogFile.LogException(Ex);
-                                    Result = false;
-                                }
-                                finally
-                                {
-                                    if (EntryStream != null)
-                                        EntryStream.Close();
-                                    EntryStream = null;
-                                }
-                            }
-
-                            if (Result)
-                            {
-                                try
-                                {
-                                    Entry = Archive.CreateEntry("Data.bin", CompressionLevel.Optimal);
-                                    EntryStream = Entry.Open();
-                                    i++;
-                                    Busy.Message = "Create backup of partition Data (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
-                                    Phone.BackupPartition("Data", EntryStream, Updater);
-                                }
-                                catch (Exception Ex)
-                                {
-                                    LogFile.LogException(Ex);
-                                    Result = false;
-                                }
-                                finally
-                                {
-                                    if (EntryStream != null)
-                                        EntryStream.Close();
-                                    EntryStream = null;
-                                }
-                            }
+                    if (Result)
+                    {
+                        try
+                        {
+                            Entry = Archive.CreateEntry("Data.bin", CompressionLevel.Optimal);
+                            EntryStream = Entry.Open();
+                            i++;
+                            Busy.Message = "Create backup of partition Data (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
+                            Phone.BackupPartition("Data", EntryStream, Updater);
+                        }
+                        catch (Exception Ex)
+                        {
+                            LogFile.LogException(Ex);
+                            Result = false;
+                        }
+                        finally
+                        {
+                            EntryStream?.Close();
+                            EntryStream = null;
                         }
                     }
                 }
@@ -398,7 +395,7 @@ namespace WPinternals
                 {
                     Phone.OpenVolume(false);
                     byte[] GPTBuffer = Phone.ReadSectors(1, 33);
-                    GPT GPT = new WPinternals.GPT(GPTBuffer);
+                    GPT GPT = new(GPTBuffer);
 
                     Partition Partition;
 
@@ -408,10 +405,10 @@ namespace WPinternals
                         {
                             if (GPT.Partitions.Any(p => p.Name == PartitionName))
                             {
-                                Partition = GPT.Partitions.Where(p => p.Name == PartitionName).First();
+                                Partition = GPT.Partitions.First(p => p.Name == PartitionName);
                                 if (PartitionName == "UEFI_BS_NV" && GPT.Partitions.Any(p => p.Name == "BACKUP_BS_NV"))
                                 {
-                                    Partition = GPT.Partitions.Where(p => p.Name == "BACKUP_BS_NV").First();
+                                    Partition = GPT.Partitions.First(p => p.Name == "BACKUP_BS_NV");
                                 }
 
                                 TotalSizeSectors += Partition.SizeInSectors;
@@ -425,51 +422,46 @@ namespace WPinternals
                         Result = false;
                     }
 
-                    BusyViewModel Busy = new BusyViewModel("Create backup...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
+                    BusyViewModel Busy = new("Create backup...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
                     ProgressUpdater Updater = Busy.ProgressUpdater;
                     ActivateSubContext(Busy);
                     ZipArchiveEntry Entry;
                     Stream EntryStream = null;
 
-                    using (FileStream FileStream = new FileStream(ArchiveProvisioningPath, FileMode.Create))
-                    {
-                        using (ZipArchive Archive = new ZipArchive(FileStream, ZipArchiveMode.Create))
-                        {
-                            int i = 0;
+                    using FileStream FileStream = new(ArchiveProvisioningPath, FileMode.Create);
+                    using ZipArchive Archive = new(FileStream, ZipArchiveMode.Create);
+                    int i = 0;
 
-                            foreach (string PartitionName in ProvisioningPartitions)
+                    foreach (string PartitionName in ProvisioningPartitions)
+                    {
+                        if (GPT.Partitions.Any(p => p.Name == PartitionName))
+                        {
+                            if (Result)
                             {
-                                if (GPT.Partitions.Any(p => p.Name == PartitionName))
+                                try
                                 {
-                                    if (Result)
+                                    Entry = Archive.CreateEntry(PartitionName + ".bin", CompressionLevel.Optimal);
+                                    EntryStream = Entry.Open();
+                                    i++;
+                                    Busy.Message = "Create backup of partition " + PartitionName + " (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
+                                    if (PartitionName == "UEFI_BS_NV" && GPT.Partitions.Any(p => p.Name == "BACKUP_BS_NV"))
                                     {
-                                        try
-                                        {
-                                            Entry = Archive.CreateEntry(PartitionName + ".bin", CompressionLevel.Optimal);
-                                            EntryStream = Entry.Open();
-                                            i++;
-                                            Busy.Message = "Create backup of partition " + PartitionName + " (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
-                                            if (PartitionName == "UEFI_BS_NV" && GPT.Partitions.Any(p => p.Name == "BACKUP_BS_NV"))
-                                            {
-                                                Phone.BackupPartition("BACKUP_BS_NV", EntryStream, Updater);
-                                            }
-                                            else
-                                            {
-                                                Phone.BackupPartition(PartitionName, EntryStream, Updater);
-                                            }
-                                        }
-                                        catch (Exception Ex)
-                                        {
-                                            LogFile.LogException(Ex);
-                                            Result = false;
-                                        }
-                                        finally
-                                        {
-                                            if (EntryStream != null)
-                                                EntryStream.Close();
-                                            EntryStream = null;
-                                        }
+                                        Phone.BackupPartition("BACKUP_BS_NV", EntryStream, Updater);
                                     }
+                                    else
+                                    {
+                                        Phone.BackupPartition(PartitionName, EntryStream, Updater);
+                                    }
+                                }
+                                catch (Exception Ex)
+                                {
+                                    LogFile.LogException(Ex);
+                                    Result = false;
+                                }
+                                finally
+                                {
+                                    EntryStream?.Close();
+                                    EntryStream = null;
                                 }
                             }
                         }

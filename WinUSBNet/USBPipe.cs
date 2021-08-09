@@ -17,7 +17,6 @@ namespace MadWizard.WinUSBNet
     {
         private API.WINUSB_PIPE_INFORMATION _pipeInfo;
         private USBInterface _interface = null;
-        private USBDevice _device;
         private USBPipePolicy _policy;
 
         private byte[] LastWritten = null;
@@ -36,13 +35,7 @@ namespace MadWizard.WinUSBNet
         /// <summary>
         /// The USBDevice this pipe is associated with
         /// </summary>
-        public USBDevice Device
-        {
-            get
-            {
-                return _device;
-            }
-        }
+        public USBDevice Device { get; }
 
         /// <summary>
         /// Maximum packet size for transfers on this endpoint
@@ -122,9 +115,7 @@ namespace MadWizard.WinUSBNet
 
             try
             {
-                uint bytesRead;
-
-                _device.InternalDevice.ReadPipe(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length, out bytesRead);
+                Device.InternalDevice.ReadPipe(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length, out uint bytesRead);
 
                 return (int)bytesRead;
             }
@@ -139,30 +130,44 @@ namespace MadWizard.WinUSBNet
         private void CheckReadParams(byte[] buffer, int offset, int length)
         {
             if (!IsIn)
+            {
                 // throw new ArgumentOutOfRangeException("Offset of data to read is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Offset of data to read is outside the buffer boundaries."));
+            }
 
             int bufferLength = buffer.Length;
             if (offset < 0 || offset >= bufferLength)
+            {
                 // throw new ArgumentOutOfRangeException(nameof(offset), "Offset of data to read is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Offset of data to read is outside the buffer boundaries."));
+            }
+
             if (length < 0 || (offset + length) > bufferLength)
+            {
                 // throw new ArgumentOutOfRangeException(nameof(length), "Length of data to read is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Length of data to read is outside the buffer boundaries."));
+            }
         }
         private void CheckWriteParams(byte[] buffer, int offset, int length)
         {
             if (!IsOut)
+            {
                 //throw new NotSupportedException("Cannot write to a pipe with IN direction.");
                 LogAndThrowException(new NotSupportedException("Cannot write to a pipe with IN direction."));
+            }
 
             int bufferLength = buffer.Length;
             if (offset < 0 || offset >= bufferLength)
+            {
                 // throw new ArgumentOutOfRangeException(nameof(offset), "Offset of data to write is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Offset of data to write is outside the buffer boundaries."));
+            }
+
             if (length < 0 || (offset + length) > bufferLength)
+            {
                 // throw new ArgumentOutOfRangeException(nameof(length), "Length of data to write is outside the buffer boundaries.");
                 LogAndThrowException(new ArgumentOutOfRangeException("Length of data to write is outside the buffer boundaries."));
+            }
         }
 
         /// <summary>Initiates an asynchronous read operation on the pipe. </summary>
@@ -182,10 +187,10 @@ namespace MadWizard.WinUSBNet
         {
             CheckReadParams(buffer, offset, length);
 
-            USBAsyncResult result = new USBAsyncResult(userCallback, stateObject);
+            USBAsyncResult result = new(userCallback, stateObject);
             try
             {
-                _device.InternalDevice.ReadPipeOverlapped(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length, result);
+                Device.InternalDevice.ReadPipeOverlapped(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length, result);
             }
             catch (API.APIException e)
             {
@@ -195,8 +200,7 @@ namespace MadWizard.WinUSBNet
             }
             catch (Exception e)
             {
-                if (result != null)
-                    result.Dispose();
+                result?.Dispose();
                 // throw;
                 LogException(e);
                 throw;
@@ -218,22 +222,31 @@ namespace MadWizard.WinUSBNet
         public int EndRead(IAsyncResult asyncResult)
         {
             if (asyncResult == null)
+            {
                 // throw new NullReferenceException("asyncResult cannot be null");
                 LogAndThrowException(new NullReferenceException("asyncResult cannot be null"));
+            }
+
             if (!(asyncResult is USBAsyncResult))
+            {
                 // throw new ArgumentException("AsyncResult object was not created by calling BeginRead on this class.");
                 LogAndThrowException(new ArgumentException("AsyncResult object was not created by calling BeginRead on this class."));
+            }
 
             // todo: check duplicate end reads?
             USBAsyncResult result = (USBAsyncResult)asyncResult;
             try
             {
                 if (!result.IsCompleted)
+                {
                     result.AsyncWaitHandle.WaitOne();
+                }
 
                 if (result.Error != null)
+                {
                     // throw new USBException("Asynchronous read from pipe has failed.", result.Error);
                     LogAndThrowException(new USBException("Asynchronous read from pipe has failed.", result.Error));
+                }
 
                 return result.BytesTransfered;
             }
@@ -241,7 +254,6 @@ namespace MadWizard.WinUSBNet
             {
                 result.Dispose();
             }
-
         }
 
         /// <summary>
@@ -267,12 +279,12 @@ namespace MadWizard.WinUSBNet
 
             try
             {
-                _device.InternalDevice.WritePipe(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length);
+                Device.InternalDevice.WritePipe(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length);
             }
             catch (API.APIException e)
             {
-                byte[] SubBuffer = new byte[(length < 16 ? length : 16)];
-                Array.Copy(buffer, offset, SubBuffer, 0, (length < 16 ? length : 16));
+                byte[] SubBuffer = new byte[length < 16 ? length : 16];
+                Array.Copy(buffer, offset, SubBuffer, 0, length < 16 ? length : 16);
                 // throw new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e);
                 LogAndThrowException(new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e));
             }
@@ -297,25 +309,23 @@ namespace MadWizard.WinUSBNet
 
             LogLastWrite(buffer, offset, length);
 
-            USBAsyncResult result = new USBAsyncResult(userCallback, stateObject);
+            USBAsyncResult result = new(userCallback, stateObject);
             try
             {
-                _device.InternalDevice.WriteOverlapped(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length, result);
+                Device.InternalDevice.WriteOverlapped(Interface.InterfaceIndex, _pipeInfo.PipeId, buffer, offset, length, result);
             }
             catch (API.APIException e)
             {
-                if (result != null)
-                    result.Dispose();
+                result?.Dispose();
 
-                byte[] SubBuffer = new byte[(length < 16 ? length : 16)];
-                Array.Copy(buffer, offset, SubBuffer, 0, (length < 16 ? length : 16));
+                byte[] SubBuffer = new byte[length < 16 ? length : 16];
+                Array.Copy(buffer, offset, SubBuffer, 0, length < 16 ? length : 16);
                 // throw new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e);
                 LogAndThrowException(new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e));
             }
             catch (Exception e)
             {
-                if (result != null)
-                    result.Dispose();
+                result?.Dispose();
                 // throw;
                 LogException(e);
                 throw;
@@ -337,11 +347,16 @@ namespace MadWizard.WinUSBNet
         public void EndWrite(IAsyncResult asyncResult)
         {
             if (asyncResult == null)
+            {
                 // throw new NullReferenceException("asyncResult cannot be null");
                 LogAndThrowException(new NullReferenceException("asyncResult cannot be null"));
+            }
+
             if (!(asyncResult is USBAsyncResult))
+            {
                 // throw new ArgumentException("AsyncResult object was not created by calling BeginWrite on this class.");
                 LogAndThrowException(new ArgumentException("AsyncResult object was not created by calling BeginWrite on this class."));
+            }
 
             USBAsyncResult result = (USBAsyncResult)asyncResult;
             try
@@ -349,11 +364,15 @@ namespace MadWizard.WinUSBNet
                 // todo: check duplicate end writes?
 
                 if (!result.IsCompleted)
+                {
                     result.AsyncWaitHandle.WaitOne();
+                }
 
                 if (result.Error != null)
+                {
                     // throw new USBException("Asynchronous write to pipe has failed.", result.Error);
                     LogAndThrowException(new USBException("Asynchronous write to pipe has failed.", result.Error));
+                }
             }
             finally
             {
@@ -368,7 +387,7 @@ namespace MadWizard.WinUSBNet
         {
             try
             {
-                _device.InternalDevice.AbortPipe(Interface.InterfaceIndex, _pipeInfo.PipeId);
+                Device.InternalDevice.AbortPipe(Interface.InterfaceIndex, _pipeInfo.PipeId);
             }
             catch (API.APIException e)
             {
@@ -384,7 +403,7 @@ namespace MadWizard.WinUSBNet
         {
             try
             {
-                _device.InternalDevice.ResetPipe(Interface.InterfaceIndex, _pipeInfo.PipeId);
+                Device.InternalDevice.ResetPipe(Interface.InterfaceIndex, _pipeInfo.PipeId);
             }
             catch (API.APIException e)
             {
@@ -399,10 +418,13 @@ namespace MadWizard.WinUSBNet
         public void Flush()
         {
             if (!IsIn)
+            {
                 throw new NotSupportedException("Flush is only supported on IN direction pipes");
+            }
+
             try
             {
-                _device.InternalDevice.FlushPipe(Interface.InterfaceIndex, _pipeInfo.PipeId);
+                Device.InternalDevice.FlushPipe(Interface.InterfaceIndex, _pipeInfo.PipeId);
             }
             catch (API.APIException e)
             {
@@ -414,7 +436,7 @@ namespace MadWizard.WinUSBNet
         internal USBPipe(USBDevice device, API.WINUSB_PIPE_INFORMATION pipeInfo)
         {
             _pipeInfo = pipeInfo;
-            _device = device;
+            Device = device;
 
             // Policy is not set until interface is attached
             _policy = null;
@@ -425,24 +447,31 @@ namespace MadWizard.WinUSBNet
             _interface = usbInterface;
 
             // Initialize policy now that interface is set (policy requires interface)
-            _policy = new USBPipePolicy(_device, _interface.InterfaceIndex, _pipeInfo.PipeId);
+            _policy = new USBPipePolicy(Device, _interface.InterfaceIndex, _pipeInfo.PipeId);
         }
 
         private void LogException(Exception Ex)
         {
             WPinternals.LogFile.Log("Error on USB port!", WPinternals.LogType.FileOnly);
-            WPinternals.LogFile.Log("Device: " + _device.Descriptor.FullName, WPinternals.LogType.FileOnly);
+            WPinternals.LogFile.Log("Device: " + Device.Descriptor.FullName, WPinternals.LogType.FileOnly);
 
             if (IsIn)
-                LastWritten = _device.OutputPipe.LastWritten;
+            {
+                LastWritten = Device.OutputPipe.LastWritten;
+            }
 
-            if ((LastWritten == null) && (Ex is USBException) && (Ex.InnerException is MadWizard.WinUSBNet.API.APIException) &&
-                (((MadWizard.WinUSBNet.API.APIException)Ex.InnerException).InnerException is System.ComponentModel.Win32Exception) &&
+            if ((LastWritten == null) && (Ex is USBException) && (Ex.InnerException is API.APIException) &&
+                (((API.APIException)Ex.InnerException).InnerException is System.ComponentModel.Win32Exception) &&
                 (((System.ComponentModel.Win32Exception)Ex.InnerException.InnerException).NativeErrorCode == 0X1F))
+            {
                 WPinternals.LogFile.Log("Failed to communicate on new USB connection", WPinternals.LogType.FileAndConsole);
+            }
 
             if (LastWritten != null)
+            {
                 WPinternals.LogFile.Log("Last written: " + WPinternals.Converter.ConvertHexToString(LastWritten, ""), WPinternals.LogType.FileOnly);
+            }
+
             WPinternals.LogFile.LogException(Ex, WPinternals.LogType.FileOnly);
         }
 
@@ -457,5 +486,4 @@ namespace MadWizard.WinUSBNet
             System.Buffer.BlockCopy(Buffer, Offset, LastWritten, 0, LastWritten.Length);
         }
     }
-
 }

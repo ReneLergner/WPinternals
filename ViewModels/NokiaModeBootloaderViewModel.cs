@@ -25,10 +25,10 @@ namespace WPinternals
 {
     internal class NokiaModeBootloaderViewModel : ContextViewModel
     {
-        private NokiaFlashModel CurrentModel;
-        Action<PhoneInterfaces?> RequestModeSwitch;
-        private object LockDeviceInfo = new object();
-        bool DeviceInfoLoaded = false;
+        private readonly NokiaFlashModel CurrentModel;
+        private readonly Action<PhoneInterfaces?> RequestModeSwitch;
+        private readonly object LockDeviceInfo = new();
+        private bool DeviceInfoLoaded = false;
 
         internal NokiaModeBootloaderViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces?> RequestModeSwitch)
             : base()
@@ -40,7 +40,9 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (IsActive)
+            {
                 new Thread(() => StartLoadDeviceInfo()).Start();
+            }
         }
 
         private bool? _EffectiveBootloaderSecurityStatus = null;
@@ -53,7 +55,7 @@ namespace WPinternals
             set
             {
                 _EffectiveBootloaderSecurityStatus = value;
-                OnPropertyChanged("EffectiveBootloaderSecurityStatus");
+                OnPropertyChanged(nameof(EffectiveBootloaderSecurityStatus));
             }
         }
 

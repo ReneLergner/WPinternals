@@ -43,14 +43,14 @@ namespace WPinternals
         {
             byte[] GPT = File.ReadAllBytes(GPTPath);
 
-            PhoneNotifierViewModel PhoneNotifier = new PhoneNotifierViewModel();
+            PhoneNotifierViewModel PhoneNotifier = new();
             PhoneNotifier.Start();
             await SwitchModeViewModel.SwitchTo(PhoneNotifier, PhoneInterfaces.Qualcomm_Download);
 
             byte[] RootKeyHash = null;
             if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download)
             {
-                QualcommDownload Download2 = new QualcommDownload((QualcommSerial)PhoneNotifier.CurrentModel);
+                QualcommDownload Download2 = new((QualcommSerial)PhoneNotifier.CurrentModel);
                 RootKeyHash = Download2.GetRKH();
             }
 
@@ -73,7 +73,7 @@ namespace WPinternals
             }
 
             QualcommSerial Serial = (QualcommSerial)PhoneNotifier.CurrentModel;
-            QualcommDownload Download = new QualcommDownload(Serial);
+            QualcommDownload Download = new(Serial);
             if (Download.IsAlive())
             {
                 int Attempt = 1;
@@ -92,14 +92,18 @@ namespace WPinternals
                     catch { }
 
                     if (Result)
+                    {
                         break;
+                    }
 
                     Attempt++;
                 }
                 Serial.Close();
 
                 if (!Result)
+                {
                     LogFile.Log("Loader failed", LogType.ConsoleOnly);
+                }
             }
             else
             {
@@ -108,15 +112,20 @@ namespace WPinternals
             }
 
             if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
+            {
                 await PhoneNotifier.WaitForArrival();
+            }
+
             if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
+            {
                 throw new WPinternalsException("Phone failed to switch to emergency flash mode.");
+            }
 
             // Flash bootloader
             QualcommSerial Serial2 = (QualcommSerial)PhoneNotifier.CurrentModel;
             Serial2.EncodeCommands = false;
 
-            QualcommFlasher Flasher = new QualcommFlasher(Serial2);
+            QualcommFlasher Flasher = new(Serial2);
 
             Flasher.Hello();
             Flasher.SetSecurityMode(0);
@@ -138,7 +147,7 @@ namespace WPinternals
 
         internal static async Task RewriteGPT(string GPTPath)
         {
-            PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+            PhoneNotifierViewModel Notifier = new();
             Notifier.Start();
             await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_MassStorage);
             MassStorage MassStorage = (MassStorage)Notifier.CurrentModel;
@@ -149,10 +158,10 @@ namespace WPinternals
 
         internal static async Task RewriteMBRGPT()
         {
-            FFU FFU = new FFU(@"E:\Device Backups\Alpha\9200_1230.0025.9200.9825\RX100_9825.ffu");
-            string GPTPath = @"E:\Device Backups\Alpha\9200_1230.0025.9200.9825\CorrectGPT.bin";
+            FFU FFU = new(@"E:\Device Backups\Alpha\9200_1230.0025.9200.9825\RX100_9825.ffu");
+            const string GPTPath = @"E:\Device Backups\Alpha\9200_1230.0025.9200.9825\CorrectGPT.bin";
 
-            PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+            PhoneNotifierViewModel Notifier = new();
             Notifier.Start();
             await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_MassStorage);
             MassStorage MassStorage = (MassStorage)Notifier.CurrentModel;
@@ -167,7 +176,7 @@ namespace WPinternals
 
         internal static async Task RewriteParts(string PartPath)
         {
-            PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+            PhoneNotifierViewModel Notifier = new();
             Notifier.Start();
             await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_MassStorage);
             MassStorage MassStorage = (MassStorage)Notifier.CurrentModel;
@@ -181,60 +190,55 @@ namespace WPinternals
 
                     LogFile.Log("", LogType.ConsoleOnly);
 
-                    MassStorage.RestorePartition(part, partname, (v, t) =>
-                    {
-                        LogFile.Log("Progress: " + v + "%", LogType.ConsoleOnly);
-                    });
+                    MassStorage.RestorePartition(part, partname, (v, t) => LogFile.Log("Progress: " + v + "%", LogType.ConsoleOnly));
                     LogFile.Log("", LogType.ConsoleOnly);
                 }
                 catch
                 {
                     LogFile.Log("", LogType.ConsoleOnly);
                     LogFile.Log($"Failed writing {partname} to the device.", LogType.ConsoleOnly);
-                };
+                }
             }
         }
 
         internal static void PatchImg(string dump)
         {
-            using (var fil = File.Open(dump, FileMode.Open))
-            {
-                byte[] gptbuffer = new byte[0x4200];
+            using var fil = File.Open(dump, FileMode.Open);
+            byte[] gptbuffer = new byte[0x4200];
 
-                fil.Seek(0x200, SeekOrigin.Begin);
-                fil.Read(gptbuffer, 0, 0x4200);
+            fil.Seek(0x200, SeekOrigin.Begin);
+            fil.Read(gptbuffer, 0, 0x4200);
 
-                uint BackupLBA = ByteOperations.ReadUInt32(gptbuffer, 0x20);
-                uint LastUsableLBA = ByteOperations.ReadUInt32(gptbuffer, 0x30);
+            uint BackupLBA = ByteOperations.ReadUInt32(gptbuffer, 0x20);
+            uint LastUsableLBA = ByteOperations.ReadUInt32(gptbuffer, 0x30);
 
-                LogFile.Log("Previous BackupLBA: " + BackupLBA, LogType.ConsoleOnly);
-                LogFile.Log("Previous LastUsableLBA: " + LastUsableLBA, LogType.ConsoleOnly);
+            LogFile.Log("Previous BackupLBA: " + BackupLBA, LogType.ConsoleOnly);
+            LogFile.Log("Previous LastUsableLBA: " + LastUsableLBA, LogType.ConsoleOnly);
 
-                uint NewBackupLBA = 62078975u;
-                uint NewLastUsableLBA = 62078942u;
+            const uint NewBackupLBA = 62078975u;
+            const uint NewLastUsableLBA = 62078942u;
 
-                ByteOperations.WriteUInt32(gptbuffer, 0x20, NewBackupLBA);
-                ByteOperations.WriteUInt32(gptbuffer, 0x30, NewLastUsableLBA);
+            ByteOperations.WriteUInt32(gptbuffer, 0x20, NewBackupLBA);
+            ByteOperations.WriteUInt32(gptbuffer, 0x30, NewLastUsableLBA);
 
-                uint HeaderSize = ByteOperations.ReadUInt32(gptbuffer, 0x0C);
-                uint PrevCRC = ByteOperations.ReadUInt32(gptbuffer, 0x10);
+            uint HeaderSize = ByteOperations.ReadUInt32(gptbuffer, 0x0C);
+            uint PrevCRC = ByteOperations.ReadUInt32(gptbuffer, 0x10);
 
-                LogFile.Log("Previous CRC: " + PrevCRC, LogType.ConsoleOnly);
+            LogFile.Log("Previous CRC: " + PrevCRC, LogType.ConsoleOnly);
 
-                ByteOperations.WriteUInt32(gptbuffer, 0x10, 0);
-                uint NewCRC = ByteOperations.CRC32(gptbuffer, 0, HeaderSize);
+            ByteOperations.WriteUInt32(gptbuffer, 0x10, 0);
+            uint NewCRC = ByteOperations.CRC32(gptbuffer, 0, HeaderSize);
 
-                LogFile.Log("New CRC: " + NewCRC, LogType.ConsoleOnly);
+            LogFile.Log("New CRC: " + NewCRC, LogType.ConsoleOnly);
 
-                ByteOperations.WriteUInt32(gptbuffer, 0x10, NewCRC);
+            ByteOperations.WriteUInt32(gptbuffer, 0x10, NewCRC);
 
-                LogFile.Log("Writing", LogType.ConsoleOnly);
+            LogFile.Log("Writing", LogType.ConsoleOnly);
 
-                fil.Seek(0x200, SeekOrigin.Begin);
-                fil.Write(gptbuffer, 0, 0x4200);
+            fil.Seek(0x200, SeekOrigin.Begin);
+            fil.Write(gptbuffer, 0, 0x4200);
 
-                LogFile.Log("Done!", LogType.ConsoleOnly);
-            }
+            LogFile.Log("Done!", LogType.ConsoleOnly);
         }
 
         internal static async Task TestProgrammer(System.Threading.SynchronizationContext UIContext, string ProgrammerPath)
@@ -244,10 +248,12 @@ namespace WPinternals
             {
                 LogFile.Log("Starting Firehose Test", LogType.FileAndConsole);
 
-                PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+                PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
                 if (Notifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download)
+                {
                     LogFile.Log("Phone found in emergency mode", LogType.FileAndConsole);
+                }
                 else
                 {
                     LogFile.Log("Phone needs to be switched to emergency mode.", LogType.FileAndConsole);
@@ -256,18 +262,25 @@ namespace WPinternals
                     Info.Log(LogType.ConsoleOnly);
                     await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Qualcomm_Download);
                     if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download)
+                    {
                         throw new WPinternalsException("Switching mode failed.", "Could not switch the phone to Qualcomm Emergency 9008.");
+                    }
+
                     LogFile.Log("Phone is in emergency mode.", LogType.FileAndConsole);
                 }
 
                 // Send and start programmer
                 QualcommSerial Serial = (QualcommSerial)Notifier.CurrentModel;
-                QualcommSahara Sahara = new QualcommSahara(Serial);
+                QualcommSahara Sahara = new(Serial);
 
                 if (await Sahara.Reset(ProgrammerPath))
+                {
                     LogFile.Log("Emergency programmer test succeeded", LogType.FileAndConsole);
+                }
                 else
+                {
                     LogFile.Log("Emergency programmer test failed", LogType.FileAndConsole);
+                }
             }
             catch (Exception Ex)
             {

@@ -40,13 +40,13 @@ namespace WPinternals
 
             UInt64 OutputSize = ByteOperations.ReadUInt64(Input, Offset + 5);
 
-            SevenZip.Compression.LZMA.Decoder Coder = new SevenZip.Compression.LZMA.Decoder();
+            SevenZip.Compression.LZMA.Decoder Coder = new();
             Coder.SetDecoderProperties(Properties);
 
-            MemoryStream InStream = new MemoryStream(Input, (int)Offset + 0x0D, (int)InputSize - 0x0D);
+            MemoryStream InStream = new(Input, (int)Offset + 0x0D, (int)InputSize - 0x0D);
 
             byte[] Output = new byte[OutputSize];
-            MemoryStream OutStream = new MemoryStream(Output, true);
+            MemoryStream OutStream = new(Output, true);
 
             Coder.Code(InStream, OutStream, (Int64)InputSize - 0x0D, (Int64)OutputSize, null);
 
@@ -59,10 +59,10 @@ namespace WPinternals
 
         internal static byte[] Compress(byte[] Input, UInt32 Offset, UInt32 InputSize)
         {
-            SevenZip.Compression.LZMA.Encoder Coder = new SevenZip.Compression.LZMA.Encoder();
+            SevenZip.Compression.LZMA.Encoder Coder = new();
 
-            MemoryStream InStream = new MemoryStream(Input, (int)Offset, (int)InputSize);
-            MemoryStream OutStream = new MemoryStream();
+            MemoryStream InStream = new(Input, (int)Offset, (int)InputSize);
+            MemoryStream OutStream = new();
 
             // Write the encoder properties
             Coder.WriteCoderProperties(OutStream);
@@ -71,7 +71,7 @@ namespace WPinternals
             OutStream.Write(BitConverter.GetBytes(InStream.Length), 0, 8);
 
             // Encode the file
-            Coder.Code(InStream, OutStream, (Int64)InputSize, -1, null);
+            Coder.Code(InStream, OutStream, InputSize, -1, null);
 
             byte[] Output = new byte[OutStream.Length];
             Buffer.BlockCopy(OutStream.GetBuffer(), 0, Output, 0, (int)OutStream.Length);
@@ -86,14 +86,14 @@ namespace WPinternals
 
     public class LZMACompressionStream : Stream
     {
-        private SevenZip.Compression.LZMA.Encoder Encoder = null;
-        private SevenZip.Compression.LZMA.Decoder Decoder = null;
-        private PumpStream BufferStream;
-        private Stream stream;
-        private bool LeaveOpen;
-        private Thread WorkThread;
-        private CancellationTokenSource source;
-        private CancellationToken token;
+        private readonly SevenZip.Compression.LZMA.Encoder Encoder = null;
+        private readonly SevenZip.Compression.LZMA.Decoder Decoder = null;
+        private readonly PumpStream BufferStream;
+        private readonly Stream stream;
+        private readonly bool LeaveOpen;
+        private readonly Thread WorkThread;
+        private readonly CancellationTokenSource source;
+        private readonly CancellationToken token;
 
         public LZMACompressionStream(Stream stream, CompressionMode mode, bool LeaveOpen, int DictionarySize, int PosStateBits,
            int LitContextBits, int LitPosBits, int Algorithm, int NumFastBytes, string MatchFinder, bool EndMarker)
@@ -108,10 +108,13 @@ namespace WPinternals
             {
                 Encoder = new SevenZip.Compression.LZMA.Encoder();
                 if (DictionarySize != 0)
+                {
                     Encoder.SetCoderProperties(
-                      new SevenZip.CoderPropID[8] {CoderPropID.DictionarySize, CoderPropID.PosStateBits, CoderPropID.LitContextBits,
+                      new CoderPropID[8] {CoderPropID.DictionarySize, CoderPropID.PosStateBits, CoderPropID.LitContextBits,
                         CoderPropID.LitPosBits, CoderPropID.Algorithm, CoderPropID.NumFastBytes, CoderPropID.MatchFinder, CoderPropID.EndMarker},
                       new object[8] { DictionarySize, PosStateBits, LitContextBits, LitPosBits, Algorithm, NumFastBytes, MatchFinder, EndMarker });
+                }
+
                 Encoder.WriteCoderProperties(stream);
                 WorkThread = new Thread(new ThreadStart(Encode));
             }
@@ -135,26 +138,31 @@ namespace WPinternals
         private void Encode()
         {
             Encoder.Code(BufferStream, stream, -1, -1, null, token);
-            if (LeaveOpen == false)
+            if (!LeaveOpen)
+            {
                 stream.Close();
+            }
         }
 
         private void Decode()
         {
             Decoder.Code(stream, BufferStream, -1, -1, null, token);
             BufferStream.Close();
-            if (LeaveOpen == false)
+            if (!LeaveOpen)
+            {
                 stream.Close();
+            }
         }
 
         public override void Close()
         {
             if (Encoder != null)
+            {
                 BufferStream.Close();
+            }
             else if (WorkThread.IsAlive)
             {
-                if (source != null)
-                    source.Cancel();
+                source?.Cancel();
                 WorkThread.Join();
             }
         }
@@ -169,9 +177,9 @@ namespace WPinternals
             BufferStream.Write(buffer, offset, count);
         }
 
-        public override bool CanRead { get { return (Decoder != null); } }
+        public override bool CanRead { get { return Decoder != null; } }
         public override bool CanSeek { get { return false; } }
-        public override bool CanWrite { get { return (Encoder != null); } }
+        public override bool CanWrite { get { return Encoder != null; } }
         public override void Flush() { }
         public override long Length { get { return 0; } }
         public override long Position { get { return 0; } set { } }
@@ -181,9 +189,9 @@ namespace WPinternals
 
     public class PumpStream : Stream
     {
-        private Queue<byte[]> BufferQueue;
+        private readonly Queue<byte[]> BufferQueue;
         private int BufferOffset;
-        private long MaxBufferSize;
+        private readonly long MaxBufferSize;
         private long BufferSize;
         private bool Closed;
         private bool EOF;
@@ -214,7 +222,9 @@ namespace WPinternals
         {
             Closed = true;
             lock (BufferQueue)
+            {
                 Monitor.Pulse(BufferQueue);
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -222,7 +232,7 @@ namespace WPinternals
             int BytesRead = 0;
             lock (BufferQueue)
             {
-                while (BytesRead < count && EOF == false)
+                while (BytesRead < count && !EOF)
                 {
                     if (BufferQueue.Count > 0)
                     {
@@ -230,7 +240,7 @@ namespace WPinternals
 
                         if ((b.Length - BufferOffset) <= (count - BytesRead))
                         {
-                            Array.Copy(b, BufferOffset, buffer, offset + BytesRead, (b.Length - BufferOffset));
+                            Array.Copy(b, BufferOffset, buffer, offset + BytesRead, b.Length - BufferOffset);
 
                             BufferQueue.Dequeue();
                             BufferSize -= b.Length;
@@ -241,22 +251,25 @@ namespace WPinternals
                         }
                         else
                         {
-                            Array.Copy(b, BufferOffset, buffer, offset + BytesRead, (count - BytesRead));
+                            Array.Copy(b, BufferOffset, buffer, offset + BytesRead, count - BytesRead);
 
                             BufferOffset += (count - BytesRead);
                             BytesRead += (count - BytesRead);
                         }
-
                     }
                     else
                     {
-                        if (Closed == false)
+                        if (!Closed)
                         {
-                            if (Monitor.Wait(BufferQueue, ReadTimeout) == false)
+                            if (!Monitor.Wait(BufferQueue, ReadTimeout))
+                            {
                                 throw new IOException("Could not read from stream: Timeout expired waiting for data to be written.");
+                            }
                         }
                         else
+                        {
                             EOF = true;
+                        }
                     }
                 }
             }
@@ -269,8 +282,12 @@ namespace WPinternals
             lock (BufferQueue)
             {
                 while (BufferSize >= MaxBufferSize)
-                    if (Monitor.Wait(BufferQueue, WriteTimeout) == false)
+                {
+                    if (!Monitor.Wait(BufferQueue, WriteTimeout))
+                    {
                         throw new IOException("Could not write to stream: Timeout expired waiting for data to be read.");
+                    }
+                }
 
                 byte[] b = new byte[count];
                 Array.Copy(buffer, offset, b, 0, count);

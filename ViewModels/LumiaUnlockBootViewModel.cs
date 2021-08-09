@@ -40,8 +40,8 @@ namespace WPinternals
 
     internal class LumiaUnlockBootViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel PhoneNotifier;
-        private Action Callback;
+        private readonly PhoneNotifierViewModel PhoneNotifier;
+        private readonly Action Callback;
         private string FFUPath;
         private string LoadersPath;
         private string SBL3Path;
@@ -50,12 +50,12 @@ namespace WPinternals
         private string SupportedFFUPath;
         private bool IsBootLoaderUnlocked;
         private byte[] RootKeyHash = null;
-        private Action SwitchToFlashRom;
-        private Action SwitchToUndoRoot;
-        private Action SwitchToDownload;
-        private bool DoUnlock;
+        private readonly Action SwitchToFlashRom;
+        private readonly Action SwitchToUndoRoot;
+        private readonly Action SwitchToDownload;
+        private readonly bool DoUnlock;
         private MachineState State;
-        private object EvaluateViewStateLockObject = new object();
+        private readonly object EvaluateViewStateLockObject = new();
 
         internal LumiaUnlockBootViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToFlashRom, Action SwitchToUndoRoot, Action SwitchToDownload, bool DoUnlock, Action Callback)
             : base()
@@ -86,10 +86,14 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (!IsActive)
+            {
                 return;
+            }
 
             if (State == MachineState.LumiaUnlockBoot)
+            {
                 return;
+            }
 
             lock (EvaluateViewStateLockObject)
             {
@@ -135,20 +139,21 @@ namespace WPinternals
 
                             UefiSecurityStatusResponse SecurityStatus = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadSecurityStatus();
                             if (SecurityStatus != null)
+                            {
                                 IsBootLoaderUnlocked = (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+                            }
 
                             TestPos = 2;
 
                             PhoneInfo Info = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
                             if (SecurityStatus == null)
+                            {
                                 IsBootLoaderUnlocked = !Info.IsBootloaderSecure;
+                            }
 
                             if (RootKeyHash == null)
                             {
-                                RootKeyHash = Info.RKH;
-
-                                if (RootKeyHash == null)
-                                    RootKeyHash = new byte[32];
+                                RootKeyHash = Info.RKH ?? (new byte[32]);
                             }
 
                             TestPos = 3;
@@ -156,7 +161,7 @@ namespace WPinternals
                             if (Info.FlashAppProtocolVersionMajor < 2)
                             {
                                 // This action is executed after the resources are selected by the user.
-                                Action<string, string, string, string, string, string, bool> ReturnFunction = (FFUPath, LoadersPath, SBL3Path, ProfileFFUPath, EDEPath, SupportedFFUPath, DoFixBoot) =>
+                                void ReturnFunction(string FFUPath, string LoadersPath, string SBL3Path, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, bool DoFixBoot)
                                 {
                                     // Stop responding to device arrival here, because all connections are handled by subfunctions, not here.
                                     IsSwitchingInterface = true;
@@ -174,36 +179,38 @@ namespace WPinternals
                                     LogFile.Log("FFU: " + FFUPath);
                                     LogFile.Log("Loaders: " + LoadersPath);
                                     if (SBL3Path == null)
+                                    {
                                         LogFile.Log("No SBL3 specified");
+                                    }
                                     else
+                                    {
                                         LogFile.Log("SBL3: " + SBL3Path);
+                                    }
 
                                     ActivateSubContext(new BusyViewModel("Processing resources..."));
 
                                     if (DoUnlock)
                                     {
-                                        Task.Run(async () =>
-                                        {
-                                            await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                        });
+                                        Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
                                     }
                                     else
                                     {
-                                        Task.Run(async () =>
-                                        {
-                                            await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                        });
+                                        Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
                                     }
-                                };
+                                }
 
                                 if (DoUnlock)
+                                {
                                     ActivateSubContext(new BootUnlockResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, false));
+                                }
                                 else
+                                {
                                     ActivateSubContext(new BootRestoreResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, false));
+                                }
                             }
                             else
                             {
-                                bool AlreadyUnlocked = false;
+                                const bool AlreadyUnlocked = false;
                                 if (DoUnlock)
                                 {
                                     NokiaFlashModel FlashModel = (NokiaFlashModel)PhoneNotifier.CurrentModel;
@@ -222,7 +229,7 @@ namespace WPinternals
                                 IsSwitchingInterface = true;
 
                                 // This action is executed after the resources are selected by the user.
-                                Action<string, string, string, string, string, string, bool> ReturnFunction = (FFUPath, LoadersPath, SBL3Path, ProfileFFUPath, EDEPath, SupportedFFUPath, DoFixBoot) =>
+                                void ReturnFunction(string FFUPath, string LoadersPath, string SBL3Path, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, bool DoFixBoot)
                                 {
                                     IsSwitchingInterface = true;
                                     State = MachineState.LumiaUnlockBoot;
@@ -236,24 +243,36 @@ namespace WPinternals
                                         StorePaths();
 
                                         if (DoFixBoot)
+                                        {
                                             LogFile.Log("Fix Boot");
+                                        }
                                         else
+                                        {
                                             LogFile.Log("Unlock Bootloader");
+                                        }
 
                                         LogFile.Log("Processing resources:");
                                         LogFile.Log("Profile FFU: " + ProfileFFUPath);
                                         LogFile.Log("EDE file: " + EDEPath);
                                         if (SupportedFFUPath != null)
+                                        {
                                             LogFile.Log("Donor-FFU with supported OS version: " + SupportedFFUPath);
+                                        }
 
                                         Task.Run(async () =>
                                             {
                                                 if (DoFixBoot)
+                                                {
                                                     await LumiaV2UnlockBootViewModel.LumiaV2FixBoot(PhoneNotifier, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                                }
                                                 else if (!AlreadyUnlocked)
+                                                {
                                                     await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                                }
                                                 else
+                                                {
                                                     await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage, true);
+                                                }
                                             });
                                     }
                                     else
@@ -263,24 +282,27 @@ namespace WPinternals
                                             FFU ProfileFFU = null;
 
                                             List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => (Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
-                                            if (FFUs.Count() > 0)
-                                                ProfileFFU = new FFU(FFUs[0].Path);
-                                            else
-                                                throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
+                                            ProfileFFU = FFUs.Count > 0
+                                                ? new FFU(FFUs[0].Path)
+                                                : throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
 
                                             LogFile.Log("Profile FFU: " + ProfileFFU.Path);
 
                                             await LumiaUnlockBootloaderViewModel.LumiaV2RelockUEFI(PhoneNotifier, ProfileFFU.Path, true, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
                                         });
                                     }
-                                };
+                                }
 
                                 TestPos = 5;
 
                                 if (DoUnlock)
+                                {
                                     ActivateSubContext(new BootUnlockResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, Info.Type));
+                                }
                                 else
+                                {
                                     ActivateSubContext(new BootRestoreResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, Info.Type));
+                                }
                             }
                         }
                         catch (Exception Ex)
@@ -292,7 +314,7 @@ namespace WPinternals
                         IsSwitchingInterface = false;
 
                         // If resources are not confirmed yet, then display view with device info and request for resources.
-                        QualcommDownload Download = new QualcommDownload((QualcommSerial)PhoneNotifier.CurrentModel);
+                        QualcommDownload Download = new((QualcommSerial)PhoneNotifier.CurrentModel);
                         byte[] QualcommRootKeyHash;
 
                         try
@@ -306,7 +328,9 @@ namespace WPinternals
                         }
 
                         if (RootKeyHash == null)
+                        {
                             RootKeyHash = QualcommRootKeyHash;
+                        }
                         else if (!StructuralComparisons.StructuralEqualityComparer.Equals(RootKeyHash, QualcommRootKeyHash))
                         {
                             LogFile.Log("Error: Root Key Hash in Qualcomm Emergency mode does not match!");
@@ -330,32 +354,34 @@ namespace WPinternals
                             LogFile.Log("FFU: " + FFUPath);
                             LogFile.Log("Loaders: " + LoadersPath);
                             if (SBL3Path == null)
+                            {
                                 LogFile.Log("No SBL3 specified");
+                            }
                             else
+                            {
                                 LogFile.Log("SBL3: " + SBL3Path);
+                            }
 
                             ActivateSubContext(new BusyViewModel("Processing resources..."));
 
                             if (DoUnlock)
                             {
-                                Task.Run(async () =>
-                                {
-                                    await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                });
+                                Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
                             }
                             else
                             {
-                                Task.Run(async () =>
-                                {
-                                    await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                });
+                                Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
                             }
                         };
 
                         if (DoUnlock)
+                        {
                             ActivateSubContext(new BootUnlockResourcesViewModel("Qualcomm Emergency Download mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunctionD, Abort, IsBootLoaderUnlocked, false));
+                        }
                         else
+                        {
                             ActivateSubContext(new BootRestoreResourcesViewModel("Qualcomm Emergency Download mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunctionD, Abort, IsBootLoaderUnlocked, false));
+                        }
 
                         break;
                     case PhoneInterfaces.Qualcomm_Flash:
@@ -371,24 +397,15 @@ namespace WPinternals
                             FFUPath = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Software\WPInternals", "FFUPath", null);
                             SupportedFFUPath = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Software\WPInternals", "SupportedFFUPath", null);
                             LoadersPath = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Software\WPInternals", "LoadersPath", null);
-                            if (DoUnlock)
-                                SBL3Path = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Software\WPInternals", "SBL3Path", null);
-                            else
-                                SBL3Path = null;
+                            SBL3Path = DoUnlock ? (string)Registry.GetValue(@"HKEY_CURRENT_USER\Software\WPInternals", "SBL3Path", null) : null;
 
                             if (DoUnlock)
                             {
-                                Task.Run(async () =>
-                                {
-                                    await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                });
+                                Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
                             }
                             else
                             {
-                                Task.Run(async () =>
-                                {
-                                    await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                });
+                                Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
                             }
                             break;
                         }
@@ -436,41 +453,53 @@ namespace WPinternals
 
         private void StorePaths()
         {
-            RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software\WPInternals", true);
-            if (Key == null)
-                Key = Registry.CurrentUser.CreateSubKey(@"Software\WPInternals");
+            RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software\WPInternals", true) ?? Registry.CurrentUser.CreateSubKey(@"Software\WPInternals");
 
             if (FFUPath == null)
             {
                 if (Key.GetValue("FFUPath") != null)
+                {
                     Key.DeleteValue("FFUPath");
+                }
             }
             else
+            {
                 Key.SetValue("FFUPath", FFUPath);
+            }
 
             if (LoadersPath == null)
             {
                 if (Key.GetValue("LoadersPath") != null)
+                {
                     Key.DeleteValue("LoadersPath");
+                }
             }
             else
+            {
                 Key.SetValue("LoadersPath", LoadersPath);
+            }
 
             if (DoUnlock)
             {
                 if (SBL3Path == null)
                 {
                     if (Key.GetValue("SBL3Path") != null)
+                    {
                         Key.DeleteValue("SBL3Path");
+                    }
                 }
                 else
+                {
                     Key.SetValue("SBL3Path", SBL3Path);
+                }
             }
 
             if (ProfileFFUPath == null)
             {
                 if (Key.GetValue("ProfileFFUPath") != null)
+                {
                     Key.DeleteValue("ProfileFFUPath");
+                }
             }
             else
             {
@@ -487,7 +516,9 @@ namespace WPinternals
                 if (EDEPath == null)
                 {
                     if (Key.GetValue("EDEPath") != null)
+                    {
                         Key.DeleteValue("EDEPath");
+                    }
                 }
                 else
                 {
@@ -522,7 +553,7 @@ namespace WPinternals
         internal void ExitMessage(string Message, string SubMessage)
         {
             // SecureBoot Unlock v2 is done. Reactivate phone arrival events.
-            MessageViewModel SuccessMessageViewModel = new MessageViewModel(Message, () =>
+            MessageViewModel SuccessMessageViewModel = new(Message, () =>
             {
                 State = MachineState.Default;
                 Exit();
@@ -531,7 +562,7 @@ namespace WPinternals
             ActivateSubContext(SuccessMessageViewModel);
         }
 
-        void NewDeviceArrived(ArrivalEventArgs Args)
+        private void NewDeviceArrived(ArrivalEventArgs Args)
         {
             // Do not start on a new thread, because EvaluateViewState will also create new ViewModels and those should be created on the UI thread.
             EvaluateViewState();
@@ -561,8 +592,8 @@ namespace WPinternals
         internal Action SwitchToFlashRom;
         internal Action SwitchToUndoRoot;
         internal Action SwitchToDownload;
-        private string PlatformID;
-        private string ProductType;
+        private readonly string PlatformID;
+        private readonly string ProductType;
         private string ValidatedSupportedFfuPath = null;
 
         internal FlashResourcesViewModel(string CurrentMode, byte[] RootKeyHash, Action SwitchToFlashRom, Action SwitchToUndoRoot, Action SwitchToDownload, Action<string, string, string, string, string, string, bool> Result, Action Abort, bool IsBootLoaderUnlocked, bool TargetHasNewFlashProtocol, string PlatformID = null, string ProductType = null) : base()
@@ -577,7 +608,7 @@ namespace WPinternals
             this.SwitchToDownload = SwitchToDownload;
             this.IsBootLoaderUnlocked = IsBootLoaderUnlocked;
             OkCommand = new DelegateCommand(() => Result(FFUPath, LoadersPath, SBL3Path, ProfileFFUPath, EDEPath, IsSupportedFfuNeeded ? SupportedFFUPath : null, false),
-                () => (!TargetHasNewFlashProtocol && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null))) || ((ProfileFFUPath != null) && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null))))));
+                () => ((!TargetHasNewFlashProtocol && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null)))) || ((ProfileFFUPath != null) && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null))))));
             FixCommand = new DelegateCommand(() => Result(null, null, null, null, null, null, true));
             CancelCommand = new DelegateCommand(Abort);
             this.TargetHasNewFlashProtocol = TargetHasNewFlashProtocol;
@@ -630,13 +661,15 @@ namespace WPinternals
             catch { }
 
             List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => (PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
-            if (FFUs.Count() > 0)
+            if (FFUs.Count > 0)
             {
                 IsProfileFfuValid = true;
                 ProfileFFUPath = FFUs[0].Path;
             }
             else
+            {
                 IsProfileFfuValid = false;
+            }
         }
 
         private void SetEDEPath()
@@ -650,7 +683,9 @@ namespace WPinternals
                 {
                     Programmer = new QualcommPartition(_EDEPath);
                     if (ByteOperations.Compare(Programmer.RootKeyHash, RootKeyHash))
+                    {
                         return;
+                    }
                 }
             }
             catch { }
@@ -694,8 +729,8 @@ namespace WPinternals
 
                 try
                 {
-                    FFU FFU = new FFU(_FFUPath);
-                    IsSupportedFfuNeeded = !(App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V1.1-EFIESP").First().TargetVersions.Any(v => v.Description == FFU.GetOSVersion()));
+                    FFU FFU = new(_FFUPath);
+                    IsSupportedFfuNeeded = !App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == FFU.GetOSVersion());
                 }
                 catch
                 {
@@ -712,8 +747,10 @@ namespace WPinternals
                         if (_SupportedFFUPath != null)
                         {
                             SupportedFFU = new FFU(_SupportedFFUPath);
-                            if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V1.1-EFIESP").First().TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
+                            if (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
+                            {
                                 return;
+                            }
                         }
                     }
                     catch { }
@@ -724,7 +761,7 @@ namespace WPinternals
                         if (TempSupportedFFUPath != null)
                         {
                             SupportedFFU = new FFU(TempSupportedFFUPath);
-                            if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V1.1-EFIESP").First().TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
+                            if (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
                             {
                                 ValidatedSupportedFfuPath = TempSupportedFFUPath;
                                 SupportedFFUPath = TempSupportedFFUPath;
@@ -735,8 +772,8 @@ namespace WPinternals
                     }
                     catch { }
 
-                    List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V1.1-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
-                    if (FFUs.Count() > 0)
+                    List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
+                    if (FFUs.Count > 0)
                     {
                         ValidatedSupportedFfuPath = FFUs[0].Path;
                         SupportedFFUPath = FFUs[0].Path;
@@ -754,8 +791,8 @@ namespace WPinternals
 
                 try
                 {
-                    FFU ProfileFFU = new FFU(_ProfileFFUPath);
-                    IsSupportedFfuNeeded = !(App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == ProfileFFU.GetOSVersion()));
+                    FFU ProfileFFU = new(_ProfileFFUPath);
+                    IsSupportedFfuNeeded = !App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == ProfileFFU.GetOSVersion());
                 }
                 catch
                 {
@@ -772,8 +809,10 @@ namespace WPinternals
                         if (_SupportedFFUPath != null)
                         {
                             SupportedFFU = new FFU(_SupportedFFUPath);
-                            if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
+                            if (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
+                            {
                                 return;
+                            }
                         }
                     }
                     catch { }
@@ -784,7 +823,7 @@ namespace WPinternals
                         if (TempSupportedFFUPath != null)
                         {
                             SupportedFFU = new FFU(TempSupportedFFUPath);
-                            if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
+                            if (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
                             {
                                 ValidatedSupportedFfuPath = TempSupportedFFUPath;
                                 SupportedFFUPath = TempSupportedFFUPath;
@@ -795,8 +834,8 @@ namespace WPinternals
                     }
                     catch { }
 
-                    List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
-                    if (FFUs.Count() > 0)
+                    List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
+                    if (FFUs.Count > 0)
                     {
                         ValidatedSupportedFfuPath = FFUs[0].Path;
                         SupportedFFUPath = FFUs[0].Path;
@@ -818,43 +857,28 @@ namespace WPinternals
                     }
                     else
                     {
-
                         if (!TargetHasNewFlashProtocol)
                         {
-                            if (App.Config.FFURepository.Any(e => ((e.Path == SupportedFFUPath) && (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V1.1-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)))))
+                            if (App.Config.FFURepository.Any(e => ((e.Path == SupportedFFUPath) && (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))))
                             {
                                 IsSupportedFfuValid = true;
                             }
                             else
                             {
-                                FFU SupportedFFU = new FFU(SupportedFFUPath);
-                                if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V1.1-EFIESP").First().TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
-                                {
-                                    IsSupportedFfuValid = true;
-                                }
-                                else
-                                {
-                                    IsSupportedFfuValid = false;
-                                }
+                                FFU SupportedFFU = new(SupportedFFUPath);
+                                IsSupportedFfuValid = App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion());
                             }
                         }
                         else
                         {
-                            if (App.Config.FFURepository.Any(e => ((e.Path == SupportedFFUPath) && (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)))))
+                            if (App.Config.FFURepository.Any(e => ((e.Path == SupportedFFUPath) && (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))))
                             {
                                 IsSupportedFfuValid = true;
                             }
                             else
                             {
-                                FFU SupportedFFU = new FFU(SupportedFFUPath);
-                                if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion()))
-                                {
-                                    IsSupportedFfuValid = true;
-                                }
-                                else
-                                {
-                                    IsSupportedFfuValid = false;
-                                }
+                                FFU SupportedFFU = new(SupportedFFUPath);
+                                IsSupportedFfuValid = App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == SupportedFFU.GetOSVersion());
                             }
                         }
                     }
@@ -865,7 +889,9 @@ namespace WPinternals
                 }
 
                 if (IsSupportedFfuValid && (SupportedFFUPath != null))
+                {
                     ValidatedSupportedFfuPath = SupportedFFUPath;
+                }
             }
             catch
             {
@@ -883,7 +909,7 @@ namespace WPinternals
             set
             {
                 _IsSupportedFfuNeeded = value;
-                OnPropertyChanged("IsSupportedFfuNeeded");
+                OnPropertyChanged(nameof(IsSupportedFfuNeeded));
                 OkCommand.RaiseCanExecuteChanged();
             }
         }
@@ -898,7 +924,7 @@ namespace WPinternals
             set
             {
                 _IsSupportedFfuValid = value;
-                OnPropertyChanged("IsSupportedFfuValid");
+                OnPropertyChanged(nameof(IsSupportedFfuValid));
                 OkCommand.RaiseCanExecuteChanged();
             }
         }
@@ -913,7 +939,7 @@ namespace WPinternals
             set
             {
                 _IsProfileFfuValid = value;
-                OnPropertyChanged("IsProfileFfuValid");
+                OnPropertyChanged(nameof(IsProfileFfuValid));
             }
         }
 
@@ -927,7 +953,7 @@ namespace WPinternals
             set
             {
                 _TargetHasNewFlashProtocol = value;
-                OnPropertyChanged("TargetHasNewFlashProtocol");
+                OnPropertyChanged(nameof(TargetHasNewFlashProtocol));
                 OkCommand.RaiseCanExecuteChanged();
             }
         }
@@ -942,7 +968,7 @@ namespace WPinternals
             set
             {
                 _IsBootLoaderUnlocked = value;
-                OnPropertyChanged("IsBootLoaderUnlocked");
+                OnPropertyChanged(nameof(IsBootLoaderUnlocked));
             }
         }
 
@@ -956,7 +982,7 @@ namespace WPinternals
             set
             {
                 _FFUPath = value;
-                OnPropertyChanged("FFUPath");
+                OnPropertyChanged(nameof(FFUPath));
                 SetSupportedFFUPath();
                 OkCommand.RaiseCanExecuteChanged();
             }
@@ -974,7 +1000,7 @@ namespace WPinternals
                 if (_ProfileFFUPath != value)
                 {
                     _ProfileFFUPath = value;
-                    OnPropertyChanged("ProfileFFUPath");
+                    OnPropertyChanged(nameof(ProfileFFUPath));
                     SetSupportedFFUPath();
                     OkCommand.RaiseCanExecuteChanged();
                 }
@@ -993,10 +1019,12 @@ namespace WPinternals
                 if (_SupportedFFUPath != value)
                 {
                     _SupportedFFUPath = value;
-                    OnPropertyChanged("SupportedFFUPath");
+                    OnPropertyChanged(nameof(SupportedFFUPath));
 
                     if (value != ValidatedSupportedFfuPath)
+                    {
                         ValidateSupportedFfuPath();
+                    }
                 }
             }
         }
@@ -1011,7 +1039,7 @@ namespace WPinternals
             set
             {
                 _LoadersPath = value;
-                OnPropertyChanged("LoadersPath");
+                OnPropertyChanged(nameof(LoadersPath));
             }
         }
 
@@ -1025,7 +1053,7 @@ namespace WPinternals
             set
             {
                 _EDEPath = value;
-                OnPropertyChanged("EDEPath");
+                OnPropertyChanged(nameof(EDEPath));
             }
         }
 
@@ -1039,7 +1067,7 @@ namespace WPinternals
             set
             {
                 _SBL3Path = value;
-                OnPropertyChanged("SBL3Path");
+                OnPropertyChanged(nameof(SBL3Path));
             }
         }
 
@@ -1053,7 +1081,7 @@ namespace WPinternals
             set
             {
                 _CurrentMode = value;
-                OnPropertyChanged("CurrentMode");
+                OnPropertyChanged(nameof(CurrentMode));
             }
         }
 
@@ -1067,47 +1095,11 @@ namespace WPinternals
             set
             {
                 _RootKeyHash = value;
-                OnPropertyChanged("RootKeyHash");
+                OnPropertyChanged(nameof(RootKeyHash));
             }
         }
-
-        private DelegateCommand _OkCommand = null;
-        public DelegateCommand OkCommand
-        {
-            get
-            {
-                return _OkCommand;
-            }
-            private set
-            {
-                _OkCommand = value;
-            }
-        }
-
-        private DelegateCommand _CancelCommand = null;
-        public DelegateCommand CancelCommand
-        {
-            get
-            {
-                return _CancelCommand;
-            }
-            private set
-            {
-                _CancelCommand = value;
-            }
-        }
-
-        private DelegateCommand _FixCommand = null;
-        public DelegateCommand FixCommand
-        {
-            get
-            {
-                return _FixCommand;
-            }
-            private set
-            {
-                _FixCommand = value;
-            }
-        }
+        public DelegateCommand OkCommand { get; } = null;
+        public DelegateCommand CancelCommand { get; } = null;
+        public DelegateCommand FixCommand { get; } = null;
     }
 }

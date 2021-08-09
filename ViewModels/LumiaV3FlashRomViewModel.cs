@@ -70,15 +70,29 @@ namespace WPinternals
             {
                 string Manifest = "[FullFlash]\r\n";
                 if (!string.IsNullOrEmpty(fullFlash.AntiTheftVersion))
+                {
                     Manifest += "AntiTheftVersion  = " + fullFlash.AntiTheftVersion + "\r\n";
+                }
+
                 if (!string.IsNullOrEmpty(fullFlash.OSVersion))
+                {
                     Manifest += "OSVersion         = " + fullFlash.OSVersion + "\r\n";
+                }
+
                 if (!string.IsNullOrEmpty(fullFlash.Description))
+                {
                     Manifest += "Description       = " + fullFlash.Description + "\r\n";
+                }
+
                 if (!string.IsNullOrEmpty(fullFlash.Version))
+                {
                     Manifest += "Version           = " + fullFlash.Version + "\r\n";
+                }
+
                 if (!string.IsNullOrEmpty(fullFlash.DevicePlatformId0))
+                {
                     Manifest += "DevicePlatformId0 = " + fullFlash.DevicePlatformId0 + "\r\n";
+                }
 
                 Manifest += "\r\n[Store]\r\n";
                 Manifest += "SectorSize     = " + store.SectorSize + "\r\n";
@@ -127,28 +141,54 @@ namespace WPinternals
         //
         internal async static Task LumiaV3CustomFlash(PhoneNotifierViewModel Notifier, List<FlashPart> FlashParts, bool CheckSectorAlignment = true, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null)
         {
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitFailure == null) ExitFailure = (m, s) => { };
+            if (SetWorkingStatus == null)
+            {
+                SetWorkingStatus = (m, s, v, a, st) => { };
+            }
 
-            uint chunkSize = 131072u;
-            int chunkSizes = 131072;
+            if (UpdateWorkingStatus == null)
+            {
+                UpdateWorkingStatus = (m, s, v, st) => { };
+            }
+
+            if (ExitSuccess == null)
+            {
+                ExitSuccess = (m, s) => { };
+            }
+
+            if (ExitFailure == null)
+            {
+                ExitFailure = (m, s) => { };
+            }
+
+            const uint chunkSize = 131072u;
+            const int chunkSizes = 131072;
 
             if (FlashParts != null)
             {
                 foreach (FlashPart Part in FlashParts)
                 {
                     if (Part.Stream == null)
+                    {
                         throw new ArgumentException("Stream is null");
+                    }
+
                     if (!Part.Stream.CanSeek)
+                    {
                         throw new ArgumentException("Streams must be seekable");
+                    }
+
                     if (((Part.StartSector * 0x200) % chunkSize) != 0)
+                    {
                         throw new ArgumentException("Invalid StartSector alignment");
+                    }
+
                     if (CheckSectorAlignment)
                     {
                         if ((Part.Stream.Length % chunkSize) != 0)
+                        {
                             throw new ArgumentException("Invalid Data length");
+                        }
                     }
                 }
             }
@@ -159,12 +199,19 @@ namespace WPinternals
                 PhoneInfo Info = Model.ReadPhoneInfo();
 
                 if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
+                {
                     throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that it does not support the Protocol Sync V2.");
+                }
+
                 if (Info.FlashAppProtocolVersionMajor < 2) // Old phones do not support the hack. These phones have Flash protocol 1.x.
+                {
                     throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that Flash App communication protocol is lower than 2. Reported version by the phone: " + Info.FlashAppProtocolVersionMajor + ".");
+                }
 
                 if (Info.UefiSecureBootEnabled)
+                {
                     throw new WPinternalsException("Flash failed!", "UEFI Secureboot must be disabled for the Flash V3 exploit to work.");
+                }
 
                 // The payloads must be ordered by the number of locations
                 //
@@ -174,20 +221,20 @@ namespace WPinternals
                 //
                 // If you do not order payloads like this, you will get an error, most likely hash mismatch
                 //
-                LumiaV2UnlockBootViewModel.FlashingPayload[] payloads = new LumiaV2UnlockBootViewModel.FlashingPayload[0];
+                LumiaV2UnlockBootViewModel.FlashingPayload[] payloads = Array.Empty<LumiaV2UnlockBootViewModel.FlashingPayload>();
                 if (FlashParts != null)
                 {
-                    payloads = LumiaV2UnlockBootViewModel.GetNonOptimizedPayloads(FlashParts, chunkSizes, (uint)(Info.WriteBufferSize / chunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Count()).ToArray();
+                    payloads = LumiaV2UnlockBootViewModel.GetNonOptimizedPayloads(FlashParts, chunkSizes, Info.WriteBufferSize / chunkSize, SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length).ToArray();
                 }
 
-                MemoryStream Headerstream1 = new MemoryStream();
+                MemoryStream Headerstream1 = new();
 
                 // ==============================
                 // Header 1 start
 
-                ImageHeader image = new ImageHeader();
-                FullFlash ffimage = new FullFlash();
-                Store simage = new Store();
+                ImageHeader image = new();
+                FullFlash ffimage = new();
+                Store simage = new();
 
                 // Todo make this read the image itself
                 ffimage.OSVersion = "10.0.11111.0";
@@ -219,15 +266,15 @@ namespace WPinternals
                 // Header 1 stop + round
                 // ==============================
 
-                MemoryStream Headerstream2 = new MemoryStream();
+                MemoryStream Headerstream2 = new();
 
                 // ==============================
                 // Header 2 start
 
-                StoreHeader store = new StoreHeader();
+                StoreHeader store = new();
 
-                store.WriteDescriptorCount = (UInt32)payloads.Count();
-                store.FinalTableIndex = (UInt32)payloads.Count() - store.FinalTableCount;
+                store.WriteDescriptorCount = (UInt32)payloads.Length;
+                store.FinalTableIndex = (UInt32)payloads.Length - store.FinalTableCount;
                 store.PlatformId = Info.PlatformID;
 
                 foreach (LumiaV2UnlockBootViewModel.FlashingPayload payload in payloads)
@@ -236,7 +283,7 @@ namespace WPinternals
                 }
 
                 byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, 0x20000);
-                GPT GPT = new GPT(GPTChunk);
+                GPT GPT = new(GPTChunk);
                 UInt64 PlatEnd = 0;
                 if (GPT.Partitions.Any(x => x.Name == "PLAT"))
                 {
@@ -245,9 +292,12 @@ namespace WPinternals
 
                 foreach (LumiaV2UnlockBootViewModel.FlashingPayload payload in payloads)
                 {
-                    if (payload.TargetLocations.First() > PlatEnd)
+                    if (payload.TargetLocations[0] > PlatEnd)
+                    {
                         break;
-                    store.FlashOnlyTableIndex += 1;
+                    }
+
+                    store.FlashOnlyTableIndex++;
                 }
 
                 byte[] StoreHeaderBuffer = new byte[0xF8];
@@ -275,7 +325,7 @@ namespace WPinternals
                 UInt32 NewWriteDescriptorOffset = 0;
                 foreach (LumiaV2UnlockBootViewModel.FlashingPayload payload in payloads)
                 {
-                    ByteOperations.WriteUInt32(descriptorsBuffer, NewWriteDescriptorOffset + 0x00, (UInt32)payload.TargetLocations.Count()); // Location count
+                    ByteOperations.WriteUInt32(descriptorsBuffer, NewWriteDescriptorOffset + 0x00, (UInt32)payload.TargetLocations.Length); // Location count
                     ByteOperations.WriteUInt32(descriptorsBuffer, NewWriteDescriptorOffset + 0x04, payload.ChunkCount);                      // Chunk count
                     NewWriteDescriptorOffset += 0x08;
 
@@ -294,7 +344,7 @@ namespace WPinternals
                 // Header 2 stop + round
                 // ==============================
 
-                SecurityHeader security = new SecurityHeader();
+                SecurityHeader security = new();
 
                 Headerstream1.Seek(0, SeekOrigin.Begin);
                 Headerstream2.Seek(0, SeekOrigin.Begin);
@@ -307,7 +357,7 @@ namespace WPinternals
                 }
 
                 byte[] HashTable = new byte[security.HashTableSize];
-                BinaryWriter bw = new BinaryWriter(new MemoryStream(HashTable));
+                BinaryWriter bw = new(new MemoryStream(HashTable));
 
                 SHA256 crypto = SHA256.Create();
                 for (Int32 i = 0; i < Headerstream1.Length / chunkSize; i++)
@@ -347,7 +397,7 @@ namespace WPinternals
                 ByteOperations.WriteUInt32(SecurityHeaderBuffer, 0x18, security.CatalogSize);
                 ByteOperations.WriteUInt32(SecurityHeaderBuffer, 0x1C, security.HashTableSize);
 
-                MemoryStream retstream = new MemoryStream();
+                MemoryStream retstream = new();
 
                 retstream.Write(SecurityHeaderBuffer, 0, 0x20);
 
@@ -384,10 +434,12 @@ namespace WPinternals
 
                 Byte Options = 0;
                 if (!Info.IsBootloaderSecure)
+                {
                     Options = (Byte)((FlashOptions)Options | FlashOptions.SkipSignatureCheck);
+                }
 
                 LogFile.Log("Flash in progress...", LogType.ConsoleOnly);
-                SetWorkingStatus("Flashing...", null, (UInt64?)payloads.Count(), Status: WPinternalsStatus.Flashing);
+                SetWorkingStatus("Flashing...", null, (UInt64?)payloads.Length, Status: WPinternalsStatus.Flashing);
 
                 Model.SendFfuHeaderV1(FfuHeader, Options);
 
@@ -400,11 +452,11 @@ namespace WPinternals
 
                 byte[] payloadBuffer;
 
-                for (Int32 i = 0; i < payloads.Count(); i+= numberOfPayloadsToSendAtOnce)
+                for (Int32 i = 0; i < payloads.Length; i+= numberOfPayloadsToSendAtOnce)
                 {
-                    if (i + numberOfPayloadsToSendAtOnce - 1 >= payloads.Count())
+                    if (i + numberOfPayloadsToSendAtOnce - 1 >= payloads.Length)
                     {
-                        numberOfPayloadsToSendAtOnce = payloads.Count() - i;
+                        numberOfPayloadsToSendAtOnce = payloads.Length - i;
                     }
 
                     payloadBuffer = new byte[numberOfPayloadsToSendAtOnce * chunkSizes];
@@ -415,25 +467,27 @@ namespace WPinternals
                     {
                         LumiaV2UnlockBootViewModel.FlashingPayload payload = payloads[i + j];
 
-                        UInt32 StreamIndex = payload.StreamIndexes.First();
+                        UInt32 StreamIndex = payload.StreamIndexes[0];
                         FlashPart flashPart = FlashParts[(Int32)StreamIndex];
 
                         if (flashPart.ProgressText != null)
+                        {
                             ProgressText = flashPart.ProgressText;
+                        }
 
                         Stream Stream = flashPart.Stream;
-                        Stream.Seek(payload.StreamLocations.First(), SeekOrigin.Begin);
+                        Stream.Seek(payload.StreamLocations[0], SeekOrigin.Begin);
                         Stream.Read(payloadBuffer, j * chunkSizes, chunkSizes);
                         counter++;
                     }
 
                     if ((Info.SecureFfuSupportedProtocolMask & (ushort)FfuProtocol.ProtocolSyncV2) != 0)
                     {
-                        Model.SendFfuPayloadV2(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Count()).ToString()));
+                        Model.SendFfuPayloadV2(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Length).ToString()));
                     }
                     else
                     {
-                        Model.SendFfuPayloadV1(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Count()).ToString()));
+                        Model.SendFfuPayloadV1(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Length).ToString()));
                     }
 
                     UpdateWorkingStatus(ProgressText, null, counter, WPinternalsStatus.Flashing);

@@ -66,15 +66,15 @@ namespace MadWizard.WinUSBNet
     /// </summary>
     public class USBNotifier : IDisposable
     {
-        private DeviceNotifyHook _hook;
+        private readonly DeviceNotifyHook _hook;
         private Guid _guid;
-        private WPinternals.AsyncAutoResetEvent NodeChangeEvent = new WPinternals.AsyncAutoResetEvent(false);
+        private readonly WPinternals.AsyncAutoResetEvent NodeChangeEvent = new(false);
 
         /// <summary>
         /// Event triggered when a new USB device that matches the USBNotifier's GUID is connected
         /// </summary>
-        private event USBEventHandler _Arrival;
-        public event USBEventHandler Arrival
+        private event EventHandler<USBEvent> _Arrival;
+        public event EventHandler<USBEvent> Arrival
         {
             // Heathcliff74 - Also notify currently connected USB devices
             add
@@ -83,7 +83,9 @@ namespace MadWizard.WinUSBNet
                 _Arrival += value;
                 USBDeviceInfo[] Devices = USBDevice.GetDevices(Guid);
                 foreach (USBDeviceInfo Device in Devices)
+                {
                     _Arrival(this, new USBEvent(USBEventType.DeviceArrival, Guid, Device.DevicePath));
+                }
             }
             remove
             {
@@ -94,7 +96,7 @@ namespace MadWizard.WinUSBNet
         /// <summary>
         /// Event triggered when a new USB device that matches the USBNotifier's GUID  is disconnected
         /// </summary>
-        public event USBEventHandler Removal;
+        public event EventHandler<USBEvent> Removal;
 
         /// <summary>
         /// The interface GUID of devices this USBNotifier will watch
@@ -121,7 +123,6 @@ namespace MadWizard.WinUSBNet
             // Handled in other constructor
         }
 
-
         /// <summary>
         /// Constructs a new USBNotifier that will watch for events on
         /// devices matching the given interface GUID. A Windows Forms control
@@ -142,8 +143,7 @@ namespace MadWizard.WinUSBNet
         /// <param name="devicePath">Device pathname of the device that has been connected</param>
         protected void OnArrival(string devicePath)
         {
-            if (_Arrival != null)
-                _Arrival(this, new USBEvent(USBEventType.DeviceArrival, _guid, devicePath));
+            _Arrival?.Invoke(this, new USBEvent(USBEventType.DeviceArrival, _guid, devicePath));
         }
         /// <summary>
         /// Triggers the removal event
@@ -151,14 +151,15 @@ namespace MadWizard.WinUSBNet
         /// <param name="devicePath">Device pathname of the device that has been connected</param>
         protected void OnRemoval(string devicePath)
         {
-            if (Removal != null)
-                Removal(this, new USBEvent(USBEventType.DeviceRemoval, _guid, devicePath));
+            Removal?.Invoke(this, new USBEvent(USBEventType.DeviceRemoval, _guid, devicePath));
         }
 
         internal int HandleDeviceChange(int msg, IntPtr wParam, IntPtr lParam)
         {
             if (msg != API.DeviceManagement.WM_DEVICECHANGE)
+            {
                 throw new USBException("Invalid device change message."); // should not happen
+            }
 
             //switch ((int)wParam)
             //{
@@ -183,14 +184,18 @@ namespace MadWizard.WinUSBNet
             {
                 string devName = API.DeviceManagement.GetNotifyMessageDeviceName(lParam, _guid);
                 if (devName != null)
+                {
                     OnArrival(devName);
+                }
             }
 
             if ((int)wParam == API.DeviceManagement.DBT_DEVICEREMOVECOMPLETE)
             {
                 string devName = API.DeviceManagement.GetNotifyMessageDeviceName(lParam, _guid);
                 if (devName != null)
+                {
                     OnRemoval(devName);
+                }
             }
 
             if ((int)wParam == API.DeviceManagement.DBT_DEVNODES_CHANGED)
@@ -232,6 +237,5 @@ namespace MadWizard.WinUSBNet
                 _hook.Dispose();
             }
         }
-
     }
 }

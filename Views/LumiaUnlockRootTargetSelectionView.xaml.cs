@@ -37,25 +37,34 @@ namespace WPinternals
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
-            Hyperlink link = args.Source as Hyperlink;
-            if (link != null)
+            if (args.Source is Hyperlink link)
             {
                 if (link.NavigateUri.ToString() == "Dump")
+                {
                     ((LumiaUnlockRootTargetSelectionViewModel)DataContext).SwitchToDumpRom();
+                }
                 else if (link.NavigateUri.ToString() == "Flash")
+                {
                     ((LumiaUnlockRootTargetSelectionViewModel)DataContext).SwitchToFlashRom();
+                }
                 else if (link.NavigateUri.ToString() == "UnlockBoot")
+                {
                     ((LumiaUnlockRootTargetSelectionViewModel)DataContext).SwitchToUnlockBoot();
+                }
                 else if (link.NavigateUri.ToString() == "GettingStarted")
+                {
                     App.NavigateToGettingStarted();
+                }
                 else
+                {
                     Process.Start(link.NavigateUri.ToString());
+                }
             }
         }
 
         private void Document_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as FlowDocument).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
 
         private void FolderPicker_PathChanged(object sender, PathChangedEventArgs e)

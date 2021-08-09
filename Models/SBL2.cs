@@ -44,7 +44,9 @@ namespace WPinternals
                 null);
 
             if (PatchOffset == null)
+            {
                 throw new BadImageFormatException();
+            }
 
             Buffer.BlockCopy(new byte[] { 0x00, 0x00, 0xA0, 0xE3 }, 0, Binary, (int)PatchOffset + 8, 4);
 

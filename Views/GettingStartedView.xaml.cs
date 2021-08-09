@@ -37,31 +37,30 @@ namespace WPinternals
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
-            Hyperlink link = args.Source as Hyperlink;
-            if (link != null)
+            if (args.Source is Hyperlink link)
             {
                 switch (link.NavigateUri.ToString())
                 {
                     case "Disclaimer":
-                        (this.DataContext as GettingStartedViewModel).ShowDisclaimer();
+                        (this.DataContext as GettingStartedViewModel)?.ShowDisclaimer();
                         break;
                     case "UnlockBoot":
-                        (this.DataContext as GettingStartedViewModel).SwitchToUnlockBoot();
+                        (this.DataContext as GettingStartedViewModel)?.SwitchToUnlockBoot();
                         break;
                     case "UnlockRoot":
-                        (this.DataContext as GettingStartedViewModel).SwitchToUnlockRoot();
+                        (this.DataContext as GettingStartedViewModel)?.SwitchToUnlockRoot();
                         break;
                     case "Backup":
-                        (this.DataContext as GettingStartedViewModel).SwitchToBackup();
+                        (this.DataContext as GettingStartedViewModel)?.SwitchToBackup();
                         break;
                     case "Flash":
-                        (this.DataContext as GettingStartedViewModel).SwitchToFlashRom();
+                        (this.DataContext as GettingStartedViewModel)?.SwitchToFlashRom();
                         break;
                     case "Dump":
-                        (this.DataContext as GettingStartedViewModel).SwitchToDumpRom();
+                        (this.DataContext as GettingStartedViewModel)?.SwitchToDumpRom();
                         break;
                     case "Download":
-                        (this.DataContext as GettingStartedViewModel).SwitchToDownload();
+                        (this.DataContext as GettingStartedViewModel)?.SwitchToDownload();
                         break;
                     default:
                         Process.Start(link.NavigateUri.AbsoluteUri);
@@ -72,17 +71,17 @@ namespace WPinternals
 
         private void Document_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as FlowDocument).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
 
         private void TextBlock_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as TextBlock).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as TextBlock)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
 
         private void BulletDecorator_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as System.Windows.Controls.Primitives.BulletDecorator).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as System.Windows.Controls.Primitives.BulletDecorator)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
     }
 }

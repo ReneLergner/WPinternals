@@ -46,7 +46,9 @@ namespace WPinternals
         private void MainViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "ContextViewModel")
+            {
                 MainContentScrollViewer.ScrollToTop();
+            }
         }
 
         private void ScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -58,11 +60,13 @@ namespace WPinternals
             if (e.WidthChanged)
             {
                 if (e.NewSize.Width >= (MaxChildWidth + (2 * MarginTarget)))
+                {
                     ChildFrame.Width = MaxChildWidth;
-                else if ((e.NewSize.Width - (2 * MarginTarget)) < MinChildWidth)
-                    ChildFrame.Width = MinChildWidth;
+                }
                 else
-                    ChildFrame.Width = e.NewSize.Width - (2 * MarginTarget);
+                {
+                    ChildFrame.Width = (e.NewSize.Width - (2 * MarginTarget)) < MinChildWidth ? MinChildWidth : e.NewSize.Width - (2 * MarginTarget);
+                }
             }
             ChildFrame.Margin = new Thickness(0, 20, 0, 20);
         }
@@ -70,7 +74,9 @@ namespace WPinternals
         private void Window_Closed(object sender, EventArgs e)
         {
             if ((Application.Current.MainWindow != this) && (Application.Current.MainWindow != null))
+            {
                 Application.Current.MainWindow.Close(); // This one holds the hWnd for handling USB events and it must be closed too.
+            }
         }
     }
 }

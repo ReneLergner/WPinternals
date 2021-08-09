@@ -30,11 +30,11 @@ namespace WPinternals
 
     internal class NokiaFlashViewModel : ContextViewModel
     {
-        private NokiaFlashModel CurrentModel;
-        private Action<PhoneInterfaces> RequestModeSwitch;
+        private readonly NokiaFlashModel CurrentModel;
+        private readonly Action<PhoneInterfaces> RequestModeSwitch;
         internal Action SwitchToGettingStarted;
-        private object LockDeviceInfo = new object();
-        bool DeviceInfoLoaded = false;
+        private readonly object LockDeviceInfo = new();
+        private bool DeviceInfoLoaded = false;
 
         internal NokiaFlashViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch, Action SwitchToGettingStarted)
             : base()
@@ -48,7 +48,9 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (IsActive)
+            {
                 new Thread(() => StartLoadDeviceInfo()).Start();
+            }
         }
 
         private void StartLoadDeviceInfo()
@@ -110,7 +112,9 @@ namespace WPinternals
                             FinalConfigSsmStatus = CurrentModel.ReadFuseStatus(NokiaFlashModel.Fuse.Ssm);
                         }
                         else
+                        {
                             LogFile.Log("Security flags could not be read");
+                        }
 
                         PlatformName = CurrentModel.ReadStringParam("DPI");
                         LogFile.Log("Platform Name: " + PlatformName);
@@ -119,7 +123,7 @@ namespace WPinternals
                         // Instead read param RRKH to get the RKH.
                         PublicID = null;
                         byte[] RawPublicID = CurrentModel.ReadParam("PID");
-                        if ((RawPublicID != null) && (RawPublicID.Length > 4))
+                        if (RawPublicID?.Length > 4)
                         {
                             PublicID = new byte[RawPublicID.Length - 4];
                             Array.Copy(RawPublicID, 4, PublicID, 0, RawPublicID.Length - 4);
@@ -132,7 +136,9 @@ namespace WPinternals
                         }
                         RootKeyHash = CurrentModel.ReadParam("RRKH");
                         if (RootKeyHash != null)
+                        {
                             LogFile.Log("Root Key Hash: " + Converter.ConvertHexToString(RootKeyHash, " "));
+                        }
 
                         if (SecurityStatus != null)
                         {
@@ -160,7 +166,7 @@ namespace WPinternals
                         byte[] EMS = CurrentModel.ReadParam("EMS");
                         if (CID != null && EMS != null)
                         {
-                            UInt16 MID = (UInt16)(((UInt16)CID[0] << 8) + CID[1]);
+                            UInt16 MID = (UInt16)((CID[0] << 8) + CID[1]);
                             UInt64 MemSize = (UInt64)(((UInt32)EMS[0] << 24) + ((UInt32)EMS[1] << 16) + ((UInt32)EMS[2] << 8) + EMS[3]) * 0x200;
                             double MemSizeDouble = (double)MemSize / 1024 / 1024 / 1024;
                             MemSizeDouble = (double)(int)(MemSizeDouble * 10) / 10;
@@ -190,10 +196,8 @@ namespace WPinternals
                                     Manufacturer = "GigaDevice";
                                     break;
                             }
-                            if (Manufacturer == null)
-                                eMMC = MemSizeDouble.ToString() + " GB";
-                            else
-                                eMMC = Manufacturer + " " + MemSizeDouble.ToString() + " GB";
+                            eMMC = Manufacturer == null ? MemSizeDouble.ToString() + " GB" : Manufacturer + " " + MemSizeDouble.ToString() + " GB";
+
                             SamsungWarningVisible = (MID == 0x0015);
                         }
                         else
@@ -206,10 +210,9 @@ namespace WPinternals
 
                         if (chargecurrent.HasValue)
                         {
-                            if (chargecurrent < 0)
-                                ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + ((-1) * CurrentModel.ReadCurrentChargeCurrent()) + " mA (discharging)";
-                            else
-                                ChargingStatus = CurrentModel.ReadCurrentChargeLevel() + "% - " + CurrentModel.ReadCurrentChargeCurrent() + " mA (charging)";
+                            ChargingStatus = chargecurrent < 0
+                                ? CurrentModel.ReadCurrentChargeLevel() + "% - " + ((-1) * CurrentModel.ReadCurrentChargeCurrent()) + " mA (discharging)"
+                                : CurrentModel.ReadCurrentChargeLevel() + "% - " + CurrentModel.ReadCurrentChargeCurrent() + " mA (charging)";
 
                             LogFile.Log("Charging status: " + ChargingStatus);
                         }
@@ -220,10 +223,8 @@ namespace WPinternals
                         }
 
                         PhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
-                        if (Info.FlashAppProtocolVersionMajor < 2)
-                            BootloaderDescription = "Lumia Bootloader Spec A";
-                        else
-                            BootloaderDescription = "Lumia Bootloader Spec B";
+                        BootloaderDescription = Info.FlashAppProtocolVersionMajor < 2 ? "Lumia Bootloader Spec A" : "Lumia Bootloader Spec B";
+
                         LogFile.Log("Bootloader: " + BootloaderDescription);
 
                         ProductCode = Info.ProductCode;
@@ -239,7 +240,9 @@ namespace WPinternals
                             RootKeyHash = Info.RKH;
 
                             if (RootKeyHash != null)
+                            {
                                 LogFile.Log("Root Key Hash: " + Converter.ConvertHexToString(RootKeyHash, " "));
+                            }
                             else
                             {
                                 RootKeyHash = new byte[32];
@@ -298,7 +301,7 @@ namespace WPinternals
             set
             {
                 _PublicID = value;
-                OnPropertyChanged("PublicID");
+                OnPropertyChanged(nameof(PublicID));
             }
         }
 
@@ -312,7 +315,7 @@ namespace WPinternals
             set
             {
                 _RootKeyHash = value;
-                OnPropertyChanged("RootKeyHash");
+                OnPropertyChanged(nameof(RootKeyHash));
             }
         }
 
@@ -326,7 +329,7 @@ namespace WPinternals
             set
             {
                 _PlatformName = value;
-                OnPropertyChanged("PlatformName");
+                OnPropertyChanged(nameof(PlatformName));
             }
         }
 
@@ -340,7 +343,7 @@ namespace WPinternals
             set
             {
                 _ProductType = value;
-                OnPropertyChanged("ProductType");
+                OnPropertyChanged(nameof(ProductType));
             }
         }
 
@@ -354,7 +357,7 @@ namespace WPinternals
             set
             {
                 _ProductCode = value;
-                OnPropertyChanged("ProductCode");
+                OnPropertyChanged(nameof(ProductCode));
             }
         }
 
@@ -368,7 +371,7 @@ namespace WPinternals
             set
             {
                 _eMMC = value;
-                OnPropertyChanged("eMMC");
+                OnPropertyChanged(nameof(eMMC));
             }
         }
 
@@ -382,7 +385,7 @@ namespace WPinternals
             set
             {
                 _BootloaderDescription = value;
-                OnPropertyChanged("BootloaderDescription");
+                OnPropertyChanged(nameof(BootloaderDescription));
             }
         }
 
@@ -396,7 +399,7 @@ namespace WPinternals
             set
             {
                 _ChargingStatus = value;
-                OnPropertyChanged("ChargingStatus");
+                OnPropertyChanged(nameof(ChargingStatus));
             }
         }
 
@@ -410,7 +413,7 @@ namespace WPinternals
             set
             {
                 _SamsungWarningVisible = value;
-                OnPropertyChanged("SamsungWarningVisible");
+                OnPropertyChanged(nameof(SamsungWarningVisible));
             }
         }
 
@@ -424,7 +427,7 @@ namespace WPinternals
             set
             {
                 _PlatformSecureBootStatus = value;
-                OnPropertyChanged("PlatformSecureBootStatus");
+                OnPropertyChanged(nameof(PlatformSecureBootStatus));
             }
         }
 
@@ -438,7 +441,7 @@ namespace WPinternals
             set
             {
                 _BootloaderSecurityQfuseStatus = value;
-                OnPropertyChanged("BootloaderSecurityQfuseStatus");
+                OnPropertyChanged(nameof(BootloaderSecurityQfuseStatus));
             }
         }
 
@@ -452,7 +455,7 @@ namespace WPinternals
             set
             {
                 _BootloaderSecurityRdcStatus = value;
-                OnPropertyChanged("BootloaderSecurityRdcStatus");
+                OnPropertyChanged(nameof(BootloaderSecurityRdcStatus));
             }
         }
 
@@ -466,7 +469,7 @@ namespace WPinternals
             set
             {
                 _BootloaderSecurityAuthenticationStatus = value;
-                OnPropertyChanged("BootloaderSecurityAuthenticationStatus");
+                OnPropertyChanged(nameof(BootloaderSecurityAuthenticationStatus));
             }
         }
 
@@ -480,7 +483,7 @@ namespace WPinternals
             set
             {
                 _UefiSecureBootStatus = value;
-                OnPropertyChanged("UefiSecureBootStatus");
+                OnPropertyChanged(nameof(UefiSecureBootStatus));
             }
         }
 
@@ -494,7 +497,7 @@ namespace WPinternals
             set
             {
                 _EffectiveSecureBootStatus = value;
-                OnPropertyChanged("EffectiveSecureBootStatus");
+                OnPropertyChanged(nameof(EffectiveSecureBootStatus));
             }
         }
 
@@ -508,7 +511,7 @@ namespace WPinternals
             set
             {
                 _EffectiveBootloaderSecurityStatus = value;
-                OnPropertyChanged("EffectiveBootloaderSecurityStatus");
+                OnPropertyChanged(nameof(EffectiveBootloaderSecurityStatus));
             }
         }
 
@@ -522,7 +525,7 @@ namespace WPinternals
             set
             {
                 _NativeDebugStatus = value;
-                OnPropertyChanged("NativeDebugStatus");
+                OnPropertyChanged(nameof(NativeDebugStatus));
             }
         }
 
@@ -537,7 +540,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigSecureBootStatus = value;
-                OnPropertyChanged("FinalConfigSecureBootStatus");
+                OnPropertyChanged(nameof(FinalConfigSecureBootStatus));
             }
         }
 
@@ -551,7 +554,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigFfuVerifyStatus = value;
-                OnPropertyChanged("FinalConfigFfuVerifyStatus");
+                OnPropertyChanged(nameof(FinalConfigFfuVerifyStatus));
             }
         }
 
@@ -565,7 +568,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigJtagStatus = value;
-                OnPropertyChanged("FinalConfigJtagStatus");
+                OnPropertyChanged(nameof(FinalConfigJtagStatus));
             }
         }
 
@@ -579,7 +582,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigShkStatus = value;
-                OnPropertyChanged("FinalConfigShkStatus");
+                OnPropertyChanged(nameof(FinalConfigShkStatus));
             }
         }
 
@@ -593,7 +596,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigSimlockStatus = value;
-                OnPropertyChanged("FinalConfigSimlockStatus");
+                OnPropertyChanged(nameof(FinalConfigSimlockStatus));
             }
         }
 
@@ -607,7 +610,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigProductionDoneStatus = value;
-                OnPropertyChanged("FinalConfigProductionDoneStatus");
+                OnPropertyChanged(nameof(FinalConfigProductionDoneStatus));
             }
         }
 
@@ -621,7 +624,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigRkhStatus = value;
-                OnPropertyChanged("FinalConfigRkhStatus");
+                OnPropertyChanged(nameof(FinalConfigRkhStatus));
             }
         }
 
@@ -635,7 +638,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigPublicIdStatus = value;
-                OnPropertyChanged("FinalConfigPublicIdStatus");
+                OnPropertyChanged(nameof(FinalConfigPublicIdStatus));
             }
         }
 
@@ -649,7 +652,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigDakStatus = value;
-                OnPropertyChanged("FinalConfigDakStatus");
+                OnPropertyChanged(nameof(FinalConfigDakStatus));
             }
         }
 
@@ -663,7 +666,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigSecGenStatus = value;
-                OnPropertyChanged("FinalConfigSecGenStatus");
+                OnPropertyChanged(nameof(FinalConfigSecGenStatus));
             }
         }
 
@@ -677,7 +680,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigOemIdStatus = value;
-                OnPropertyChanged("FinalConfigOemIdStatus");
+                OnPropertyChanged(nameof(FinalConfigOemIdStatus));
             }
         }
 
@@ -691,7 +694,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigFastBootStatus = value;
-                OnPropertyChanged("FinalConfigFastBootStatus");
+                OnPropertyChanged(nameof(FinalConfigFastBootStatus));
             }
         }
 
@@ -705,7 +708,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigSpdmSecModeStatus = value;
-                OnPropertyChanged("FinalConfigSpdmSecModeStatus");
+                OnPropertyChanged(nameof(FinalConfigSpdmSecModeStatus));
             }
         }
 
@@ -719,7 +722,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigRpmWdogStatus = value;
-                OnPropertyChanged("FinalConfigRpmWdogStatus");
+                OnPropertyChanged(nameof(FinalConfigRpmWdogStatus));
             }
         }
 
@@ -733,7 +736,7 @@ namespace WPinternals
             set
             {
                 _FinalConfigSsmStatus = value;
-                OnPropertyChanged("FinalConfigSsmStatus");
+                OnPropertyChanged(nameof(FinalConfigSsmStatus));
             }
         }
         #endregion

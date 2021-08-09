@@ -9,16 +9,14 @@ using System;
 
 namespace MadWizard.WinUSBNet
 {
-
     /// <summary>
     /// Describes the policy for a specific USB pipe
     /// </summary>
     public class USBPipePolicy
     {
-
-        private byte _pipeID;
-        private int _interfaceIndex;
-        private USBDevice _device;
+        private readonly byte _pipeID;
+        private readonly int _interfaceIndex;
+        private readonly USBDevice _device;
 
         internal USBPipePolicy(USBDevice device, int interfaceIndex, byte pipeID)
         {
@@ -27,13 +25,13 @@ namespace MadWizard.WinUSBNet
             _device = device;
         }
 
-
-
         private void RequireDirectionOut()
         {
             // Some policy types only apply specifically to OUT direction pipes
             if ((_pipeID & 0x80) != 0)
+            {
                 throw new NotSupportedException("This policy type is only allowed on OUT direction pipes.");
+            }
         }
 
         private void RequireDirectionIn()
@@ -41,11 +39,13 @@ namespace MadWizard.WinUSBNet
             // Some policy types only apply specifically to IN  direction pipes
             // This function checks for this.
             if ((_pipeID & 0x80) == 0)
+            {
                 throw new NotSupportedException("This policy type is only allowed on IN direction pipes.");
+            }
         }
 
         /// <summary>
-        /// When false, read requests fail when the device returns more data than requested. When true, extra data is 
+        /// When false, read requests fail when the device returns more data than requested. When true, extra data is
         /// saved and returned on the next read. Default value is true. Only available on IN direction pipes.
         /// </summary>
         /// <seealso href="http://msdn.microsoft.com/en-us/library/aa476439.aspx">WinUSB_GetPipePolicy for a more detailed description</seealso>
@@ -90,7 +90,7 @@ namespace MadWizard.WinUSBNet
             get
             {
                 RequireDirectionIn();
-                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.AUTO_FLUSH); ;
+                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.AUTO_FLUSH);
             }
             set
             {
@@ -108,7 +108,7 @@ namespace MadWizard.WinUSBNet
             get
             {
                 RequireDirectionIn();
-                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.IGNORE_SHORT_PACKETS); ;
+                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.IGNORE_SHORT_PACKETS);
             }
             set
             {
@@ -131,23 +131,26 @@ namespace MadWizard.WinUSBNet
             set
             {
                 if (value < 0)
+                {
                     throw new ArgumentOutOfRangeException("Pipe transfer timeout cannot be negative.");
+                }
+
                 _device.InternalDevice.SetPipePolicy(_interfaceIndex, _pipeID, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT, (uint)value);
             }
         }
 
         /// <summary>
-        /// When true, read and write operations to the pipe must have a buffer length that is a multiple of the maximum endpoint packet size, 
+        /// When true, read and write operations to the pipe must have a buffer length that is a multiple of the maximum endpoint packet size,
         /// and the length must be less than the maximum transfer size. With these conditions met, data is sent directly to the USB driver stack,
-        /// bypassing the queuing and error handling of WinUSB. 
-        /// Default value is false. 
+        /// bypassing the queuing and error handling of WinUSB.
+        /// Default value is false.
         /// </summary>
         /// <seealso href="http://msdn.microsoft.com/en-us/library/aa476439.aspx">WinUSB_GetPipePolicy for a more detailed description</seealso>
         public bool RawIO
         {
             get
             {
-                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.RAW_IO); ;
+                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.RAW_IO);
             }
             set
             {
@@ -156,7 +159,7 @@ namespace MadWizard.WinUSBNet
         }
 
         /// <summary>
-        /// When true, every write request that is a multiple of the maximum packet size for the endpoint is terminated with a zero-length packet. 
+        /// When true, every write request that is a multiple of the maximum packet size for the endpoint is terminated with a zero-length packet.
         /// Default value is false. Only available on OUT direction pipes.
         /// </summary>
         /// <seealso href="http://msdn.microsoft.com/en-us/library/aa476439.aspx">WinUSB_GetPipePolicy for a more detailed description</seealso>
@@ -165,7 +168,7 @@ namespace MadWizard.WinUSBNet
             get
             {
                 RequireDirectionOut();
-                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.SHORT_PACKET_TERMINATE); ;
+                return _device.InternalDevice.GetPipePolicyBool(_interfaceIndex, _pipeID, API.POLICY_TYPE.SHORT_PACKET_TERMINATE);
             }
             set
             {
@@ -173,6 +176,5 @@ namespace MadWizard.WinUSBNet
                 _device.InternalDevice.SetPipePolicy(_interfaceIndex, _pipeID, API.POLICY_TYPE.SHORT_PACKET_TERMINATE, value);
             }
         }
-
     }
 }

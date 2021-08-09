@@ -27,9 +27,9 @@ namespace WPinternals
     internal class QualcommSerial : IDisposable
     {
         private bool Disposed = false;
-        private SerialPort Port = null;
-        private USBDevice USBDevice = null;
-        private CRC16 CRC16;
+        private readonly SerialPort Port = null;
+        private readonly USBDevice USBDevice = null;
+        private readonly CRC16 CRC16;
 
         public bool EncodeCommands = true;
         public bool DecodeResponses = true;
@@ -44,9 +44,11 @@ namespace WPinternals
                 string PortName = (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB\" + DevicePathElements[1] + @"\" + DevicePathElements[2] + @"\Device Parameters", "PortName", null);
                 if (PortName != null)
                 {
-                    Port = new SerialPort(PortName, 115200);
-                    Port.ReadTimeout = 1000;
-                    Port.WriteTimeout = 1000;
+                    Port = new SerialPort(PortName, 115200)
+                    {
+                        ReadTimeout = 1000,
+                        WriteTimeout = 1000
+                    };
                     Port.Open();
                 }
             }
@@ -62,30 +64,22 @@ namespace WPinternals
 
         public void SendData(byte[] Data)
         {
-            byte[] FormattedData;
-            if (EncodeCommands)
-                FormattedData = FormatCommand(Data);
-            else
-                FormattedData = Data;
-
-            if (Port != null)
-                Port.Write(FormattedData, 0, FormattedData.Length);
+            byte[] FormattedData = EncodeCommands ? FormatCommand(Data) : Data;
+            Port?.Write(FormattedData, 0, FormattedData.Length);
             if (USBDevice != null)
+            {
                 USBDevice.OutputPipe.Write(FormattedData);
+            }
         }
 
         public byte[] SendCommand(byte[] Command, byte[] ResponsePattern)
         {
-            byte[] FormattedCommand;
-            if (EncodeCommands)
-                FormattedCommand = FormatCommand(Command);
-            else
-                FormattedCommand = Command;
-
-            if (Port != null)
-                Port.Write(FormattedCommand, 0, FormattedCommand.Length);
+            byte[] FormattedCommand = EncodeCommands ? FormatCommand(Command) : Command;
+            Port?.Write(FormattedCommand, 0, FormattedCommand.Length);
             if (USBDevice != null)
+            {
                 USBDevice.OutputPipe.Write(FormattedCommand);
+            }
 
             return GetResponse(ResponsePattern);
         }
@@ -105,9 +99,14 @@ namespace WPinternals
                     int BytesRead = 0;
 
                     if (Port != null)
+                    {
                         BytesRead = Port.Read(ResponseBuffer, Length, ResponseBuffer.Length - Length);
+                    }
+
                     if (USBDevice != null)
+                    {
                         BytesRead = USBDevice.InputPipe.Read(ResponseBuffer);
+                    }
 
                     if (BytesRead == 0)
                     {
@@ -130,6 +129,7 @@ namespace WPinternals
                     if (ResponsePattern != null)
                     {
                         for (int i = 0; i < ResponsePattern.Length; i++)
+                        {
                             if (DecodedResponse[i] != ResponsePattern[i])
                             {
                                 byte[] LogResponse = new byte[DecodedResponse.Length < 0x10 ? DecodedResponse.Length : 0x10];
@@ -137,6 +137,7 @@ namespace WPinternals
                                 LogFile.Log("Expected: " + Converter.ConvertHexToString(ResponsePattern, ""), LogType.FileOnly);
                                 throw new BadMessageException();
                             }
+                        }
                     }
 
                     return DecodedResponse;
@@ -149,10 +150,11 @@ namespace WPinternals
             }
             while (IsIncomplete);
 
-            if (Port != null)
-                Port.DiscardInBuffer();
+            Port?.DiscardInBuffer();
             if (USBDevice != null)
+            {
                 USBDevice.InputPipe.Flush();
+            }
 
             throw new BadConnectionException();
         }
@@ -160,7 +162,9 @@ namespace WPinternals
         private byte[] FormatCommand(byte[] Command)
         {
             if ((Command == null) || (Command.Length == 0))
+            {
                 throw new BadMessageException();
+            }
 
             byte[] Decoded = new byte[(Command.Length * 2) + 4];
             int Length = 0;
@@ -175,7 +179,9 @@ namespace WPinternals
                     Decoded[Length++] = (byte)(Command[i] ^ 0x20);
                 }
                 else
+                {
                     Decoded[Length++] = Command[i];
+                }
             }
 
             UInt16 Checksum = CRC16.CalculateChecksum(Command);
@@ -185,14 +191,20 @@ namespace WPinternals
                 Decoded[Length++] = (byte)((Checksum & 0xFF) ^ 0x20);
             }
             else
+            {
                 Decoded[Length++] = (byte)(Checksum & 0xFF);
+            }
+
             if (((byte)(Checksum >> 8) == 0x7D) || ((byte)(Checksum >> 8) == 0x7E))
             {
                 Decoded[Length++] = 0x7D;
                 Decoded[Length++] = (byte)((Checksum >> 8) ^ 0x20);
             }
             else
+            {
                 Decoded[Length++] = (byte)(Checksum >> 8);
+            }
+
             Decoded[Length++] = 0x7E;
 
             if (Length > 0)
@@ -202,13 +214,17 @@ namespace WPinternals
                 return Result;
             }
             else
+            {
                 return null;
+            }
         }
 
         private byte[] DecodeResponse(byte[] Response, UInt32 Length)
         {
             if ((Response == null) || (Response.Length == 0) || (Response[0] != 0x7E))
+            {
                 throw new BadMessageException();
+            }
 
             UInt32 SourceLength = Length;
             Length = 0;
@@ -219,24 +235,33 @@ namespace WPinternals
             while (SourcePos < SourceLength)
             {
                 if (Response[SourcePos] == 0x7E)
+                {
                     break;
-                if (Response[SourcePos] == 0x7D)
-                    Message[Length++] = (byte)(Response[++SourcePos] ^ 0x20);
-                else
-                    Message[Length++] = Response[SourcePos];
+                }
+
+                Message[Length++] = Response[SourcePos] == 0x7D ? (byte)(Response[++SourcePos] ^ 0x20) : Response[SourcePos];
+
                 SourcePos++;
             }
 
-            if (SourcePos == SourceLength) throw new IncompleteMessageException();
+            if (SourcePos == SourceLength)
+            {
+                throw new IncompleteMessageException();
+            }
 
-            if (Length < 3) throw new BadMessageException();
+            if (Length < 3)
+            {
+                throw new BadMessageException();
+            }
 
             byte[] TrimmedMessage = new byte[Length - 2];
             Buffer.BlockCopy(Message, 0, TrimmedMessage, 0, (int)(Length - 2));
 
             UInt16 Checksum = CRC16.CalculateChecksum(TrimmedMessage);
             if (((byte)(Checksum & 0xFF) != Message[Length - 2]) || ((byte)(Checksum >> 8) != Message[Length - 1]))
+            {
                 throw new BadMessageException();
+            }
 
             return TrimmedMessage;
         }
@@ -254,14 +279,16 @@ namespace WPinternals
 
         public void Close()
         {
-            if (Port != null) Port.Close();
-            if (USBDevice != null) USBDevice.Dispose();
+            Port?.Close();
+            USBDevice?.Dispose();
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (Disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
@@ -277,7 +304,10 @@ namespace WPinternals
         internal void SetTimeOut(int v)
         {
             if (USBDevice != null)
+            {
                 USBDevice.ControlPipeTimeout = v;
+            }
+
             if (Port != null)
             {
                 Port.ReadTimeout = v;
@@ -292,7 +322,7 @@ namespace WPinternals
 
     public class CRC16
     {
-        private UInt16[] ChecksumTable =
+        private readonly UInt16[] ChecksumTable =
             new UInt16[] {
                 0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
                 0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
@@ -328,7 +358,7 @@ namespace WPinternals
                 0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
             };
 
-        private UInt16 Seed, FinalXor;
+        private readonly UInt16 Seed, FinalXor;
 
         public CRC16(UInt16 Polynomial, UInt16 Seed, UInt16 FinalXor)
         {

@@ -34,25 +34,25 @@ namespace WPinternals
             InitializeComponent();
 
             // Setting these properties in XAML results in an error. Why?
-            GifImage.GifSource = @"/aerobusy.gif";
+            GifImage.GifSource = "/aerobusy.gif";
             GifImage.AutoStart = true;
         }
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
             Hyperlink link = args.Source as Hyperlink;
-            if ((link != null) && (link.NavigateUri != null))
+            if (link?.NavigateUri != null)
             {
                 if (link.NavigateUri.ToString() == "GettingStarted")
-                    (this.DataContext as NokiaBootloaderViewModel).SwitchToGettingStarted();
-
-                (this.DataContext as NokiaBootloaderViewModel).RebootTo(link.NavigateUri.ToString());
+                {
+                    (this.DataContext as NokiaBootloaderViewModel)?.SwitchToGettingStarted();
+                } (this.DataContext as NokiaBootloaderViewModel)?.RebootTo(link.NavigateUri.ToString());
             }
         }
 
         private void Document_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as FlowDocument).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
     }
 }

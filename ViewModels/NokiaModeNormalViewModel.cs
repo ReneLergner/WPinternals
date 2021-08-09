@@ -24,8 +24,8 @@ namespace WPinternals
 {
     internal class NokiaModeNormalViewModel : ContextViewModel
     {
-        private NokiaPhoneModel CurrentModel;
-        private Action<PhoneInterfaces?> RequestModeSwitch;
+        private readonly NokiaPhoneModel CurrentModel;
+        private readonly Action<PhoneInterfaces?> RequestModeSwitch;
 
         internal NokiaModeNormalViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces?> RequestModeSwitch)
             : base()

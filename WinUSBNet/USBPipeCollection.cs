@@ -16,7 +16,7 @@ namespace MadWizard.WinUSBNet
     /// </summary>
     public class USBPipeCollection : IEnumerable<USBPipe>
     {
-        private Dictionary<byte, USBPipe> _pipes;
+        private readonly Dictionary<byte, USBPipe> _pipes;
 
         internal USBPipeCollection(USBPipe[] pipes)
         {
@@ -24,13 +24,16 @@ namespace MadWizard.WinUSBNet
             foreach (USBPipe pipe in pipes)
             {
                 if (_pipes.ContainsKey(pipe.Address))
+                {
                     throw new USBException("Duplicate pipe address in endpoint.");
+                }
+
                 _pipes[pipe.Address] = pipe;
             }
         }
 
         /// <summary>
-        /// Returns the pipe from the collection with the given pipe address 
+        /// Returns the pipe from the collection with the given pipe address
         /// </summary>
         /// <param name="pipeAddress">Address of the pipe to return</param>
         /// <returns>The pipe with the given pipe address</returns>
@@ -40,9 +43,11 @@ namespace MadWizard.WinUSBNet
         {
             get
             {
-                USBPipe pipe;
-                if (!_pipes.TryGetValue(pipeAddress, out pipe))
+                if (!_pipes.TryGetValue(pipeAddress, out USBPipe pipe))
+                {
                     throw new IndexOutOfRangeException();
+                }
+
                 return pipe;
             }
         }
@@ -50,7 +55,7 @@ namespace MadWizard.WinUSBNet
         private class UsbPipeEnumerator : IEnumerator<USBPipe>
         {
             private int _index;
-            private USBPipe[] _pipes;
+            private readonly USBPipe[] _pipes;
 
             public UsbPipeEnumerator(USBPipe[] pipes)
             {
@@ -68,7 +73,6 @@ namespace MadWizard.WinUSBNet
                 {
                     return _pipes[_index];
                 }
-
                 catch (IndexOutOfRangeException)
                 {
                     throw new InvalidOperationException();
@@ -82,7 +86,6 @@ namespace MadWizard.WinUSBNet
                     return GetCurrent();
                 }
             }
-
 
             object IEnumerator.Current
             {
@@ -102,7 +105,6 @@ namespace MadWizard.WinUSBNet
             {
                 _index = -1;
             }
-
         }
 
         private USBPipe[] GetPipeList()

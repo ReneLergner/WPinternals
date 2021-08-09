@@ -48,17 +48,19 @@ namespace WPinternals
     /// </summary>
     public partial class FilePickerBase : System.Windows.Controls.UserControl, INotifyPropertyChanged
     {
-        private SynchronizationContext UIContext;
+        private readonly SynchronizationContext UIContext;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
-        public event PathChangedEventHandler PathChanged = delegate { };
+        public event EventHandler<PathChangedEventArgs> PathChanged = delegate { };
 
         protected void OnPropertyChanged(string propertyName)
         {
             if (this.PropertyChanged != null)
             {
                 if (SynchronizationContext.Current == UIContext)
+                {
                     PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                }
                 else
                 {
                     UIContext.Post((s) => PropertyChanged(this, new PropertyChangedEventArgs(propertyName)), null);
@@ -160,7 +162,7 @@ namespace WPinternals
                 100 / 96
             );
 #else
-            FormattedText formatted = new FormattedText(
+            FormattedText formatted = new(
                 "TEST",
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
@@ -179,7 +181,9 @@ namespace WPinternals
         private void Resize()
         {
             if (!IsLoaded)
+            {
                 return;
+            }
 
             CaptionTextBlock.Text = Caption;
 #if NETCORE
@@ -193,7 +197,7 @@ namespace WPinternals
                 100 / 96
                 );
 #else
-            FormattedText formatted = new FormattedText(
+            FormattedText formatted = new(
                 CaptionTextBlock.Text,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
@@ -205,19 +209,29 @@ namespace WPinternals
 #endif
             double CaptionWidth = formatted.Width;
             if (CaptionWidth > 0)
+            {
                 CaptionWidth += 10;
+            }
 
             bool SelectVisible = (Path == null);
             bool ChangeVisible = (Path != null);
-            bool ClearVisible = ((Path != null) && (AllowNull));
+            bool ClearVisible = ((Path != null) && AllowNull);
 
             double NewWidth = ActualWidth - CaptionWidth;
             if (SelectVisible)
+            {
                 NewWidth -= SelectLink.ActualWidth;
+            }
+
             if (ChangeVisible)
+            {
                 NewWidth -= (ChangeLink.ActualWidth + 10);
+            }
+
             if (ClearVisible)
+            {
                 NewWidth -= (ClearLink.ActualWidth + 10);
+            }
 
             SetText(NewWidth);
 
@@ -245,11 +259,13 @@ namespace WPinternals
                         );
 #endif
             if (NewWidth < 0)
+            {
                 PathTextBlock.Width = 0;
-            else if (formatted.Width > NewWidth)
-                PathTextBlock.Width = NewWidth;
+            }
             else
-                PathTextBlock.Width = formatted.Width;
+            {
+                PathTextBlock.Width = formatted.Width > NewWidth ? NewWidth : formatted.Width;
+            }
 
             PathTextBlock.Margin = new Thickness(CaptionWidth, 0, 0, 0);
             double Pos = PathTextBlock.Width + CaptionWidth;
@@ -261,7 +277,9 @@ namespace WPinternals
                 Pos += SelectLink.ActualWidth;
             }
             else
+            {
                 SelectLink.Visibility = Visibility.Collapsed;
+            }
 
             if (ChangeVisible)
             {
@@ -270,7 +288,9 @@ namespace WPinternals
                 Pos += ChangeLink.ActualWidth + 10;
             }
             else
+            {
                 ChangeLink.Visibility = Visibility.Collapsed;
+            }
 
             if (ClearVisible)
             {
@@ -279,7 +299,9 @@ namespace WPinternals
                 Pos += ClearLink.ActualWidth + 10;
             }
             else
+            {
                 ClearLink.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void SetText(double MaxWidth)
@@ -336,7 +358,9 @@ namespace WPinternals
                         changedWidth = true;
 
                         if (directory.Length > 0)
-                            directory = directory.Substring(0, directory.Length - 1);
+                        {
+                            directory = directory[0..^1];
+                        }
 
                         if (directory.Length == 0)
                         {
@@ -387,22 +411,21 @@ namespace WPinternals
         public FilePicker()
             : base()
         {
-            if (SelectionText == "")
+            if (SelectionText?.Length == 0)
+            {
                 SelectionText = "Select file...";
+            }
         }
 
         protected override void Select()
         {
-            Nullable<bool> result;
+            bool? result;
 
             if (SaveDialog)
             {
-                Microsoft.Win32.SaveFileDialog savedlg = new Microsoft.Win32.SaveFileDialog();
+                Microsoft.Win32.SaveFileDialog savedlg = new();
 
-                if (Path != null)
-                    savedlg.FileName = Path;
-                else
-                    savedlg.FileName = DefaultFileName;
+                savedlg.FileName = Path ?? DefaultFileName;
 
                 // Show open file dialog box
                 result = savedlg.ShowDialog();
@@ -417,12 +440,9 @@ namespace WPinternals
             else
             {
                 // Select file
-                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+                Microsoft.Win32.OpenFileDialog dlg = new();
 
-                if (Path != null)
-                    dlg.FileName = Path;
-                else
-                    dlg.FileName = DefaultFileName;
+                dlg.FileName = Path ?? DefaultFileName;
 
                 // Show open file dialog box
                 result = dlg.ShowDialog();
@@ -472,24 +492,30 @@ namespace WPinternals
         public FolderPicker()
             : base()
         {
-            if (SelectionText == "")
+            if (SelectionText?.Length == 0)
+            {
                 SelectionText = "Select folder...";
+            }
         }
 
         protected override void Select()
         {
             // Select folder
 
-            FolderSelectDialog dlg = new FolderSelectDialog();
+            FolderSelectDialog dlg = new();
             if (Path != null)
+            {
                 dlg.InitialDirectory = Path;
+            }
 
             if (dlg.ShowDialog())
+            {
                 Path = dlg.FileName;
+            }
         }
     }
 
-    static class Extensions
+    internal static class Extensions
     {
         public static string FormatWith(this string s, params object[] args)
         {

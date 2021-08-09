@@ -17,9 +17,9 @@ namespace MadWizard.WinUSBNet
 
         // TODO: disposed exception when disposed
 
-        private USBNotifier _notifier;
+        private readonly USBNotifier _notifier;
         private Guid _guid;
-        private IntPtr _notifyHandle;
+        private readonly IntPtr _notifyHandle;
 
         public DeviceNotifyHook(USBNotifier notifier, Guid guid)
         {
@@ -31,8 +31,14 @@ namespace MadWizard.WinUSBNet
 
             IntPtr hWnd = IntPtr.Zero;
             if (Application.Current.MainWindow != null)
+            {
                 hWnd = new WindowInteropHelper(Application.Current.MainWindow).Handle;
-            if (hWnd == IntPtr.Zero) throw new USBException("Main window not loaded yet. Cannot connect with USB yet.");
+            }
+
+            if (hWnd == IntPtr.Zero)
+            {
+                throw new USBException("Main window not loaded yet. Cannot connect with USB yet.");
+            }
 
             API.DeviceManagement.RegisterForDeviceNotifications(hWnd, _guid, ref _notifyHandle);
 
@@ -125,13 +131,11 @@ namespace MadWizard.WinUSBNet
         {
             // Listen for operating system messages
 
-            switch (msg)
+            return msg switch
             {
-                case API.DeviceManagement.WM_DEVICECHANGE:
-                    return (IntPtr)_notifier.HandleDeviceChange(msg, wParam, lParam);
-                    //break;
-            }
-            return IntPtr.Zero;
+                API.DeviceManagement.WM_DEVICECHANGE => (IntPtr)_notifier.HandleDeviceChange(msg, wParam, lParam),
+                _ => IntPtr.Zero,
+            };
         }
 
         public void Dispose()
@@ -162,26 +166,29 @@ namespace MadWizard.WinUSBNet
                     }
                     */
 
-                    Action RemoveHookAction = () =>
+                    void RemoveHookAction()
                     {
                         if (Application.Current.MainWindow != null)
                         {
                             HwndSource source = PresentationSource.FromVisual(Application.Current.MainWindow) as HwndSource;
                             source.RemoveHook(WndProc);
                         }
-                    };
+                    }
 
                     if (Application.Current != null)
                     {
                         if (Application.Current.Dispatcher.Thread.ManagedThreadId == System.Threading.Thread.CurrentThread.ManagedThreadId)
+                        {
                             RemoveHookAction();
+                        }
                         else
+                        {
                             Application.Current.Dispatcher.Invoke(RemoveHookAction);
+                        }
                     }
                 }
                 catch { }
             }
         }
-
     }
 }

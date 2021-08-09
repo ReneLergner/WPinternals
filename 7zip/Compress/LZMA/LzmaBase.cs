@@ -18,9 +18,18 @@ namespace SevenZip.Compression.LZMA
             public void Init() { Index = 0; }
             public void UpdateChar()
             {
-                if (Index < 4) Index = 0;
-                else if (Index < 10) Index -= 3;
-                else Index -= 6;
+                if (Index < 4)
+                {
+                    Index = 0;
+                }
+                else if (Index < 10)
+                {
+                    Index -= 3;
+                }
+                else
+                {
+                    Index -= 6;
+                }
             }
             public void UpdateMatch() { Index = (uint)(Index < 7 ? 7 : 10); }
             public void UpdateRep() { Index = (uint)(Index < 7 ? 8 : 11); }
@@ -42,8 +51,11 @@ namespace SevenZip.Compression.LZMA
         {
             len -= kMatchMinLen;
             if (len < kNumLenToPosStates)
+            {
                 return len;
-            return (uint)(kNumLenToPosStates - 1);
+            }
+
+            return kNumLenToPosStates - 1;
         }
 
         public const int kNumAlignBits = 4;

@@ -15,7 +15,6 @@ namespace MadWizard.WinUSBNet
     /// </summary>
     public class USBDevice : IDisposable
     {
-        private API.WinUSBDevice _wuDevice = null;
         private bool _disposed = false;
 
         /// <summary>
@@ -60,7 +59,6 @@ namespace MadWizard.WinUSBNet
         public USBDeviceDescriptor Descriptor
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -101,12 +99,13 @@ namespace MadWizard.WinUSBNet
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
-                if (_wuDevice != null)
-                    _wuDevice.Dispose();
+                InternalDevice?.Dispose();
             }
 
             // Clean unmanaged resources here.
@@ -129,32 +128,26 @@ namespace MadWizard.WinUSBNet
             {
                 //WPinternals.LogFile.LogException(Ex);
             }
-            _wuDevice = new API.WinUSBDevice();
+            InternalDevice = new API.WinUSBDevice();
             try
             {
-                _wuDevice.OpenDevice(devicePathName);
+                InternalDevice.OpenDevice(devicePathName);
                 InitializeInterfaces();
             }
             catch (API.APIException e)
             {
-                _wuDevice.Dispose();
+                InternalDevice.Dispose();
                 throw new USBException("Failed to open device.", e);
             }
         }
 
-        internal API.WinUSBDevice InternalDevice
-        {
-            get
-            {
-                return _wuDevice;
-            }
-        }
+        internal API.WinUSBDevice InternalDevice { get; } = null;
 
         private void InitializeInterfaces()
         {
-            int numInterfaces = _wuDevice.InterfaceCount;
+            int numInterfaces = InternalDevice.InterfaceCount;
 
-            List<USBPipe> allPipes = new List<USBPipe>();
+            List<USBPipe> allPipes = new();
             InputPipe = null;
             OutputPipe = null;
 
@@ -162,22 +155,27 @@ namespace MadWizard.WinUSBNet
             // UsbEndpoint
             for (int i = 0; i < numInterfaces; i++)
             {
-                API.USB_INTERFACE_DESCRIPTOR descriptor;
-                API.WINUSB_PIPE_INFORMATION[] pipesInfo;
-                _wuDevice.GetInterfaceInfo(i, out descriptor, out pipesInfo);
+                InternalDevice.GetInterfaceInfo(i, out API.USB_INTERFACE_DESCRIPTOR descriptor, out API.WINUSB_PIPE_INFORMATION[] pipesInfo);
                 USBPipe[] interfacePipes = new USBPipe[pipesInfo.Length];
                 for(int k=0;k<pipesInfo.Length;k++)
                 {
-                    USBPipe pipe = new USBPipe(this, pipesInfo[k]);
+                    USBPipe pipe = new(this, pipesInfo[k]);
                     interfacePipes[k] = pipe;
                     allPipes.Add(pipe);
-                    if (Convert.ToBoolean((pipesInfo[k].PipeId & 0x80)) && (InputPipe == null)) InputPipe = pipe;
-                    if (!Convert.ToBoolean((pipesInfo[k].PipeId & 0x80)) && (OutputPipe == null)) OutputPipe = pipe;
+                    if (Convert.ToBoolean(pipesInfo[k].PipeId & 0x80) && (InputPipe == null))
+                    {
+                        InputPipe = pipe;
+                    }
+
+                    if (!Convert.ToBoolean(pipesInfo[k].PipeId & 0x80) && (OutputPipe == null))
+                    {
+                        OutputPipe = pipe;
+                    }
                 }
                 // TODO:
                 //if (descriptor.iInterface != 0)
                 //    _wuDevice.GetStringDescriptor(descriptor.iInterface);
-                USBPipeCollection pipeCollection = new USBPipeCollection(interfacePipes);
+                USBPipeCollection pipeCollection = new(interfacePipes);
                 interfaces[i] = new USBInterface(this, i, descriptor, pipeCollection);
             }
             Pipes = new USBPipeCollection(allPipes.ToArray());
@@ -187,13 +185,24 @@ namespace MadWizard.WinUSBNet
         private void CheckControlParams(int value, int index, byte[] buffer, int length)
         {
             if (value < ushort.MinValue || value > ushort.MaxValue)
+            {
                 throw new ArgumentOutOfRangeException(nameof(value), "Value parameter out of range.");
+            }
+
             if (index < ushort.MinValue || index > ushort.MaxValue)
+            {
                 throw new ArgumentOutOfRangeException(nameof(index), "Index parameter out of range.");
+            }
+
             if (length > buffer.Length)
+            {
                 throw new ArgumentOutOfRangeException(nameof(length), "Length parameter is larger than the size of the buffer.");
+            }
+
             if (length > ushort.MaxValue)
+            {
                 throw new ArgumentOutOfRangeException(nameof(length), "Length too large");
+            }
         }
 
         /// <summary>
@@ -207,21 +216,30 @@ namespace MadWizard.WinUSBNet
             {
                 byte PipeID = 0;
                 if (InputPipe != null)
+                {
                     PipeID = InputPipe.Address;
-                return (int)_wuDevice.GetPipePolicyUInt(0, 0x00, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT);
+                }
+
+                return (int)InternalDevice.GetPipePolicyUInt(0, 0x00, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT);
             }
             set
             {
                 if (value < 0)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), "Control pipe timeout cannot be negative.");
+                }
                 //_wuDevice.SetPipePolicy(0, 0x00, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT, (uint)value);
                 if (InputPipe != null)
-                    _wuDevice.SetPipePolicy(0, InputPipe.Address, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT, (uint)value);
+                {
+                    InternalDevice.SetPipePolicy(0, InputPipe.Address, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT, (uint)value);
+                }
+
                 if (OutputPipe != null)
-                    _wuDevice.SetPipePolicy(0, OutputPipe.Address, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT, (uint)value);
+                {
+                    InternalDevice.SetPipePolicy(0, OutputPipe.Address, API.POLICY_TYPE.PIPE_TRANSFER_TIMEOUT, (uint)value);
+                }
             }
         }
-
 
         /// <summary>
         /// Initiates a control transfer over the default control endpoint. This method allows both IN and OUT direction transfers, depending
@@ -246,7 +264,7 @@ namespace MadWizard.WinUSBNet
 
             try
             {
-                return _wuDevice.ControlTransfer(requestType, request, (ushort)value, (ushort)index, (ushort)length, buffer);
+                return InternalDevice.ControlTransfer(requestType, request, (ushort)value, (ushort)index, (ushort)length, buffer);
             }
             catch (API.APIException e)
             {
@@ -283,22 +301,20 @@ namespace MadWizard.WinUSBNet
             CheckNotDisposed();
             CheckControlParams(value, index, buffer, length);
 
-            USBAsyncResult result = new USBAsyncResult(userCallback, stateObject);
+            USBAsyncResult result = new(userCallback, stateObject);
 
             try
             {
-                _wuDevice.ControlTransferOverlapped(requestType, request, (ushort)value, (ushort)index, (ushort)length, buffer, result);
+                InternalDevice.ControlTransferOverlapped(requestType, request, (ushort)value, (ushort)index, (ushort)length, buffer, result);
             }
             catch (API.APIException e)
             {
-                if (result != null)
-                    result.Dispose();
+                result?.Dispose();
                 throw new USBException("Asynchronous control transfer failed", e);
             }
             catch (Exception)
             {
-                if (result != null)
-                    result.Dispose();
+                result?.Dispose();
                 throw;
             }
             return result;
@@ -331,7 +347,6 @@ namespace MadWizard.WinUSBNet
             return BeginControlTransfer(requestType, request, value, index, buffer, buffer.Length, userCallback, stateObject);
         }
 
-
         /// <summary>
         /// Waits for a pending asynchronous control transfer to complete.
         /// </summary>
@@ -346,19 +361,28 @@ namespace MadWizard.WinUSBNet
         public int EndControlTransfer(IAsyncResult asyncResult)
         {
             if (asyncResult == null)
+            {
                 throw new NullReferenceException("asyncResult cannot be null");
+            }
+
             if (!(asyncResult is USBAsyncResult))
+            {
                 throw new ArgumentException("AsyncResult object was not created by calling one of the BeginControl* methods on this class.");
+            }
 
             // todo: check duplicate end control
             USBAsyncResult result = (USBAsyncResult)asyncResult;
             try
             {
                 if (!result.IsCompleted)
+                {
                     result.AsyncWaitHandle.WaitOne();
+                }
 
                 if (result.Error != null)
+                {
                     throw new USBException("Asynchronous control transfer from pipe has failed.", result.Error);
+                }
 
                 return result.BytesTransfered;
             }
@@ -366,9 +390,7 @@ namespace MadWizard.WinUSBNet
             {
                 result.Dispose();
             }
-
         }
-
 
         /// <summary>
         /// Initiates a control transfer over the default control endpoint. This method allows both IN and OUT direction transfers, depending
@@ -402,19 +424,23 @@ namespace MadWizard.WinUSBNet
         public void ControlTransfer(byte requestType, byte request, int value, int index)
         {
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            ControlTransfer(requestType, request, value, index, new byte[0], 0);
+            ControlTransfer(requestType, request, value, index, Array.Empty<byte>(), 0);
         }
 
         private void CheckIn(byte requestType)
         {
             if ((requestType & 0x80) == 0) // Host to device?
+            {
                 throw new ArgumentException("Request type is not IN.");
+            }
         }
 
         private void CheckOut(byte requestType)
         {
             if ((requestType & 0x80) == 0x80) // Device to host?
+            {
                 throw new ArgumentException("Request type is not OUT.");
+            }
         }
 
         /// <summary>
@@ -444,7 +470,6 @@ namespace MadWizard.WinUSBNet
             }
             return buffer;
         }
-
 
         /// <summary>
         /// Initiates a control transfer over the default control endpoint. The request should have an IN direction (specified by the highest bit
@@ -493,7 +518,7 @@ namespace MadWizard.WinUSBNet
         {
             CheckIn(requestType);
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            ControlTransfer(requestType, request, value, index, new byte[0]);
+            ControlTransfer(requestType, request, value, index, Array.Empty<byte>());
         }
 
         /// <summary>
@@ -541,10 +566,8 @@ namespace MadWizard.WinUSBNet
         {
             CheckOut(requestType);
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            ControlTransfer(requestType, request, value, index, new byte[0]);
+            ControlTransfer(requestType, request, value, index, Array.Empty<byte>());
         }
-
-
 
         /// <summary>
         /// Initiates an asynchronous control transfer without a data stage over the default control endpoint. This method allows both IN and OUT direction transfers, depending
@@ -568,10 +591,8 @@ namespace MadWizard.WinUSBNet
         public IAsyncResult BeginControlTransfer(byte requestType, byte request, int value, int index, AsyncCallback userCallback, object stateObject)
         {
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            return BeginControlTransfer(requestType, request, value, index, new byte[0], 0, userCallback, stateObject);
+            return BeginControlTransfer(requestType, request, value, index, Array.Empty<byte>(), 0, userCallback, stateObject);
         }
-
-
 
         /// <summary>
         /// Initiates an asynchronous control transfer over the default control endpoint.  The request should have an IN direction (specified by the highest bit
@@ -711,14 +732,15 @@ namespace MadWizard.WinUSBNet
         {
             CheckOut(requestType);
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            return BeginControlTransfer(requestType, request, value, index, new byte[0], userCallback, stateObject);
+            return BeginControlTransfer(requestType, request, value, index, Array.Empty<byte>(), userCallback, stateObject);
         }
-
 
         private void CheckNotDisposed()
         {
             if (_disposed)
+            {
                 throw new ObjectDisposedException("USB device object has been disposed.");
+            }
         }
 
         /// <summary>
@@ -766,8 +788,9 @@ namespace MadWizard.WinUSBNet
         {
             API.DeviceDetails[] detailList = API.DeviceManagement.FindDevicesFromGuid(guid);
             if (detailList.Length == 0)
+            {
                 return null;
-
+            }
 
             return new USBDevice(detailList[0].DevicePath);
         }
@@ -781,7 +804,6 @@ namespace MadWizard.WinUSBNet
         /// no device with the given GUID could be found null is returned.</returns>
         public static USBDevice GetSingleDevice(string guidString)
         {
-
             return USBDevice.GetSingleDevice(new Guid(guidString));
         }
 
@@ -790,7 +812,7 @@ namespace MadWizard.WinUSBNet
             try
             {
                 USBDeviceDescriptor descriptor;
-                using (API.WinUSBDevice wuDevice = new API.WinUSBDevice())
+                using (API.WinUSBDevice wuDevice = new())
                 {
                     wuDevice.OpenDevice(devicePath);
                     API.USB_DEVICE_DESCRIPTOR deviceDesc = wuDevice.GetDeviceDescriptor();
@@ -799,7 +821,9 @@ namespace MadWizard.WinUSBNet
                     ushort[] langIDs = wuDevice.GetSupportedLanguageIDs();
                     ushort langID = 0;
                     if (langIDs.Length > 0)
+                    {
                         langID = langIDs[0];
+                    }
 
                     string manufacturer = null, product = null, serialNumber = null;
                     byte idx = 0;
@@ -808,7 +832,9 @@ namespace MadWizard.WinUSBNet
                     {
                         idx = deviceDesc.iManufacturer;
                         if (idx > 0)
+                        {
                             manufacturer = wuDevice.GetStringDescriptor(idx, langID);
+                        }
                     }
                     catch { }
 
@@ -816,7 +842,9 @@ namespace MadWizard.WinUSBNet
                     {
                         idx = deviceDesc.iProduct;
                         if (idx > 0)
+                        {
                             product = wuDevice.GetStringDescriptor(idx, langID);
+                        }
                     }
                     catch { }
 
@@ -824,20 +852,20 @@ namespace MadWizard.WinUSBNet
                     {
                         idx = deviceDesc.iSerialNumber;
                         if (idx > 0)
+                        {
                             serialNumber = wuDevice.GetStringDescriptor(idx, langID);
+                        }
                     }
                     catch { }
 
                     descriptor = new USBDeviceDescriptor(devicePath, deviceDesc, manufacturer, product, serialNumber);
                 }
                 return descriptor;
-
             }
             catch (API.APIException e)
             {
                 throw new USBException("Failed to retrieve device descriptor.", e);
             }
         }
-
     }
 }

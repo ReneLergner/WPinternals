@@ -35,7 +35,7 @@ namespace WPinternals
         internal const bool IsPrerelease = false;
 #endif
 
-        internal static readonly DateTime ExpirationDate = new DateTime(2019, 01, 06);
+        internal static readonly DateTime ExpirationDate = new(2019, 01, 06);
 
         internal static void CheckExpiration()
         {
@@ -69,11 +69,16 @@ namespace WPinternals
         {
             string KeyBase = App.Config.RegistrationName;
             if (Environment.MachineName == null)
+            {
                 KeyBase += "-Unknown";
+            }
             else
+            {
                 KeyBase += "-" + Environment.MachineName;
+            }
+
             byte[] KeyBytes = System.Text.Encoding.UTF8.GetBytes(KeyBase);
-            SHA1Managed sha = new SHA1Managed();
+            SHA1Managed sha = new();
             byte[] Key = sha.ComputeHash(KeyBytes);
             return System.Convert.ToBase64String(Key);
         }
@@ -89,27 +94,31 @@ namespace WPinternals
             if (File.Exists(FilePath))
             {
                 string XmlString = File.ReadAllText(FilePath);
-                XmlSerializer x = new XmlSerializer(typeof(WPinternalsConfig), "");
-                MemoryStream s = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(XmlString));
-                Result = (WPinternalsConfig)x.Deserialize(s);
-                return Result;
+                XmlSerializer x = new(typeof(WPinternalsConfig), "");
+                MemoryStream s = new(System.Text.Encoding.UTF8.GetBytes(XmlString));
+                return (WPinternalsConfig)x.Deserialize(s);
             }
             else
+            {
                 return new WPinternalsConfig();
+            }
         }
 
         internal void WriteConfig()
         {
             string DirPath = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals");
             if (!Directory.Exists(DirPath))
+            {
                 Directory.CreateDirectory(DirPath);
+            }
+
             string FilePath = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\WPInternals.config");
 
-            XmlSerializer x = new XmlSerializer(typeof(WPinternalsConfig), "");
+            XmlSerializer x = new(typeof(WPinternalsConfig), "");
 
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            XmlSerializerNamespaces ns = new();
             ns.Add("", "");
-            System.IO.StreamWriter FileWriter = new System.IO.StreamWriter(FilePath);
+            StreamWriter FileWriter = new(FilePath);
             x.Serialize(FileWriter, this, ns);
             FileWriter.Close();
         }
@@ -119,12 +128,14 @@ namespace WPinternals
             FlashProfile Profile = GetProfile(PlatformID, PhoneFirmware, FfuFirmware);
             if (Profile == null)
             {
-                Profile = new FlashProfile();
-                Profile.Type = Type;
-                Profile.PlatformID = PlatformID;
-                Profile.ProductCode = ProductCode;
-                Profile.PhoneFirmware = PhoneFirmware;
-                Profile.FfuFirmware = FfuFirmware;
+                Profile = new FlashProfile
+                {
+                    Type = Type,
+                    PlatformID = PlatformID,
+                    ProductCode = ProductCode,
+                    PhoneFirmware = PhoneFirmware,
+                    FfuFirmware = FfuFirmware
+                };
                 FlashProfiles.Add(Profile);
             }
 
@@ -138,16 +149,16 @@ namespace WPinternals
 
         internal FlashProfile GetProfile(string PlatformID, string PhoneFirmware, string FfuFirmware = null)
         {
-            return FlashProfiles.Where(p => ((string.Compare(p.PlatformID, PlatformID, true) == 0) && (string.Compare(p.PhoneFirmware, PhoneFirmware, true) == 0) && ((FfuFirmware == null) || (string.Compare(p.FfuFirmware, FfuFirmware, true) == 0)))).FirstOrDefault();
+            return FlashProfiles.Find(p => ((string.Compare(p.PlatformID, PlatformID, true) == 0) && (string.Compare(p.PhoneFirmware, PhoneFirmware, true) == 0) && ((FfuFirmware == null) || (string.Compare(p.FfuFirmware, FfuFirmware, true) == 0))));
         }
 
-        public List<FlashProfile> FlashProfiles = new List<FlashProfile>();
+        public List<FlashProfile> FlashProfiles = new();
 
         internal void AddFfuToRepository(string FFUPath)
         {
             try
             {
-                FFU NewFFU = new FFU(FFUPath);
+                FFU NewFFU = new(FFUPath);
                 AddFfuToRepository(FFUPath, NewFFU.PlatformID, NewFFU.GetFirmwareVersion(), NewFFU.GetOSVersion());
             }
             catch (Exception Ex)
@@ -158,26 +169,35 @@ namespace WPinternals
 
         internal void AddFfuToRepository(string FFUPath, string PlatformID, string FirmwareVersion, string OSVersion)
         {
-            FFUEntry Entry = FFURepository.Where(e => ((e.PlatformID == PlatformID) && (e.FirmwareVersion == FirmwareVersion) && (string.Compare(e.Path, FFUPath, true) == 0))).FirstOrDefault();
+            FFUEntry Entry = FFURepository.Find(e => ((e.PlatformID == PlatformID) && (e.FirmwareVersion == FirmwareVersion) && (string.Compare(e.Path, FFUPath, true) == 0)));
             if (Entry == null)
             {
                 LogFile.Log("Adding FFU to repository: " + FFUPath, LogType.FileAndConsole);
                 LogFile.Log("Platform ID: " + PlatformID, LogType.FileAndConsole);
                 if (FirmwareVersion != null)
+                {
                     LogFile.Log("Firmware version: " + FirmwareVersion, LogType.FileAndConsole);
-                if (OSVersion != null)
-                    LogFile.Log("OS version: " + OSVersion, LogType.FileAndConsole);
+                }
 
-                Entry = new FFUEntry();
-                Entry.Path = FFUPath;
-                Entry.PlatformID = PlatformID;
-                Entry.FirmwareVersion = FirmwareVersion;
-                Entry.OSVersion = OSVersion;
+                if (OSVersion != null)
+                {
+                    LogFile.Log("OS version: " + OSVersion, LogType.FileAndConsole);
+                }
+
+                Entry = new FFUEntry
+                {
+                    Path = FFUPath,
+                    PlatformID = PlatformID,
+                    FirmwareVersion = FirmwareVersion,
+                    OSVersion = OSVersion
+                };
                 FFURepository.Add(Entry);
                 WriteConfig();
             }
             else
+            {
                 LogFile.Log("FFU not added, because it was already present in the repository.", LogType.FileAndConsole);
+            }
         }
 
         internal void RemoveFfuFromRepository(string FFUPath)
@@ -189,7 +209,9 @@ namespace WPinternals
                     FFURepository.Remove(e);
                 });
             if (Count == 0)
+            {
                 LogFile.Log("FFU was not removed from repository because it was not present.", LogType.FileAndConsole);
+            }
             else
             {
                 LogFile.Log("Removed FFU from repository: " + FFUPath, LogType.FileAndConsole);
@@ -197,13 +219,13 @@ namespace WPinternals
             }
         }
 
-        public List<FFUEntry> FFURepository = new List<FFUEntry>();
+        public List<FFUEntry> FFURepository = new();
 
-        public List<EmergencyFileEntry> EmergencyRepository = new List<EmergencyFileEntry>();
+        public List<EmergencyFileEntry> EmergencyRepository = new();
 
         internal void AddEmergencyToRepository(string Type, string ProgrammerPath, string PayloadPath)
         {
-            EmergencyFileEntry Entry = EmergencyRepository.Where(e => ((e.Type == Type) && (string.Compare(e.ProgrammerPath, ProgrammerPath, true) == 0))).FirstOrDefault();
+            EmergencyFileEntry Entry = EmergencyRepository.Find(e => ((e.Type == Type) && (string.Compare(e.ProgrammerPath, ProgrammerPath, true) == 0)));
             if ((Entry != null) && (PayloadPath != null) && (string.Compare(Entry.PayloadPath, PayloadPath, true) != 0))
             {
                 LogFile.Log("Updating emergency payload path in repository: " + PayloadPath, LogType.FileAndConsole);
@@ -215,19 +237,23 @@ namespace WPinternals
                 LogFile.Log("Adding emergency files to repository: " + ProgrammerPath, LogType.FileAndConsole);
                 LogFile.Log("Type: " + Type, LogType.FileAndConsole);
 
-                Entry = new EmergencyFileEntry();
-                Entry.Type = Type;
-                Entry.ProgrammerPath = ProgrammerPath;
-                Entry.PayloadPath = PayloadPath;
+                Entry = new EmergencyFileEntry
+                {
+                    Type = Type,
+                    ProgrammerPath = ProgrammerPath,
+                    PayloadPath = PayloadPath
+                };
 
-                QualcommPartition Programmer = new QualcommPartition(ProgrammerPath);
+                QualcommPartition Programmer = new(ProgrammerPath);
                 Entry.RKH = Programmer.RootKeyHash;
 
                 EmergencyRepository.Add(Entry);
                 WriteConfig();
             }
             else
+            {
                 LogFile.Log("Emergency files not added, because they were already present in the repository.", LogType.FileAndConsole);
+            }
         }
 
         internal void RemoveEmergencyFromRepository(string ProgrammerPath)
@@ -239,13 +265,14 @@ namespace WPinternals
                 EmergencyRepository.Remove(e);
             });
             if (Count == 0)
+            {
                 LogFile.Log("Emergency file was not removed from repository because it was not present.", LogType.FileAndConsole);
+            }
             else
             {
                 LogFile.Log("Removed Emergency file from repository: " + ProgrammerPath, LogType.FileAndConsole);
                 WriteConfig();
             }
-
         }
 
         public string RegistrationName;
@@ -281,8 +308,16 @@ namespace WPinternals
                 ValueBuffer[0] = 1; // Profile version
                 ByteOperations.WriteUInt32(ValueBuffer, 1, FillSize);
                 ByteOperations.WriteUInt32(ValueBuffer, 5, HeaderSize);
-                if (AssumeImageHeaderFallsInGap) ValueBuffer[9] |= 1;
-                if (AllocateAsyncBuffersOnPhone) ValueBuffer[9] |= 2;
+                if (AssumeImageHeaderFallsInGap)
+                {
+                    ValueBuffer[9] |= 1;
+                }
+
+                if (AllocateAsyncBuffersOnPhone)
+                {
+                    ValueBuffer[9] |= 2;
+                }
+
                 return System.Convert.ToBase64String(ValueBuffer);
             }
             set
@@ -291,8 +326,8 @@ namespace WPinternals
                 byte Version = ValueBuffer[0];
                 FillSize = ByteOperations.ReadUInt32(ValueBuffer, 1);
                 HeaderSize = ByteOperations.ReadUInt32(ValueBuffer, 5);
-                AssumeImageHeaderFallsInGap = (bool)((ValueBuffer[9] & 1) != 0);
-                AllocateAsyncBuffersOnPhone = (bool)((ValueBuffer[9] & 2) != 0);
+                AssumeImageHeaderFallsInGap = (ValueBuffer[9] & 1) != 0;
+                AllocateAsyncBuffersOnPhone = (ValueBuffer[9] & 2) != 0;
             }
         }
     }

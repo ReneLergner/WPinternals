@@ -25,7 +25,7 @@ namespace WPinternals
 {
     internal class DumpRomTargetSelectionViewModel : ContextViewModel
     {
-        private Action<string, string, bool, string, bool, string, bool> DumpCallback;
+        private readonly Action<string, string, bool, string, bool, string, bool> DumpCallback;
         internal Action SwitchToUnlockBoot;
         internal Action SwitchToUnlockRoot;
         internal Action SwitchToFlashRom;
@@ -53,7 +53,7 @@ namespace WPinternals
                 if (value != _FFUPath)
                 {
                     _FFUPath = value;
-                    OnPropertyChanged("FFUPath");
+                    OnPropertyChanged(nameof(FFUPath));
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace WPinternals
                 if (value != _EFIESPPath)
                 {
                     _EFIESPPath = value;
-                    OnPropertyChanged("EFIESPPath");
+                    OnPropertyChanged(nameof(EFIESPPath));
                 }
             }
         }
@@ -87,7 +87,7 @@ namespace WPinternals
                 if (value != _CompressEFIESP)
                 {
                     _CompressEFIESP = value;
-                    OnPropertyChanged("CompressEFIESP");
+                    OnPropertyChanged(nameof(CompressEFIESP));
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace WPinternals
                 if (value != _MainOSPath)
                 {
                     _MainOSPath = value;
-                    OnPropertyChanged("MainOSPath");
+                    OnPropertyChanged(nameof(MainOSPath));
                 }
             }
         }
@@ -121,7 +121,7 @@ namespace WPinternals
                 if (value != _CompressMainOS)
                 {
                     _CompressMainOS = value;
-                    OnPropertyChanged("CompressMainOS");
+                    OnPropertyChanged(nameof(CompressMainOS));
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace WPinternals
                 if (value != _DataPath)
                 {
                     _DataPath = value;
-                    OnPropertyChanged("DataPath");
+                    OnPropertyChanged(nameof(DataPath));
                 }
             }
         }
@@ -155,7 +155,7 @@ namespace WPinternals
                 if (value != _CompressData)
                 {
                     _CompressData = value;
-                    OnPropertyChanged("CompressData");
+                    OnPropertyChanged(nameof(CompressData));
                 }
             }
         }
@@ -172,7 +172,7 @@ namespace WPinternals
                 if (value != _IsPhoneDisconnected)
                 {
                     _IsPhoneDisconnected = value;
-                    OnPropertyChanged("IsPhoneDisconnected");
+                    OnPropertyChanged(nameof(IsPhoneDisconnected));
                 }
             }
         }
@@ -189,7 +189,7 @@ namespace WPinternals
                 if (value != _IsPhoneInMassStorage)
                 {
                     _IsPhoneInMassStorage = value;
-                    OnPropertyChanged("IsPhoneInMassStorage");
+                    OnPropertyChanged(nameof(IsPhoneInMassStorage));
                 }
             }
         }
@@ -206,7 +206,7 @@ namespace WPinternals
                 if (value != _IsPhoneInOtherMode)
                 {
                     _IsPhoneInOtherMode = value;
-                    OnPropertyChanged("IsPhoneInOtherMode");
+                    OnPropertyChanged(nameof(IsPhoneInOtherMode));
                 }
             }
         }
@@ -216,11 +216,7 @@ namespace WPinternals
         {
             get
             {
-                if (_DumpCommand == null)
-                {
-                    _DumpCommand = new DelegateCommand(() => { DumpCallback(FFUPath, EFIESPPath, CompressEFIESP, MainOSPath, CompressMainOS, DataPath, CompressData); }, () => ((FFUPath != null) && ((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null))));
-                }
-                return _DumpCommand;
+                return _DumpCommand ??= new DelegateCommand(() => DumpCallback(FFUPath, EFIESPPath, CompressEFIESP, MainOSPath, CompressMainOS, DataPath, CompressData), () => ((FFUPath != null) && ((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null))));
             }
         }
 

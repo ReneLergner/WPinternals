@@ -27,8 +27,8 @@ namespace WPinternals
         internal PhoneInterfaces? CurrentInterface;
         internal IDisposable CurrentModel;
         internal PhoneNotifierViewModel PhoneNotifier;
-        private Action<PhoneInterfaces> ModeSwitchRequestCallback;
-        private Action SwitchToGettingStarted;
+        private readonly Action<PhoneInterfaces> ModeSwitchRequestCallback;
+        private readonly Action SwitchToGettingStarted;
 
         internal LumiaInfoViewModel(PhoneNotifierViewModel PhoneNotifier, Action<PhoneInterfaces> ModeSwitchRequestCallback, Action SwitchToGettingStarted)
             : base()
@@ -50,14 +50,14 @@ namespace WPinternals
             PhoneNotifier.DeviceRemoved -= DeviceRemoved;
         }
 
-        void DeviceRemoved()
+        private void DeviceRemoved()
         {
             CurrentInterface = null;
             CurrentModel = null;
             ActivateSubContext(null);
         }
 
-        void NewDeviceArrived(ArrivalEventArgs Args)
+        private void NewDeviceArrived(ArrivalEventArgs Args)
         {
             CurrentInterface = Args.NewInterface;
             CurrentModel = Args.NewModel;
@@ -82,7 +82,7 @@ namespace WPinternals
                 case PhoneInterfaces.Lumia_MassStorage:
                     ActivateSubContext(new NokiaMassStorageViewModel((MassStorage)CurrentModel));
                     break;
-            };
+            }
         }
     }
 }

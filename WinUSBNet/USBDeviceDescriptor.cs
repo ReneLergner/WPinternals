@@ -17,33 +17,32 @@ namespace MadWizard.WinUSBNet
         /// <summary>
         /// Windows path name for the USB device
         /// </summary>
-        public string PathName { get; private set; }
+        public string PathName { get; }
 
         /// <summary>
         /// USB vendor ID (VID) of the device
         /// </summary>
-        public int VID { get; private set; }
+        public int VID { get; }
 
         /// <summary>
         /// USB product ID (PID) of the device
         /// </summary>
-        public int PID { get; private set; }
+        public int PID { get; }
 
         /// <summary>
         /// Manufacturer name, or null if not available
         /// </summary>
-        public string Manufacturer { get; private set; }
+        public string Manufacturer { get; }
 
         /// <summary>
         /// Product name, or null if not available
         /// </summary>
-        public string Product { get; private set; }
+        public string Product { get; }
 
         /// <summary>
         /// Device serial number, or null if not available
         /// </summary>
-        public string SerialNumber { get; private set; }
-
+        public string SerialNumber { get; }
 
         /// <summary>
         /// Friendly device name, or path name when no
@@ -54,13 +53,21 @@ namespace MadWizard.WinUSBNet
             get
             {
                 if (Manufacturer != null && Product != null)
+                {
                     return Product + " - " + Manufacturer;
+                }
                 else if (Product != null)
+                {
                     return Product;
+                }
                 else if (SerialNumber != null)
+                {
                     return SerialNumber;
+                }
                 else
+                {
                     return PathName;
+                }
             }
         }
 
@@ -72,7 +79,6 @@ namespace MadWizard.WinUSBNet
         public byte ClassValue
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -81,7 +87,6 @@ namespace MadWizard.WinUSBNet
         public byte SubClass
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -90,7 +95,6 @@ namespace MadWizard.WinUSBNet
         public byte Protocol
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -101,7 +105,6 @@ namespace MadWizard.WinUSBNet
         public USBBaseClass BaseClass
         {
             get;
-            private set;
         }
 
         internal USBDeviceDescriptor(string path, API.USB_DEVICE_DESCRIPTOR deviceDesc, string manufacturer, string product, string serialNumber)
@@ -113,7 +116,6 @@ namespace MadWizard.WinUSBNet
             Product = product;
             SerialNumber = serialNumber;
 
-
             ClassValue = deviceDesc.bDeviceClass;
             SubClass = deviceDesc.bDeviceSubClass;
             Protocol = deviceDesc.bDeviceProtocol;
@@ -123,11 +125,8 @@ namespace MadWizard.WinUSBNet
             BaseClass = USBBaseClass.Unknown;
             if (Enum.IsDefined(typeof(USBBaseClass), (int)deviceDesc.bDeviceClass))
             {
-                BaseClass = (USBBaseClass)(int)deviceDesc.bDeviceClass;
+                BaseClass = (USBBaseClass)deviceDesc.bDeviceClass;
             }
-
-
-
         }
     }
 }

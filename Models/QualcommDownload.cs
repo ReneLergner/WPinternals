@@ -26,7 +26,7 @@ namespace WPinternals
 {
     internal class QualcommDownload
     {
-        private QualcommSerial Serial;
+        private readonly QualcommSerial Serial;
 
         public QualcommDownload(QualcommSerial Serial)
         {
@@ -48,11 +48,7 @@ namespace WPinternals
 
         public void SendToPhoneMemory(UInt32 Address, Stream Data, UInt32 Length = UInt32.MaxValue)
         {
-            long Remaining;
-            if (Length > (Data.Length - Data.Position))
-                Remaining = Data.Length - Data.Position;
-            else
-                Remaining = Length;
+            long Remaining = Length > (Data.Length - Data.Position) ? Data.Length - Data.Position : Length;
             UInt32 CurrentLength;
             byte[] Buffer = new byte[0x107];
             Buffer[0] = 0x0F;
@@ -62,10 +58,8 @@ namespace WPinternals
             {
                 System.Buffer.BlockCopy(BitConverter.GetBytes(CurrentAddress).Reverse().ToArray(), 0, Buffer, 1, 4); // Address is in Big Endian
 
-                if (Remaining >= 0x100)
-                    CurrentLength = 0x100;
-                else
-                    CurrentLength = (UInt32)Remaining;
+                CurrentLength = Remaining >= 0x100 ? 0x100 : (UInt32)Remaining;
+
                 CurrentLength = (UInt32)(Data.Read(Buffer, 7, (int)CurrentLength));
                 Serial.SendCommand(Buffer, new byte[] { 0x02 });
 
@@ -78,11 +72,12 @@ namespace WPinternals
         {
             long Remaining;
             if (Offset > (Data.Length - 1))
+            {
                 throw new ArgumentException("Wrong offset");
-            if (Length > (Data.Length - Offset))
-                Remaining = Data.Length - Offset;
-            else
-                Remaining = Length;
+            }
+
+            Remaining = Length > (Data.Length - Offset) ? Data.Length - Offset : Length;
+
             UInt32 CurrentLength;
             UInt32 CurrentOffset = Offset;
             byte[] Buffer = new byte[0x107];
@@ -90,7 +85,6 @@ namespace WPinternals
             byte[] CurrentBytes;
             while (Remaining > 0)
             {
-
                 if (Remaining >= 0x100)
                 {
                     CurrentLength = 0x100;

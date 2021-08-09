@@ -93,32 +93,52 @@ namespace WPinternals
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            value = value == null
+            return value == null
                 ? OnNull ?? Default(targetType)
                 : (string.Equals(value.ToString(), false.ToString(), StringComparison.CurrentCultureIgnoreCase)
                     ? OnFalse
                     : OnTrue);
-            return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == OnNull) return Default(targetType);
-            if (value == OnFalse) return false;
-            if (value == OnTrue) return true;
-            if (value == null) return null;
+            if (value == OnNull)
+            {
+                return Default(targetType);
+            }
+
+            if (value == OnFalse)
+            {
+                return false;
+            }
+
+            if (value == OnTrue)
+            {
+                return true;
+            }
+
+            if (value == null)
+            {
+                return null;
+            }
 
             if (OnNull != null &&
                 string.Equals(value.ToString(), OnNull.ToString(), StringComparison.CurrentCultureIgnoreCase))
+            {
                 return Default(targetType);
+            }
 
             if (OnFalse != null &&
                 string.Equals(value.ToString(), OnFalse.ToString(), StringComparison.CurrentCultureIgnoreCase))
+            {
                 return false;
+            }
 
             if (OnTrue != null &&
                 string.Equals(value.ToString(), OnTrue.ToString(), StringComparison.CurrentCultureIgnoreCase))
+            {
                 return true;
+            }
 
             return null;
         }
@@ -143,20 +163,24 @@ namespace WPinternals
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is byte[])
+            if (value is byte[] bytes)
             {
-                byte[] bytes = (byte[])value;
-                StringBuilder s = new StringBuilder(1000);
+                StringBuilder s = new(1000);
                 for (int i = bytes.GetLowerBound(0); i <= bytes.GetUpperBound(0); i++)
                 {
                     if (i != bytes.GetLowerBound(0))
+                    {
                         s.Append(Separator);
+                    }
+
                     s.Append(bytes[i].ToString("X2"));
                 }
                 return s.ToString();
             }
             else
+            {
                 return "";
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -175,9 +199,13 @@ namespace WPinternals
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
+            {
                 return "Collapsed";
+            }
             else
+            {
                 return "Visible";
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -196,9 +224,13 @@ namespace WPinternals
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
+            {
                 return "Visible";
+            }
             else
+            {
                 return "Collapsed";
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -238,10 +270,7 @@ namespace WPinternals
           "IsVisible", typeof(Boolean), typeof(CollapsibleRun), new PropertyMetadata(true, IsVisibleChanged));
         public static void IsVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
-                ((CollapsibleRun)d).Text = ((CollapsibleRun)d).CollapsibleText;
-            else
-                ((CollapsibleRun)d).Text = String.Empty;
+            ((CollapsibleRun)d).Text = (bool)e.NewValue ? ((CollapsibleRun)d).CollapsibleText : String.Empty;
         }
     }
 
@@ -257,12 +286,14 @@ namespace WPinternals
             base.OnInitialized(e);
 
             foreach (Block Block in Blocks)
+            {
                 CollapsibleBlocks.Add(Block);
+            }
 
             Blocks.Clear();
         }
 
-        public List<Block> CollapsibleBlocks { get; private set; }
+        public List<Block> CollapsibleBlocks { get; }
 
         public Boolean IsCollapsed
         {
@@ -281,7 +312,9 @@ namespace WPinternals
                     if (!value)
                     {
                         foreach (Block Block in CollapsibleBlocks)
+                        {
                             Blocks.Add(Block);
+                        }
                     }
                 }
             }
@@ -301,12 +334,12 @@ namespace WPinternals
             int inlinesCount = this.Inlines.Count;
             for (int i = 0; i < inlinesCount; i++)
             {
-                System.Windows.Documents.Inline inline = this.Inlines.ElementAt(i);
-                if (inline is System.Windows.Documents.Run)
+                Inline inline = this.Inlines.ElementAt(i);
+                if (inline is Run)
                 {
-                    if ((inline as System.Windows.Documents.Run).Text == Convert.ToChar(32).ToString()) //ACSII 32 is the white space
+                    if ((inline as Run)?.Text == Convert.ToChar(32).ToString()) //ACSII 32 is the white space
                     {
-                        (inline as System.Windows.Documents.Run).Text = string.Empty;
+                        (inline as Run).Text = string.Empty;
                     }
                 }
             }
@@ -332,19 +365,27 @@ namespace WPinternals
         {
             byte[] Bytes;
             if (Value is short)
+            {
                 Bytes = BitConverter.GetBytes((short)Value);
+            }
             else if (Value is ushort)
+            {
                 Bytes = BitConverter.GetBytes((ushort)Value);
+            }
             else if (Value is int)
+            {
                 Bytes = BitConverter.GetBytes((int)Value);
-            else if (Value is uint)
-                Bytes = BitConverter.GetBytes((uint)Value);
+            }
             else
-                throw new NotSupportedException();
+            {
+                Bytes = Value is uint ? BitConverter.GetBytes((uint)Value) : throw new NotSupportedException();
+            }
 
             byte[] Result = new byte[Bytes.Length];
             for (int i = 0; i < Bytes.Length; i++)
+            {
                 Result[i] = Bytes[Bytes.Length - 1 - i];
+            }
 
             return Result;
         }
@@ -354,7 +395,9 @@ namespace WPinternals
             byte[] Result;
             byte[] BigEndianBytes = GetBytes(Value);
             if (BigEndianBytes.Length == Width)
+            {
                 return BigEndianBytes;
+            }
             else if (BigEndianBytes.Length > Width)
             {
                 Result = new byte[Width];
@@ -373,7 +416,10 @@ namespace WPinternals
         {
             byte[] Bytes = new byte[2];
             for (int i = 0; i < 2; i++)
+            {
                 Bytes[i] = Buffer[Offset + 1 - i];
+            }
+
             return BitConverter.ToUInt16(Bytes, 0);
         }
 
@@ -381,7 +427,10 @@ namespace WPinternals
         {
             byte[] Bytes = new byte[2];
             for (int i = 0; i < 2; i++)
+            {
                 Bytes[i] = Buffer[Offset + 1 - i];
+            }
+
             return BitConverter.ToInt16(Bytes, 0);
         }
 
@@ -389,7 +438,10 @@ namespace WPinternals
         {
             byte[] Bytes = new byte[4];
             for (int i = 0; i < 4; i++)
+            {
                 Bytes[i] = Buffer[Offset + 3 - i];
+            }
+
             return BitConverter.ToUInt32(Bytes, 0);
         }
 
@@ -397,7 +449,10 @@ namespace WPinternals
         {
             byte[] Bytes = new byte[4];
             for (int i = 0; i < 4; i++)
+            {
                 Bytes[i] = Buffer[Offset + 3 - i];
+            }
+
             return BitConverter.ToInt32(Bytes, 0);
         }
     }
@@ -420,8 +475,10 @@ namespace WPinternals
         private void Initialize()
         {
             _gifDecoder = new GifBitmapDecoder(new Uri("pack://application:,,," + this.GifSource), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
-            _animation = new Int32Animation(0, _gifDecoder.Frames.Count - 1, new Duration(new TimeSpan(0, 0, 0, _gifDecoder.Frames.Count / 10, (int)((_gifDecoder.Frames.Count / 10.0 - _gifDecoder.Frames.Count / 10) * 1000))));
-            _animation.RepeatBehavior = RepeatBehavior.Forever;
+            _animation = new Int32Animation(0, _gifDecoder.Frames.Count - 1, new Duration(new TimeSpan(0, 0, 0, _gifDecoder.Frames.Count / 10, (int)(((_gifDecoder.Frames.Count / 10.0) - (_gifDecoder.Frames.Count / 10)) * 1000))))
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
             this.Source = _gifDecoder.Frames[0];
 
             _isInitialized = true;
@@ -448,7 +505,7 @@ namespace WPinternals
         public static readonly DependencyProperty FrameIndexProperty =
             DependencyProperty.Register("FrameIndex", typeof(int), typeof(GifImage), new UIPropertyMetadata(0, new PropertyChangedCallback(ChangingFrameIndex)));
 
-        static void ChangingFrameIndex(DependencyObject obj, DependencyPropertyChangedEventArgs ev)
+        private static void ChangingFrameIndex(DependencyObject obj, DependencyPropertyChangedEventArgs ev)
         {
             var gifImage = obj as GifImage;
             gifImage.Source = gifImage._gifDecoder.Frames[(int)ev.NewValue];
@@ -466,7 +523,9 @@ namespace WPinternals
         private static void AutoStartPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             if ((bool)e.NewValue)
-                (sender as GifImage).StartAnimation();
+            {
+                (sender as GifImage)?.StartAnimation();
+            }
         }
 
         public string GifSource
@@ -480,13 +539,15 @@ namespace WPinternals
 
         private static void GifSourcePropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            (sender as GifImage).Initialize();
+            (sender as GifImage)?.Initialize();
         }
 
         public void StartAnimation()
         {
             if (!_isInitialized)
+            {
                 this.Initialize();
+            }
 
             BeginAnimation(FrameIndexProperty, _animation);
         }
@@ -506,8 +567,8 @@ namespace WPinternals
 
     internal static class LogFile
     {
-        private static StreamWriter w = null;
-        private static object lockobject = new object();
+        private static readonly StreamWriter w = null;
+        private static readonly object lockobject = new();
 #if PREVIEW
         private static string LogAction = null;
         private static StringBuilder LogBuilder;
@@ -518,7 +579,10 @@ namespace WPinternals
             try
             {
                 if (!Directory.Exists(Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals")))
+                {
                     Directory.CreateDirectory(Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals"));
+                }
+
                 w = File.AppendText(Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\WPInternals.log"));
             }
             catch { }
@@ -526,7 +590,10 @@ namespace WPinternals
 
         public static void Log(string logMessage, LogType Type = LogType.FileOnly)
         {
-            if (w == null) return;
+            if (w == null)
+            {
+                return;
+            }
 
             lock (lockobject)
             {
@@ -544,7 +611,9 @@ namespace WPinternals
                 }
 
                 if ((CommandLine.IsConsoleVisible) && ((Type == LogType.ConsoleOnly) || (Type == LogType.FileAndConsole)))
+                {
                     Console.WriteLine(logMessage);
+                }
             }
         }
 
@@ -557,10 +626,14 @@ namespace WPinternals
                 Log(Indent + "Error: " + RemoveBadChars(CurrentEx.Message).Replace("of type '.' ", "") + (AdditionalInfo == null ? "" : " - " + AdditionalInfo), Type);
                 AdditionalInfo = null;
                 if (CurrentEx is WPinternalsException)
+                {
                     Log(Indent + ((WPinternalsException)CurrentEx).SubMessage, Type);
+                }
 #if DEBUG
                 if (CurrentEx.StackTrace != null)
+                {
                     Log(Indent + CurrentEx.StackTrace, LogType.FileOnly);
+                }
 #endif
                 Indent += "    ";
                 CurrentEx = CurrentEx.InnerException;
@@ -667,11 +740,14 @@ namespace WPinternals
     {
         public static string ConvertHexToString(byte[] Bytes, string Separator)
         {
-            StringBuilder s = new StringBuilder(1000);
+            StringBuilder s = new(1000);
             for (int i = Bytes.GetLowerBound(0); i <= Bytes.GetUpperBound(0); i++)
             {
                 if (i != Bytes.GetLowerBound(0))
+                {
                     s.Append(Separator);
+                }
+
                 s.Append(Bytes[i].ToString("X2"));
             }
             return s.ToString();
@@ -680,7 +756,9 @@ namespace WPinternals
         public static byte[] ConvertStringToHex(string HexString)
         {
             if (HexString.Length % 2 == 1)
+            {
                 throw new Exception("The binary key cannot have an odd number of digits");
+            }
 
             byte[] arr = new byte[HexString.Length >> 1];
 
@@ -694,7 +772,7 @@ namespace WPinternals
 
         public static int GetHexVal(char hex)
         {
-            int val = (int)hex;
+            int val = hex;
             //For uppercase A-F letters:
             //return val - (val < 58 ? 48 : 55);
             //For lowercase a-f letters:
@@ -702,7 +780,6 @@ namespace WPinternals
             //Or the two combined, but a bit slower:
             return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
-
     }
 
     // This class was found online.
@@ -751,7 +828,7 @@ namespace WPinternals
             var oldContext = SynchronizationContext.Current;
             var synch = new ExclusiveSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(synch);
-            T ret = default(T);
+            T ret = default;
             synch.Post(async _ =>
             {
                 try
@@ -777,9 +854,9 @@ namespace WPinternals
         {
             private bool done;
             public Exception InnerException { get; set; }
-            readonly AutoResetEvent workItemsWaiting = new AutoResetEvent(false);
-            readonly Queue<Tuple<SendOrPostCallback, object>> items =
-                new Queue<Tuple<SendOrPostCallback, object>>();
+            private readonly AutoResetEvent workItemsWaiting = new(false);
+            private readonly Queue<Tuple<SendOrPostCallback, object>> items =
+                new();
 
             public override void Send(SendOrPostCallback d, object state)
             {
@@ -840,11 +917,7 @@ namespace WPinternals
     {
         public static void AddWeakReferenceHandler(ref List<WeakReference> handlers, EventHandler handler, int defaultListSize)
         {
-            if (handlers == null)
-            {
-                handlers = (defaultListSize > 0) ? new List<WeakReference>(defaultListSize) : new List<WeakReference>();
-            }
-            handlers.Add(new WeakReference(handler));
+            (handlers ??= (defaultListSize > 0) ? new List<WeakReference>(defaultListSize) : new List<WeakReference>()).Add(new WeakReference(handler));
         }
 
         private static void CallHandler(object sender, EventHandler eventHandler)
@@ -852,7 +925,7 @@ namespace WPinternals
             DispatcherProxy proxy = DispatcherProxy.CreateDispatcher();
             if (eventHandler != null)
             {
-                if ((proxy != null) && !proxy.CheckAccess())
+                if (proxy?.CheckAccess() == false)
                 {
                     proxy.BeginInvoke(new Action<object, EventHandler>(WeakEventHandlerManager.CallHandler), new object[] { sender, eventHandler });
                 }
@@ -882,8 +955,7 @@ namespace WPinternals
             for (int i = handlers.Count - 1; i >= 0; i--)
             {
                 WeakReference reference = handlers[i];
-                EventHandler target = reference.Target as EventHandler;
-                if (target == null)
+                if (reference.Target is not EventHandler target)
                 {
                     handlers.RemoveAt(i);
                 }
@@ -903,8 +975,7 @@ namespace WPinternals
                 for (int i = handlers.Count - 1; i >= 0; i--)
                 {
                     WeakReference reference = handlers[i];
-                    EventHandler target = reference.Target as EventHandler;
-                    if ((target == null) || (target == handler))
+                    if ((reference.Target is not EventHandler target) || (target == handler))
                     {
                         handlers.RemoveAt(i);
                     }
@@ -914,7 +985,7 @@ namespace WPinternals
 
         private class DispatcherProxy
         {
-            private Dispatcher innerDispatcher;
+            private readonly Dispatcher innerDispatcher;
 
             private DispatcherProxy(Dispatcher dispatcher)
             {
@@ -931,13 +1002,13 @@ namespace WPinternals
                 return this.innerDispatcher.CheckAccess();
             }
 
-            public static WeakEventHandlerManager.DispatcherProxy CreateDispatcher()
+            public static DispatcherProxy CreateDispatcher()
             {
                 if (Application.Current == null)
                 {
                     return null;
                 }
-                return new WeakEventHandlerManager.DispatcherProxy(Application.Current.Dispatcher);
+                return new DispatcherProxy(Application.Current.Dispatcher);
             }
         }
     }
@@ -985,7 +1056,7 @@ namespace WPinternals
         {
             if ((executeMethod == null) || (canExecuteMethod == null))
             {
-                throw new ArgumentNullException("executeMethod", "Delegate Command Delegates Cannot Be Null");
+                throw new ArgumentNullException(nameof(executeMethod), "Delegate Command Delegates Cannot Be Null");
             }
             this.executeMethod = executeMethod;
             this.canExecuteMethod = canExecuteMethod;
@@ -1012,11 +1083,7 @@ namespace WPinternals
 
         protected virtual void OnIsActiveChanged()
         {
-            EventHandler isActiveChanged = this.IsActiveChanged;
-            if (isActiveChanged != null)
-            {
-                isActiveChanged(this, EventArgs.Empty);
-            }
+            this.IsActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void RaiseCanExecuteChanged()
@@ -1084,10 +1151,10 @@ namespace WPinternals
 
     internal class ProgressUpdater
     {
-        private DateTime InitTime;
+        private readonly DateTime InitTime;
         private DateTime LastUpdateTime;
-        private UInt64 MaxValue;
-        private Action<int, TimeSpan?> ProgressUpdateCallback;
+        private readonly UInt64 MaxValue;
+        private readonly Action<int, TimeSpan?> ProgressUpdateCallback;
         internal int ProgressPercentage;
 
         internal ProgressUpdater(UInt64 MaxValue, Action<int, TimeSpan?> ProgressUpdateCallback)
@@ -1120,13 +1187,17 @@ namespace WPinternals
                 if (((DateTime.Now - LastUpdateTime) > TimeSpan.FromSeconds(0.5)) || (ProgressPercentage == 100))
                 {
 #if DEBUG
-                    Console.WriteLine("Init time: " + InitTime.ToShortTimeString() + " / Now: " + DateTime.Now.ToString() + " / NewValue: " + NewValue.ToString() + " / MaxValue: " + MaxValue.ToString() + " ->> Percentage: " + ProgressPercentage.ToString() + " / Remaining: " + TimeSpan.FromTicks((long)((DateTime.Now - InitTime).Ticks / ((double)NewValue / MaxValue) * ((double)1 - ((double)NewValue / MaxValue)))).ToString());
+                    Console.WriteLine("Init time: " + InitTime.ToShortTimeString() + " / Now: " + DateTime.Now.ToString() + " / NewValue: " + NewValue.ToString() + " / MaxValue: " + MaxValue.ToString() + " ->> Percentage: " + ProgressPercentage.ToString() + " / Remaining: " + TimeSpan.FromTicks((long)((DateTime.Now - InitTime).Ticks / ((double)NewValue / MaxValue) * (1 - ((double)NewValue / MaxValue)))).ToString());
 #endif
 
                     if (((DateTime.Now - InitTime) < TimeSpan.FromSeconds(30)) && (ProgressPercentage < 15))
+                    {
                         ProgressUpdateCallback(ProgressPercentage, null);
+                    }
                     else
-                        ProgressUpdateCallback(ProgressPercentage, TimeSpan.FromTicks((long)((DateTime.Now - InitTime).Ticks / ((double)NewValue / MaxValue) * ((double)1 - ((double)NewValue / MaxValue)))));
+                    {
+                        ProgressUpdateCallback(ProgressPercentage, TimeSpan.FromTicks((long)((DateTime.Now - InitTime).Ticks / ((double)NewValue / MaxValue) * (1 - ((double)NewValue / MaxValue)))));
+                    }
 
                     LastUpdateTime = DateTime.Now;
                 }
@@ -1148,9 +1219,13 @@ namespace WPinternals
             InputStream.Read(GZipHeader, 0, 3);
             InputStream.Position = P;
             if (StructuralComparisons.StructuralEqualityComparer.Equals(GZipHeader, new byte[] { 0x1F, 0x8B, 0x08 }))
+            {
                 return new GZipStream(InputStream, CompressionMode.Decompress, false);
+            }
             else
+            {
                 return InputStream;
+            }
         }
 
         internal static bool IsCompressedStream(Stream InputStream)
@@ -1195,7 +1270,10 @@ namespace WPinternals
         public ReadSeekableStream(Stream underlyingStream, int seekBackBufferSize)
         {
             if (!underlyingStream.CanRead)
+            {
                 throw new Exception("Provided stream " + underlyingStream + " is not readable");
+            }
+
             _underlyingStream = underlyingStream;
             _seekBackBuffer = new byte[seekBackBufferSize];
         }
@@ -1227,7 +1305,10 @@ namespace WPinternals
                     var bufferBytesToMove = Math.Min(_seekBackBufferCount - 1, copyToBufferOffset);
 
                     if (bufferBytesToMove > 0)
+                    {
                         Buffer.BlockCopy(_seekBackBuffer, _seekBackBufferCount - bufferBytesToMove, _seekBackBuffer, 0, bufferBytesToMove);
+                    }
+
                     Buffer.BlockCopy(buffer, offset, _seekBackBuffer, copyToBufferOffset, copyToBufferCount);
                     _seekBackBufferCount = Math.Min(_seekBackBuffer.Length, _seekBackBufferCount + copyToBufferCount);
                     _seekBackBufferIndex = _seekBackBufferCount;
@@ -1239,18 +1320,26 @@ namespace WPinternals
         public override long Seek(long offset, SeekOrigin origin)
         {
             if (origin == SeekOrigin.End)
+            {
                 return SeekFromEnd((int)Math.Max(0, -offset));
+            }
 
             var relativeOffset = origin == SeekOrigin.Current
                 ? offset
                 : offset - Position;
 
             if (relativeOffset == 0)
+            {
                 return Position;
+            }
             else if (relativeOffset > 0)
+            {
                 return SeekForward(relativeOffset);
+            }
             else
+            {
                 return SeekBackwards(-relativeOffset);
+            }
         }
 
         private long SeekForward(long origOffset)
@@ -1270,7 +1359,10 @@ namespace WPinternals
                 {
                     var maxRead = seekBackBufferLength - _seekBackBufferCount;
                     if (offset < maxRead)
+                    {
                         maxRead = (int)offset;
+                    }
+
                     var bytesRead = _underlyingStream.Read(_seekBackBuffer, _seekBackBufferCount, maxRead);
                     _underlyingPosition += bytesRead;
                     _seekBackBufferCount += bytesRead;
@@ -1278,7 +1370,10 @@ namespace WPinternals
                     if (bytesRead < maxRead)
                     {
                         if (_seekBackBufferCount < offset)
+                        {
                             throw new NotSupportedException("Reached end of stream seeking forward " + origOffset + " bytes");
+                        }
+
                         return Position;
                     }
                     offset -= bytesRead;
@@ -1307,11 +1402,16 @@ namespace WPinternals
                         else
                         {
                             if (bytesRead > 0)
+                            {
                                 Buffer.BlockCopy(_seekBackBuffer, 0, _seekBackBuffer, bytesReadDiff, bytesRead);
+                            }
+
                             Buffer.BlockCopy(tempBuffer, bytesRead, _seekBackBuffer, 0, bytesReadDiff);
                         }
                         if (offset > 0)
+                        {
                             throw new NotSupportedException("Reached end of stream seeking forward " + origOffset + " bytes");
+                        }
                     }
                     fillTempBuffer = !fillTempBuffer;
                 }
@@ -1323,7 +1423,10 @@ namespace WPinternals
         {
             var intOffset = (int)offset;
             if (offset > int.MaxValue || intOffset > _seekBackBufferIndex)
+            {
                 throw new NotSupportedException("Cannot currently seek backwards more than " + _seekBackBufferIndex + " bytes");
+            }
+
             _seekBackBufferIndex -= intOffset;
             return Position;
         }
@@ -1333,7 +1436,9 @@ namespace WPinternals
             var intOffset = (int)offset;
             var seekBackBufferLength = _seekBackBuffer.Length;
             if (offset > int.MaxValue || intOffset > seekBackBufferLength)
+            {
                 throw new NotSupportedException("Cannot seek backwards from end more than " + seekBackBufferLength + " bytes");
+            }
 
             // first completely fill seekBackBuffer to remove special cases from while loop below
             if (_seekBackBufferCount < seekBackBufferLength)
@@ -1346,7 +1451,10 @@ namespace WPinternals
                 if (bytesRead < maxRead)
                 {
                     if (_seekBackBufferCount < intOffset)
+                    {
                         throw new NotSupportedException("Could not seek backwards from end " + intOffset + " bytes");
+                    }
+
                     return Position;
                 }
             }
@@ -1376,7 +1484,10 @@ namespace WPinternals
                     else
                     {
                         if (bytesRead > 0)
+                        {
                             Buffer.BlockCopy(_seekBackBuffer, 0, _seekBackBuffer, bytesReadDiff, bytesRead);
+                        }
+
                         Buffer.BlockCopy(tempBuffer, bytesRead, _seekBackBuffer, 0, bytesReadDiff);
                     }
                     _seekBackBufferIndex -= intOffset;
@@ -1407,15 +1518,14 @@ namespace WPinternals
                 _underlyingStream.Dispose();
             }
         }
-
     }
 
     // For reading a compressed stream or normal stream
     internal class DecompressedStream : Stream
     {
-        private Stream UnderlyingStream;
-        private bool IsSourceCompressed;
-        private UInt64 DecompressedLength;
+        private readonly Stream UnderlyingStream;
+        private readonly bool IsSourceCompressed;
+        private readonly UInt64 DecompressedLength;
         private Int64 ReadPosition = 0;
 
         // For reading a compressed stream
@@ -1438,7 +1548,9 @@ namespace WPinternals
                 byte[] FormatVersionBytes = new byte[4];
                 UnderlyingStream.Read(FormatVersionBytes, 0, 4);
                 if (BitConverter.ToUInt32(FormatVersionBytes, 0) > 1) // Max supported format version = 1
+                {
                     throw new InvalidDataException();
+                }
 
                 byte[] HeaderSizeBytes = new byte[4];
                 UnderlyingStream.Read(HeaderSizeBytes, 0, 4);
@@ -1451,7 +1563,9 @@ namespace WPinternals
                     DecompressedLength = BitConverter.ToUInt64(DecompressedLengthBytes, 0);
                 }
                 else
+                {
                     throw new InvalidDataException();
+                }
 
                 UInt32 HeaderBytesRemaining = (UInt32)(HeaderSize - Signature.Length - 0x10);
                 if (HeaderBytesRemaining > 0)
@@ -1463,7 +1577,9 @@ namespace WPinternals
                 UnderlyingStream = new GZipStream(UnderlyingStream, CompressionMode.Decompress, false);
             }
             else
+            {
                 UnderlyingStream.Position = 0;
+            }
         }
 
         public override bool CanRead { get { return true; } }
@@ -1487,9 +1603,13 @@ namespace WPinternals
             get
             {
                 if (IsSourceCompressed)
+                {
                     return (long)DecompressedLength;
+                }
                 else
+                {
                     return UnderlyingStream.Length;
+                }
             }
         }
         public override void SetLength(long value) { throw new NotSupportedException(); }
@@ -1508,9 +1628,9 @@ namespace WPinternals
     // For writing a compressed stream
     internal class CompressedStream : Stream
     {
-        private UInt32 HeaderSize;
+        private readonly UInt32 HeaderSize;
         private UInt64 WritePosition;
-        private GZipStream UnderlyingStream;
+        private readonly GZipStream UnderlyingStream;
 
         internal CompressedStream(Stream OutputStream, UInt64 TotalDecompressedStreamLength)
         {
@@ -1561,8 +1681,8 @@ namespace WPinternals
     {
         private Stream UnderlyingStream;
         private Int64 ReadPosition = 0;
-        private Func<Stream> StreamInitializer;
-        private Int64 UnderlyingStreamLength;
+        private readonly Func<Stream> StreamInitializer;
+        private readonly Int64 UnderlyingStreamLength;
 
         // For reading a compressed stream
         internal SeekableStream(Func<Stream> StreamInitializer, Int64? Length = null)
@@ -1570,7 +1690,9 @@ namespace WPinternals
             this.StreamInitializer = StreamInitializer;
             UnderlyingStream = StreamInitializer();
             if (Length != null)
+            {
                 UnderlyingStreamLength = (Int64)Length;
+            }
             else
             {
                 try
@@ -1615,7 +1737,10 @@ namespace WPinternals
                         break;
                 }
                 if ((NewPosition < 0) || (NewPosition > UnderlyingStreamLength))
+                {
                     throw new ArgumentOutOfRangeException();
+                }
+
                 if (NewPosition < ReadPosition)
                 {
                     UnderlyingStream.Close();
@@ -1628,7 +1753,10 @@ namespace WPinternals
                 {
                     Remaining = (UInt64)(NewPosition - ReadPosition);
                     if (Remaining > (UInt64)Buffer.Length)
+                    {
                         Remaining = (UInt64)Buffer.Length;
+                    }
+
                     UnderlyingStream.Read(Buffer, 0, (int)Remaining);
                     ReadPosition += (long)Remaining;
                 }
@@ -1670,27 +1798,27 @@ namespace WPinternals
 
     internal enum ResourceType
     {
-        RT_ACCELERATOR = 9, //Accelerator table.
-        RT_ANICURSOR = 21, //Animated cursor.
-        RT_ANIICON = 22, //Animated icon.
-        RT_BITMAP = 2, //Bitmap resource.
-        RT_CURSOR = 1, //Hardware-dependent cursor resource.
-        RT_DIALOG = 5, //Dialog box.
-        RT_DLGINCLUDE = 17, //Allows
-        RT_FONT = 8, //Font resource.
-        RT_FONTDIR = 7, //Font directory resource.
-        RT_GROUP_CURSOR = ((RT_CURSOR) + 11), //Hardware-independent cursor resource.
-        RT_GROUP_ICON = ((RT_ICON) + 11), //Hardware-independent icon resource.
-        RT_HTML = 23, //HTML resource.
-        RT_ICON = 3, //Hardware-dependent icon resource.
-        RT_MANIFEST = 24, //Side-by-Side Assembly Manifest.
-        RT_MENU = 4, //Menu resource.
-        RT_MESSAGETABLE = 11, //Message-table entry.
-        RT_PLUGPLAY = 19, //Plug and Play resource.
-        RT_RCDATA = 10, //Application-defined resource (raw data).
-        RT_STRING = 6, //String-table entry.
-        RT_VERSION = 16, //Version resource.
-        RT_VXD = 20, //
+        RT_CURSOR = 1,
+        RT_BITMAP = 2,
+        RT_ICON = 3,
+        RT_MENU = 4,
+        RT_DIALOG = 5,
+        RT_STRING = 6,
+        RT_FONTDIR = 7,
+        RT_FONT = 8,
+        RT_ACCELERATOR = 9,
+        RT_RCDATA = 10,
+        RT_MESSAGETABLE = 11,
+        RT_GROUP_CURSOR = (RT_CURSOR + 11),
+        RT_GROUP_ICON = (RT_ICON + 11),
+        RT_VERSION = 16,
+        RT_DLGINCLUDE = 17,
+        RT_PLUGPLAY = 19,
+        RT_VXD = 20,
+        RT_ANICURSOR = 21,
+        RT_ANIICON = 22,
+        RT_HTML = 23,
+        RT_MANIFEST = 24,
         RT_DLGINIT = 240,
         RT_TOOLBAR = 241
     };
@@ -1712,7 +1840,10 @@ namespace WPinternals
                 string SectionName = ByteOperations.ReadAsciiString(PEfile, (UInt32)(SectionTablePointer + (i * 0x28)), 8);
                 int e = SectionName.IndexOf('\0');
                 if (e >= 0)
+                {
                     SectionName = SectionName.Substring(0, e);
+                }
+
                 if (SectionName == ".rsrc")
                 {
                     ResourceSectionEntryPointer = (UInt32)(SectionTablePointer + (i * 0x28));
@@ -1720,7 +1851,10 @@ namespace WPinternals
                 }
             }
             if (ResourceSectionEntryPointer == null)
+            {
                 throw new WPinternalsException("Resource-section not found");
+            }
+
             UInt32 ResourceRawSize = ByteOperations.ReadUInt32(PEfile, (UInt32)ResourceSectionEntryPointer + 0x10);
             UInt32 ResourceRawPointer = ByteOperations.ReadUInt32(PEfile, (UInt32)ResourceSectionEntryPointer + 0x14);
             UInt32 ResourceVirtualPointer = ByteOperations.ReadUInt32(PEfile, (UInt32)ResourceSectionEntryPointer + 0x0C);
@@ -1738,7 +1872,9 @@ namespace WPinternals
                     {
                         // Check high bit
                         if (((NextPointer & 0x80000000) == 0) != (i == (Index.Length - 1)))
+                        {
                             throw new WPinternalsException("Bad resource path");
+                        }
 
                         p = ResourceRawPointer + (NextPointer & 0x7fffffff);
                         break;
@@ -1762,7 +1898,7 @@ namespace WPinternals
             // RT_VERSION format:
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647001(v=vs.85).aspx
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms646997(v=vs.85).aspx
-            UInt32 FixedFileInfoPointer = 0x28;
+            const UInt32 FixedFileInfoPointer = 0x28;
             UInt16 Major = ByteOperations.ReadUInt16(version, FixedFileInfoPointer + 0x0A);
             UInt16 Minor = ByteOperations.ReadUInt16(version, FixedFileInfoPointer + 0x08);
             UInt16 Build = ByteOperations.ReadUInt16(version, FixedFileInfoPointer + 0x0E);
@@ -1778,7 +1914,7 @@ namespace WPinternals
             // RT_VERSION format:
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647001(v=vs.85).aspx
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms646997(v=vs.85).aspx
-            UInt32 FixedFileInfoPointer = 0x28;
+            const UInt32 FixedFileInfoPointer = 0x28;
             UInt16 Major = ByteOperations.ReadUInt16(version, FixedFileInfoPointer + 0x12);
             UInt16 Minor = ByteOperations.ReadUInt16(version, FixedFileInfoPointer + 0x10);
             UInt16 Build = ByteOperations.ReadUInt16(version, FixedFileInfoPointer + 0x16);
@@ -1838,10 +1974,10 @@ namespace WPinternals
 
     internal class AsyncAutoResetEvent
     {
-        readonly LinkedList<TaskCompletionSource<bool>> waiters =
-            new LinkedList<TaskCompletionSource<bool>>();
+        private readonly LinkedList<TaskCompletionSource<bool>> waiters =
+            new();
 
-        bool isSignaled;
+        private bool isSignaled;
 
         public AsyncAutoResetEvent(bool signaled)
         {
@@ -1913,10 +2049,7 @@ namespace WPinternals
                 }
             }
 
-            if (toRelease != null)
-            {
-                toRelease.SetResult(true);
-            }
+            toRelease?.SetResult(true);
         }
     }
 
@@ -1973,8 +2106,7 @@ namespace WPinternals
 
         private static void OnSetWidthCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
-            var element = dependencyObject as GridViewColumn;
-            if (element != null)
+            if (dependencyObject is GridViewColumn element)
             {
                 GridViewColumnResizeBehavior behavior = GetOrCreateBehavior(element);
                 behavior.Width = e.NewValue as string;
@@ -1988,8 +2120,7 @@ namespace WPinternals
 
         private static void OnSetEnabledCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
-            var element = dependencyObject as ListView;
-            if (element != null)
+            if (dependencyObject is ListView element)
             {
                 ListViewResizeBehavior behavior = GetOrCreateBehavior(element);
                 behavior.Enabled = (bool)e.NewValue;
@@ -2002,8 +2133,7 @@ namespace WPinternals
 
         private static ListViewResizeBehavior GetOrCreateBehavior(ListView element)
         {
-            var behavior = element.GetValue(GridViewColumnResizeBehaviorProperty) as ListViewResizeBehavior;
-            if (behavior == null)
+            if (element.GetValue(GridViewColumnResizeBehaviorProperty) is not ListViewResizeBehavior behavior)
             {
                 behavior = new ListViewResizeBehavior(element);
                 element.SetValue(ListViewResizeBehaviorProperty, behavior);
@@ -2014,8 +2144,7 @@ namespace WPinternals
 
         private static GridViewColumnResizeBehavior GetOrCreateBehavior(GridViewColumn element)
         {
-            var behavior = element.GetValue(GridViewColumnResizeBehaviorProperty) as GridViewColumnResizeBehavior;
-            if (behavior == null)
+            if (element.GetValue(GridViewColumnResizeBehaviorProperty) is not GridViewColumnResizeBehavior behavior)
             {
                 behavior = new GridViewColumnResizeBehavior(element);
                 element.SetValue(GridViewColumnResizeBehaviorProperty, behavior);
@@ -2054,8 +2183,7 @@ namespace WPinternals
             {
                 get
                 {
-                    double result;
-                    return double.TryParse(Width, out result) ? result : -1;
+                    return double.TryParse(Width, out double result) ? result : -1;
                 }
             }
 
@@ -2075,11 +2203,14 @@ namespace WPinternals
             {
                 get
                 {
-                    if (Width == "*" || Width == "1*") return 1;
+                    if (Width == "*" || Width == "1*")
+                    {
+                        return 1;
+                    }
+
                     if (Width.EndsWith("*"))
                     {
-                        double perc;
-                        if (double.TryParse(Width.Substring(0, Width.Length - 1), out perc))
+                        if (double.TryParse(Width[0..^1], out double perc))
                         {
                             return perc;
                         }
@@ -2123,8 +2254,7 @@ namespace WPinternals
 
             public ListViewResizeBehavior(ListView element)
             {
-                if (element == null) throw new ArgumentNullException("element");
-                _element = element;
+                _element = element ?? throw new ArgumentNullException(nameof(element));
                 element.Loaded += OnLoaded;
 
                 // Action for resizing and re-enable the size lookup
@@ -2139,7 +2269,6 @@ namespace WPinternals
             }
 
             public bool Enabled { get; set; }
-
 
             private void OnLoaded(object sender, RoutedEventArgs e)
             {
@@ -2160,11 +2289,10 @@ namespace WPinternals
                 if (Enabled)
                 {
                     double totalWidth = _element.ActualWidth;
-                    var gv = _element.View as GridView;
-                    if (gv != null)
+                    if (_element.View is GridView gv)
                     {
                         double allowedSpace = totalWidth - GetAllocatedSpace(gv);
-                        allowedSpace = allowedSpace - Margin;
+                        allowedSpace -= Margin;
                         double totalPercentage = GridViewColumnResizeBehaviors(gv).Sum(x => x.Percentage);
                         foreach (GridViewColumnResizeBehavior behavior in GridViewColumnResizeBehaviors(gv))
                         {
@@ -2178,9 +2306,7 @@ namespace WPinternals
             {
                 foreach (GridViewColumn t in gv.Columns)
                 {
-                    var gridViewColumnResizeBehavior =
-                        t.GetValue(GridViewColumnResizeBehaviorProperty) as GridViewColumnResizeBehavior;
-                    if (gridViewColumnResizeBehavior != null)
+                    if (t.GetValue(GridViewColumnResizeBehaviorProperty) is GridViewColumnResizeBehavior gridViewColumnResizeBehavior)
                     {
                         yield return gridViewColumnResizeBehavior;
                     }
@@ -2192,9 +2318,7 @@ namespace WPinternals
                 double totalWidth = 0;
                 foreach (GridViewColumn t in gv.Columns)
                 {
-                    var gridViewColumnResizeBehavior =
-                        t.GetValue(GridViewColumnResizeBehaviorProperty) as GridViewColumnResizeBehavior;
-                    if (gridViewColumnResizeBehavior != null)
+                    if (t.GetValue(GridViewColumnResizeBehaviorProperty) is GridViewColumnResizeBehavior gridViewColumnResizeBehavior)
                     {
                         if (gridViewColumnResizeBehavior.IsStatic)
                         {
@@ -2219,20 +2343,16 @@ namespace WPinternals
         // https://stackoverflow.com/a/22078975
         public static async Task<TResult> TimeoutAfter<TResult>(this Task<TResult> task, TimeSpan timeout)
         {
-
-            using (var timeoutCancellationTokenSource = new CancellationTokenSource())
+            using var timeoutCancellationTokenSource = new CancellationTokenSource();
+            var completedTask = await Task.WhenAny(task, Task.Delay(timeout, timeoutCancellationTokenSource.Token));
+            if (completedTask == task)
             {
-
-                var completedTask = await Task.WhenAny(task, Task.Delay(timeout, timeoutCancellationTokenSource.Token));
-                if (completedTask == task)
-                {
-                    timeoutCancellationTokenSource.Cancel();
-                    return await task;  // Very important in order to propagate exceptions
-                }
-                else
-                {
-                    throw new TimeoutException("The operation has timed out.");
-                }
+                timeoutCancellationTokenSource.Cancel();
+                return await task;  // Very important in order to propagate exceptions
+            }
+            else
+            {
+                throw new TimeoutException("The operation has timed out.");
             }
         }
     }

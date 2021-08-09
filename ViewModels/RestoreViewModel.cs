@@ -26,11 +26,11 @@ namespace WPinternals
 {
     internal class RestoreViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel PhoneNotifier;
-        private Action Callback;
-        private Action<PhoneInterfaces> RequestModeSwitch;
-        private Action SwitchToUnlockBoot;
-        private Action SwitchToFlashRom;
+        private readonly PhoneNotifierViewModel PhoneNotifier;
+        private readonly Action Callback;
+        private readonly Action<PhoneInterfaces> RequestModeSwitch;
+        private readonly Action SwitchToUnlockBoot;
+        private readonly Action SwitchToFlashRom;
 
         internal RestoreViewModel(PhoneNotifierViewModel PhoneNotifier, Action<PhoneInterfaces> RequestModeSwitch, Action SwitchToUnlockBoot, Action SwitchToFlashRom, Action Callback)
             : base()
@@ -47,13 +47,19 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (!IsActive)
+            {
                 return;
+            }
 
             if (SubContextViewModel == null)
+            {
                 ActivateSubContext(new RestoreSourceSelectionViewModel(PhoneNotifier, RequestModeSwitch, SwitchToUnlockBoot, SwitchToFlashRom, DoRestore));
+            }
 
             if (SubContextViewModel is RestoreSourceSelectionViewModel)
+            {
                 ((RestoreSourceSelectionViewModel)SubContextViewModel).EvaluateViewState();
+            }
         }
 
         internal async void DoRestore(string EFIESPPath, string MainOSPath, string DataPath)
@@ -109,7 +115,7 @@ namespace WPinternals
 
                     NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
 
-                    BusyViewModel Busy = new BusyViewModel("Restoring...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
+                    BusyViewModel Busy = new("Restoring...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
                     ProgressUpdater Updater = Busy.ProgressUpdater;
                     ActivateSubContext(Busy);
 
@@ -121,7 +127,7 @@ namespace WPinternals
                             if (EFIESPPath != null)
                             {
                                 i++;
-                                Busy.Message = "Restoring partition EFIESP (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
+                                Busy.Message = "Restoring partition EFIESP (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
                                 Phone.FlashRawPartition(EFIESPPath, "EFIESP", Updater);
                             }
                         }
@@ -139,7 +145,7 @@ namespace WPinternals
                             if (MainOSPath != null)
                             {
                                 i++;
-                                Busy.Message = "Restoring partition MainOS (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
+                                Busy.Message = "Restoring partition MainOS (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
                                 Phone.FlashRawPartition(EFIESPPath, "MainOS", Updater);
                             }
                         }
@@ -157,7 +163,7 @@ namespace WPinternals
                             if (DataPath != null)
                             {
                                 i++;
-                                Busy.Message = "Restoring partition Data (" + i.ToString() + @"/" + PartitionCount.ToString() + ")";
+                                Busy.Message = "Restoring partition Data (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
                                 Phone.FlashRawPartition(EFIESPPath, "Data", Updater);
                             }
                         }

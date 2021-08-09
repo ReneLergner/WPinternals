@@ -37,12 +37,12 @@ namespace WPinternals
 
     internal class LumiaRootAccessTargetSelectionViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel PhoneNotifier;
+        private readonly PhoneNotifierViewModel PhoneNotifier;
         internal Action SwitchToUnlockBoot;
         internal Action SwitchToDumpRom;
         internal Action SwitchToFlashRom;
-        private Action UnlockPhoneCallback;
-        private Action<string, string> UnlockImageCallback;
+        private readonly Action UnlockPhoneCallback;
+        private readonly Action<string, string> UnlockImageCallback;
 
         internal LumiaRootAccessTargetSelectionViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action SwitchToDumpRom, Action SwitchToFlashRom, Action UnlockPhoneCallback, Action<string, string> UnlockImageCallback)
             : base()
@@ -72,7 +72,7 @@ namespace WPinternals
                 if (value != _EFIESPMountPoint)
                 {
                     _EFIESPMountPoint = value;
-                    OnPropertyChanged("EFIESPMountPoint");
+                    OnPropertyChanged(nameof(EFIESPMountPoint));
                 }
             }
         }
@@ -89,7 +89,7 @@ namespace WPinternals
                 if (value != _MainOSMountPoint)
                 {
                     _MainOSMountPoint = value;
-                    OnPropertyChanged("MainOSMountPoint");
+                    OnPropertyChanged(nameof(MainOSMountPoint));
                 }
             }
         }
@@ -106,7 +106,7 @@ namespace WPinternals
                 if (value != _IsPhoneDisconnected)
                 {
                     _IsPhoneDisconnected = value;
-                    OnPropertyChanged("IsPhoneDisconnected");
+                    OnPropertyChanged(nameof(IsPhoneDisconnected));
                 }
             }
         }
@@ -123,7 +123,7 @@ namespace WPinternals
                 if (value != _IsPhoneInMassStorage)
                 {
                     _IsPhoneInMassStorage = value;
-                    OnPropertyChanged("IsPhoneInMassStorage");
+                    OnPropertyChanged(nameof(IsPhoneInMassStorage));
                 }
             }
         }
@@ -140,7 +140,7 @@ namespace WPinternals
                 if (value != _IsPhoneInOtherMode)
                 {
                     _IsPhoneInOtherMode = value;
-                    OnPropertyChanged("IsPhoneInOtherMode");
+                    OnPropertyChanged(nameof(IsPhoneInOtherMode));
                 }
             }
         }
@@ -150,11 +150,7 @@ namespace WPinternals
         {
             get
             {
-                if (_UnlockPhoneCommand == null)
-                {
-                    _UnlockPhoneCommand = new DelegateCommand(() => { UnlockPhoneCallback(); }, () => !IsPhoneDisconnected);
-                }
-                return _UnlockPhoneCommand;
+                return _UnlockPhoneCommand ??= new DelegateCommand(() => UnlockPhoneCallback(), () => !IsPhoneDisconnected);
             }
         }
 
@@ -163,11 +159,7 @@ namespace WPinternals
         {
             get
             {
-                if (_UnlockImageCommand == null)
-                {
-                    _UnlockImageCommand = new DelegateCommand(() => { UnlockImageCallback(EFIESPMountPoint, MainOSMountPoint); }, () => ((EFIESPMountPoint != null) || (MainOSMountPoint != null)));
-                }
-                return _UnlockImageCommand;
+                return _UnlockImageCommand ??= new DelegateCommand(() => UnlockImageCallback(EFIESPMountPoint, MainOSMountPoint), () => ((EFIESPMountPoint != null) || (MainOSMountPoint != null)));
             }
         }
 
@@ -176,12 +168,12 @@ namespace WPinternals
             PhoneNotifier.NewDeviceArrived -= NewDeviceArrived;
         }
 
-        void NewDeviceArrived(ArrivalEventArgs Args)
+        private void NewDeviceArrived(ArrivalEventArgs Args)
         {
             new Thread(() => EvaluateViewState()).Start();
         }
 
-        void DeviceRemoved()
+        private void DeviceRemoved()
         {
             new Thread(() => EvaluateViewState()).Start();
         }

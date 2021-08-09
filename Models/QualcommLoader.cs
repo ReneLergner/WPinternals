@@ -29,7 +29,7 @@ namespace WPinternals
     {
         internal static List<QualcommPartition> GetPossibleLoadersForRootKeyHash(string Path, byte[] RootKeyHash)
         {
-            List<QualcommPartition> Result = new List<QualcommPartition>();
+            List<QualcommPartition> Result = new();
 
             try
             {
@@ -38,7 +38,7 @@ namespace WPinternals
                 {
                     try
                     {
-                        FileInfo Info = new FileInfo(FilePath);
+                        FileInfo Info = new(FilePath);
                         if (Info.Length <= 0x80000)
                         {
                             QualcommPartition Loader;
@@ -48,10 +48,7 @@ namespace WPinternals
 #endif
 
                             byte[] Binary = ParseAsHexFile(FilePath);
-                            if (Binary == null)
-                                Loader = new QualcommPartition(FilePath);
-                            else
-                                Loader = new QualcommPartition(Binary);
+                            Loader = Binary == null ? new QualcommPartition(FilePath) : new QualcommPartition(Binary);
 
                             // Make sure the RootKeyHash is not blank
                             // If the RootKeyHash is blank, this is an engineering device, and it will accept any RKH
@@ -66,7 +63,7 @@ namespace WPinternals
                             }
                             else
                             {
-                                if ((ByteOperations.FindUnicode(Loader.Binary, "QHSUSB_ARMPRG") != null)) // To detect that this is a loader, and not SBL1 or something. V1 loaders are QHSUSB_ARMPRG. V2 loaders are QHSUSB__BULK. Only V1 supported for now, because V2 only accepts signed payload.
+                                if (ByteOperations.FindUnicode(Loader.Binary, "QHSUSB_ARMPRG") != null) // To detect that this is a loader, and not SBL1 or something. V1 loaders are QHSUSB_ARMPRG. V2 loaders are QHSUSB__BULK. Only V1 supported for now, because V2 only accepts signed payload.
                                 {
                                     Result.Add(Loader);
                                 }
@@ -94,15 +91,21 @@ namespace WPinternals
                 foreach (string Line in Lines)
                 {
                     if (Line[0] != ':')
+                    {
                         throw new BadImageFormatException();
+                    }
 
-                    byte[] LineBytes = Converter.ConvertStringToHex(Line.Substring(1));
+                    byte[] LineBytes = Converter.ConvertStringToHex(Line[1..]);
 
                     if ((LineBytes[0] + 5) != LineBytes.Length)
+                    {
                         throw new BadImageFormatException();
+                    }
 
                     if (Buffer == null)
+                    {
                         Buffer = new byte[0x40000];
+                    }
 
                     if (LineBytes[3] == 0) // This is mem data
                     {

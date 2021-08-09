@@ -26,7 +26,7 @@ namespace WPinternals
 {
     internal class DisclaimerAndNdaViewModel : ContextViewModel
     {
-        Action Accepted;
+        private readonly Action Accepted;
 
         internal DisclaimerAndNdaViewModel(Action Accepted)
             : base()
@@ -39,14 +39,7 @@ namespace WPinternals
         {
             get
             {
-                if (_ExitCommand == null)
-                {
-                    _ExitCommand = new DelegateCommand(() =>
-                    {
-                        Application.Current.Shutdown();
-                    });
-                }
-                return _ExitCommand;
+                return _ExitCommand ??= new DelegateCommand(() => Application.Current.Shutdown());
             }
         }
 
@@ -55,16 +48,12 @@ namespace WPinternals
         {
             get
             {
-                if (_ContinueCommand == null)
-                {
-                    _ContinueCommand = new DelegateCommand(() =>
+                return _ContinueCommand ??= new DelegateCommand(() =>
                     {
                         Registry.CurrentUser.OpenSubKey("Software\\WPInternals", true).SetValue("DisclaimerAccepted", 1, RegistryValueKind.DWord);
                         Registry.CurrentUser.OpenSubKey("Software\\WPInternals", true).SetValue("NdaAccepted", 1, RegistryValueKind.DWord);
                         Accepted();
                     });
-                }
-                return _ContinueCommand;
             }
         }
     }

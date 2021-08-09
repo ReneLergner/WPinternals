@@ -27,7 +27,7 @@ namespace WPinternals
     {
         public static TerminalResponse Parse(byte[] Buffer, int Offset)
         {
-            TerminalResponse Response = new TerminalResponse();
+            TerminalResponse Response = new();
 
             // Get root node
             if (Buffer.Length >= (Offset + 8))
@@ -61,7 +61,7 @@ namespace WPinternals
 
     internal class TerminalResponse
     {
-        public Dictionary<int, byte[]> RawEntries = new Dictionary<int, byte[]>();
+        public Dictionary<int, byte[]> RawEntries = new();
         public byte[] PublicId = null;
         public byte[] RootKeyHash = null;
     }

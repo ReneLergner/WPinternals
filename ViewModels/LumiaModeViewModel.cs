@@ -27,7 +27,7 @@ namespace WPinternals
         internal PhoneInterfaces? CurrentInterface;
         internal IDisposable CurrentModel;
         internal PhoneNotifierViewModel PhoneNotifier;
-        private Action Callback;
+        private readonly Action Callback;
 
         internal LumiaModeViewModel(PhoneNotifierViewModel PhoneNotifier, Action Callback)
             : base()
@@ -48,28 +48,34 @@ namespace WPinternals
             PhoneNotifier.DeviceRemoved -= DeviceRemoved;
         }
 
-        void DeviceRemoved()
+        private void DeviceRemoved()
         {
             CurrentInterface = null;
             CurrentModel = null;
 
             if (!IsSwitchingInterface)
+            {
                 ActivateSubContext(null);
+            }
         }
 
-        void NewDeviceArrived(ArrivalEventArgs Args)
+        private void NewDeviceArrived(ArrivalEventArgs Args)
         {
             CurrentInterface = Args.NewInterface;
             CurrentModel = Args.NewModel;
 
             if (!IsSwitchingInterface && IsActive)
+            {
                 Refresh();
+            }
         }
 
         internal override void EvaluateViewState()
         {
             if (!IsSwitchingInterface && IsActive)
+            {
                 Refresh();
+            }
         }
 
         private void Refresh()
@@ -96,7 +102,7 @@ namespace WPinternals
                 case PhoneInterfaces.Lumia_MassStorage:
                     ActivateSubContext(new NokiaModeMassStorageViewModel((MassStorage)CurrentModel, OnModeSwitchRequested));
                     break;
-            };
+            }
         }
 
         // Called from eventhandler, so "async void" is valid here.

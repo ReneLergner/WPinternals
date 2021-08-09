@@ -31,8 +31,8 @@ namespace WPinternals
 
     internal class NokiaLabelViewModel : ContextViewModel
     {
-        private NokiaPhoneModel CurrentModel;
-        private Action<PhoneInterfaces> RequestModeSwitch;
+        private readonly NokiaPhoneModel CurrentModel;
+        private readonly Action<PhoneInterfaces> RequestModeSwitch;
 
         internal NokiaLabelViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch)
             : base()
@@ -74,7 +74,7 @@ namespace WPinternals
 
             byte[] AsskMask = new byte[0x10] { 1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64 };
             byte[] Challenge = new byte[0x88];
-            Dictionary<string, object> Params = new Dictionary<string, object>();
+            Dictionary<string, object> Params = new();
             Params.Add("AsskMask", AsskMask);
             Params.Add("Challenge", Challenge);
             Params.Add("AsicIndex", 0);
@@ -108,13 +108,17 @@ namespace WPinternals
             IsBootloaderSecurityEnabled = (bool)CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
             LogFile.Log("Bootloader Security: " + ((bool)IsBootloaderSecurityEnabled ? "Enabled" : "Disabled"));
 
-            Params = new Dictionary<string, object>();
-            Params.Add("ID", 3534);
-            Params.Add("NVData", new byte[] { 0 });
+            Params = new Dictionary<string, object>
+            {
+                { "ID", 3534 },
+                { "NVData", new byte[] { 0 } }
+            };
             CurrentModel.ExecuteJsonMethod("WriteNVData", Params); // Error: 150
 
-            Params = new Dictionary<string, object>();
-            Params.Add("ID", 3534);
+            Params = new Dictionary<string, object>
+            {
+                { "ID", 3534 }
+            };
             byte[] NV3534 = CurrentModel.ExecuteJsonMethodAsBytes("ReadNVData", Params, "NVData"); // Error: value not written
         }
 
@@ -128,7 +132,7 @@ namespace WPinternals
             set
             {
                 _ProductCode = value;
-                OnPropertyChanged("ProductCode");
+                OnPropertyChanged(nameof(ProductCode));
             }
         }
 
@@ -142,7 +146,7 @@ namespace WPinternals
             set
             {
                 _ManufacturerModelName = value;
-                OnPropertyChanged("ManufacturerModelName");
+                OnPropertyChanged(nameof(ManufacturerModelName));
             }
         }
 
@@ -156,7 +160,7 @@ namespace WPinternals
             set
             {
                 _Operator = value;
-                OnPropertyChanged("Operator");
+                OnPropertyChanged(nameof(Operator));
             }
         }
 
@@ -170,7 +174,7 @@ namespace WPinternals
             set
             {
                 _Firmware = value;
-                OnPropertyChanged("Firmware");
+                OnPropertyChanged(nameof(Firmware));
             }
         }
 
@@ -184,7 +188,7 @@ namespace WPinternals
             set
             {
                 _IMEI = value;
-                OnPropertyChanged("IMEI");
+                OnPropertyChanged(nameof(IMEI));
             }
         }
 
@@ -198,7 +202,7 @@ namespace WPinternals
             set
             {
                 _PublicID = value;
-                OnPropertyChanged("PublicID");
+                OnPropertyChanged(nameof(PublicID));
             }
         }
 
@@ -212,7 +216,7 @@ namespace WPinternals
             set
             {
                 _RootKeyHash = value;
-                OnPropertyChanged("RootKeyHash");
+                OnPropertyChanged(nameof(RootKeyHash));
             }
         }
 
@@ -226,7 +230,7 @@ namespace WPinternals
             set
             {
                 _WlanMac = value;
-                OnPropertyChanged("WlanMac");
+                OnPropertyChanged(nameof(WlanMac));
             }
         }
 
@@ -240,7 +244,7 @@ namespace WPinternals
             set
             {
                 _BluetoothMac = value;
-                OnPropertyChanged("BluetoothMac");
+                OnPropertyChanged(nameof(BluetoothMac));
             }
         }
 
@@ -254,7 +258,7 @@ namespace WPinternals
             set
             {
                 _IsBootloaderSecurityEnabled = value;
-                OnPropertyChanged("IsBootloaderSecurityEnabled");
+                OnPropertyChanged(nameof(IsBootloaderSecurityEnabled));
             }
         }
 
@@ -268,7 +272,7 @@ namespace WPinternals
             set
             {
                 _IsSimLocked = value;
-                OnPropertyChanged("IsSimLocked");
+                OnPropertyChanged(nameof(IsSimLocked));
             }
         }
 

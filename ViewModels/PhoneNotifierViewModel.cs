@@ -49,23 +49,21 @@ namespace WPinternals
         public event NewDeviceArrivedEvent NewDeviceArrived = delegate { };
         public event DeviceRemovedEvent DeviceRemoved = delegate { };
 
+        private Guid OldCombiInterfaceGuid = new("{0FD3B15C-D457-45d8-A779-C2B2C9F9D0FD}");
+        private Guid NewCombiInterfaceGuid = new("{7eaff726-34cc-4204-b09d-f95471b873cf}");
 
-        private Guid OldCombiInterfaceGuid = new Guid("{0FD3B15C-D457-45d8-A779-C2B2C9F9D0FD}");
-        private Guid NewCombiInterfaceGuid = new Guid("{7eaff726-34cc-4204-b09d-f95471b873cf}");
+        private Guid MassStorageInterfaceGuid = new("{53F56307-B6BF-11D0-94F2-00A0C91EFB8B}");
+        private Guid ComPortInterfaceGuid = new("{86E0D1E0-8089-11D0-9CE4-08003E301F73}");
+        private Guid HidInterfaceGuid = new("{4D1E55B2-F16F-11CF-88CB-001111000030}");
 
-        private Guid MassStorageInterfaceGuid = new Guid("{53F56307-B6BF-11D0-94F2-00A0C91EFB8B}");
-        private Guid ComPortInterfaceGuid = new Guid("{86E0D1E0-8089-11D0-9CE4-08003E301F73}");
-        private Guid HidInterfaceGuid = new Guid("{4D1E55B2-F16F-11CF-88CB-001111000030}");
+        private Guid LumiaNormalInterfaceGuid = new("{08324F9C-B621-435C-859B-AE4652481B7C}");
+        private Guid LumiaLabelInterfaceGuid = new("{F4FE0C27-7304-4ED7-AAB5-130893B84B6F}");
+        private Guid LumiaFlashInterfaceGuid = new("{9e3bd5f7-9690-4fcc-8810-3e2650cd6ecc}");
+        private Guid LumiaEmergencyInterfaceGuid = new("{71DE994D-8B7C-43DB-A27E-2AE7CD579A0C}");
 
-        private Guid LumiaNormalInterfaceGuid = new Guid("{08324F9C-B621-435C-859B-AE4652481B7C}");
-        private Guid LumiaLabelInterfaceGuid = new Guid("{F4FE0C27-7304-4ED7-AAB5-130893B84B6F}");
-        private Guid LumiaFlashInterfaceGuid = new Guid("{9e3bd5f7-9690-4fcc-8810-3e2650cd6ecc}");
-        private Guid LumiaEmergencyInterfaceGuid = new Guid("{71DE994D-8B7C-43DB-A27E-2AE7CD579A0C}");
+        private readonly object ModelLock = new();
 
-
-        private object ModelLock = new object();
-
-        private EventWaitHandle NewInterfaceWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+        private readonly EventWaitHandle NewInterfaceWaitHandle = new(false, EventResetMode.AutoReset);
 
         private EventLogWatcher LogWatcher;
 
@@ -111,9 +109,9 @@ namespace WPinternals
 
             try
             {
-                EventLogQuery LogQuery = new EventLogQuery("Microsoft-Windows-Kernel-PnP/Configuration", PathType.LogName, "*[System[(EventID = 411)]]");
+                EventLogQuery LogQuery = new("Microsoft-Windows-Kernel-PnP/Configuration", PathType.LogName, "*[System[(EventID = 411)]]");
                 LogWatcher = new EventLogWatcher(LogQuery);
-                LogWatcher.EventRecordWritten += new EventHandler<EventRecordWrittenEventArgs>(PnPEventWritten);
+                LogWatcher.EventRecordWritten += PnPEventWritten;
                 LogWatcher.Enabled = true;
                 App.IsPnPEventLogMissing = false;
             }
@@ -155,19 +153,21 @@ namespace WPinternals
         internal void NotifyArrival()
         {
             if (CurrentInterface != null)
+            {
                 NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+            }
         }
 
-        void LumiaNotifier_Arrival(object sender, USBEvent e)
+        private void LumiaNotifier_Arrival(object sender, USBEvent e)
         {
             try
             {
-                if ((e.DevicePath.IndexOf("VID_0421&", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (e.DevicePath.IndexOf("VID_045E&", StringComparison.OrdinalIgnoreCase) >= 0))
+                if ((e.DevicePath.Contains("VID_0421&", StringComparison.OrdinalIgnoreCase)) ||
+                    (e.DevicePath.Contains("VID_045E&", StringComparison.OrdinalIgnoreCase)))
                 {
-                    if ((e.DevicePath.IndexOf("&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        (e.DevicePath.IndexOf("&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) || // for Spec B
-                        (e.DevicePath.IndexOf("&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase) >= 0)) // for Spec B (650)
+                    if ((e.DevicePath.Contains("&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase)) ||
+                        (e.DevicePath.Contains("&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase)) || // for Spec B
+                        (e.DevicePath.Contains("&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase))) // for Spec B (650)
                     {
                         CurrentInterface = PhoneInterfaces.Lumia_Label;
                         CurrentModel = new NokiaPhoneModel(e.DevicePath);
@@ -177,15 +177,17 @@ namespace WPinternals
                         LogFile.Log("Mode: Label", LogType.FileAndConsole);
                         NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                     }
-                    else if ((e.DevicePath.IndexOf("&PID_0661", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                             (e.DevicePath.IndexOf("&PID_06FC", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_0421&PID_06FC is for Lumia 930
-                             (e.DevicePath.IndexOf("&PID_0A00", StringComparison.OrdinalIgnoreCase) >= 0))   // vid_045e & pid_0a00 & mi_03 = Lumia 950 XL normal mode
+                    else if ((e.DevicePath.Contains("&PID_0661", StringComparison.OrdinalIgnoreCase)) ||
+                             (e.DevicePath.Contains("&PID_06FC", StringComparison.OrdinalIgnoreCase)) || // VID_0421&PID_06FC is for Lumia 930
+                             (e.DevicePath.Contains("&PID_0A00", StringComparison.OrdinalIgnoreCase)))   // vid_045e & pid_0a00 & mi_03 = Lumia 950 XL normal mode
                     {
                         if (((USBNotifier)sender).Guid == OldCombiInterfaceGuid)
                         {
                             NewInterfaceWaitHandle.Reset();
-                            if (USBDevice.GetDevices(NewCombiInterfaceGuid).Count() > 0)
+                            if (USBDevice.GetDevices(NewCombiInterfaceGuid).Length > 0)
+                            {
                                 return;
+                            }
                             else
                             {
                                 // Old combi-interface was detected, but new combi-interface was not detected.
@@ -227,10 +229,10 @@ namespace WPinternals
                             NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                         }
                     }
-                    else if ((e.DevicePath.IndexOf("&PID_066E", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                             (e.DevicePath.IndexOf("&PID_0714", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_0421&PID_0714 is for Lumia 930
-                             (e.DevicePath.IndexOf("&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0) || // VID_045E&PID_0A02 is for Lumia 950
-                             (e.DevicePath.IndexOf("&PID_05EE", StringComparison.OrdinalIgnoreCase) >= 0))   // VID_0421&PID_05EE is for early RX100
+                    else if ((e.DevicePath.Contains("&PID_066E", StringComparison.OrdinalIgnoreCase)) ||
+                             (e.DevicePath.Contains("&PID_0714", StringComparison.OrdinalIgnoreCase)) || // VID_0421&PID_0714 is for Lumia 930
+                             (e.DevicePath.Contains("&PID_0A02", StringComparison.OrdinalIgnoreCase)) || // VID_045E&PID_0A02 is for Lumia 950
+                             (e.DevicePath.Contains("&PID_05EE", StringComparison.OrdinalIgnoreCase)))   // VID_0421&PID_05EE is for early RX100
                     {
                         CurrentModel = new NokiaFlashModel(e.DevicePath);
                         ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
@@ -282,8 +284,8 @@ namespace WPinternals
                         }
                     }
                 }
-                else if ((e.DevicePath.IndexOf(@"DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                         (e.DevicePath.IndexOf(@"DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                else if ((e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase)) ||
+                         (e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase)) ||
                          ((e.DevicePath.Length == @"\\.\E:".Length) && (e.DevicePath.StartsWith(@"\\.\")) && (e.DevicePath.EndsWith(":"))))
                 {
 #if DEBUG
@@ -307,7 +309,7 @@ namespace WPinternals
                                 // not for MainOS.
                                 Task.Delay(1000).Wait();
 
-                                MassStorage NewModel = new MassStorage(e.DevicePath);
+                                MassStorage NewModel = new(e.DevicePath);
 
                                 if (NewModel.Drive != null) // When logical drive is already known, we use this model. Or else we wait for the logical drive to arrive.
                                 {
@@ -329,13 +331,13 @@ namespace WPinternals
                         }
                     });
                 }
-                else if (e.DevicePath.IndexOf("VID_05C6&", StringComparison.OrdinalIgnoreCase) >= 0) // Qualcomm device
+                else if (e.DevicePath.Contains("VID_05C6&", StringComparison.OrdinalIgnoreCase)) // Qualcomm device
                 {
-                    if (e.DevicePath.IndexOf("&PID_9008", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (e.DevicePath.Contains("&PID_9008", StringComparison.OrdinalIgnoreCase))
                     {
-                        USBDeviceInfo DeviceInfo = USBDevice.GetDevices(((USBNotifier)sender).Guid).Where((d) => string.Compare(d.DevicePath, e.DevicePath, true) == 0).FirstOrDefault();
+                        USBDeviceInfo DeviceInfo = Array.Find(USBDevice.GetDevices(((USBNotifier)sender).Guid), (d) => string.Compare(d.DevicePath, e.DevicePath, true) == 0);
 
-                        if ((DeviceInfo.BusName == "QHSUSB_DLOAD") || (DeviceInfo.BusName == "QHSUSB__BULK") || ((DeviceInfo.BusName == "") && (LastInterface != PhoneInterfaces.Qualcomm_Download))) // TODO: Separate for Sahara!
+                        if ((DeviceInfo.BusName == "QHSUSB_DLOAD") || (DeviceInfo.BusName == "QHSUSB__BULK") || ((DeviceInfo.BusName?.Length == 0) && (LastInterface != PhoneInterfaces.Qualcomm_Download))) // TODO: Separate for Sahara!
                         {
                             CurrentInterface = PhoneInterfaces.Qualcomm_Download;
                             CurrentModel = new QualcommSerial(e.DevicePath);
@@ -343,12 +345,16 @@ namespace WPinternals
                             LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                             LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
                             LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
-                            if (DeviceInfo.BusName == "")
+                            if (DeviceInfo.BusName?.Length == 0)
+                            {
                                 LogFile.Log("Driver does not show busname, assume mode: Qualcomm Emergency Download 9008", LogType.FileAndConsole);
+                            }
                             else
+                            {
                                 LogFile.Log("Mode: Qualcomm Emergency Download 9008", LogType.FileAndConsole);
+                            }
                         }
-                        else if ((DeviceInfo.BusName == "QHSUSB_ARMPRG") || ((DeviceInfo.BusName == "") && (LastInterface == PhoneInterfaces.Qualcomm_Download)))
+                        else if ((DeviceInfo.BusName == "QHSUSB_ARMPRG") || ((DeviceInfo.BusName?.Length == 0) && (LastInterface == PhoneInterfaces.Qualcomm_Download)))
                         {
                             CurrentInterface = PhoneInterfaces.Qualcomm_Flash;
                             CurrentModel = new QualcommSerial(e.DevicePath);
@@ -356,13 +362,17 @@ namespace WPinternals
                             LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                             LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
                             LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
-                            if (DeviceInfo.BusName == "")
+                            if (DeviceInfo.BusName?.Length == 0)
+                            {
                                 LogFile.Log("Driver does not show busname, assume mode: Qualcomm Emergency Flash 9008", LogType.FileAndConsole);
+                            }
                             else
+                            {
                                 LogFile.Log("Mode: Qualcomm Emergency Flash 9008", LogType.FileAndConsole);
+                            }
                         }
                     }
-                    else if (e.DevicePath.IndexOf("&PID_9006", StringComparison.OrdinalIgnoreCase) >= 0)
+                    else if (e.DevicePath.Contains("&PID_9006", StringComparison.OrdinalIgnoreCase))
                     {
                         // This is part of the Mass Storage inteface.
                         // It is a slightly different version of the Qualcomm Emergency interface, which is implemented in SBL3.
@@ -382,7 +392,7 @@ namespace WPinternals
                             ((MassStorage)CurrentModel).AttachQualcommSerial(Qcom9006DevicePath);
                         }
                     }
-                    else if (e.DevicePath.IndexOf("&PID_F006", StringComparison.OrdinalIgnoreCase) >= 0)
+                    else if (e.DevicePath.Contains("&PID_F006", StringComparison.OrdinalIgnoreCase))
                     {
                         // This is part of the charging inteface.
 
@@ -406,31 +416,34 @@ namespace WPinternals
             CurrentInterface = NewInterface;
         }
 
-        void LumiaNotifier_Removal(object sender, USBEvent e)
+        private void LumiaNotifier_Removal(object sender, USBEvent e)
         {
-            if (e.DevicePath.IndexOf("VID_05C6&PID_9006", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (e.DevicePath.Contains("VID_05C6&PID_9006", StringComparison.OrdinalIgnoreCase))
             {
                 Qcom9006DevicePath = null;
             }
 
             if (
-                (e.DevicePath.IndexOf("VID_0421&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_0421&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_045E&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_0421&PID_066E", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_0421&PID_05EE", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf(@"DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                (e.DevicePath.IndexOf(@"DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase) >= 0)
+                (e.DevicePath.Contains("VID_0421&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_0421&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_045E&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_0421&PID_066E", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_0421&PID_05EE", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase)) ||
+                (e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase))
             )
             {
                 if (CurrentInterface != null)
+                {
                     LastInterface = CurrentInterface;
+                }
+
                 CurrentInterface = null;
                 if (CurrentModel != null)
                 {
@@ -447,16 +460,18 @@ namespace WPinternals
             IDisposable Result = null;
 
             if (CurrentInterface == null)
+            {
                 LogFile.Log("Waiting for phone to connect...", LogType.FileOnly);
+            }
 
             await Task.Run(() =>
             {
-                System.Threading.AutoResetEvent e = new System.Threading.AutoResetEvent(false);
-                NewDeviceArrivedEvent Arrived = (a) =>
-                    {
-                        e.Set();
-                        Result = a.NewModel;
-                    };
+                AutoResetEvent e = new(false);
+                void Arrived(ArrivalEventArgs a)
+                {
+                    e.Set();
+                    Result = a.NewModel;
+                }
                 NewDeviceArrived += Arrived;
                 e.WaitOne();
                 NewDeviceArrived -= Arrived;
@@ -471,11 +486,8 @@ namespace WPinternals
 
             await Task.Run(() =>
             {
-                System.Threading.AutoResetEvent e = new System.Threading.AutoResetEvent(false);
-                DeviceRemovedEvent Removed = () =>
-                {
-                    e.Set();
-                };
+                AutoResetEvent e = new(false);
+                void Removed() => e.Set();
                 DeviceRemoved += Removed;
                 e.WaitOne();
                 DeviceRemoved -= Removed;

@@ -25,7 +25,7 @@ namespace WPinternals
 {
     internal class BusyViewModel : ContextViewModel
     {
-        private ulong MaxProgressValue = 0;
+        private readonly ulong MaxProgressValue = 0;
         internal ProgressUpdater ProgressUpdater = null;
 
         // UIContext can be passed to BusyViewModel, when it needs to update progress-controls and it is created on a worker-thread.
@@ -33,10 +33,7 @@ namespace WPinternals
         {
             LogFile.Log(Message);
 
-            if (UIContext == null)
-                this.UIContext = SynchronizationContext.Current;
-            else
-                this.UIContext = UIContext;
+            this.UIContext = UIContext ?? SynchronizationContext.Current;
 
             this.Message = Message;
             this.SubMessage = SubMessage;
@@ -73,7 +70,9 @@ namespace WPinternals
         internal void SetProgress(ulong Value)
         {
             if (ProgressUpdater != null)
-                UIContext.Post((s) => { ProgressUpdater.SetProgress(Value); }, null);
+            {
+                UIContext.Post((s) => ProgressUpdater.SetProgress(Value), null);
+            }
         }
 
         private string _Message = null;
@@ -86,7 +85,7 @@ namespace WPinternals
             set
             {
                 _Message = value;
-                OnPropertyChanged("Message");
+                OnPropertyChanged(nameof(Message));
             }
         }
 
@@ -100,7 +99,7 @@ namespace WPinternals
             set
             {
                 _SubMessage = value;
-                OnPropertyChanged("SubMessage");
+                OnPropertyChanged(nameof(SubMessage));
             }
         }
 
@@ -116,8 +115,8 @@ namespace WPinternals
                 if (_ProgressPercentage != value)
                 {
                     _ProgressPercentage = value;
-                    OnPropertyChanged("ProgressPercentage");
-                    OnPropertyChanged("ShowAnimation");
+                    OnPropertyChanged(nameof(ProgressPercentage));
+                    OnPropertyChanged(nameof(ShowAnimation));
                     UpdateProgressText();
                 }
             }
@@ -135,7 +134,7 @@ namespace WPinternals
                 if (_TimeRemaining != value)
                 {
                     _TimeRemaining = value;
-                    OnPropertyChanged("TimeRemaining");
+                    OnPropertyChanged(nameof(TimeRemaining));
                     UpdateProgressText();
                 }
             }
@@ -151,9 +150,13 @@ namespace WPinternals
             if (TimeRemaining != null)
             {
                 if (NewText == null)
+                {
                     NewText = "";
+                }
                 else
+                {
                     NewText += " - ";
+                }
 
                 NewText += "Estimated time remaining: " + ((TimeSpan)TimeRemaining).ToString(@"h\:mm\:ss");
             }
@@ -172,7 +175,7 @@ namespace WPinternals
                 if (_ProgressText != value)
                 {
                     _ProgressText = value;
-                    OnPropertyChanged("ProgressText");
+                    OnPropertyChanged(nameof(ProgressText));
                 }
             }
         }
@@ -189,7 +192,7 @@ namespace WPinternals
                 if (_ShowAnimation != value)
                 {
                     _ShowAnimation = value;
-                    OnPropertyChanged("ShowAnimation");
+                    OnPropertyChanged(nameof(ShowAnimation));
                 }
             }
         }
@@ -206,7 +209,7 @@ namespace WPinternals
                 if (_ShowRebootHelp != value)
                 {
                     _ShowRebootHelp = value;
-                    OnPropertyChanged("ShowRebootHelp");
+                    OnPropertyChanged(nameof(ShowRebootHelp));
                 }
             }
         }

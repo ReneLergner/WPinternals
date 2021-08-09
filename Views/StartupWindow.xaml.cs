@@ -41,11 +41,18 @@ namespace WPinternals
 
             bool NeedLicenseAgrement = false;
             if (Registry.CurrentUser.OpenSubKey("Software\\WPInternals") == null)
+            {
                 Registry.CurrentUser.OpenSubKey("Software", true).CreateSubKey("WPInternals");
+            }
+
             if ((Registration.IsPrerelease) && (Registry.CurrentUser.OpenSubKey("Software\\WPInternals").GetValue("NdaAccepted") == null))
+            {
                 NeedLicenseAgrement = true;
+            }
             else if (Registry.CurrentUser.OpenSubKey("Software\\WPInternals").GetValue("DisclaimerAccepted") == null)
+            {
                 NeedLicenseAgrement = true;
+            }
 
             if ((!Registration.IsPrerelease || Registration.IsRegistered()) && !NeedLicenseAgrement)
             {
@@ -54,7 +61,7 @@ namespace WPinternals
                 System.Threading.SynchronizationContext UIContext = System.Threading.SynchronizationContext.Current;
                 await CommandLine.ParseCommandLine(UIContext);
             }
-            else if (Environment.GetCommandLineArgs().Count() > 1)
+            else if (Environment.GetCommandLineArgs().Length > 1)
             {
                 Console.WriteLine("First time use");
                 Console.WriteLine("Switching to graphic user interface for license and registration");

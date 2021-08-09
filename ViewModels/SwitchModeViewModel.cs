@@ -48,7 +48,9 @@ namespace WPinternals
             : base()
         {
             if ((PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash) && (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Label) && (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Normal))
+            {
                 throw new ArgumentException();
+            }
 
             this.PhoneNotifier = PhoneNotifier;
             this.CurrentModel = (NokiaPhoneModel)PhoneNotifier.CurrentModel;
@@ -65,13 +67,12 @@ namespace WPinternals
                 // Make sure this ViewModel has its View loaded before we continue,
                 // or else loading of Views can get mixed up.
                 if (SynchronizationContext.Current == null)
+                {
                     StartSwitch();
+                }
                 else
                 {
-                    SynchronizationContext.Current.Post((s) =>
-                    {
-                        ((SwitchModeViewModel)s).StartSwitch();
-                    }, this);
+                    SynchronizationContext.Current.Post((s) => ((SwitchModeViewModel)s).StartSwitch(), this);
                 }
             }
         }
@@ -105,18 +106,39 @@ namespace WPinternals
             }
 
             if (PhoneNotifier.CurrentInterface == TargetMode)
+            {
                 ModeSwitchSuccess(PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface);
+            }
             else
             {
                 this.PhoneNotifier = PhoneNotifier;
                 this.CurrentModel = (NokiaPhoneModel)PhoneNotifier.CurrentModel;
                 this.CurrentMode = PhoneNotifier.CurrentInterface;
                 this.TargetMode = TargetMode;
-                if (ModeSwitchProgress != null) this.ModeSwitchProgress += ModeSwitchProgress;
-                if (ModeSwitchError != null) this.ModeSwitchError += ModeSwitchError;
-                if (ModeSwitchSuccess != null) this.ModeSwitchSuccess += ModeSwitchSuccess;
-                if (SetWorkingStatus != null) this.SetWorkingStatus = SetWorkingStatus;
-                if (UpdateWorkingStatus != null) this.UpdateWorkingStatus = UpdateWorkingStatus;
+                if (ModeSwitchProgress != null)
+                {
+                    this.ModeSwitchProgress += ModeSwitchProgress;
+                }
+
+                if (ModeSwitchError != null)
+                {
+                    this.ModeSwitchError += ModeSwitchError;
+                }
+
+                if (ModeSwitchSuccess != null)
+                {
+                    this.ModeSwitchSuccess += ModeSwitchSuccess;
+                }
+
+                if (SetWorkingStatus != null)
+                {
+                    this.SetWorkingStatus = SetWorkingStatus;
+                }
+
+                if (UpdateWorkingStatus != null)
+                {
+                    this.UpdateWorkingStatus = UpdateWorkingStatus;
+                }
 
                 if (this.CurrentMode == null)
                 {
@@ -128,13 +150,12 @@ namespace WPinternals
                     // Make sure this ViewModel has its View loaded before we continue,
                     // or else loading of Views can get mixed up.
                     if (SynchronizationContext.Current == null)
+                    {
                         StartSwitch();
+                    }
                     else
                     {
-                        SynchronizationContext.Current.Post((s) =>
-                        {
-                            ((SwitchModeViewModel)s).StartSwitch();
-                        }, this);
+                        SynchronizationContext.Current.Post((s) => ((SwitchModeViewModel)s).StartSwitch(), this);
                     }
                 }
             }
@@ -161,9 +182,13 @@ namespace WPinternals
         {
             IsSwitching = false;
             if ((UIContext == null) || (SynchronizationContext.Current == UIContext))
+            {
                 ModeSwitchError(Message);
+            }
             else
-                UIContext.Post(s => { ModeSwitchError(Message); }, null);
+            {
+                UIContext.Post(s => ModeSwitchError(Message), null);
+            }
         }
 
         private void ModeSwitchSuccessWrapper()
@@ -176,23 +201,29 @@ namespace WPinternals
                     ModeSwitchErrorWrapper("Phone disconnected");
                 }
                 else
-                    ModeSwitchSuccess((IDisposable)PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface);
-            } 
+                {
+                    ModeSwitchSuccess(PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface);
+                }
+            }
             else
             {
                 if (PhoneNotifier.CurrentInterface == null)
                 {
-                    UIContext.Post(s => { ModeSwitchErrorWrapper("Phone disconnected"); }, null);
+                    UIContext.Post(s => ModeSwitchErrorWrapper("Phone disconnected"), null);
                 }
                 else
-                    UIContext.Post(s => { ModeSwitchSuccess((IDisposable)PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface); }, null);
+                {
+                    UIContext.Post(s => ModeSwitchSuccess(PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface), null);
+                }
             }
         }
 
         ~SwitchModeViewModel()
         {
             if (PhoneNotifier != null)
+            {
                 PhoneNotifier.NewDeviceArrived -= NewDeviceArrived;
+            }
         }
 
         internal void StartSwitch()
@@ -248,7 +279,7 @@ namespace WPinternals
                             return;
                     }
 
-                    Dictionary<string, object> Params = new Dictionary<string, object>();
+                    Dictionary<string, object> Params = new();
                     Params.Add("DeviceMode", DeviceMode);
                     Params.Add("ResetMethod", "HwReset");
                     try
@@ -309,7 +340,7 @@ namespace WPinternals
                         case PhoneInterfaces.Qualcomm_Download:
                             byte[] RebootToQualcommDownloadCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45 }; // NOKXCBE
                             RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
-                            if ((RebootCommandResult != null) && (RebootCommandResult.Length == 4)) // This means fail: NOKU (unknow command)
+                            if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
                             {
                                 IsSwitchingInterface = false;
                                 ModeSwitchErrorWrapper("Failed to switch to Qualcomm Download mode");
@@ -367,7 +398,7 @@ namespace WPinternals
         {
             PhoneNotifier.NewDeviceArrived -= NewDeviceArrivedFromMassStorageMode;
 
-            CurrentModel = (IDisposable)Args.NewModel;
+            CurrentModel = Args.NewModel;
             CurrentMode = Args.NewInterface;
 
             // After the mass storage mode reboot command, the phone must be in Bootloader mode.
@@ -426,7 +457,7 @@ namespace WPinternals
         {
             PhoneNotifier.NewDeviceArrived -= NewDeviceArrived;
 
-            CurrentModel = (IDisposable)Args.NewModel;
+            CurrentModel = Args.NewModel;
             CurrentMode = Args.NewInterface;
 
             if ((CurrentMode == PhoneInterfaces.Lumia_Bootloader) && (TargetMode == PhoneInterfaces.Lumia_Flash))
@@ -447,7 +478,9 @@ namespace WPinternals
             if (CurrentMode == TargetMode)
             {
                 if (TargetMode == PhoneInterfaces.Lumia_Bootloader)
+                {
                     ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                }
 
                 ModeSwitchSuccessWrapper();
             }
@@ -476,12 +509,12 @@ namespace WPinternals
                 IsSwitchingInterface = true;
                 LogFile.Log("Sending command for rebooting to Emergency Download mode");
                 byte[] RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
-                if ((RebootCommandResult != null) && (RebootCommandResult.Length >= 8))
+                if (RebootCommandResult?.Length >= 8)
                 {
                     int ResultCode = (RebootCommandResult[6] << 8) + RebootCommandResult[7];
                     LogFile.Log("Resultcode: 0x" + ResultCode.ToString("X4"));
                 }
-                if ((RebootCommandResult != null) && (RebootCommandResult.Length == 4)) // This means fail: NOKU (unknow command)
+                if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
                 {
                     ModeSwitchErrorWrapper("Failed to switch to Qualcomm Download mode");
                     IsSwitchingInterface = false;
@@ -515,12 +548,7 @@ namespace WPinternals
 
         private void SwitchFromFlashToLabelMode(bool Continuation = false)
         {
-            string ProgressText;
-            if (Continuation)
-                ProgressText = "And now preparing to boot the phone to Label mode...";
-            else
-                ProgressText = "Preparing to boot the phone to Label mode...";
-
+            string ProgressText = Continuation ? "And now preparing to boot the phone to Label mode..." : "Preparing to boot the phone to Label mode...";
             NokiaFlashModel FlashModel = (NokiaFlashModel)CurrentModel;
             if (CurrentMode == PhoneInterfaces.Lumia_Bootloader)
             {
@@ -548,32 +576,31 @@ namespace WPinternals
                         }
                         string ENOSWPackage = LumiaDownloadModel.SearchENOSW(Info.Type, Info.Firmware);
                         SetWorkingStatus("Downloading " + Info.Type + " Test Mode package...", MaxProgressValue: 100);
-                        DownloadEntry downloadEntry = new DownloadEntry(ENOSWPackage, TempFolder, null, null, null);
+                        DownloadEntry downloadEntry = new(ENOSWPackage, TempFolder, null, null, null);
 
                         downloadEntry.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) =>
                         {
                             if (e.PropertyName == "Progress")
                             {
-                                int progress = (sender as DownloadEntry).Progress;
-                                ulong progressret;
-                                ulong.TryParse(progress.ToString(), out progressret);
+                                int progress = (sender as DownloadEntry)?.Progress ?? 0;
+                                ulong.TryParse(progress.ToString(), out ulong progressret);
                                 UpdateWorkingStatus(null, CurrentProgressValue: progressret);
 
                                 if (progress == 100)
                                 {
                                     ModeSwitchProgressWrapper("Initializing Flash...", null);
 
-                                    string MMOSPath = TempFolder + "\\" + (sender as DownloadEntry).Name;
+                                    string MMOSPath = TempFolder + "\\" + (sender as DownloadEntry)?.Name;
 
                                     PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                                    FileInfo info = new FileInfo(MMOSPath);
+                                    FileInfo info = new(MMOSPath);
                                     uint length = uint.Parse(info.Length.ToString());
-                                    int maximumbuffersize = 0x00240000;
+                                    const int maximumbuffersize = 0x00240000;
                                     uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
 
                                     SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100);
 
-                                    ProgressUpdater progressUpdater = new ProgressUpdater(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
+                                    ProgressUpdater progressUpdater = new(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
                                     FlashModel.FlashMMOS(MMOSPath, progressUpdater);
 
                                     SetWorkingStatus("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
@@ -606,12 +633,7 @@ namespace WPinternals
 
         private void SwitchFromFlashToMassStorageMode(bool Continuation = false)
         {
-            string ProgressText;
-            if (Continuation)
-                ProgressText = "And now rebooting phone to Mass Storage mode...";
-            else
-                ProgressText = "Rebooting phone to Mass Storage mode...";
-
+            string ProgressText = Continuation ? "And now rebooting phone to Mass Storage mode..." : "Rebooting phone to Mass Storage mode...";
             NokiaFlashModel FlashModel = (NokiaFlashModel)CurrentModel;
             if (CurrentMode == PhoneInterfaces.Lumia_Bootloader)
             {
@@ -625,12 +647,16 @@ namespace WPinternals
 
             MassStorageWarning = null;
             if (Info.FlashAppProtocolVersionMajor < 2)
+            {
                 MassStorageWarning = "Switching to Mass Storage mode should take about 10 seconds. The phone should be unlocked using an Engineering SBL3 to enable Mass Storage mode. When you unlocked the bootloader, but you did not use an Engineering SBL3, an attempt to boot to Mass Storage mode may result in an unresponsive state. Installing drivers for this interface may also cause to hang the PC. So when this switch is taking too long, you should reboot both the PC and the phone. To reboot the phone, you have to perform a soft-reset. Press and hold the volume-down-button and the power-button at the same time for at least 10 seconds. This will trigger a power-cycle and the phone will reboot. Once fully booted, the phone may show strange behavior, like complaining about mail-accounts, showing old text-messages, inability to load https-websites, etc. This is expected behavior, because the time-settings of the phone are incorrect. Just wait a few seconds for the phone to get a data-connection and have the date/time synced. After that the strange behavior will stop automatically and normal operation is resumed.";
+            }
             else
             {
                 MassStorageWarning = "When the screen of the phone is black for a while, it could be that the phone is already in Mass Storage Mode, but there is no drive-letter assigned. To resolve this issue, open Device Manager and manually assign a drive-letter to the MainOS partition of your phone, or open a command-prompt and type: diskpart automount enable.";
                 if (App.IsPnPEventLogMissing)
+                {
                     MassStorageWarning += " It is also possible that the phone is in Mass Storage mode, but the Mass Storage driver on this PC failed. Your PC does not have an eventlog to detect this misbehaviour. But in this case you will see a device with an exclamation mark in Device Manager and then you need to manually reset the phone by pressing and holding the power-button for at least 10 seconds until it vibrates and reboots. After that Windows Phone Internals will revert the changes. After the phone has rebooted to the OS, you can retry to unlock the bootloader.";
+                }
             }
 
             bool IsOldLumia = (Info.FlashAppProtocolVersionMajor < 2);
@@ -650,7 +676,7 @@ namespace WPinternals
                 byte[] RebootToMassStorageCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x4D }; // NOKM
                 IsSwitchingInterface = true;
                 byte[] RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToMassStorageCommand);
-                if ((RebootCommandResult != null) && (RebootCommandResult.Length == 4)) // This means fail: NOKU (unknown command)
+                if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknown command)
                 {
                     BootModeFlagCommand[0x0F] = 0x4D;
                     byte[] BootFlagResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
@@ -696,55 +722,63 @@ namespace WPinternals
                         // But the partition contains an extra hack to break out the endless loops.
                         using (var stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
                         {
-                            using (DecompressedStream dec = new DecompressedStream(stream))
-                            {
-                                using (System.IO.MemoryStream SB = new System.IO.MemoryStream()) // Must be a seekable stream!
+                            using DecompressedStream dec = new(stream);
+                            using MemoryStream SB = new(); // Must be a seekable stream!
+                            dec.CopyTo(SB);
+
+                            // We don't need to check for the BACKUP_BS_NV partition here,
+                            // because the SecureBoot flag is disabled here.
+                            // So either the NV was already backupped or already overwritten.
+
+                            GPT GPT = FlashModel.ReadGPT();
+                            Partition Target = GPT.GetPartition("UEFI_BS_NV");
+
+                            // We've been reading the GPT, so we let the phone reset once more to be sure that memory maps are the same
+                            WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
+                            List<FlashPart> Parts = new();
+                            FlashPart Part = new();
+                            Part.StartSector = (uint)Target.FirstSector;
+                            Part.Stream = SB;
+                            Parts.Add(Part);
+                            await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, null, false, false, Parts, DoResetFirst: true, ClearFlashingStatusAtEnd: false, ShowProgress: false,
+                                SetWorkingStatus: (m, s, v, a, st) =>
                                 {
-                                    dec.CopyTo(SB);
-
-                                    // We don't need to check for the BACKUP_BS_NV partition here,
-                                    // because the SecureBoot flag is disabled here.
-                                    // So either the NV was already backupped or already overwritten.
-
-                                    GPT GPT = FlashModel.ReadGPT();
-                                    Partition Target = GPT.GetPartition("UEFI_BS_NV");
-
-                                    // We've been reading the GPT, so we let the phone reset once more to be sure that memory maps are the same
-                                    WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
-                                    List<FlashPart> Parts = new List<FlashPart>();
-                                    FlashPart Part = new FlashPart();
-                                    Part.StartSector = (uint)Target.FirstSector;
-                                    Part.Stream = SB;
-                                    Parts.Add(Part);
-                                    await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, null, false, false, Parts, DoResetFirst: true, ClearFlashingStatusAtEnd: false, ShowProgress: false,
-                                        SetWorkingStatus: (m, s, v, a, st) =>
+                                    if (SetWorkingStatus != null)
+                                    {
+                                        if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
                                         {
-                                            if (SetWorkingStatus != null)
-                                            {
-                                                if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
-                                                    SetWorkingStatus(m, s, v, a, st);
-                                                else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
-                                                    SetWorkingStatus(ProgressText, MassStorageWarning);
-                                                LastStatus = st;
-                                            }
-                                        },
-                                        UpdateWorkingStatus: (m, s, v, st) =>
+                                            SetWorkingStatus(m, s, v, a, st);
+                                        }
+                                        else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
                                         {
-                                            if (UpdateWorkingStatus != null)
-                                            {
-                                                if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
-                                                    UpdateWorkingStatus(m, s, v, st);
-                                                else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
-                                                    SetWorkingStatus(ProgressText, MassStorageWarning);
-                                                LastStatus = st;
-                                            }
-                                        });
-                                }
-                            }
+                                            SetWorkingStatus(ProgressText, MassStorageWarning);
+                                        }
+
+                                        LastStatus = st;
+                                    }
+                                },
+                                UpdateWorkingStatus: (m, s, v, st) =>
+                                {
+                                    if (UpdateWorkingStatus != null)
+                                    {
+                                        if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
+                                        {
+                                            UpdateWorkingStatus(m, s, v, st);
+                                        }
+                                        else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
+                                        {
+                                            SetWorkingStatus(ProgressText, MassStorageWarning);
+                                        }
+
+                                        LastStatus = st;
+                                    }
+                                });
                         }
 
                         if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        {
                             throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+                        }
 
                         // Wait for bootloader
                         if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
@@ -754,7 +788,9 @@ namespace WPinternals
                         }
 
                         if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        {
                             throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+                        }
 
                         // Wait for mass storage mode
                         if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
@@ -764,16 +800,24 @@ namespace WPinternals
                         }
 
                         if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        {
                             throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+                        }
 
                         MassStorage Storage = null;
                         if (PhoneNotifier.CurrentModel is MassStorage)
+                        {
                             Storage = (MassStorage)PhoneNotifier.CurrentModel;
+                        }
 
                         if (Storage == null)
+                        {
                             ModeSwitchErrorWrapper("Failed to switch to Mass Storage Mode");
+                        }
                         else
+                        {
                             ModeSwitchSuccessWrapper();
+                        }
                     }
                     catch (Exception Ex)
                     {
@@ -798,14 +842,16 @@ namespace WPinternals
         internal async static Task<IDisposable> SwitchToWithProgress(PhoneNotifierViewModel Notifier, PhoneInterfaces? TargetMode, ModeSwitchProgressHandler ModeSwitchProgress, string RequestedVolumeForMassStorage = "MainOS")
         {
             if (Notifier.CurrentInterface == TargetMode)
+            {
                 return Notifier.CurrentModel;
+            }
 
             IDisposable Result = null;
             string LocalErrorMessage = null;
 
-            AsyncAutoResetEvent Event = new AsyncAutoResetEvent(false);
+            AsyncAutoResetEvent Event = new(false);
 
-            SwitchModeViewModel Switch = new SwitchModeViewModel(
+            SwitchModeViewModel Switch = new(
                 Notifier,
                 TargetMode,
                 ModeSwitchProgress,
@@ -824,7 +870,9 @@ namespace WPinternals
             await Event.WaitAsync(Timeout.InfiniteTimeSpan);
 
             if (LocalErrorMessage != null)
+            {
                 throw new WPinternalsException(LocalErrorMessage);
+            }
 
             return Result;
         }
@@ -832,14 +880,16 @@ namespace WPinternals
         internal async static Task<IDisposable> SwitchToWithStatus(PhoneNotifierViewModel Notifier, PhoneInterfaces? TargetMode, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, string RequestedVolumeForMassStorage = "MainOS")
         {
             if (Notifier.CurrentInterface == TargetMode)
+            {
                 return Notifier.CurrentModel;
+            }
 
             IDisposable Result = null;
             string LocalErrorMessage = null;
 
-            AsyncAutoResetEvent Event = new AsyncAutoResetEvent(false);
+            AsyncAutoResetEvent Event = new(false);
 
-            SwitchModeViewModel Switch = new SwitchModeViewModel(
+            SwitchModeViewModel Switch = new(
                 Notifier,
                 TargetMode,
                 null,
@@ -858,7 +908,9 @@ namespace WPinternals
             await Event.WaitAsync(Timeout.InfiniteTimeSpan);
 
             if (LocalErrorMessage != null)
+            {
                 throw new WPinternalsException(LocalErrorMessage);
+            }
 
             return Result;
         }

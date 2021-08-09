@@ -35,7 +35,9 @@ namespace WPinternals
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 }, null, null);
             if (Offset == null)
+            {
                 throw new BadImageFormatException();
+            }
 
             UInt32 PartitionLoaderTableOffset = (UInt32)Offset;
 
@@ -49,7 +51,9 @@ namespace WPinternals
                 },
                 FoundPattern);
             if (Offset == null)
+            {
                 throw new BadImageFormatException();
+            }
 
             UInt32 SharedMemoryAddress = ByteOperations.ReadUInt32(FoundPattern, 0x0C);
             UInt32 GlobalIsSecurityEnabledAddress = SharedMemoryAddress + 0x28;
@@ -65,7 +69,9 @@ namespace WPinternals
                 },
                 null);
             if (Offset == null)
+            {
                 throw new BadImageFormatException();
+            }
 
             UInt32 ReturnAddress = (UInt32)Offset - ImageOffset + ImageAddress;
 

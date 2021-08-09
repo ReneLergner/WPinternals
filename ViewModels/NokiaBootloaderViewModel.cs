@@ -30,10 +30,10 @@ namespace WPinternals
 
     internal class NokiaBootloaderViewModel : ContextViewModel
     {
-        private NokiaFlashModel CurrentModel;
-        private Action<PhoneInterfaces> RequestModeSwitch;
+        private readonly NokiaFlashModel CurrentModel;
+        private readonly Action<PhoneInterfaces> RequestModeSwitch;
         internal Action SwitchToGettingStarted;
-        private object LockDeviceInfo = new object();
+        private readonly object LockDeviceInfo = new();
 
         internal NokiaBootloaderViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch, Action SwitchToGettingStarted)
             : base()
@@ -47,12 +47,13 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (IsActive)
+            {
                 new Thread(() => StartLoadDeviceInfo()).Start();
+            }
         }
 
         private void StartLoadDeviceInfo()
         {
-             
         }
 
         internal void RebootTo(string Mode)

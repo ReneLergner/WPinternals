@@ -33,26 +33,26 @@ namespace WPinternals
 {
     internal class PatchEngine
     {
-        internal List<PatchDefinition> PatchDefinitions = new List<PatchDefinition>();
-        internal readonly List<TargetRedirection> TargetRedirections = new List<TargetRedirection>();
+        internal List<PatchDefinition> PatchDefinitions = new();
+        internal readonly List<TargetRedirection> TargetRedirections = new();
 
         internal PatchEngine() { }
 
         internal PatchEngine(string PatchDefinitionsXmlString)
         {
-            XmlSerializer x = new XmlSerializer(PatchDefinitions.GetType(), null, new Type[] { }, new XmlRootAttribute("PatchDefinitions"), "");
-            MemoryStream s = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(PatchDefinitionsXmlString));
+            XmlSerializer x = new(PatchDefinitions.GetType(), null, Array.Empty<Type>(), new XmlRootAttribute("PatchDefinitions"), "");
+            MemoryStream s = new(System.Text.Encoding.ASCII.GetBytes(PatchDefinitionsXmlString));
             PatchDefinitions = (List<PatchDefinition>)x.Deserialize(s);
         }
 
         internal void WriteDefinitions(string FilePath)
         {
-            XmlSerializer x = new XmlSerializer(PatchDefinitions.GetType(), null, new Type[] { }, new XmlRootAttribute("PatchDefinitions"), "");
+            XmlSerializer x = new(PatchDefinitions.GetType(), null, Array.Empty<Type>(), new XmlRootAttribute("PatchDefinitions"), "");
 
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            XmlSerializerNamespaces ns = new();
             ns.Add("", "");
 
-            System.IO.StreamWriter FileWriter = new System.IO.StreamWriter(FilePath);
+            StreamWriter FileWriter = new(FilePath);
             XmlWriter XmlWriter = XmlWriter.Create(FileWriter, new XmlWriterSettings() { OmitXmlDeclaration = true, Indent = true, NewLineHandling = NewLineHandling.Entitize });
 
             FileWriter.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
@@ -98,7 +98,6 @@ namespace WPinternals
             }
         }
 
-
         private DiscUtils.DiscFileSystem _TargetImage = null;
         internal DiscUtils.DiscFileSystem TargetImage
         {
@@ -116,7 +115,7 @@ namespace WPinternals
         internal bool Patch(string PatchDefinition)
         {
             bool Result = false;
-            List<FilePatcher> LoadedFiles = new List<FilePatcher>();
+            List<FilePatcher> LoadedFiles = new();
 
             LogFile.Log("Attempt patch: " + PatchDefinition);
 
@@ -142,16 +141,18 @@ namespace WPinternals
                         }
                     }
                     if (TargetPath == null)
+                    {
                         TargetPath = Path.Combine(this.TargetPath + "\\", CurrentTargetFile.Path);
+                    }
 
                     // Lookup file
                     FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Compare(f.FilePath, TargetPath, true) == 0);
                     if (CurrentFile == null)
                     {
-                        if ((TargetImage != null) && (!TargetPath.Contains(':')))
-                            CurrentFile = new FilePatcher(TargetPath, TargetImage.OpenFile(TargetPath, FileMode.Open, FileAccess.ReadWrite));
-                        else
-                            CurrentFile = new FilePatcher(TargetPath);
+                        CurrentFile = (TargetImage != null) && (!TargetPath.Contains(':'))
+                            ? new FilePatcher(TargetPath, TargetImage.OpenFile(TargetPath, FileMode.Open, FileAccess.ReadWrite))
+                            : new FilePatcher(TargetPath);
+
                         LoadedFiles.Add(CurrentFile);
                     }
 
@@ -236,7 +237,7 @@ namespace WPinternals
 
         internal void Restore(string PatchDefinition)
         {
-            List<FilePatcher> LoadedFiles = new List<FilePatcher>();
+            List<FilePatcher> LoadedFiles = new();
 
             try
             {
@@ -260,7 +261,9 @@ namespace WPinternals
                             }
                         }
                         if (TargetPath == null)
+                        {
                             TargetPath = Path.Combine(this.TargetPath, CurrentTargetFile.Path);
+                        }
 
                         // Lookup file
                         FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Compare(f.FilePath, TargetPath, true) == 0);
@@ -286,7 +289,9 @@ namespace WPinternals
                             }
 
                             if (!Match)
+                            {
                                 break;
+                            }
                         }
                     }
 
@@ -389,22 +394,22 @@ namespace WPinternals
         internal FilePatcher(string FilePath)
         {
             this.FilePath = FilePath;
-            using (FileStream stream = File.OpenRead(FilePath))
-            {
-                SHA1Managed sha = new SHA1Managed();
-                Hash = sha.ComputeHash(stream);
-            }
+            using FileStream stream = File.OpenRead(FilePath);
+            SHA1Managed sha = new();
+            Hash = sha.ComputeHash(stream);
         }
 
         internal FilePatcher(string FilePath, Stream FileStream)
         {
             if (!FileStream.CanSeek || !FileStream.CanWrite)
+            {
                 throw new WPinternalsException("Incorrect filestream", "The provided file stream for patching does not support seeking and/or writing.");
+            }
 
             this.FilePath = FilePath;
             this.Stream = FileStream;
             FileStream.Position = 0;
-            SHA1Managed sha = new SHA1Managed();
+            SHA1Managed sha = new();
             Hash = sha.ComputeHash(FileStream);
             FileStream.Position = 0;
         }
@@ -413,7 +418,7 @@ namespace WPinternals
         {
             if (FilePath.Contains(':'))
             {
-                FileInfo fileInfo = new FileInfo(FilePath);
+                FileInfo fileInfo = new(FilePath);
 
                 // Enable Take Ownership AND Restore ownership to original owner
                 // Take Ownership Privilge is not enough.
@@ -460,7 +465,7 @@ namespace WPinternals
 
             if (FilePath.Contains(':'))
             {
-                FileInfo fileInfo = new FileInfo(FilePath);
+                FileInfo fileInfo = new(FilePath);
 
                 // Restore original owner and access rules.
                 // The OriginalACL cannot be reused directly.
@@ -487,7 +492,7 @@ namespace WPinternals
         [XmlAttribute]
         public string Name;
 
-        public List<TargetVersion> TargetVersions = new List<TargetVersion>();
+        public List<TargetVersion> TargetVersions = new();
     }
 
     public class TargetVersion // Must be public to be serializable
@@ -495,7 +500,7 @@ namespace WPinternals
         [XmlAttribute]
         public string Description;
 
-        public List<TargetFile> TargetFiles = new List<TargetFile>();
+        public List<TargetFile> TargetFiles = new();
     }
 
     public class TargetFile // Must be public to be serializable
@@ -544,8 +549,8 @@ namespace WPinternals
             }
         }
 
-        public List<Patch> Patches = new List<Patch>();
-        public List<TargetFile> Obsolete = new List<TargetFile>();
+        public List<Patch> Patches = new();
+        public List<TargetFile> Obsolete = new();
     }
 
     public class Patch // Must be public to be serializable
@@ -563,7 +568,10 @@ namespace WPinternals
             {
                 string NewValue = value;
                 if (NewValue.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-                    NewValue = NewValue.Substring(2);
+                {
+                    NewValue = NewValue[2..];
+                }
+
                 Address = Convert.ToUInt32(NewValue, 16);
             }
         }

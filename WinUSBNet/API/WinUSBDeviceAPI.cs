@@ -17,7 +17,7 @@ using System.Threading;
 namespace MadWizard.WinUSBNet.API
 {
     [StructLayout(LayoutKind.Sequential)]
-    struct USB_DEVICE_DESCRIPTOR
+    internal struct USB_DEVICE_DESCRIPTOR
     {
         public byte bLength;
         public byte bDescriptorType;
@@ -36,7 +36,7 @@ namespace MadWizard.WinUSBNet.API
     };
 
     [StructLayout(LayoutKind.Sequential)]
-    struct USB_CONFIGURATION_DESCRIPTOR
+    internal struct USB_CONFIGURATION_DESCRIPTOR
     {
         public byte bLength;
         public byte bDescriptorType;
@@ -49,7 +49,7 @@ namespace MadWizard.WinUSBNet.API
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct USB_INTERFACE_DESCRIPTOR
+    internal struct USB_INTERFACE_DESCRIPTOR
     {
         public byte bLength;
         public byte bDescriptorType;
@@ -61,7 +61,7 @@ namespace MadWizard.WinUSBNet.API
         public byte bInterfaceProtocol;
         public byte iInterface;
     };
-    enum USBD_PIPE_TYPE : int
+    internal enum USBD_PIPE_TYPE : int
     {
         UsbdPipeTypeControl,
         UsbdPipeTypeIsochronous,
@@ -69,7 +69,7 @@ namespace MadWizard.WinUSBNet.API
         UsbdPipeTypeInterrupt,
     }
     [StructLayout(LayoutKind.Sequential)]
-    struct WINUSB_PIPE_INFORMATION
+    internal struct WINUSB_PIPE_INFORMATION
     {
         public USBD_PIPE_TYPE PipeType;
         public byte PipeId;
@@ -77,7 +77,7 @@ namespace MadWizard.WinUSBNet.API
         public byte Interval;
     }
 
-    enum POLICY_TYPE : int
+    internal enum POLICY_TYPE : int
     {
         SHORT_PACKET_TERMINATE = 1,
         AUTO_CLEAR_STALL,
@@ -88,10 +88,9 @@ namespace MadWizard.WinUSBNet.API
         RAW_IO,
     }
 
-
-    partial class WinUSBDevice
+    internal partial class WinUSBDevice
     {
-        private const UInt32 DEVICE_SPEED = ((UInt32)(1));
+        private const UInt32 DEVICE_SPEED = 1;
 
         private enum USB_DEVICE_SPEED : int
         {
@@ -163,18 +162,14 @@ namespace MadWizard.WinUSBNet.API
         [DllImport("winusb.dll", SetLastError = true)]
         private static unsafe extern bool WinUsb_WritePipe(IntPtr InterfaceHandle, byte PipeID, byte* pBuffer, uint BufferLength, out uint LengthTransferred, NativeOverlapped* pOverlapped);
 
-
         [DllImport("kernel32.dll", SetLastError = true)]
         private static unsafe extern bool CancelIo(IntPtr hFile);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static unsafe extern bool CancelIoEx(IntPtr hFile, NativeOverlapped* pOverlapped);
 
-
         [DllImport("winusb.dll", SetLastError = true)]
         private static unsafe extern bool WinUsb_ResetPipe(IntPtr InterfaceHandle, byte PipeID);
-
-
 
         [DllImport("winusb.dll", SetLastError = true)]
         private static extern bool WinUsb_FlushPipe(IntPtr InterfaceHandle, byte PipeID);
@@ -200,6 +195,5 @@ namespace MadWizard.WinUSBNet.API
         private const int USB_STRING_DESCRIPTOR_TYPE = 0x03;
 
         private const int ERROR_NO_MORE_ITEMS = 259;
-
     }
 }

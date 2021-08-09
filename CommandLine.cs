@@ -32,16 +32,16 @@ namespace WPinternals
     internal static class CommandLine
     {
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool AllocConsole();
+        private static extern bool AllocConsole();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool AttachConsole(int dwProcessId);
 
         [DllImport("kernel32.dll")]
-        static extern IntPtr GetConsoleWindow();
+        private static extern IntPtr GetConsoleWindow();
 
         [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         private const UInt32 StdOutputHandle = 0xFFFFFFF5;
 
@@ -57,8 +57,8 @@ namespace WPinternals
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        const int SW_HIDE = 0;
-        const int SW_SHOW = 5;
+        private const int SW_HIDE = 0;
+        private const int SW_SHOW = 5;
 
         private const int MY_CODE_PAGE = 437;
         private const uint GENERIC_WRITE = 0x40000000;
@@ -110,7 +110,9 @@ namespace WPinternals
                 string[] args = Environment.GetCommandLineArgs();
 
                 if (args.Length == 1)
+                {
                     return;
+                }
 
                 switch (args[1].ToLower().TrimStart(new char[] { '-', '/' }))
                 {
@@ -123,22 +125,32 @@ namespace WPinternals
 #endif
                     case "flashpartition":
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -FlashPartition <Partition name> <Partition file> <Optional: FFU file>");
+                        }
+
                         if (args.Length >= 5)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FlashPartition(UIContext, args[4], args[2], args[3]);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FlashPartition(UIContext, null, args[2], args[3]);
+                        }
+
                         break;
                     case "flashraw":
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -FlashRaw <Start sector> <Raw file> <Optional: FFU file>");
+                        }
+
                         UInt64 StartSector = 0;
                         try
                         {
-                            if (args[2].StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-                                StartSector = Convert.ToUInt64(args[2].Substring(2), 16);
-                            else
-                                StartSector = Convert.ToUInt64(args[2], 10);
+                            StartSector = args[2].StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                                ? Convert.ToUInt64(args[2][2..], 16)
+                                : Convert.ToUInt64(args[2], 10);
                         }
                         catch
                         {
@@ -146,13 +158,21 @@ namespace WPinternals
                             break;
                         }
                         if (args.Length >= 5)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FlashRaw(UIContext, StartSector, args[3], args[4]);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FlashRaw(UIContext, StartSector, args[3], null);
+                        }
+
                         break;
                     case "flashpartitionimmediately":
                         if (args.Length < 5)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -FlashPartition <Partition name> <Partition file> <FFU Path>");
+                        }
+
                         await LumiaV2UnlockBootViewModel.LumiaV2FlashPartition(UIContext, args[4], args[2], args[3], false);
                         break;
                     case "readgpt":
@@ -166,12 +186,18 @@ namespace WPinternals
 
                             GPT GPT = FlashModel.ReadGPT(); // May throw NotSupportedException
                             foreach (Partition Partition in GPT.Partitions)
+                            {
                                 LogFile.Log(Partition.Name.PadRight(20) + "0x" + Partition.FirstSector.ToString("X8") + " - 0x" + Partition.LastSector.ToString("X8") + "    " + Partition.Volume, LogType.ConsoleOnly);
+                            }
 
                             if (FlashModel.ReadPhoneInfo(false).FlashAppProtocolVersionMajor >= 2)
+                            {
                                 FlashModel.SwitchToFlashAppContext();
+                            }
                             else
+                            {
                                 await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                            }
 
                             Notifier.Stop();
                         }
@@ -186,7 +212,10 @@ namespace WPinternals
                         break;
                     case "backupgpt":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -BackupGPT <Path to xml-file>");
+                        }
+
                         LogFile.BeginAction("BackupGPT");
                         try
                         {
@@ -210,7 +239,10 @@ namespace WPinternals
                         break;
                     case "restoregpt":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RestoreGPT <Path to xml-file>");
+                        }
+
                         LogFile.BeginAction("RestoreGPT");
                         try
                         {
@@ -218,7 +250,7 @@ namespace WPinternals
                             UIContext.Send(s => Notifier.Start(), null);
                             FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
                             byte[] GptChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
-                            GPT GPT = new GPT(GptChunk);
+                            GPT GPT = new(GptChunk);
                             string Xml = File.ReadAllText(args[2]);
                             GPT.MergePartitions(Xml, false);
                             GPT.Rebuild();
@@ -237,7 +269,10 @@ namespace WPinternals
                         break;
                     case "mergegpt":
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -MergeGPT <Path to input-xml-file> <Path to input-xml-file> <Optional: Path to output-xml-file> Or use: WPinternals.exe -MergeGPT <Path to input-xml-file> <Path to ZIP-file including Partitions.xml> <Optional: Path to output-xml-file>");
+                        }
+
                         LogFile.BeginAction("MergeGPT");
                         try
                         {
@@ -254,8 +289,7 @@ namespace WPinternals
 
                             if (Archive == null)
                             {
-                                if (s != null)
-                                    s.Close();
+                                s?.Close();
 
                                 // Assume Xml-file
                                 GPT.MergePartitionsFromFile(args[3], true);
@@ -264,28 +298,29 @@ namespace WPinternals
                             {
                                 ZipArchiveEntry PartitionEntry = Archive.GetEntry("Partitions.xml");
                                 if (PartitionEntry == null)
+                                {
                                     GPT.MergePartitions(null, true, Archive);
+                                }
                                 else
                                 {
-                                    using (Stream ZipStream = PartitionEntry.Open())
-                                    {
-                                        using (StreamReader ZipReader = new StreamReader(ZipStream))
-                                        {
-                                            string PartitionXml = ZipReader.ReadToEnd();
-                                            GPT.MergePartitions(PartitionXml, true, Archive);
-                                        }
-                                    }
+                                    using Stream ZipStream = PartitionEntry.Open();
+                                    using StreamReader ZipReader = new(ZipStream);
+                                    string PartitionXml = ZipReader.ReadToEnd();
+                                    GPT.MergePartitions(PartitionXml, true, Archive);
                                 }
                             }
 
-                            if (Archive != null)
-                                Archive.Dispose();
+                            Archive?.Dispose();
 
-                            if (args.Count() >= 5)
+                            if (args.Length >= 5)
+                            {
                                 GPT.WritePartitions(args[4]);
+                            }
 
                             foreach (Partition Partition in GPT.Partitions)
+                            {
                                 LogFile.Log(Partition.Name.PadRight(20) + "0x" + Partition.FirstSector.ToString("X8") + " - 0x" + Partition.LastSector.ToString("X8") + "    " + Partition.Volume, LogType.ConsoleOnly);
+                            }
                         }
                         catch (Exception Ex)
                         {
@@ -298,7 +333,10 @@ namespace WPinternals
                         break;
                     case "dumpffu":
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DumpFFU <FFU Path> <Destination Path> <Optional: Partition Name>");
+                        }
+
                         FFU = new FFU(args[2]);
                         if (args.Length < 5)
                         {
@@ -314,13 +352,18 @@ namespace WPinternals
                         {
                             Partition Target = FFU.GPT.GetPartition(args[4]);
                             if ((Target == null) || (!FFU.IsPartitionPresentInFFU(Target.Name)))
+                            {
                                 throw new InvalidOperationException("Partition not found in FFU!");
+                            }
+
                             FFU.WritePartition(Target.Name, System.IO.Path.Combine(args[3], Target.Name + ".bin"));
                         }
                         break;
                     case "dumpuefi":
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DumpUEFI <UEFI binary or FFU file> <Destination Path>");
+                        }
 
                         byte[] UefiBinary;
                         if (FFU.IsFFU(args[2]))
@@ -333,29 +376,21 @@ namespace WPinternals
                             UefiBinary = File.ReadAllBytes(args[2]);
                         }
 
-                        UEFI UEFI = new UEFI(UefiBinary);
+                        UEFI UEFI = new(UefiBinary);
 
                         foreach (EFI Efi in UEFI.EFIs)
                         {
                             byte[] EfiBinary = UEFI.GetFile(Efi.Guid);
-                            string Name = Efi.Name;
-                            if (Name == null)
-                                Name = Efi.Guid.ToString();
+                            string Name = Efi.Name ?? Efi.Guid.ToString();
+
                             if (!Name.Contains('.'))
                             {
-                                switch (Efi.Type)
+                                Name += Efi.Type switch
                                 {
-                                    case 5:
-                                    case 7:
-                                        Name += ".dll";
-                                        break;
-                                    case 9:
-                                        Name += ".exe";
-                                        break;
-                                    default:
-                                        Name += ".bin";
-                                        break;
-                                }
+                                    5 or 7 => ".dll",
+                                    9 => ".exe",
+                                    _ => ".bin",
+                                };
                             }
                             string EfiPath = Path.Combine(args[3], Name);
                             Directory.CreateDirectory(Path.GetDirectoryName(EfiPath));
@@ -364,53 +399,86 @@ namespace WPinternals
                         break;
                     case "testprogrammer":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -TestProgrammer <Path to ede-file>");
+                        }
+
                         await TestCode.TestProgrammer(UIContext, args[2]);
                         break;
                     case "findflashingprofile":
                         Notifier = new PhoneNotifierViewModel();
                         UIContext.Send(s => Notifier.Start(), null);
                         if (args.Length > 2)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FindFlashingProfile(Notifier, args[2]);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FindFlashingProfile(Notifier, null);
+                        }
+
                         Notifier.Stop();
                         break;
                     case "findflashingprofileexperimental":
                         Notifier = new PhoneNotifierViewModel();
                         UIContext.Send(s => Notifier.Start(), null);
                         if (args.Length > 2)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FindFlashingProfile(Notifier, args[2], Experimental: true);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FindFlashingProfile(Notifier, null, Experimental: true);
+                        }
+
                         Notifier.Stop();
                         break;
                     case "findflashingprofilenorestart":
                         Notifier = new PhoneNotifierViewModel();
                         UIContext.Send(s => Notifier.Start(), null);
                         if (args.Length > 2)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FindFlashingProfile(Notifier, args[2], false);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2FindFlashingProfile(Notifier, null, false);
+                        }
+
                         Notifier.Stop();
                         break;
                     case "enabletestsigning":
                         if (args.Length > 2)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2EnableTestSigning(UIContext, args[2]);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2EnableTestSigning(UIContext, null);
+                        }
+
                         break;
                     case "enabletestsigningnorestart":
                         if (args.Length > 2)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2EnableTestSigning(UIContext, args[2], false);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2EnableTestSigning(UIContext, null, false);
+                        }
+
                         break;
                     case "clearnv":
                         if (args.Length > 2)
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2ClearNV(UIContext, args[2]);
+                        }
                         else
+                        {
                             await LumiaV2UnlockBootViewModel.LumiaV2ClearNV(UIContext, null);
+                        }
+
                         break;
                     case "switchtomassstoragemode":
                         LogFile.BeginAction("SwitchToMassStorageMode");
@@ -420,9 +488,14 @@ namespace WPinternals
                             UIContext.Send(s => Notifier.Start(), null);
                             LogFile.Log("Command: Switch to Mass Storage Mode", LogType.FileAndConsole);
                             if (args.Length > 2)
+                            {
                                 await LumiaV2UnlockBootViewModel.LumiaV2SwitchToMassStorageMode(Notifier, args[2]);
+                            }
                             else
+                            {
                                 await LumiaV2UnlockBootViewModel.LumiaV2SwitchToMassStorageMode(Notifier, null);
+                            }
+
                             Notifier.Stop();
                         }
                         catch (Exception Ex)
@@ -455,17 +528,18 @@ namespace WPinternals
 
                                     // Check if the current FFU matches the connected phone, so that the FFU can be used for profiling.
                                     if (Info.PlatformID.StartsWith(PlatformID, StringComparison.OrdinalIgnoreCase))
+                                    {
                                         ProfileFFU = CurrentFFU;
+                                    }
                                 }
                             }
 
                             if (ProfileFFU == null)
                             {
                                 List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => (Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
-                                if (FFUs.Count() > 0)
-                                    ProfileFFU = new FFU(FFUs[0].Path);
-                                else
-                                    throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
+                                ProfileFFU = FFUs.Count > 0
+                                    ? new FFU(FFUs[0].Path)
+                                    : throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
                             }
                             LogFile.Log("Profile FFU: " + ProfileFFU.Path);
 
@@ -481,22 +555,34 @@ namespace WPinternals
                         break;
                     case "addffu":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -AddFFU <Path to FFU-file>");
+                        }
+
                         App.Config.AddFfuToRepository(args[2]);
                         break;
                     case "removeffu":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RemoveFFU <Path to FFU-file>");
+                        }
+
                         App.Config.RemoveFfuFromRepository(args[2]);
                         break;
                     case "addemergency":
                         if (args.Length < 5)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -AddEmergnency <Type> <Path to Programmer-file> <Path to Payload-file>");
+                        }
+
                         App.Config.AddEmergencyToRepository(args[2], args[3], args[4]);
                         break;
                     case "removeemergency":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RemoveEmergency <Path to Programmer-file>");
+                        }
+
                         App.Config.RemoveEmergencyFromRepository(args[2]);
                         break;
                     case "listrepository":
@@ -510,9 +596,15 @@ namespace WPinternals
                             LogFile.Log("File: " + Entry.Path + (Entry.Exists() ? "" : " (file is missing)"), LogType.ConsoleOnly);
                             LogFile.Log("Platform ID: " + Entry.PlatformID, LogType.ConsoleOnly);
                             if (Entry.FirmwareVersion != null)
+                            {
                                 LogFile.Log("Firmware version: " + Entry.FirmwareVersion, LogType.ConsoleOnly);
+                            }
+
                             if (Entry.OSVersion != null)
+                            {
                                 LogFile.Log("OS version: " + Entry.OSVersion, LogType.ConsoleOnly);
+                            }
+
                             Count++;
                         }
                         LogFile.Log("", LogType.ConsoleOnly);
@@ -525,13 +617,19 @@ namespace WPinternals
                             LogFile.Log("Type: " + Entry.Type, LogType.ConsoleOnly);
                             LogFile.Log("Programmer file: " + Entry.ProgrammerPath + (Entry.ProgrammerExists() ? "" : " (file is missing)"), LogType.ConsoleOnly);
                             if (Entry.PayloadPath != null)
+                            {
                                 LogFile.Log("Payload file: " + Entry.PayloadPath + (Entry.PayloadExists() ? "" : " (file is missing)"), LogType.ConsoleOnly);
+                            }
+
                             Count++;
                         }
                         break;
                     case "showffu":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -ShowFFU <Path to FFU-file>");
+                        }
+
                         string FFUPath = args[2];
                         LogFile.Log("FFU: " + FFUPath, LogType.ConsoleOnly);
                         FFU = new FFU(FFUPath);
@@ -540,10 +638,15 @@ namespace WPinternals
                         LogFile.Log("Platform ID: " + FFU.PlatformID, LogType.ConsoleOnly);
                         string Firmware = FFU.GetFirmwareVersion();
                         if (Firmware != null)
+                        {
                             LogFile.Log("Firmware version: " + Firmware, LogType.ConsoleOnly);
+                        }
+
                         string OSVersion = FFU.GetOSVersion();
                         if (OSVersion != null)
+                        {
                             LogFile.Log("OS version: " + OSVersion, LogType.ConsoleOnly);
+                        }
 
                         // Show partitions from GPT (also show which partitions are in the FFU payload)
                         LogFile.Log("", LogType.ConsoleOnly);
@@ -587,31 +690,33 @@ namespace WPinternals
 
                                     // Check if the current FFU matches the connected phone, so that the FFU can be used for profiling.
                                     if (Info.PlatformID.StartsWith(PlatformID, StringComparison.OrdinalIgnoreCase))
+                                    {
                                         ProfileFFU = CurrentFFU;
+                                    }
 
                                     // Check if the current FFU is supported for unlocking.
-                                    if (App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == CurrentVersion))
+                                    if (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == CurrentVersion))
+                                    {
                                         SupportedFFU = CurrentFFU;
+                                    }
                                 }
                             }
 
                             if (ProfileFFU == null)
                             {
                                 List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => (Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
-                                if (FFUs.Count() > 0)
-                                    ProfileFFU = new FFU(FFUs[0].Path);
-                                else
-                                    throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
+                                ProfileFFU = FFUs.Count > 0
+                                    ? new FFU(FFUs[0].Path)
+                                    : throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
                             }
                             LogFile.Log("Profile FFU: " + ProfileFFU.Path);
 
                             if (SupportedFFU == null)
                             {
-                                List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
-                                if (FFUs.Count() > 0)
-                                    SupportedFFU = new FFU(FFUs[0].Path);
-                                else
-                                    throw new WPinternalsException("No donor-FFU found with supported OS version", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
+                                List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
+                                SupportedFFU = FFUs.Count > 0
+                                    ? new FFU(FFUs[0].Path)
+                                    : throw new WPinternalsException("No donor-FFU found with supported OS version", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
                             }
 
                             await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFU.Path, null, SupportedFFU.Path);
@@ -633,7 +738,10 @@ namespace WPinternals
                         {
                             LogFile.Log("Command: Flash Custom ROM", LogType.FileAndConsole);
                             if (args.Length < 3)
+                            {
                                 throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -FlashCustomROM <Path to Custom ROM ZIP-file>");
+                            }
+
                             string CustomRomPath = args[2];
                             LogFile.Log("Custom ROM: " + CustomRomPath, LogType.FileAndConsole);
                             Notifier = new PhoneNotifierViewModel();
@@ -661,7 +769,10 @@ namespace WPinternals
                         {
                             LogFile.Log("Command: Flash FFU", LogType.FileAndConsole);
                             if (args.Length < 3)
+                            {
                                 throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -FlashFFU <Path to FFU-file>");
+                            }
+
                             FFUPath = args[2];
                             LogFile.Log("FFU file: " + FFUPath, LogType.FileAndConsole);
                             Notifier = new PhoneNotifierViewModel();
@@ -695,7 +806,10 @@ namespace WPinternals
                             App.PatchEngine.TargetPath = Drive + "\\";
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the MainOS partition of your phone. Make sure your phone runs a supported Operating System version.");
+                            }
+
                             LogFile.Log("Fixed bootloader", LogType.FileAndConsole);
                             LogFile.Log("The phone is left in Mass Storage mode", LogType.FileAndConsole);
                             LogFile.Log("Press and hold the power-button of the phone for at least 10 seconds to reset the phone", LogType.FileAndConsole);
@@ -721,14 +835,23 @@ namespace WPinternals
                             App.PatchEngine.TargetPath = Drive + "\\EFIESP\\";
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the EFIESP partition of your phone. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported.");
+                            }
+
                             App.PatchEngine.TargetPath = Drive + "\\";
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the MainOS partition of your phone. Make sure your phone runs a supported Operating System version.");
+                            }
+
                             PatchResult = App.PatchEngine.Patch("RootAccess-MainOS");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Patch failed", "An error occured while modifying Operating System files on the MainOS partition of your phone for Root Access. Make sure your phone runs a supported Operating System version.");
+                            }
+
                             LogFile.Log("Root Access enabled!", LogType.FileAndConsole);
                             LogFile.Log("The phone is left in Mass Storage mode", LogType.FileAndConsole);
                             LogFile.Log("Press and hold the power-button of the phone for at least 10 seconds to reset the phone", LogType.FileAndConsole);
@@ -745,31 +868,40 @@ namespace WPinternals
                     case "unlockbootloaderonimage":
                         LogFile.Log("Command: Unlock bootloader on image", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -UnlockBootLoaderOnImage <EFIESP image file> <Optional: MainOS image file> <Optional: donor-FFU file with supported version of bootfiles>");
+                        }
+
                         FFUFilePath = null;
                         EfiEspImagePath = args[2];
                         if (args.Length > 3)
                         {
                             if (FFU.IsFFU(args[3]))
+                            {
                                 FFUFilePath = args[3];
+                            }
                             else
+                            {
                                 MainOsImagePath = args[3];
+                            }
                         }
                         if (args.Length > 4)
+                        {
                             FFUFilePath = args[4];
+                        }
 
-                        using (FileStream FileSystemStream = new FileStream(EfiEspImagePath, FileMode.Open, FileAccess.ReadWrite))
+                        using (FileStream FileSystemStream = new(EfiEspImagePath, FileMode.Open, FileAccess.ReadWrite))
                         {
                             UnlockedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(FileSystemStream);
 
                             if (FFUFilePath != null)
                             {
-                                FFU SupportedFFU = new FFU(FFUFilePath);
+                                FFU SupportedFFU = new(FFUFilePath);
                                 LogFile.Log("Donor FFU: " + SupportedFFU.Path);
                                 byte[] SupportedEFIESP = SupportedFFU.GetPartition("EFIESP");
-                                DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(SupportedEFIESP));
-                                DiscUtils.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
-                                MemoryStream SupportedMobileStartupMemStream = new MemoryStream();
+                                DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new(new MemoryStream(SupportedEFIESP));
+                                DiscUtils.Streams.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
+                                MemoryStream SupportedMobileStartupMemStream = new();
                                 SupportedMobileStartupStream.CopyTo(SupportedMobileStartupMemStream);
                                 byte[] SupportedMobileStartup = SupportedMobileStartupMemStream.ToArray();
                                 SupportedMobileStartupMemStream.Close();
@@ -785,42 +917,48 @@ namespace WPinternals
                             App.PatchEngine.TargetImage = UnlockedEFIESPFileSystem;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
+                            }
 
                             // Edit BCD
                             LogFile.Log("Edit BCD");
-                            using (Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite))
+                            using Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite);
+                            using DiscUtils.Registry.RegistryHive BCDHive = new(BCDFileStream);
+                            DiscUtils.BootConfig.Store BCDStore = new(BCDHive.Root);
+                            DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
+                            DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
                             {
-                                using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
-                                {
-                                    DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
-                                    DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
-                                    DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
-                                    if (NoCodeIntegrityElement != null)
-                                        NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                    else
-                                        MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                            }
 
-                                    DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
-                                    NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
-                                    if (NoCodeIntegrityElement != null)
-                                        NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                    else
-                                        WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
-                                }
+                            DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
+                            NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
+                            {
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
                             }
                         }
 
                         if (MainOsImagePath != null)
                         {
-                            using (FileStream FileSystemStream = new FileStream(MainOsImagePath, FileMode.Open, FileAccess.ReadWrite))
-                            {
-                                UnlockedMainOsFileSystem = new DiscUtils.Ntfs.NtfsFileSystem(FileSystemStream);
+                            using FileStream FileSystemStream = new(MainOsImagePath, FileMode.Open, FileAccess.ReadWrite);
+                            UnlockedMainOsFileSystem = new DiscUtils.Ntfs.NtfsFileSystem(FileSystemStream);
 
-                                App.PatchEngine.TargetImage = UnlockedMainOsFileSystem;
-                                PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
-                                if (!PatchResult)
-                                    throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
+                            App.PatchEngine.TargetImage = UnlockedMainOsFileSystem;
+                            PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
+                            if (!PatchResult)
+                            {
+                                throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
                             }
                         }
                         LogFile.Log("Bootloader unlocked on image", LogType.FileAndConsole);
@@ -828,26 +966,30 @@ namespace WPinternals
                     case "enablerootaccessonimage":
                         LogFile.Log("Command: Enable root access on image", LogType.FileAndConsole);
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -EnableRootAccessOnImage <EFIESP image file> <MainOS image file> <Optional: donor-FFU file with supported version of bootfiles>");
+                        }
 
                         FFUFilePath = null;
                         EfiEspImagePath = args[2];
                         MainOsImagePath = args[3];
                         if (args.Length > 4)
+                        {
                             FFUFilePath = args[4];
+                        }
 
-                        using (FileStream FileSystemStream = new FileStream(EfiEspImagePath, FileMode.Open, FileAccess.ReadWrite))
+                        using (FileStream FileSystemStream = new(EfiEspImagePath, FileMode.Open, FileAccess.ReadWrite))
                         {
                             UnlockedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(FileSystemStream);
 
                             if (FFUFilePath != null)
                             {
-                                FFU SupportedFFU = new FFU(FFUFilePath);
+                                FFU SupportedFFU = new(FFUFilePath);
                                 LogFile.Log("Supported FFU: " + SupportedFFU.Path);
                                 byte[] SupportedEFIESP = SupportedFFU.GetPartition("EFIESP");
-                                DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(SupportedEFIESP));
-                                DiscUtils.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
-                                MemoryStream SupportedMobileStartupMemStream = new MemoryStream();
+                                DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new(new MemoryStream(SupportedEFIESP));
+                                DiscUtils.Streams.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
+                                MemoryStream SupportedMobileStartupMemStream = new();
                                 SupportedMobileStartupStream.CopyTo(SupportedMobileStartupMemStream);
                                 byte[] SupportedMobileStartup = SupportedMobileStartupMemStream.ToArray();
                                 SupportedMobileStartupMemStream.Close();
@@ -863,70 +1005,90 @@ namespace WPinternals
                             App.PatchEngine.TargetImage = UnlockedEFIESPFileSystem;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
+                            }
 
                             // Edit BCD
                             LogFile.Log("Edit BCD");
-                            using (Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite))
+                            using Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite);
+                            using DiscUtils.Registry.RegistryHive BCDHive = new(BCDFileStream);
+                            DiscUtils.BootConfig.Store BCDStore = new(BCDHive.Root);
+                            DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
+                            DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
                             {
-                                using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
-                                {
-                                    DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
-                                    DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
-                                    DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
-                                    if (NoCodeIntegrityElement != null)
-                                        NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                    else
-                                        MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                            }
 
-                                    DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
-                                    NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
-                                    if (NoCodeIntegrityElement != null)
-                                        NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                    else
-                                        WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
-                                }
+                            DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
+                            NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
+                            {
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
                             }
                         }
 
-                        using (FileStream FileSystemStream = new FileStream(MainOsImagePath, FileMode.Open, FileAccess.ReadWrite))
+                        using (FileStream FileSystemStream = new(MainOsImagePath, FileMode.Open, FileAccess.ReadWrite))
                         {
                             UnlockedMainOsFileSystem = new DiscUtils.Ntfs.NtfsFileSystem(FileSystemStream);
 
                             App.PatchEngine.TargetImage = UnlockedMainOsFileSystem;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
+                            }
+
                             PatchResult = App.PatchEngine.Patch("RootAccess-MainOS");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Failed to patch MainOS", "An error occured while modifying Operating System files on the MainOS partition you provided for Root Access. Make sure your phone runs a supported Operating System version.");
+                            }
                         }
                         LogFile.Log("Root access enabled on image", LogType.FileAndConsole);
                         break;
                     case "unlockbootloaderonmountedimage":
                         LogFile.Log("Command: Unlock bootloader on mounted image", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -UnlockBootLoaderOnMountedImage <Directory of mounted EFIESP image file> <Optional: Directory of mounted MainOS image file> <Optional: donor-FFU file with supported version of bootfiles>");
+                        }
+
                         FFUFilePath = null;
                         EfiEspImagePath = args[2];
                         if (args.Length > 3)
                         {
                             if (FFU.IsFFU(args[3]))
+                            {
                                 FFUFilePath = args[3];
+                            }
                             else
+                            {
                                 MainOsImagePath = args[3];
+                            }
                         }
                         if (args.Length > 4)
+                        {
                             FFUFilePath = args[4];
+                        }
 
                         if (FFUFilePath != null)
                         {
-                            FFU SupportedFFU = new FFU(FFUFilePath);
+                            FFU SupportedFFU = new(FFUFilePath);
                             LogFile.Log("Donor-FFU: " + SupportedFFU.Path);
                             byte[] SupportedEFIESP = SupportedFFU.GetPartition("EFIESP");
-                            DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(SupportedEFIESP));
-                            DiscUtils.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
-                            MemoryStream SupportedMobileStartupMemStream = new MemoryStream();
+                            DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new(new MemoryStream(SupportedEFIESP));
+                            DiscUtils.Streams.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
+                            MemoryStream SupportedMobileStartupMemStream = new();
                             SupportedMobileStartupStream.CopyTo(SupportedMobileStartupMemStream);
                             byte[] SupportedMobileStartup = SupportedMobileStartupMemStream.ToArray();
                             SupportedMobileStartupMemStream.Close();
@@ -942,28 +1104,36 @@ namespace WPinternals
                         App.PatchEngine.TargetPath = EfiEspImagePath;
                         PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                         if (!PatchResult)
+                        {
                             throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
+                        }
 
                         // Edit BCD
                         LogFile.Log("Edit BCD");
                         using (Stream BCDFileStream = File.Open(Path.Combine(EfiEspImagePath, @"efi\Microsoft\Boot\BCD"), FileMode.Open, FileAccess.ReadWrite))
                         {
-                            using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
+                            using DiscUtils.Registry.RegistryHive BCDHive = new(BCDFileStream);
+                            DiscUtils.BootConfig.Store BCDStore = new(BCDHive.Root);
+                            DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
+                            DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
                             {
-                                DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
-                                DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
-                                DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
-                                if (NoCodeIntegrityElement != null)
-                                    NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                else
-                                    MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                            }
 
-                                DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
-                                NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
-                                if (NoCodeIntegrityElement != null)
-                                    NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                else
-                                    WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                            DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
+                            NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
+                            {
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
                             }
                         }
 
@@ -972,29 +1142,35 @@ namespace WPinternals
                             App.PatchEngine.TargetPath = MainOsImagePath;
                             PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                             if (!PatchResult)
+                            {
                                 throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
+                            }
                         }
                         LogFile.Log("Bootloader unlocked on image", LogType.FileAndConsole);
                         break;
                     case "enablerootaccessonmountedimage":
                         LogFile.Log("Command: Enable root access on mounted image", LogType.FileAndConsole);
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -EnableRootAccessOnMountedImage <Directory of mounted EFIESP image file> <Directory of mounted MainOS image file> <Optional: donor-FFU file with supported version of bootfiles>");
+                        }
 
                         FFUFilePath = null;
                         EfiEspImagePath = args[2];
                         MainOsImagePath = args[3];
                         if (args.Length > 4)
+                        {
                             FFUFilePath = args[4];
+                        }
 
                         if (FFUFilePath != null)
                         {
-                            FFU SupportedFFU = new FFU(FFUFilePath);
+                            FFU SupportedFFU = new(FFUFilePath);
                             LogFile.Log("Supported FFU: " + SupportedFFU.Path);
                             byte[] SupportedEFIESP = SupportedFFU.GetPartition("EFIESP");
-                            DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new DiscUtils.Fat.FatFileSystem(new MemoryStream(SupportedEFIESP));
-                            DiscUtils.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
-                            MemoryStream SupportedMobileStartupMemStream = new MemoryStream();
+                            DiscUtils.Fat.FatFileSystem SupportedEFIESPFileSystem = new(new MemoryStream(SupportedEFIESP));
+                            DiscUtils.Streams.SparseStream SupportedMobileStartupStream = SupportedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open);
+                            MemoryStream SupportedMobileStartupMemStream = new();
                             SupportedMobileStartupStream.CopyTo(SupportedMobileStartupMemStream);
                             byte[] SupportedMobileStartup = SupportedMobileStartupMemStream.ToArray();
                             SupportedMobileStartupMemStream.Close();
@@ -1010,38 +1186,52 @@ namespace WPinternals
                         App.PatchEngine.TargetPath = EfiEspImagePath;
                         PatchResult = App.PatchEngine.Patch("SecureBootHack-V2-EFIESP");
                         if (!PatchResult)
+                        {
                             throw new WPinternalsException("Failed to patch bootloader", "An error occured while patching Operating System files on the EFIESP partition provided. Make sure no boot files have been tampered with and you use the latest version of the tool. This error cannot be caused by an incorrect Operating System version as the tool automatically uses replacement if the version isn't supported, unless the replacement files have been tampered with or are not compatible.");
+                        }
 
                         // Edit BCD
                         LogFile.Log("Edit BCD");
                         using (Stream BCDFileStream = File.Open(Path.Combine(EfiEspImagePath, @"efi\Microsoft\Boot\BCD"), FileMode.Open, FileAccess.ReadWrite))
                         {
-                            using (DiscUtils.Registry.RegistryHive BCDHive = new DiscUtils.Registry.RegistryHive(BCDFileStream))
+                            using DiscUtils.Registry.RegistryHive BCDHive = new(BCDFileStream);
+                            DiscUtils.BootConfig.Store BCDStore = new(BCDHive.Root);
+                            DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
+                            DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
                             {
-                                DiscUtils.BootConfig.Store BCDStore = new DiscUtils.BootConfig.Store(BCDHive.Root);
-                                DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
-                                DiscUtils.BootConfig.Element NoCodeIntegrityElement = MobileStartupObject.GetElement(0x16000048);
-                                if (NoCodeIntegrityElement != null)
-                                    NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                else
-                                    MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                MobileStartupObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                            }
 
-                                DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
-                                NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
-                                if (NoCodeIntegrityElement != null)
-                                    NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
-                                else
-                                    WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
+                            DiscUtils.BootConfig.BcdObject WinLoadObject = BCDStore.GetObject(new Guid("{7619dcc9-fafe-11d9-b411-000476eba25f}"));
+                            NoCodeIntegrityElement = WinLoadObject.GetElement(0x16000048);
+                            if (NoCodeIntegrityElement != null)
+                            {
+                                NoCodeIntegrityElement.Value = DiscUtils.BootConfig.ElementValue.ForBoolean(true);
+                            }
+                            else
+                            {
+                                WinLoadObject.AddElement(0x16000048, DiscUtils.BootConfig.ElementValue.ForBoolean(true));
                             }
                         }
 
                         App.PatchEngine.TargetPath = MainOsImagePath;
                         PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                         if (!PatchResult)
+                        {
                             throw new WPinternalsException("Failed to patch MainOS", "An error occured while patching Operating System files on the MainOS partition you provided. Make sure your phone runs a supported Operating System version.");
+                        }
+
                         PatchResult = App.PatchEngine.Patch("RootAccess-MainOS");
                         if (!PatchResult)
+                        {
                             throw new WPinternalsException("Failed to patch MainOS", "An error occured while modifying Operating System files on the MainOS partition you provided for Root Access. Make sure your phone runs a supported Operating System version.");
+                        }
+
                         LogFile.Log("Root access enabled on image", LogType.FileAndConsole);
                         break;
                     case "downloadffu":
@@ -1065,12 +1255,15 @@ namespace WPinternals
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
                         URL = LumiaDownloadModel.SearchFFU(null, ProductCode, null, out ProductType);
-                        if (args.Length >= 3)
-                            DownloadFolder = args[4];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 3
+                            ? args[4]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                         URI = new Uri(URL);
@@ -1078,7 +1271,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1089,17 +1282,23 @@ namespace WPinternals
                     case "downloadffubyoperatorcode":
                         LogFile.Log("Command: Download FFU by Operator Code", LogType.FileAndConsole);
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DownloadFFUbyOperatorCode <Product type> <Operator code> <Optional: Download folder>");
+                        }
+
                         ProductType = args[2];
                         LogFile.Log("Product type: " + ProductType, LogType.FileAndConsole);
                         OperatorCode = args[3];
                         LogFile.Log("Operator code: " + OperatorCode, LogType.FileAndConsole);
-                        if (args.Length >= 5)
-                            DownloadFolder = args[4];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 5
+                            ? args[4]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         URL = LumiaDownloadModel.SearchFFU(ProductType, null, OperatorCode);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
@@ -1108,7 +1307,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1118,16 +1317,22 @@ namespace WPinternals
                     case "downloadffubyproductcode":
                         LogFile.Log("Command: Download FFU by Product Code", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DownloadFFUbyProductCode <Product code> <Optional: Download folder>");
+                        }
+
                         ProductCode = args[2];
                         LogFile.Log("Product code: " + ProductCode, LogType.FileAndConsole);
                         URL = LumiaDownloadModel.SearchFFU(null, ProductCode, null, out ProductType);
-                        if (args.Length >= 4)
-                            DownloadFolder = args[3];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 4
+                            ? args[3]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                         URI = new Uri(URL);
@@ -1135,7 +1340,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1145,15 +1350,21 @@ namespace WPinternals
                     case "downloadffubyproducttype":
                         LogFile.Log("Command: Download FFU by Product Type", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DownloadFFUbyProductType <Product type> <Optional: Download folder>");
+                        }
+
                         ProductType = args[2];
                         LogFile.Log("Product type: " + ProductType, LogType.FileAndConsole);
-                        if (args.Length >= 4)
-                            DownloadFolder = args[3];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 4
+                            ? args[3]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         URL = LumiaDownloadModel.SearchFFU(ProductType, null, null);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
@@ -1162,7 +1373,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1172,7 +1383,10 @@ namespace WPinternals
                     case "searchffubyproducttype":
                         LogFile.Log("Command: Search FFU by Product Type", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -SearchFFUbyProductType <Lumia model>");
+                        }
+
                         ProductType = args[2];
                         LogFile.Log("Lumia model: " + ProductType, LogType.FileAndConsole);
                         URL = LumiaDownloadModel.SearchFFU(ProductType, null, null);
@@ -1189,7 +1403,10 @@ namespace WPinternals
                         {
                             NormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
                             ProductType = NormalModel.ExecuteJsonMethodAsString("ReadManufacturerModelName", "ManufacturerModelName");
-                            if (ProductType.IndexOf('_') >= 0) ProductType = ProductType.Substring(0, ProductType.IndexOf('_'));
+                            if (ProductType.Contains('_'))
+                            {
+                                ProductType = ProductType.Substring(0, ProductType.IndexOf('_'));
+                            }
                         }
                         else if ((Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) || (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash))
                         {
@@ -1201,17 +1418,23 @@ namespace WPinternals
                         {
                             NormalModel = (NokiaPhoneModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Normal));
                             ProductType = NormalModel.ExecuteJsonMethodAsString("ReadManufacturerModelName", "ManufacturerModelName");
-                            if (ProductType.IndexOf('_') >= 0) ProductType = ProductType.Substring(0, ProductType.IndexOf('_'));
+                            if (ProductType.Contains('_'))
+                            {
+                                ProductType = ProductType.Substring(0, ProductType.IndexOf('_'));
+                            }
                         }
                         URLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
                         if (URLs != null)
                         {
-                            if (args.Length >= 3)
-                                DownloadFolder = args[2];
-                            else
-                                DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                            DownloadFolder = args.Length >= 3
+                                ? args[2]
+                                : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                             if (!Directory.Exists(DownloadFolder))
+                            {
                                 Directory.CreateDirectory(DownloadFolder);
+                            }
+
                             LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                             for (int i = 0; i < URLs.Length; i++)
                             {
@@ -1221,11 +1444,16 @@ namespace WPinternals
                                 LogFile.Log("File: " + EmergencyFileName, LogType.FileAndConsole);
                                 EmergencyFilePath = Path.Combine(DownloadFolder, EmergencyFileName);
                                 if (i == 0)
+                                {
                                     ProgrammerPath = EmergencyFilePath;
+                                }
                                 else
+                                {
                                     PayloadPath = EmergencyFilePath;
+                                }
+
                                 LogFile.Log("Downloading...", LogType.FileAndConsole);
-                                using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                                using (System.Net.WebClient myWebClient = new())
                                 {
                                     await myWebClient.DownloadFileTaskAsync(URLs[i], EmergencyFilePath);
                                 }
@@ -1238,17 +1466,23 @@ namespace WPinternals
                     case "downloademergencybyproducttype":
                         LogFile.Log("Command: Download Emergency files", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new WPinternalsException("Wrong number of arguments. Usage: WPinternals.exe -DownloadEmergencyByProductType <Product type> <Optional: Download folder>");
+                        }
+
                         ProductType = args[2];
                         URLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
                         if (URLs != null)
                         {
-                            if (args.Length >= 4)
-                                DownloadFolder = args[3];
-                            else
-                                DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                            DownloadFolder = args.Length >= 4
+                                ? args[3]
+                                : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                             if (!Directory.Exists(DownloadFolder))
+                            {
                                 Directory.CreateDirectory(DownloadFolder);
+                            }
+
                             LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                             for (int i = 0; i < URLs.Length; i++)
                             {
@@ -1258,11 +1492,16 @@ namespace WPinternals
                                 LogFile.Log("File: " + EmergencyFileName, LogType.FileAndConsole);
                                 EmergencyFilePath = Path.Combine(DownloadFolder, EmergencyFileName);
                                 if (i == 0)
+                                {
                                     ProgrammerPath = EmergencyFilePath;
+                                }
                                 else
+                                {
                                     PayloadPath = EmergencyFilePath;
+                                }
+
                                 LogFile.Log("Downloading...", LogType.FileAndConsole);
-                                using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                                using (System.Net.WebClient myWebClient = new())
                                 {
                                     await myWebClient.DownloadFileTaskAsync(URLs[i], EmergencyFilePath);
                                 }
@@ -1292,12 +1531,15 @@ namespace WPinternals
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
                         URL = LumiaDownloadModel.SearchFFU(null, ProductCode, null, out ProductType);
-                        if (args.Length >= 3)
-                            DownloadFolder = args[2];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 3
+                            ? args[2]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                         URI = new Uri(URL);
@@ -1305,7 +1547,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1323,11 +1565,16 @@ namespace WPinternals
                                 LogFile.Log("File: " + EmergencyFileName, LogType.FileAndConsole);
                                 EmergencyFilePath = Path.Combine(DownloadFolder, EmergencyFileName);
                                 if (i == 0)
+                                {
                                     ProgrammerPath = EmergencyFilePath;
+                                }
                                 else
+                                {
                                     PayloadPath = EmergencyFilePath;
+                                }
+
                                 LogFile.Log("Downloading...", LogType.FileAndConsole);
-                                using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                                using (System.Net.WebClient myWebClient = new())
                                 {
                                     await myWebClient.DownloadFileTaskAsync(URLs[i], EmergencyFilePath);
                                 }
@@ -1336,17 +1583,20 @@ namespace WPinternals
                             App.Config.AddEmergencyToRepository(ProductType, ProgrammerPath, PayloadPath);
                         }
 
-                        if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                        if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
                         {
                             ProductType = "RM-1085";
 
                             URL = LumiaDownloadModel.SearchFFU(ProductType, null, null);
-                            if (args.Length >= 3)
-                                DownloadFolder = args[2];
-                            else
-                                DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                            DownloadFolder = args.Length >= 3
+                                ? args[2]
+                                : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                             if (!Directory.Exists(DownloadFolder))
+                            {
                                 Directory.CreateDirectory(DownloadFolder);
+                            }
+
                             LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                             LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                             URI = new Uri(URL);
@@ -1354,30 +1604,38 @@ namespace WPinternals
                             LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                             FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                             LogFile.Log("Downloading...", LogType.FileAndConsole);
-                            using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                            using (System.Net.WebClient myWebClient = new())
                             {
                                 await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                             }
                             LogFile.Log("Download finished", LogType.FileAndConsole);
                             App.Config.AddFfuToRepository(FFUFilePath);
 
-                            if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                            if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
+                            {
                                 throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
+                            }
                         }
                         Notifier.Stop();
                         break;
                     case "downloadallbyproducttype":
                         LogFile.Log("Command: Download all by Product Type", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DownloadAllByProductType <Product type> <Optional: Download folder>");
+                        }
+
                         ProductType = args[2];
                         LogFile.Log("Product type: " + ProductType, LogType.FileAndConsole);
-                        if (args.Length >= 4)
-                            DownloadFolder = args[3];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 4
+                            ? args[3]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         URL = LumiaDownloadModel.SearchFFU(ProductType, null, null);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
@@ -1386,7 +1644,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1404,11 +1662,16 @@ namespace WPinternals
                                 LogFile.Log("File: " + EmergencyFileName, LogType.FileAndConsole);
                                 EmergencyFilePath = Path.Combine(DownloadFolder, EmergencyFileName);
                                 if (i == 0)
+                                {
                                     ProgrammerPath = EmergencyFilePath;
+                                }
                                 else
+                                {
                                     PayloadPath = EmergencyFilePath;
+                                }
+
                                 LogFile.Log("Downloading...", LogType.FileAndConsole);
-                                using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                                using (System.Net.WebClient myWebClient = new())
                                 {
                                     await myWebClient.DownloadFileTaskAsync(URLs[i], EmergencyFilePath);
                                 }
@@ -1417,17 +1680,20 @@ namespace WPinternals
                             App.Config.AddEmergencyToRepository(ProductType, ProgrammerPath, PayloadPath);
                         }
 
-                        if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                        if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
                         {
                             ProductType = "RM-1085";
 
                             URL = LumiaDownloadModel.SearchFFU(ProductType, null, null);
-                            if (args.Length >= 4)
-                                DownloadFolder = args[3];
-                            else
-                                DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                            DownloadFolder = args.Length >= 4
+                                ? args[3]
+                                : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                             if (!Directory.Exists(DownloadFolder))
+                            {
                                 Directory.CreateDirectory(DownloadFolder);
+                            }
+
                             LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                             LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                             URI = new Uri(URL);
@@ -1435,30 +1701,38 @@ namespace WPinternals
                             LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                             FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                             LogFile.Log("Downloading...", LogType.FileAndConsole);
-                            using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                            using (System.Net.WebClient myWebClient = new())
                             {
                                 await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                             }
                             LogFile.Log("Download finished", LogType.FileAndConsole);
                             App.Config.AddFfuToRepository(FFUFilePath);
 
-                            if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                            if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
+                            {
                                 throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
+                            }
                         }
                         break;
                     case "downloadallbyproductcode":
                         LogFile.Log("Command: Download all by Product Code", LogType.FileAndConsole);
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DownloadAllByProductCode <Product code> <Optional: Download folder>");
+                        }
+
                         ProductCode = args[2];
                         LogFile.Log("Product code: " + ProductCode, LogType.FileAndConsole);
                         URL = LumiaDownloadModel.SearchFFU(null, ProductCode, null, out ProductType);
-                        if (args.Length >= 4)
-                            DownloadFolder = args[3];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 4
+                            ? args[3]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                         URI = new Uri(URL);
@@ -1466,7 +1740,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1484,11 +1758,16 @@ namespace WPinternals
                                 LogFile.Log("File: " + EmergencyFileName, LogType.FileAndConsole);
                                 EmergencyFilePath = Path.Combine(DownloadFolder, EmergencyFileName);
                                 if (i == 0)
+                                {
                                     ProgrammerPath = EmergencyFilePath;
+                                }
                                 else
+                                {
                                     PayloadPath = EmergencyFilePath;
+                                }
+
                                 LogFile.Log("Downloading...", LogType.FileAndConsole);
-                                using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                                using (System.Net.WebClient myWebClient = new())
                                 {
                                     await myWebClient.DownloadFileTaskAsync(URLs[i], EmergencyFilePath);
                                 }
@@ -1497,17 +1776,20 @@ namespace WPinternals
                             App.Config.AddEmergencyToRepository(ProductType, ProgrammerPath, PayloadPath);
                         }
 
-                        if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                        if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
                         {
                             ProductType = "RM-1085";
 
                             URL = LumiaDownloadModel.SearchFFU(ProductType, null, null);
-                            if (args.Length >= 4)
-                                DownloadFolder = args[3];
-                            else
-                                DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                            DownloadFolder = args.Length >= 4
+                                ? args[3]
+                                : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                             if (!Directory.Exists(DownloadFolder))
+                            {
                                 Directory.CreateDirectory(DownloadFolder);
+                            }
+
                             LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                             LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                             URI = new Uri(URL);
@@ -1515,31 +1797,39 @@ namespace WPinternals
                             LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                             FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                             LogFile.Log("Downloading...", LogType.FileAndConsole);
-                            using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                            using (System.Net.WebClient myWebClient = new())
                             {
                                 await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                             }
                             LogFile.Log("Download finished", LogType.FileAndConsole);
                             App.Config.AddFfuToRepository(FFUFilePath);
 
-                            if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                            if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
+                            {
                                 throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
+                            }
                         }
                         break;
                     case "downloadallbyoperatorcode":
                         LogFile.Log("Command: Download FFU by Operator Code", LogType.FileAndConsole);
                         if (args.Length < 4)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -DownloadFFUbyOperatorCode <Product type> <Operator code> <Optional: Download folder>");
+                        }
+
                         ProductType = args[2];
                         LogFile.Log("Product type: " + ProductType, LogType.FileAndConsole);
                         OperatorCode = args[3];
                         LogFile.Log("Operator code: " + OperatorCode, LogType.FileAndConsole);
-                        if (args.Length >= 5)
-                            DownloadFolder = args[4];
-                        else
-                            DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                        DownloadFolder = args.Length >= 5
+                            ? args[4]
+                            : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                         if (!Directory.Exists(DownloadFolder))
+                        {
                             Directory.CreateDirectory(DownloadFolder);
+                        }
+
                         LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                         URL = LumiaDownloadModel.SearchFFU(ProductType, null, OperatorCode);
                         LogFile.Log("URL: " + URL, LogType.FileAndConsole);
@@ -1548,7 +1838,7 @@ namespace WPinternals
                         LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                         FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                         LogFile.Log("Downloading...", LogType.FileAndConsole);
-                        using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                        using (System.Net.WebClient myWebClient = new())
                         {
                             await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                         }
@@ -1566,11 +1856,16 @@ namespace WPinternals
                                 LogFile.Log("File: " + EmergencyFileName, LogType.FileAndConsole);
                                 EmergencyFilePath = Path.Combine(DownloadFolder, EmergencyFileName);
                                 if (i == 0)
+                                {
                                     ProgrammerPath = EmergencyFilePath;
+                                }
                                 else
+                                {
                                     PayloadPath = EmergencyFilePath;
+                                }
+
                                 LogFile.Log("Downloading...", LogType.FileAndConsole);
-                                using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                                using (System.Net.WebClient myWebClient = new())
                                 {
                                     await myWebClient.DownloadFileTaskAsync(URLs[i], EmergencyFilePath);
                                 }
@@ -1579,17 +1874,20 @@ namespace WPinternals
                             App.Config.AddEmergencyToRepository(ProductType, ProgrammerPath, PayloadPath);
                         }
 
-                        if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                        if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
                         {
                             ProductType = "RM-1085";
 
                             URL = LumiaDownloadModel.SearchFFU(ProductType, null, null);
-                            if (args.Length >= 5)
-                                DownloadFolder = args[4];
-                            else
-                                DownloadFolder = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+                            DownloadFolder = args.Length >= 5
+                                ? args[4]
+                                : Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\Repository\\" + ProductType.ToUpper());
+
                             if (!Directory.Exists(DownloadFolder))
+                            {
                                 Directory.CreateDirectory(DownloadFolder);
+                            }
+
                             LogFile.Log("Download folder: " + DownloadFolder, LogType.FileAndConsole);
                             LogFile.Log("URL: " + URL, LogType.FileAndConsole);
                             URI = new Uri(URL);
@@ -1597,32 +1895,40 @@ namespace WPinternals
                             LogFile.Log("File: " + FFUFileName, LogType.FileAndConsole);
                             FFUFilePath = Path.Combine(DownloadFolder, FFUFileName);
                             LogFile.Log("Downloading...", LogType.FileAndConsole);
-                            using (System.Net.WebClient myWebClient = new System.Net.WebClient())
+                            using (System.Net.WebClient myWebClient = new())
                             {
                                 await myWebClient.DownloadFileTaskAsync(URL, FFUFilePath);
                             }
                             LogFile.Log("Download finished", LogType.FileAndConsole);
                             App.Config.AddFfuToRepository(FFUFilePath);
 
-                            if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+                            if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
+                            {
                                 throw new WPinternalsException("Unable to find compatible FFU", "No donor-FFU has been found in the repository with a supported OS version. You can add a donor-FFU within the download section of the tool or by using the command line. A donor-FFU can be for a different device and a different CPU than your device. It is only used to gather Operating System specific binaries to be patched and used as part of the unlock process.");
+                            }
                         }
                         break;
                     case "rewritepartitionsfrommassstorage":
                         if (args.Length < 2)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RewritePartitionsFromMassStorage <Path to folder containing img partitions> \n The name of the imgs must be the partition names. For example, DPP.img will get written to the DPP partition.");
+                        }
 
                         await TestCode.RewriteParts(args[2]);
                         break;
                     case "restoregptusingedl":
                         if (args.Length < 3)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RestoreGPTUsingEDL <Path to GPT.bin to be flashed at sector 1 (minus the MBR at sector 0)> <Loaders path>");
+                        }
 
                         await TestCode.RecoverBadGPT(args[2], args[3]);
                         break;
                     case "restoregptusingmassstorage":
                         if (args.Length < 2)
+                        {
                             throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -RestoreGPTUsingMassStorage <Path to GPT.bin to be flashed at sector 1 (minus the MBR at sector 0)>");
+                        }
 
                         await TestCode.RewriteGPT(args[2]);
                         break;
@@ -1700,8 +2006,10 @@ namespace WPinternals
                 LogFile.LogException(Ex);
             }
 
-            if (Environment.GetCommandLineArgs().Count() > 1)
+            if (Environment.GetCommandLineArgs().Length > 1)
+            {
                 CloseConsole();
+            }
         }
 
         // http://stackoverflow.com/questions/472282/show-console-in-windows-application
@@ -1711,7 +2019,9 @@ namespace WPinternals
         internal static void OpenConsole()
         {
             if (IsConsoleVisible)
+            {
                 return;
+            }
 
             if (AttachConsole(-1))
             {
@@ -1742,10 +2052,10 @@ namespace WPinternals
                     // "The standard handles of a process may be redirected by a call to  SetStdHandle, in which case  GetStdHandle returns the redirected handle. If the standard handles have been redirected, you can specify the CONIN$ value in a call to the CreateFile function to get a handle to a console's input buffer. Similarly, you can specify the CONOUT$ value to get a handle to a console's active screen buffer."
                     // Get the handle to CONOUT$.    
                     IntPtr stdHandle = CreateFile("CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
-                    Microsoft.Win32.SafeHandles.SafeFileHandle safeFileHandle = new Microsoft.Win32.SafeHandles.SafeFileHandle(stdHandle, true);
-                    FileStream fileStream = new FileStream(safeFileHandle, FileAccess.Write);
+                    Microsoft.Win32.SafeHandles.SafeFileHandle safeFileHandle = new(stdHandle, true);
+                    FileStream fileStream = new(safeFileHandle, FileAccess.Write);
                     Encoding encoding = System.Text.Encoding.GetEncoding(MY_CODE_PAGE);
-                    StreamWriter standardOutput = new StreamWriter(fileStream, encoding);
+                    StreamWriter standardOutput = new(fileStream, encoding);
                     standardOutput.AutoFlush = true;
                     Console.SetOut(standardOutput);
                 }

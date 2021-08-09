@@ -73,5 +73,4 @@ namespace MadWizard.WinUSBNet
         /// <summary>Vendor specific base class (0xFF)</summary>
         VendorSpecific = 0xFF,
     };
-
 }

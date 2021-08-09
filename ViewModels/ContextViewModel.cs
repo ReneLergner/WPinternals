@@ -30,19 +30,22 @@ namespace WPinternals
 
         public bool IsSwitchingInterface = false;
         public bool IsFlashModeOperation = false;
-        private bool _IsActive = false;
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
         protected void OnPropertyChanged(string propertyName)
         {
             if ((UIContext == null) && (SynchronizationContext.Current != null))
+            {
                 UIContext = SynchronizationContext.Current;
+            }
 
             if (this.PropertyChanged != null)
             {
                 if (SynchronizationContext.Current == UIContext)
+                {
                     PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                }
                 else
                 {
                     UIContext.Post((s) => PropertyChanged(this, new PropertyChangedEventArgs(propertyName)), null);
@@ -60,11 +63,17 @@ namespace WPinternals
             private set
             {
                 if (_SubContextViewModel != null)
+                {
                     _SubContextViewModel.IsActive = false;
+                }
+
                 _SubContextViewModel = value;
                 if (_SubContextViewModel != null)
+                {
                     _SubContextViewModel.IsActive = IsActive;
-                OnPropertyChanged("SubContextViewModel");
+                }
+
+                OnPropertyChanged(nameof(SubContextViewModel));
             }
         }
 
@@ -82,41 +91,36 @@ namespace WPinternals
             SubContextViewModel = SubContext;
         }
 
-        internal bool IsActive
-        {
-            get
-            {
-                return _IsActive;
-            }
-            set
-            {
-                _IsActive = value;
-            }
-        }
+        internal bool IsActive { get; set; } = false;
 
         internal virtual void EvaluateViewState()
         {
-
         }
 
         internal void Activate()
         {
             IsActive = true;
             EvaluateViewState();
-            if (SubContextViewModel != null)
-                SubContextViewModel.Activate();
+            SubContextViewModel?.Activate();
         }
 
         internal void ActivateSubContext(ContextViewModel NewSubContext)
         {
             if (_SubContextViewModel != null)
+            {
                 _SubContextViewModel.IsActive = false;
+            }
+
             if (NewSubContext != null)
             {
                 if (IsActive)
+                {
                     NewSubContext.Activate();
+                }
                 else
+                {
                     NewSubContext.IsActive = false;
+                }
             }
             SubContextViewModel = NewSubContext;
         }
@@ -128,9 +132,8 @@ namespace WPinternals
 
         internal void UpdateWorkingStatus(string Message, string SubMessage, ulong? CurrentProgressValue, WPinternalsStatus Status = WPinternalsStatus.Undefined)
         {
-            if (SubContextViewModel is BusyViewModel)
+            if (SubContextViewModel is BusyViewModel Busy)
             {
-                BusyViewModel Busy = (BusyViewModel)SubContextViewModel;
                 if (Message != null)
                 {
                     Busy.Message = Message;

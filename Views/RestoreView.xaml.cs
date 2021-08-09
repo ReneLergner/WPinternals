@@ -36,19 +36,22 @@ namespace WPinternals
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
-            Hyperlink link = args.Source as Hyperlink;
-            if (link != null)
+            if (args.Source is Hyperlink link)
             {
                 if (link.NavigateUri.ToString() == "UnlockBoot")
-                    (this.DataContext as RestoreSourceSelectionViewModel).SwitchToUnlockBoot();
+                {
+                    (this.DataContext as RestoreSourceSelectionViewModel)?.SwitchToUnlockBoot();
+                }
                 else if (link.NavigateUri.ToString() == "Flash")
-                    (this.DataContext as RestoreSourceSelectionViewModel).SwitchToFlashRom();
+                {
+                    (this.DataContext as RestoreSourceSelectionViewModel)?.SwitchToFlashRom();
+                }
             }
         }
 
         private void Document_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as FlowDocument).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
 
         private void FilePicker_PathChanged(object sender, PathChangedEventArgs e)

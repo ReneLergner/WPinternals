@@ -9,7 +9,6 @@ using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-
 namespace MadWizard.WinUSBNet.API
 {
     /// <summary>
@@ -21,7 +20,6 @@ namespace MadWizard.WinUSBNet.API
         public APIException(string message) :
             base(message)
         {
-
         }
         public APIException(string message, Exception innerException) : base(message, innerException)
         {
@@ -41,8 +39,6 @@ namespace MadWizard.WinUSBNet.API
         public static APIException Win32(string message, int errorCode)
         {
             return new APIException(message, new Win32Exception(errorCode));
-
         }
-
     }
 }

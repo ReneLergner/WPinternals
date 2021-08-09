@@ -28,7 +28,7 @@ namespace WPinternals
 
     internal class DisclaimerViewModel : ContextViewModel
     {
-        Action Accepted;
+        private readonly Action Accepted;
 
         internal DisclaimerViewModel(Action Accepted)
             : base()
@@ -41,14 +41,7 @@ namespace WPinternals
         {
             get
             {
-                if (_ExitCommand == null)
-                {
-                    _ExitCommand = new DelegateCommand(() =>
-                    {
-                        Application.Current.Shutdown();
-                    });
-                }
-                return _ExitCommand;
+                return _ExitCommand ??= new DelegateCommand(() => Application.Current.Shutdown());
             }
         }
 
@@ -57,15 +50,11 @@ namespace WPinternals
         {
             get
             {
-                if (_ContinueCommand == null)
-                {
-                    _ContinueCommand = new DelegateCommand(() =>
+                return _ContinueCommand ??= new DelegateCommand(() =>
                     {
                         Registry.CurrentUser.OpenSubKey("Software\\WPInternals", true).SetValue("DisclaimerAccepted", 1, RegistryValueKind.DWord);
                         Accepted();
                     });
-                }
-                return _ContinueCommand;
             }
         }
     }

@@ -22,22 +22,14 @@ namespace WPinternals
 {
     internal class NokiaMassStorageViewModel : ContextViewModel
     {
-        private MassStorage CurrentModel;
+        private readonly MassStorage CurrentModel;
 
         internal NokiaMassStorageViewModel(MassStorage CurrentModel)
             : base()
         {
             this.CurrentModel = CurrentModel;
-            _Drive = CurrentModel.Drive;
+            Drive = CurrentModel.Drive;
         }
-
-        private string _Drive = null;
-        public string Drive
-        {
-            get
-            {
-                return _Drive;
-            }
-        }
+        public string Drive { get; } = null;
     }
 }

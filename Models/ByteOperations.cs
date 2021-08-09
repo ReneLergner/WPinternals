@@ -44,12 +44,16 @@ namespace WPinternals
         internal static void WriteAsciiString(byte[] ByteArray, UInt32 Offset, string Text, UInt32? MaxBufferLength = null)
         {
             if (MaxBufferLength != null)
+            {
                 Array.Clear(ByteArray, (int)Offset, (int)MaxBufferLength);
+            }
 
             byte[] TextBytes = System.Text.ASCIIEncoding.ASCII.GetBytes(Text);
             int WriteLength = TextBytes.Length;
             if (WriteLength > MaxBufferLength)
+            {
                 WriteLength = (int)MaxBufferLength;
+            }
 
             Buffer.BlockCopy(TextBytes, 0, ByteArray, (int)Offset, WriteLength);
         }
@@ -57,12 +61,16 @@ namespace WPinternals
         internal static void WriteUnicodeString(byte[] ByteArray, UInt32 Offset, string Text, UInt32? MaxBufferLength = null)
         {
             if (MaxBufferLength != null)
+            {
                 Array.Clear(ByteArray, (int)Offset, (int)MaxBufferLength);
+            }
 
             byte[] TextBytes = System.Text.UnicodeEncoding.Unicode.GetBytes(Text);
             int WriteLength = TextBytes.Length;
             if (WriteLength > MaxBufferLength)
+            {
                 WriteLength = (int)MaxBufferLength;
+            }
 
             Buffer.BlockCopy(TextBytes, 0, ByteArray, (int)Offset, WriteLength);
         }
@@ -152,9 +160,13 @@ namespace WPinternals
         internal static UInt32 Align(UInt32 Base, UInt32 Offset, UInt32 Alignment)
         {
             if (((Offset - Base) % Alignment) == 0)
+            {
                 return Offset;
+            }
             else
+            {
                 return ((((Offset - Base) / Alignment) + 1) * Alignment) + Base;
+            }
         }
 
         internal static UInt32? FindPatternInFile(string FileName, byte[] Pattern, byte[] Mask, out byte[] OutPattern)
@@ -164,7 +176,7 @@ namespace WPinternals
 
             UInt32? Result = null;
 
-            FileStream Stream = new FileStream(FileName, FileMode.Open, FileAccess.Read);
+            FileStream Stream = new(FileName, FileMode.Open, FileAccess.Read);
 
             byte[] Buffer = new byte[0x10000 + Pattern.Length - 1];
             UInt32 BufferReadPosition = 0; // Position in buffer where file-chunk is being read.
@@ -200,11 +212,13 @@ namespace WPinternals
                 for (i = 0; i < Pattern.Length; i++)
                 {
                     if (Buffer[SearchPositionBuffer + i] != Pattern[i])
+                    {
                         if ((Mask == null) || (Mask[i] == 0))
                         {
                             Match = false;
                             break;
                         }
+                    }
                 }
 
                 if (Match)
@@ -227,17 +241,17 @@ namespace WPinternals
 
         internal static UInt32? FindAscii(byte[] SourceBuffer, string Pattern)
         {
-            return FindPattern(SourceBuffer, System.Text.ASCIIEncoding.ASCII.GetBytes((string)Pattern), null, null);
+            return FindPattern(SourceBuffer, System.Text.ASCIIEncoding.ASCII.GetBytes(Pattern), null, null);
         }
 
         internal static UInt32? FindUnicode(byte[] SourceBuffer, string Pattern)
         {
-            return FindPattern(SourceBuffer, System.Text.UnicodeEncoding.Unicode.GetBytes((string)Pattern), null, null);
+            return FindPattern(SourceBuffer, System.Text.UnicodeEncoding.Unicode.GetBytes(Pattern), null, null);
         }
 
         internal static UInt32? FindUint(byte[] SourceBuffer, UInt32 Pattern)
         {
-            return FindPattern(SourceBuffer, BitConverter.GetBytes((UInt32)Pattern), null, null);
+            return FindPattern(SourceBuffer, BitConverter.GetBytes(Pattern), null, null);
         }
 
         internal static UInt32? FindPattern(byte[] SourceBuffer, byte[] Pattern, byte[] Mask, byte[] OutPattern)
@@ -267,11 +281,13 @@ namespace WPinternals
                 for (i = 0; i < Pattern.Length; i++)
                 {
                     if (SourceBuffer[SearchPosition + i] != Pattern[i])
+                    {
                         if ((Mask == null) || (Mask[i] == 0))
                         {
                             Match = false;
                             break;
                         }
+                    }
                 }
 
                 if (Match)
@@ -279,7 +295,10 @@ namespace WPinternals
                     Result = SearchPosition;
 
                     if (OutPattern != null)
+                    {
                         System.Buffer.BlockCopy(SourceBuffer, (int)SearchPosition, OutPattern, 0, Pattern.Length);
+                    }
+
                     break;
                 }
 
@@ -294,7 +313,9 @@ namespace WPinternals
             byte Checksum = 0;
 
             for (UInt32 i = Offset; i < (Offset + Size); i++)
+            {
                 Checksum += Buffer[i];
+            }
 
             return (byte)(0x100 - Checksum);
         }
@@ -304,12 +325,14 @@ namespace WPinternals
             UInt16 Checksum = 0;
 
             for (UInt32 i = Offset; i < (Offset + Size - 1); i += 2)
+            {
                 Checksum += BitConverter.ToUInt16(Buffer, (int)i);
+            }
 
             return (UInt16)(0x10000 - Checksum);
         }
 
-        private static UInt32[] CRC32Table = new UInt32[] {
+        private static readonly UInt32[] CRC32Table = new UInt32[] {
             0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F,
             0xE963A535, 0x9E6495A3, 0x0EDB8832, 0x79DCB8A4, 0xE0D5E91E, 0x97D2D988,
             0x09B64C2B, 0x7EB17CBD, 0xE7B82D07, 0x90BF1D91, 0x1DB71064, 0x6AB020F2,
@@ -358,7 +381,9 @@ namespace WPinternals
         internal static UInt32 CRC32(byte[] Input, UInt32 Offset, UInt32 Length)
         {
             if ((Input == null) || ((Offset + Length) > Input.Length))
+            {
                 throw new ArgumentException();
+            }
 
             unchecked
             {

@@ -38,18 +38,25 @@ namespace WPinternals
     {
         internal static string SearchFFU(string ProductType, string ProductCode, string OperatorCode)
         {
-            string FoundProductType;
-            return SearchFFU(ProductType, ProductCode, OperatorCode, out FoundProductType);
+            return SearchFFU(ProductType, ProductCode, OperatorCode, out string FoundProductType);
         }
 
         internal static string SearchFFU(string ProductType, string ProductCode, string OperatorCode, out string FoundProductType)
         {
-            if (ProductType == "")
+            if (ProductType?.Length == 0)
+            {
                 ProductType = null;
-            if (ProductCode == "")
+            }
+
+            if (ProductCode?.Length == 0)
+            {
                 ProductCode = null;
-            if (OperatorCode == "")
+            }
+
+            if (OperatorCode?.Length == 0)
+            {
                 OperatorCode = null;
+            }
 
             if (ProductCode != null)
             {
@@ -61,12 +68,16 @@ namespace WPinternals
             {
                 ProductType = ProductType.ToUpper();
                 if (ProductType.StartsWith("RM") && !ProductType.StartsWith("RM-"))
-                    ProductType = "RM-" + ProductType.Substring(2);
+                {
+                    ProductType = "RM-" + ProductType[2..];
+                }
             }
             if (OperatorCode != null)
+            {
                 OperatorCode = OperatorCode.ToUpper();
+            }
 
-            DiscoveryQueryParameters DiscoveryQueryParams = new DiscoveryQueryParameters
+            DiscoveryQueryParameters DiscoveryQueryParams = new()
             {
                 manufacturerName = "Microsoft",
                 manufacturerProductLine = "Lumia",
@@ -76,20 +87,20 @@ namespace WPinternals
                 manufacturerHardwareVariant = ProductCode,
                 operatorName = OperatorCode
             };
-            DiscoveryParameters DiscoveryParams = new DiscoveryParameters
+            DiscoveryParameters DiscoveryParams = new()
             {
                 query = DiscoveryQueryParams
             };
 
-            DataContractJsonSerializer Serializer1 = new DataContractJsonSerializer(typeof(DiscoveryParameters));
-            MemoryStream JsonStream1 = new MemoryStream();
+            DataContractJsonSerializer Serializer1 = new(typeof(DiscoveryParameters));
+            MemoryStream JsonStream1 = new();
             Serializer1.WriteObject(JsonStream1, DiscoveryParams);
             JsonStream1.Seek(0L, SeekOrigin.Begin);
             string JsonContent = new StreamReader(JsonStream1).ReadToEnd();
 
-            Uri RequestUri = new Uri("https://api.swrepository.com/rest-api/discovery/1/package");
+            Uri RequestUri = new("https://api.swrepository.com/rest-api/discovery/1/package");
 
-            HttpClient HttpClient = new HttpClient();
+            HttpClient HttpClient = new();
             HttpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("SoftwareRepository");
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -106,33 +117,35 @@ namespace WPinternals
             }
 
             SoftwarePackage Package = null;
-            using (MemoryStream JsonStream2 = new MemoryStream(Encoding.UTF8.GetBytes(JsonResultString)))
+            using (MemoryStream JsonStream2 = new(Encoding.UTF8.GetBytes(JsonResultString)))
             {
-                DataContractJsonSerializer Serializer2 = new DataContractJsonSerializer(typeof(SoftwarePackages));
+                DataContractJsonSerializer Serializer2 = new(typeof(SoftwarePackages));
                 SoftwarePackages SoftwarePackages = (SoftwarePackages)Serializer2.ReadObject(JsonStream2);
                 if (SoftwarePackages != null)
                 {
-                    Package = SoftwarePackages.softwarePackages.FirstOrDefault<SoftwarePackage>();
+                    Package = SoftwarePackages.softwarePackages.FirstOrDefault();
                 }
             }
 
             if (Package == null)
+            {
                 throw new WPinternalsException("FFU not found", "No FFU has been found in the remote software repository for the requested model.");
+            }
 
             FoundProductType = Package.manufacturerHardwareModel[0];
 
-            SoftwareFile FileInfo = Package.files.Where(f => f.fileName.EndsWith(".ffu", StringComparison.OrdinalIgnoreCase)).First();
+            SoftwareFile FileInfo = Package.files.First(f => f.fileName.EndsWith(".ffu", StringComparison.OrdinalIgnoreCase));
 
-            Uri FileInfoUri = new Uri("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + FileInfo.fileName);
+            Uri FileInfoUri = new("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + FileInfo.fileName);
             Task<string> GetFileInfoTask = HttpClient.GetStringAsync(FileInfoUri);
             GetFileInfoTask.Wait();
             string FileInfoString = GetFileInfoTask.Result;
 
             string FfuUrl = "";
             FileUrlResult FileUrl = null;
-            using (MemoryStream JsonStream3 = new MemoryStream(Encoding.UTF8.GetBytes(FileInfoString)))
+            using (MemoryStream JsonStream3 = new(Encoding.UTF8.GetBytes(FileInfoString)))
             {
-                DataContractJsonSerializer Serializer3 = new DataContractJsonSerializer(typeof(FileUrlResult));
+                DataContractJsonSerializer Serializer3 = new(typeof(FileUrlResult));
                 FileUrl = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
                 if (FileUrl != null)
                 {
@@ -147,17 +160,21 @@ namespace WPinternals
 
         internal static string SearchENOSW(string ProductType, string PhoneFirmwareRevision)
         {
-            if (ProductType == "")
+            if (ProductType?.Length == 0)
+            {
                 ProductType = null;
+            }
 
             if (ProductType != null)
             {
                 ProductType = ProductType.ToUpper();
                 if (ProductType.StartsWith("RM") && !ProductType.StartsWith("RM-"))
-                    ProductType = "RM-" + ProductType.Substring(2);
+                {
+                    ProductType = "RM-" + ProductType[2..];
+                }
             }
 
-            DiscoveryQueryParameters DiscoveryQueryParams = new DiscoveryQueryParameters
+            DiscoveryQueryParameters DiscoveryQueryParams = new()
             {
                 manufacturerName = "Microsoft",
                 manufacturerProductLine = "Lumia",
@@ -165,20 +182,20 @@ namespace WPinternals
                 packageClass = "Public",
                 manufacturerHardwareModel = ProductType
             };
-            DiscoveryParameters DiscoveryParams = new DiscoveryParameters
+            DiscoveryParameters DiscoveryParams = new()
             {
                 query = DiscoveryQueryParams
             };
 
-            DataContractJsonSerializer Serializer1 = new DataContractJsonSerializer(typeof(DiscoveryParameters));
-            MemoryStream JsonStream1 = new MemoryStream();
+            DataContractJsonSerializer Serializer1 = new(typeof(DiscoveryParameters));
+            MemoryStream JsonStream1 = new();
             Serializer1.WriteObject(JsonStream1, DiscoveryParams);
             JsonStream1.Seek(0L, SeekOrigin.Begin);
             string JsonContent = new StreamReader(JsonStream1).ReadToEnd();
 
-            Uri RequestUri = new Uri("https://api.swrepository.com/rest-api/discovery/1/package");
+            Uri RequestUri = new("https://api.swrepository.com/rest-api/discovery/1/package");
 
-            HttpClient HttpClient = new HttpClient();
+            HttpClient HttpClient = new();
             HttpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("SoftwareRepository");
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -195,33 +212,37 @@ namespace WPinternals
             }
 
             SoftwarePackage Package = null;
-            using (MemoryStream JsonStream2 = new MemoryStream(Encoding.UTF8.GetBytes(JsonResultString)))
+            using (MemoryStream JsonStream2 = new(Encoding.UTF8.GetBytes(JsonResultString)))
             {
-                DataContractJsonSerializer Serializer2 = new DataContractJsonSerializer(typeof(SoftwarePackages));
+                DataContractJsonSerializer Serializer2 = new(typeof(SoftwarePackages));
                 SoftwarePackages SoftwarePackages = (SoftwarePackages)Serializer2.ReadObject(JsonStream2);
                 if (SoftwarePackages != null)
                 {
                     foreach (SoftwarePackage pkg in SoftwarePackages.softwarePackages)
-                        Package = SoftwarePackages.softwarePackages.FirstOrDefault<SoftwarePackage>();
+                    {
+                        Package = SoftwarePackages.softwarePackages.FirstOrDefault();
+                    }
                 }
             }
 
             if (Package == null)
+            {
                 throw new WPinternalsException("ENOSW package not found", "No ENOSW package has been found in the remote software repository for the requested model.");
+            }
 
-            SoftwareFile FileInfo = Package.files.Where(f => f.fileName.EndsWith(".secwim", StringComparison.OrdinalIgnoreCase)).First();
+            SoftwareFile FileInfo = Package.files.First(f => f.fileName.EndsWith(".secwim", StringComparison.OrdinalIgnoreCase));
 
-            SoftwareFile DPLF = Package.files.Where(f => f.fileName.EndsWith(".dpl", StringComparison.OrdinalIgnoreCase)).First();
-            Uri DPLUri = new Uri("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + DPLF.fileName);
+            SoftwareFile DPLF = Package.files.First(f => f.fileName.EndsWith(".dpl", StringComparison.OrdinalIgnoreCase));
+            Uri DPLUri = new("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + DPLF.fileName);
             Task<string> GetDPLTask = HttpClient.GetStringAsync(DPLUri);
             GetDPLTask.Wait();
             string DPLString = GetDPLTask.Result;
 
             string DPLUrl = "";
             FileUrlResult FileUrlDPL = null;
-            using (MemoryStream JsonStream3 = new MemoryStream(Encoding.UTF8.GetBytes(DPLString)))
+            using (MemoryStream JsonStream3 = new(Encoding.UTF8.GetBytes(DPLString)))
             {
-                DataContractJsonSerializer Serializer3 = new DataContractJsonSerializer(typeof(FileUrlResult));
+                DataContractJsonSerializer Serializer3 = new(typeof(FileUrlResult));
                 FileUrlDPL = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
                 if (FileUrlDPL != null)
                 {
@@ -229,16 +250,18 @@ namespace WPinternals
                 }
             }
 
-            if (DPLUrl == "")
+            if (DPLUrl?.Length == 0)
+            {
                 throw new WPinternalsException("DPL not found", "No DPL has been found in the remote software repository for the requested model.");
+            }
 
             Task<string> GetDPLStrTask = HttpClient.GetStringAsync(DPLUrl);
             GetDPLStrTask.Wait();
             string DPLStrString = GetDPLStrTask.Result;
 
             DPL.Package dpl;
-            XmlSerializer serializer = new XmlSerializer(typeof(DPL.Package));
-            using (StringReader reader = new StringReader(DPLStrString.Replace("ft:", "").Replace("dpl:", "").Replace("typedes:", "")))
+            XmlSerializer serializer = new(typeof(DPL.Package));
+            using (StringReader reader = new(DPLStrString.Replace("ft:", "").Replace("dpl:", "").Replace("typedes:", "")))
             {
                 dpl = (DPL.Package)serializer.Deserialize(reader);
             }
@@ -250,19 +273,21 @@ namespace WPinternals
                 DPL.Range range = file.Extensions.MmosWimFile.UseCaseCompatibilities.Compatibility.FirstOrDefault().Range;
 
                 if (IsFirmwareBetween(PhoneFirmwareRevision, range.From, range.To))
-                    FileInfo = Package.files.Where(f => f.fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase)).First();
+                {
+                    FileInfo = Package.files.First(f => f.fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase));
+                }
             }
 
-            Uri FileInfoUri = new Uri("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + FileInfo.fileName);
+            Uri FileInfoUri = new("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + FileInfo.fileName);
             Task<string> GetFileInfoTask = HttpClient.GetStringAsync(FileInfoUri);
             GetFileInfoTask.Wait();
             string FileInfoString = GetFileInfoTask.Result;
 
             string ENOSWUrl = "";
             FileUrlResult FileUrl = null;
-            using (MemoryStream JsonStream3 = new MemoryStream(Encoding.UTF8.GetBytes(FileInfoString)))
+            using (MemoryStream JsonStream3 = new(Encoding.UTF8.GetBytes(FileInfoString)))
             {
-                DataContractJsonSerializer Serializer3 = new DataContractJsonSerializer(typeof(FileUrlResult));
+                DataContractJsonSerializer Serializer3 = new(typeof(FileUrlResult));
                 FileUrl = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
                 if (FileUrl != null)
                 {
@@ -291,7 +316,9 @@ namespace WPinternals
         {
             ProductType = ProductType.ToUpper();
             if (ProductType.StartsWith("RM") && !ProductType.StartsWith("RM-"))
-                ProductType = "RM-" + ProductType.Substring(2);
+            {
+                ProductType = "RM-" + ProductType[2..];
+            }
 
             LogFile.Log("Getting Emergency files for: " + ProductType, LogType.FileAndConsole);
 
@@ -301,15 +328,15 @@ namespace WPinternals
                 ProductType = "RM-1113";
             }
 
-            List<string> Result = new List<string>();
+            List<string> Result = new();
 
-            WebClient Client = new WebClient();
+            WebClient Client = new();
             string Src;
             string FileName;
             string Config = null;
             try
             {
-                Config = Client.DownloadString(@"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/emergency_flash_config.xml");
+                Config = Client.DownloadString("https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/emergency_flash_config.xml");
             }
             catch
             {
@@ -318,7 +345,7 @@ namespace WPinternals
             }
             Client.Dispose();
 
-            XmlDocument Doc = new XmlDocument();
+            XmlDocument Doc = new();
             Doc.LoadXml(Config);
 
             // Hex
@@ -326,7 +353,7 @@ namespace WPinternals
             if (Node != null)
             {
                 FileName = Node.Attributes["image_path"].InnerText;
-                Src = @"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
                 LogFile.Log("Hex-file: " + Src);
                 Result.Add(Src);
             }
@@ -336,7 +363,7 @@ namespace WPinternals
             if (Node != null)
             {
                 FileName = Node.Attributes["image_path"].InnerText;
-                Src = @"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
                 LogFile.Log("Mbn-file: " + Src);
                 Result.Add(Src);
             }
@@ -345,7 +372,7 @@ namespace WPinternals
             foreach (XmlNode SubNode in Doc.SelectNodes("//emergency_flash_config/first_boot_images/first_boot_image"))
             {
                 FileName = SubNode.Attributes["image_path"].InnerText;
-                Src = @"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
                 LogFile.Log("Firehose-programmer-file: " + Src);
                 Result.Add(Src);
             }
@@ -354,7 +381,7 @@ namespace WPinternals
             foreach (XmlNode SubNode in Doc.SelectNodes("//emergency_flash_config/second_boot_firehose_single_image/firehose_image"))
             {
                 FileName = SubNode.Attributes["image_path"].InnerText;
-                Src = @"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
                 LogFile.Log("Firehose-payload-file: " + Src);
                 Result.Add(Src);
             }

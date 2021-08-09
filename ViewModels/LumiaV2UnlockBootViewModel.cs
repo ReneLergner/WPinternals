@@ -32,10 +32,25 @@ namespace WPinternals
     {
         internal static async Task LumiaV2FindFlashingProfile(PhoneNotifierViewModel Notifier, string FFUPath, bool DoResetFirst = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null)
         {
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitFailure == null) ExitFailure = (m, s) => { };
+            if (SetWorkingStatus == null)
+            {
+                SetWorkingStatus = (m, s, v, a, st) => { };
+            }
+
+            if (UpdateWorkingStatus == null)
+            {
+                UpdateWorkingStatus = (m, s, v, st) => { };
+            }
+
+            if (ExitSuccess == null)
+            {
+                ExitSuccess = (m, s) => { };
+            }
+
+            if (ExitFailure == null)
+            {
+                ExitFailure = (m, s) => { };
+            }
 
             LogFile.BeginAction("FindFlashingProfile");
             try
@@ -54,7 +69,7 @@ namespace WPinternals
                     string FfuFirmware = null;
                     if (FFUPath != null)
                     {
-                        FFU FFU = new FFU(FFUPath);
+                        FFU FFU = new(FFUPath);
                         FfuFirmware = FFU.GetFirmwareVersion();
                     }
                     FlashProfile Profile = App.Config.GetProfile(Info.PlatformID, Info.Firmware, FfuFirmware);
@@ -76,13 +91,17 @@ namespace WPinternals
                     (m, s, v, a, st) =>
                     {
                         if (st == WPinternalsStatus.SwitchingMode)
+                        {
                             SetWorkingStatus(m, s, v, a, st);
+                        }
                     },
                     UpdateWorkingStatus:
                     (m, s, v, st) =>
                     {
                         if (st == WPinternalsStatus.SwitchingMode)
+                        {
                             UpdateWorkingStatus(m, s, v, st);
+                        }
                     },
                     ExitSuccess: ExitSuccess, ExitFailure: ExitFailure);
 
@@ -104,17 +123,17 @@ namespace WPinternals
             try
             {
                 LogFile.Log("Command: Enable testsigning", LogType.FileAndConsole);
-                PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+                PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
                 NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
 
-                List<FlashPart> Parts = new List<FlashPart>();
+                List<FlashPart> Parts = new();
                 FlashPart Part;
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
                 byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
-                GPT GPT = new GPT(GPTChunk);
+                GPT GPT = new(GPTChunk);
                 bool GPTChanged = false;
 
                 Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
@@ -127,12 +146,14 @@ namespace WPinternals
                     BACKUP_BS_NV.Name = "BACKUP_BS_NV";
                     BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
                     BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                    UEFI_BS_NV = new Partition();
-                    UEFI_BS_NV.Name = "UEFI_BS_NV";
-                    UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                    UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                    UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                    UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
+                    UEFI_BS_NV = new Partition
+                    {
+                        Name = "UEFI_BS_NV",
+                        Attributes = BACKUP_BS_NV.Attributes,
+                        PartitionGuid = OriginalPartitionGuid,
+                        PartitionTypeGuid = OriginalPartitionTypeGuid,
+                        FirstSector = BACKUP_BS_NV.LastSector + 1
+                    };
                     UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
                     GPT.Partitions.Add(UEFI_BS_NV);
                     GPTChanged = true;
@@ -140,9 +161,11 @@ namespace WPinternals
                 if (GPTChanged)
                 {
                     GPT.Rebuild();
-                    Part = new FlashPart();
-                    Part.StartSector = 0;
-                    Part.Stream = new MemoryStream(GPTChunk);
+                    Part = new FlashPart
+                    {
+                        StartSector = 0,
+                        Stream = new MemoryStream(GPTChunk)
+                    };
                     Parts.Add(Part);
                 }
 
@@ -217,10 +240,15 @@ namespace WPinternals
 
             MassStorage Storage = null;
             if (Notifier.CurrentModel is MassStorage)
+            {
                 Storage = (MassStorage)Notifier.CurrentModel;
+            }
 
             if (Storage == null)
+            {
                 throw new WPinternalsException("Failed to switch to Mass Storage Mode");
+            }
+
             string Drive = Storage.Drive;
 
             return Drive;
@@ -232,15 +260,15 @@ namespace WPinternals
             try
             {
                 LogFile.Log("Command: Clear NV", LogType.FileAndConsole);
-                PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+                PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
                 NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
-                List<FlashPart> Parts = new List<FlashPart>();
+                List<FlashPart> Parts = new();
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
                 byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
-                GPT GPT = new GPT(GPTChunk);
+                GPT GPT = new(GPTChunk);
                 bool GPTChanged = false;
                 Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
                 Partition UEFI_BS_NV;
@@ -252,12 +280,14 @@ namespace WPinternals
                     BACKUP_BS_NV.Name = "BACKUP_BS_NV";
                     BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
                     BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                    UEFI_BS_NV = new Partition();
-                    UEFI_BS_NV.Name = "UEFI_BS_NV";
-                    UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                    UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                    UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                    UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
+                    UEFI_BS_NV = new Partition
+                    {
+                        Name = "UEFI_BS_NV",
+                        Attributes = BACKUP_BS_NV.Attributes,
+                        PartitionGuid = OriginalPartitionGuid,
+                        PartitionTypeGuid = OriginalPartitionTypeGuid,
+                        FirstSector = BACKUP_BS_NV.LastSector + 1
+                    };
                     UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
                     GPT.Partitions.Add(UEFI_BS_NV);
                     GPTChanged = true;
@@ -265,13 +295,13 @@ namespace WPinternals
                 if (GPTChanged)
                 {
                     GPT.Rebuild();
-                    FlashPart Part = new FlashPart();
+                    FlashPart Part = new();
                     Part.StartSector = 0;
                     Part.Stream = new MemoryStream(GPTChunk);
                     Parts.Add(Part);
                 }
 
-                using (MemoryStream Space = new MemoryStream(new byte[0x40000]))
+                using (MemoryStream Space = new(new byte[0x40000]))
                 {
                     Partition Target = GPT.GetPartition("UEFI_BS_NV");
                     Parts.Add(new FlashPart() { StartSector = (uint)Target.FirstSector, Stream = Space });
@@ -301,9 +331,11 @@ namespace WPinternals
                 LogFile.Log("Partition name: " + PartitionName, LogType.FileAndConsole);
                 LogFile.Log("Partition file: " + PartitionPath, LogType.FileAndConsole);
                 if (FFUPath != null)
+                {
                     LogFile.Log("Profile FFU file: " + FFUPath, LogType.FileAndConsole);
+                }
 
-                PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+                PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
 
                 NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
@@ -313,16 +345,19 @@ namespace WPinternals
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
                 byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
-                GPT GPT = new GPT(GPTChunk);
+                GPT GPT = new(GPTChunk);
 
                 Partition TargetPartition = GPT.GetPartition(PartitionName);
                 if (TargetPartition == null)
+                {
                     throw new WPinternalsException("Target partition not found!", "Couldn't find \"" + PartitionName + "\" from the device GPT.");
+                }
+
                 LogFile.Log("Target-partition found at sector: 0x" + TargetPartition.FirstSector.ToString("X8") + " - 0x" + TargetPartition.LastSector.ToString("X8"), LogType.FileAndConsole);
 
                 bool IsUnlocked = false;
                 bool GPTChanged = false;
-                List<FlashPart> Parts = new List<FlashPart>();
+                List<FlashPart> Parts = new();
                 FlashPart Part;
                 if (string.Compare(PartitionName, "EFIESP", true) == 0)
                 {
@@ -334,13 +369,15 @@ namespace WPinternals
                         Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
                         if (IsUnlockedFlag == null)
                         {
-                            IsUnlockedFlag = new Partition();
-                            IsUnlockedFlag.Name = "IS_UNLOCKED";
-                            IsUnlockedFlag.Attributes = 0;
-                            IsUnlockedFlag.PartitionGuid = Guid.NewGuid();
-                            IsUnlockedFlag.PartitionTypeGuid = Guid.NewGuid();
-                            IsUnlockedFlag.FirstSector = 0x40;
-                            IsUnlockedFlag.LastSector = 0x40;
+                            IsUnlockedFlag = new Partition
+                            {
+                                Name = "IS_UNLOCKED",
+                                Attributes = 0,
+                                PartitionGuid = Guid.NewGuid(),
+                                PartitionTypeGuid = Guid.NewGuid(),
+                                FirstSector = 0x40,
+                                LastSector = 0x40
+                            };
                             GPT.Partitions.Add(IsUnlockedFlag);
                             GPTChanged = true;
                         }
@@ -358,21 +395,27 @@ namespace WPinternals
                     if (GPTChanged)
                     {
                         GPT.Rebuild();
-                        Part = new FlashPart();
-                        Part.StartSector = 0;
-                        Part.Stream = new MemoryStream(GPTChunk);
+                        Part = new FlashPart
+                        {
+                            StartSector = 0,
+                            Stream = new MemoryStream(GPTChunk)
+                        };
                         Parts.Add(Part);
                     }
                 }
 
-                using (FileStream Stream = new FileStream(PartitionPath, FileMode.Open))
+                using (FileStream Stream = new(PartitionPath, FileMode.Open))
                 {
                     if ((UInt64)Stream.Length != (TargetPartition.SizeInSectors * 0x200))
+                    {
                         throw new WPinternalsException("Raw partition has wrong size. Size = 0x" + Stream.Length.ToString("X8") + ". Expected size = 0x" + (TargetPartition.SizeInSectors * 0x200).ToString("X8"));
+                    }
 
-                    Part = new FlashPart();
-                    Part.StartSector = (UInt32)TargetPartition.FirstSector;
-                    Part.Stream = Stream;
+                    Part = new FlashPart
+                    {
+                        StartSector = (UInt32)TargetPartition.FirstSector,
+                        Stream = Stream
+                    };
                     Parts.Add(Part);
                     await LumiaV2CustomFlash(Notifier, FFUPath, false, false, Parts, DoResetFirst, string.Compare(PartitionName, "UEFI_BS_NV", true) != 0);
                 }
@@ -397,9 +440,11 @@ namespace WPinternals
                 LogFile.Log("Start sector: 0x" + StartSector.ToString("X16"), LogType.FileAndConsole);
                 LogFile.Log("Data file: " + DataPath, LogType.FileAndConsole);
                 if (FFUPath != null)
+                {
                     LogFile.Log("FFU file: " + FFUPath, LogType.FileAndConsole);
+                }
 
-                PhoneNotifierViewModel Notifier = new PhoneNotifierViewModel();
+                PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
 
                 NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
@@ -423,19 +468,17 @@ namespace WPinternals
 
         internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, UInt32 StartSector, byte[] Data, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false) //, string LoaderPath = null)
         {
-            using (MemoryStream Stream = new MemoryStream(Data))
-            {
-                FlashPart Part = new FlashPart() { StartSector = StartSector, Stream = Stream };
-                List<FlashPart> Parts = new List<FlashPart>();
-                Parts.Add(Part);
-                await LumiaV2CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, Parts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental);
-            }
+            using MemoryStream Stream = new(Data);
+            FlashPart Part = new() { StartSector = StartSector, Stream = Stream };
+            List<FlashPart> Parts = new();
+            Parts.Add(Part);
+            await LumiaV2CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, Parts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental);
         }
 
         internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, UInt32 StartSector, Stream Data, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false) //, string LoaderPath = null)
         {
-            FlashPart Part = new FlashPart() { StartSector = StartSector, Stream = Data };
-            List<FlashPart> Parts = new List<FlashPart>();
+            FlashPart Part = new() { StartSector = StartSector, Stream = Data };
+            List<FlashPart> Parts = new();
             Parts.Add(Part);
             await LumiaV2CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, Parts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental);
         }
@@ -447,7 +490,7 @@ namespace WPinternals
 
             byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, 131072u);
 
-            GPT GPT = new GPT(GPTChunk);
+            GPT GPT = new(GPTChunk);
 
             Partition UefiBSNV = GPT.GetPartition("UEFI_BS_NV");
 
@@ -473,9 +516,13 @@ namespace WPinternals
             }
 
             if (UseOlderExploit || !ClearFlashingStatusAtEnd)
+            {
                 await LumiaV2CustomFlashInternal(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, FlashParts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure, ProgrammerPath);
+            }
             else
+            {
                 await LumiaV3FlashRomViewModel.LumiaV3CustomFlash(Notifier, FlashParts, CheckSectorAlignment, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
+            }
         }
 
         // Magic!
@@ -489,10 +536,25 @@ namespace WPinternals
             bool AutoEmergencyReset = true;
             bool Timeout;
 
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitFailure == null) ExitFailure = (m, s) => { };
+            if (SetWorkingStatus == null)
+            {
+                SetWorkingStatus = (m, s, v, a, st) => { };
+            }
+
+            if (UpdateWorkingStatus == null)
+            {
+                UpdateWorkingStatus = (m, s, v, st) => { };
+            }
+
+            if (ExitSuccess == null)
+            {
+                ExitSuccess = (m, s) => { };
+            }
+
+            if (ExitFailure == null)
+            {
+                ExitFailure = (m, s) => { };
+            }
 
             NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
             PhoneInfo Info = Model.ReadPhoneInfo();
@@ -502,7 +564,9 @@ namespace WPinternals
             {
                 ProgrammerPath = GetProgrammerPath(Info.RKH, Type);
                 if (ProgrammerPath == null)
+                {
                     LogFile.Log("WARNING: No emergency programmer file found. Finding flash profile and rebooting phone may take a long time!", LogType.FileAndConsole);
+                }
             }
             List<FFUEntry> FFUs = null;
             FlashProfile Profile;
@@ -531,43 +595,69 @@ namespace WPinternals
             }
 
             if (FFUPath == null)
+            {
                 throw new WPinternalsException("No valid profile FFU found in repository", "You can download necessary files in the &quot;Download&quot; section");
+            }
 
-            FFU FFU = new FFU(FFUPath);
+            FFU FFU = new(FFUPath);
             UInt32 UpdateType = ByteOperations.ReadUInt32(FFU.StoreHeader, 0);
             if (UpdateType != 0)
+            {
                 throw new WPinternalsException("Only Full Flash images supported", "The provided FFU file reports that it doesn't support Full Flash updates, but may support something else such as Partial Flash updates. This is not supported.");
+            }
 
             if (FlashParts != null)
             {
                 foreach (FlashPart Part in FlashParts)
                 {
                     if (Part.Stream == null)
+                    {
                         throw new ArgumentException("Stream is null");
+                    }
+
                     if (!Part.Stream.CanSeek)
+                    {
                         throw new ArgumentException("Streams must be seekable");
+                    }
+
                     if (((Part.StartSector * 0x200) % FFU.ChunkSize) != 0)
+                    {
                         throw new ArgumentException("Invalid StartSector alignment");
+                    }
+
                     if (CheckSectorAlignment)
                     {
                         if ((Part.Stream.Length % FFU.ChunkSize) != 0)
+                        {
                             throw new ArgumentException("Invalid Data length");
+                        }
                     }
                 }
             }
 
             if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
+            {
                 throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that it does not support the Protocol Sync V2.");
+            }
+
             if (Info.FlashAppProtocolVersionMajor < 2) // Old phones do not support the hack. These phones have Flash protocol 1.x.
+            {
                 throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that Flash App communication protocol is lower than 2. Reported version by the phone: " + Info.FlashAppProtocolVersionMajor + ".");
-            UEFI UEFI = new UEFI(FFU.GetPartition("UEFI"));
-            string BootMgrName = UEFI.EFIs.Where(efi => ((efi.Name != null) && (efi.Name.Contains("BootMgrApp")))).First().Name;
+            }
+
+            UEFI UEFI = new(FFU.GetPartition("UEFI"));
+            string BootMgrName = UEFI.EFIs.First(efi => (efi.Name?.Contains("BootMgrApp") == true)).Name;
             UInt32 EstimatedSizeOfMemGap = (UInt32)UEFI.GetFile(BootMgrName).Length;
             byte Options = 0;
             if (SkipWrite)
+            {
                 Options = (byte)FlashOptions.SkipWrite;
+            }
+
             if (!Info.IsBootloaderSecure)
+            {
                 Options = (byte)((FlashOptions)Options | FlashOptions.SkipSignatureCheck);
+            }
 
             // Gap fill calculation:
             // About 0x18000 of the gap is used for other purposes.
@@ -604,7 +694,7 @@ namespace WPinternals
                 Timeout = false;
                 try
                 {
-                    await Notifier.WaitForArrival().TimeoutAfter<IDisposable>(TimeSpan.FromSeconds(40));
+                    await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(40));
                 }
                 catch (TimeoutException)
                 {
@@ -638,7 +728,7 @@ namespace WPinternals
                     bool FailedToStartProgrammer = false;
                     if (ProgrammerPath != null)
                     {
-                        QualcommSahara Sahara = new QualcommSahara((QualcommSerial)Notifier.CurrentModel);
+                        QualcommSahara Sahara = new((QualcommSerial)Notifier.CurrentModel);
                         try
                         {
                             await Sahara.Reset(ProgrammerPath);
@@ -665,7 +755,7 @@ namespace WPinternals
                         {
                             try
                             {
-                                await Notifier.WaitForArrival().TimeoutAfter<IDisposable>(TimeSpan.FromSeconds(40));
+                                await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(40));
                             }
                             catch (TimeoutException)
                             {
@@ -727,7 +817,10 @@ namespace WPinternals
                 #endregion
 
                 if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader))
+                {
                     throw new WPinternalsException("Phone is in wrong mode", "The phone should have been detected in bootloader or flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
+                }
+
                 Model = (NokiaFlashModel)Notifier.CurrentModel;
                 UpdateWorkingStatus("Initializing flash...", null, null);
             }
@@ -754,10 +847,10 @@ namespace WPinternals
             //
             // If you do not order payloads like this, you will get an error, most likely hash mismatch
             //
-            FlashingPayload[] payloads = new FlashingPayload[0];
+            FlashingPayload[] payloads = Array.Empty<FlashingPayload>();
             if (FlashParts != null)
             {
-                payloads = GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Count()).ToArray();
+                payloads = GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length).ToArray();
             }
 
             bool AssumeImageHeaderFallsInGap = true;
@@ -785,11 +878,16 @@ namespace WPinternals
 
             Profile = App.Config.GetProfile(Info.PlatformID, Info.Firmware, FFU.GetFirmwareVersion());
             if (Profile == null)
+            {
                 LogFile.Log("No flashing profile found", LogType.FileAndConsole);
+            }
             else
             {
                 if (ShowProgress)
+                {
                     LogFile.Log("Flashing profile loaded", LogType.FileAndConsole);
+                }
+
                 CurrentGapFill = Profile.FillSize;
                 ExploitHeaderAllocationSize = Profile.HeaderSize;
                 AllocateAsyncBuffersOnPhone = Profile.AllocateAsyncBuffersOnPhone;
@@ -804,7 +902,10 @@ namespace WPinternals
                     LogFile.Log("Custom flash attempt: " + AttemptCount + " of " + MaximumAttempts, LogType.FileAndConsole);
 
                     if (!Scanning)
+                    {
                         SetWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", (uint)MaximumAttempts, Status: WPinternalsStatus.Scanning);
+                    }
+
                     Scanning = true;
                     UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", (uint)AttemptCount, Status: WPinternalsStatus.Scanning);
 
@@ -862,7 +963,7 @@ namespace WPinternals
 
                 CombinedFFUHeaderSize = FFU.HeaderSize;
                 FfuHeader = new byte[CombinedFFUHeaderSize];
-                UInt32 TotalPayloadCount = (uint)payloads.Count();
+                UInt32 TotalPayloadCount = (uint)payloads.Length;
                 bool HeadersFull;
                 int FlashingPhase = 0;
                 UInt32 FlashingPhaseStartPayloadIndex = 0;
@@ -894,7 +995,7 @@ namespace WPinternals
                         Model.SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap -> This will fail on phones with Flash Protocol v1.x !! On Lumia 640 this will hang on receiving the response when EndAsyncFlash was not called.
                     }
 
-                    using (System.IO.FileStream FfuFile = new System.IO.FileStream(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                    using (FileStream FfuFile = new(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                     {
                         // On every flashing phase we need to send the full header again to reset all the counters.
                         FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
@@ -971,7 +1072,7 @@ namespace WPinternals
                     // Always flash one extra chunk on the GPT (for purpose of testing and for making sure that first chunk does not contain all zero's).
                     UInt32 SecurityHeaderSize = FlashInProgress ? 0 : 0x20u;
                     UInt32 StoreHeaderSize = FlashInProgress ? 0 : 0x10u;
-                    for (UInt32 i = FlashingPhaseStartPayloadIndex; i < payloads.Count(); i++)
+                    for (UInt32 i = FlashingPhaseStartPayloadIndex; i < payloads.Length; i++)
                     {
                         UInt32 NewSecurityHeaderSize = SecurityHeaderSize + payloads[i].GetSecurityHeaderSize();
                         UInt32 NewStoreHeaderSize = StoreHeaderSize + payloads[i].GetStoreHeaderSize();
@@ -982,17 +1083,19 @@ namespace WPinternals
                             break;
                         }
 
-                        FlashingPhasePayloadCount += 1;
+                        FlashingPhasePayloadCount++;
                         SecurityHeaderSize = NewSecurityHeaderSize;
                         StoreHeaderSize = NewStoreHeaderSize;
                     }
 
                     HashTableSize += SecurityHeaderSize;
-                    WriteDescriptorCount += (UInt32)FlashingPhasePayloadCount + (FlashInProgress ? 0 : 1u);
+                    WriteDescriptorCount += FlashingPhasePayloadCount + (FlashInProgress ? 0 : 1u);
                     WriteDescriptorLength += StoreHeaderSize;
 
                     if (!ClearFlashingStatusAtEnd || HeadersFull)
+                    {
                         WriteDescriptorCount++;
+                    }
 
                     // Write back new header values.
                     ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD4, WriteDescriptorLength);
@@ -1019,7 +1122,7 @@ namespace WPinternals
                     {
                         FlashingPayload payload = payloads[FlashingPhaseStartPayloadIndex + i];
 
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, (UInt32)payload.TargetLocations.Count()); // Location count
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, (UInt32)payload.TargetLocations.Length); // Location count
                         ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, payload.ChunkCount);                      // Chunk count
                         NewWriteDescriptorOffset += 0x08;
 
@@ -1060,7 +1163,10 @@ namespace WPinternals
                         {
                             UInt32 CurrentFill = ExploitHeaderRemaining;
                             if (CurrentFill > Info.WriteBufferSize)
+                            {
                                 CurrentFill = Info.WriteBufferSize;
+                            }
+
                             PartialHeader = new byte[CurrentFill];
                             PartialHeaderAllocation.CopyFromThisAllocation(HeaderOffset, CurrentFill, PartialHeader, 0);
                             Model.SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options); // Phone may crash here. USB write is done. USB read might fail due to crash. Happens on my own Lumia 650.
@@ -1091,10 +1197,13 @@ namespace WPinternals
                                 {
                                     Step = 9;
                                     if (ShowProgress)
+                                    {
                                         LogFile.Log("Flashing in progress!", LogType.FileAndConsole);
+                                    }
+
                                     FlashInProgress = true;
                                     Scanning = false;
-                                    SetWorkingStatus(null, null, (UInt64?)payloads.Count(), Status: WPinternalsStatus.Flashing);
+                                    SetWorkingStatus(null, null, (UInt64?)payloads.Length, Status: WPinternalsStatus.Flashing);
                                 }
                             }
                             else
@@ -1103,7 +1212,7 @@ namespace WPinternals
 
                                 FlashingPayload payload = payloads[FlashingPhaseStartPayloadIndex + i];
 
-                                if (payloadCount == (Info.WriteBufferSize / FFU.ChunkSize - 1))
+                                if (payloadCount == ((Info.WriteBufferSize / FFU.ChunkSize) - 1))
                                 {
                                     sendPayload = true;
                                 }
@@ -1117,7 +1226,7 @@ namespace WPinternals
                                 }
 
                                 // Check if the next payload contains more than one chunk
-                                if (!sendPayload && FlashingPhaseStartPayloadIndex + i + 1 < FlashingPhasePayloadCount && (payloads[FlashingPhaseStartPayloadIndex + i + 1].ChunkCount != 1 || payloads[FlashingPhaseStartPayloadIndex + i + 1].TargetLocations.Count() != 1))
+                                if (!sendPayload && FlashingPhaseStartPayloadIndex + i + 1 < FlashingPhasePayloadCount && (payloads[FlashingPhaseStartPayloadIndex + i + 1].ChunkCount != 1 || payloads[FlashingPhaseStartPayloadIndex + i + 1].TargetLocations.Length != 1))
                                 {
                                     sendPayload = true;
                                     byte[] tmpBuffer = new byte[(payloadCount + 1) * FFU.ChunkSize];
@@ -1146,7 +1255,7 @@ namespace WPinternals
                                     }
                                 }
 
-                                if (payload.TargetLocations.Count() != 1)
+                                if (payload.TargetLocations.Length != 1)
                                 {
                                     NewProgressText = "Flashing common resources...";
                                     payloadBuffer = new byte[FFU.ChunkSize];
@@ -1159,10 +1268,12 @@ namespace WPinternals
                                     CurrentStream = flashPart.Stream;
                                     CurrentStream.Seek(payload.StreamLocations[0], SeekOrigin.Begin);
 
-                                    if (payload.TargetLocations.Count() == 1 && !string.IsNullOrEmpty(flashPart.ProgressText))
+                                    if (payload.TargetLocations.Length == 1 && !string.IsNullOrEmpty(flashPart.ProgressText))
+                                    {
                                         NewProgressText = flashPart.ProgressText;
+                                    }
 
-                                    CurrentStream.Read(payloadBuffer, (Int32)(FFU.ChunkSize * payloadCount), FFU.ChunkSize);
+                                    CurrentStream.Read(payloadBuffer, FFU.ChunkSize * payloadCount, FFU.ChunkSize);
                                 }
 
                                 Step = 8;
@@ -1177,7 +1288,7 @@ namespace WPinternals
                             if (i != -1 && sendPayload)
                             {
                                 // This fails when sending multiple chunks per payload with 0x1003: Hash mismatch
-                                Model.SendFfuPayloadV2(payloadBuffer, ShowProgress ? (Int32)((FlashingPhaseStartPayloadIndex + i + 1) * 100 / payloads.Count()) : 0);
+                                Model.SendFfuPayloadV2(payloadBuffer, ShowProgress ? (Int32)((FlashingPhaseStartPayloadIndex + i + 1) * 100 / payloads.Length) : 0);
                                 sendPayload = false;
                                 payloadCount = 0;
                                 payloadBuffer = new byte[Info.WriteBufferSize];
@@ -1195,7 +1306,10 @@ namespace WPinternals
                             Step = 12;
                             App.Config.SetProfile(Info.Type, Info.PlatformID, Info.ProductCode, Info.Firmware, FFU.GetFirmwareVersion(), CurrentGapFill, ExploitHeaderAllocationSize, AssumeImageHeaderFallsInGap, AllocateAsyncBuffersOnPhone);
                             if (ShowProgress)
+                            {
                                 LogFile.Log("Custom flash succeeded!", LogType.FileAndConsole);
+                            }
+
                             Success = true;
                         }
                         else
@@ -1250,7 +1364,9 @@ namespace WPinternals
                     }
 
                     if (FlashInProgress)
+                    {
                         FlashingPhase++;
+                    }
                 }
                 while (HeadersFull && FlashInProgress && !Abort);
 
@@ -1276,7 +1392,7 @@ namespace WPinternals
                         Timeout = false;
                         try
                         {
-                            await Notifier.WaitForArrival().TimeoutAfter<IDisposable>(TimeSpan.FromSeconds(40));
+                            await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(40));
                         }
                         catch (TimeoutException)
                         {
@@ -1310,7 +1426,7 @@ namespace WPinternals
                             bool FailedToStartProgrammer = false;
                             if (ProgrammerPath != null)
                             {
-                                QualcommSahara Sahara = new QualcommSahara((QualcommSerial)Notifier.CurrentModel);
+                                QualcommSahara Sahara = new((QualcommSerial)Notifier.CurrentModel);
                                 try
                                 {
                                     await Sahara.Reset(ProgrammerPath);
@@ -1331,7 +1447,7 @@ namespace WPinternals
                                 {
                                     try
                                     {
-                                        await Notifier.WaitForArrival().TimeoutAfter<IDisposable>(TimeSpan.FromSeconds(40));
+                                        await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(40));
                                     }
                                     catch (TimeoutException)
                                     {
@@ -1394,7 +1510,9 @@ namespace WPinternals
 
                         // Sanity check: must be in flash mode
                         if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader))
+                        {
                             break;
+                        }
 
                         Model = (NokiaFlashModel)Notifier.CurrentModel;
 
@@ -1424,7 +1542,9 @@ namespace WPinternals
                     {
                         AllocateBackupBuffersOnPhone = false;
                         if (AllocateAsyncBuffersOnPhone)
+                        {
                             AllocateAsyncBuffersOnPhone = false;
+                        }
                         else
                         {
                             AllocateAsyncBuffersOnPhone = true;
@@ -1495,7 +1615,7 @@ namespace WPinternals
                     PartialHeader = new byte[UefiMemorySim.PageSize];
                     Model.SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap
                 }
-                using (System.IO.FileStream FfuFile = new System.IO.FileStream(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                using (FileStream FfuFile = new(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                 {
                     // On every flashing phase we need to send the full header again, because this triggers ffu_import_invalidate(), which is necessary to reset all the counters.
                     FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
@@ -1509,7 +1629,10 @@ namespace WPinternals
                 {
                     UInt32 CurrentFill = ExploitHeaderRemaining;
                     if (CurrentFill > Info.WriteBufferSize)
+                    {
                         CurrentFill = Info.WriteBufferSize;
+                    }
+
                     PartialHeader = new byte[CurrentFill];
                     PartialHeaderAllocation.CopyFromThisAllocation(HeaderOffset, CurrentFill, PartialHeader, 0);
                     Model.SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options);
@@ -1537,7 +1660,7 @@ namespace WPinternals
                 Timeout = false;
                 try
                 {
-                    await Notifier.WaitForArrival().TimeoutAfter<IDisposable>(TimeSpan.FromSeconds(40));
+                    await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(40));
                 }
                 catch (TimeoutException)
                 {
@@ -1569,7 +1692,7 @@ namespace WPinternals
                     bool FailedToStartProgrammer = false;
                     if (ProgrammerPath != null)
                     {
-                        QualcommSahara Sahara = new QualcommSahara((QualcommSerial)Notifier.CurrentModel);
+                        QualcommSahara Sahara = new((QualcommSerial)Notifier.CurrentModel);
                         try
                         {
                             await Sahara.Reset(ProgrammerPath);
@@ -1590,7 +1713,7 @@ namespace WPinternals
                         {
                             try
                             {
-                                await Notifier.WaitForArrival().TimeoutAfter<IDisposable>(TimeSpan.FromSeconds(40));
+                                await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(40));
                             }
                             catch (TimeoutException)
                             {
@@ -1659,9 +1782,13 @@ namespace WPinternals
             }
 
             if (Success)
+            {
                 ExitSuccess("Flash succeeded!", null);
+            }
             else
+            {
                 throw new WPinternalsException("Custom flash failed");
+            }
         }
 
         internal class FlashingPayload
@@ -1683,12 +1810,12 @@ namespace WPinternals
 
             public UInt32 GetSecurityHeaderSize()
             {
-                return 0x20 * (UInt32)ChunkHashes.Count();
+                return 0x20 * (UInt32)ChunkHashes.Length;
             }
 
             public UInt32 GetStoreHeaderSize()
             {
-                return 0x08 * ((UInt32)TargetLocations.Count() + 1);
+                return 0x08 * ((UInt32)TargetLocations.Length + 1);
             }
         }
 
@@ -1709,9 +1836,12 @@ namespace WPinternals
             SetWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)TotalProcess1, Status: WPinternalsStatus.Initializing);
 
             var crypto = System.Security.Cryptography.SHA256.Create();
-            List<FlashingPayload> flashingPayloads = new List<FlashingPayload>();
+            List<FlashingPayload> flashingPayloads = new();
             if (flashParts == null)
+            {
                 return flashingPayloads.ToArray();
+            }
+
             for (UInt32 j = 0; j < flashParts.Count; j++)
             {
                 FlashPart flashPart = flashParts[(Int32)j];
@@ -1719,7 +1849,7 @@ namespace WPinternals
                 var totalChunkCount = flashPart.Stream.Length / chunkSize;
                 for (UInt32 i = 0; i < totalChunkCount; i++)
                 {
-                    UpdateWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)CurrentProcess1, WPinternalsStatus.Initializing);
+                    UpdateWorkingStatus("Hashing resources...", "Initializing flash...", CurrentProcess1, WPinternalsStatus.Initializing);
                     byte[] buffer = new byte[chunkSize];
                     Int64 position = flashPart.Stream.Position;
                     flashPart.Stream.Read(buffer, 0, chunkSize);
@@ -1737,9 +1867,11 @@ namespace WPinternals
         //
         internal static FlashingPayload[] GetOptimizedPayloads(List<FlashPart> flashParts, Int32 chunkSize, UInt32 MaximumChunkCount, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null)
         {
-            List<FlashingPayload> flashingPayloads = new List<FlashingPayload>();
+            List<FlashingPayload> flashingPayloads = new();
             if (flashParts == null)
+            {
                 return flashingPayloads.ToArray();
+            }
 
             long TotalProcess1 = 0;
             for (Int32 j = 0; j < flashParts.Count; j++)
@@ -1760,15 +1892,15 @@ namespace WPinternals
                     var totalChunkCount = flashPart.Stream.Length / chunkSize;
                     for (UInt32 i = 0; i < totalChunkCount; i++)
                     {
-                        UpdateWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)CurrentProcess1, WPinternalsStatus.Initializing);
+                        UpdateWorkingStatus("Hashing resources...", "Initializing flash...", CurrentProcess1, WPinternalsStatus.Initializing);
                         byte[] buffer = new byte[chunkSize];
                         Int64 position = flashPart.Stream.Position;
                         flashPart.Stream.Read(buffer, 0, chunkSize);
                         var hash = crypto.ComputeHash(buffer);
 
-                        if (flashingPayloads.Any(x => ByteOperations.Compare(x.ChunkHashes.First(), hash)))
+                        if (flashingPayloads.Any(x => ByteOperations.Compare(x.ChunkHashes[0], hash)))
                         {
-                            var payloadIndex = flashingPayloads.FindIndex(x => ByteOperations.Compare(x.ChunkHashes.First(), hash));
+                            var payloadIndex = flashingPayloads.FindIndex(x => ByteOperations.Compare(x.ChunkHashes[0], hash));
                             var locationList = flashingPayloads[payloadIndex].TargetLocations.ToList();
                             locationList.Add((flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i);
                             flashingPayloads[payloadIndex].TargetLocations = locationList.ToArray();
@@ -1789,28 +1921,37 @@ namespace WPinternals
         internal static string GetProgrammerPath(byte[] RKH, string Type)
         {
             IEnumerable<EmergencyFileEntry> RKHEntries = App.Config.EmergencyRepository.Where(e => (StructuralComparisons.StructuralEqualityComparer.Equals(e.RKH, RKH) && e.ProgrammerExists()));
-            if (RKHEntries.Count() > 0)
+            if (RKHEntries.Any())
             {
                 if (RKHEntries.Count() == 1)
+                {
                     return RKHEntries.First().ProgrammerPath;
+                }
                 else
                 {
-                    EmergencyFileEntry RKHEntry = RKHEntries.Where(e => string.Compare(e.Type, Type, false) == 0).FirstOrDefault();
+                    EmergencyFileEntry RKHEntry = RKHEntries.FirstOrDefault(e => string.Compare(e.Type, Type, false) == 0);
                     if (RKHEntry != null)
+                    {
                         return RKHEntry.ProgrammerPath;
+                    }
                     else
+                    {
                         return RKHEntries.First().ProgrammerPath; // Cannot be sure this is the right one!!
+                    }
                 }
             }
             else
             {
-                EmergencyFileEntry TypeEntry = App.Config.EmergencyRepository.Where(e => ((string.Compare(e.Type, Type, false) == 0) && e.ProgrammerExists())).FirstOrDefault();
+                EmergencyFileEntry TypeEntry = App.Config.EmergencyRepository.Find(e => ((string.Compare(e.Type, Type, false) == 0) && e.ProgrammerExists()));
                 if (TypeEntry != null)
+                {
                     return TypeEntry.ProgrammerPath;
+                }
                 else
+                {
                     return null;
+                }
             }
-
         }
 
         // Assumes phone with Flash protocol v2
@@ -1824,11 +1965,11 @@ namespace WPinternals
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
             byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
-            GPT GPT = new GPT(GPTChunk);
+            GPT GPT = new(GPTChunk);
 
             Partition Target;
             FlashPart Part;
-            List<FlashPart> Parts = new List<FlashPart>();
+            List<FlashPart> Parts = new();
             ulong MainOSOldSectorCount = 0;
             ulong MainOSNewSectorCount = 0;
             ulong DataOldSectorCount = 0;
@@ -1841,220 +1982,235 @@ namespace WPinternals
 
             bool ClearFlashingStatus = true;
 
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
+            if (SetWorkingStatus == null)
+            {
+                SetWorkingStatus = (m, s, v, a, st) => { };
+            }
+
+            if (UpdateWorkingStatus == null)
+            {
+                UpdateWorkingStatus = (m, s, v, st) => { };
+            }
+
+            if (ExitSuccess == null)
+            {
+                ExitSuccess = (m, s) => { };
+            }
+
+            if (ExitSuccess == null)
+            {
+                ExitSuccess = (m, s) => { };
+            }
 
             SetWorkingStatus("Initializing flash...", null, null, Status: WPinternalsStatus.Initializing);
 
             try
             {
-                using (FileStream FileStream = new FileStream(ArchivePath, FileMode.Open))
+                using FileStream FileStream = new(ArchivePath, FileMode.Open);
+                using ZipArchive Archive = new(FileStream, ZipArchiveMode.Read);
+                // Determine if there is a partition layout present
+                ZipArchiveEntry PartitionEntry = Archive.GetEntry("Partitions.xml");
+                if (PartitionEntry == null)
                 {
-                    using (ZipArchive Archive = new ZipArchive(FileStream, ZipArchiveMode.Read))
+                    GPT.MergePartitions(null, true, Archive);
+                    GPTChanged |= GPT.HasChanged;
+                }
+                else
+                {
+                    using Stream ZipStream = PartitionEntry.Open();
+                    using StreamReader ZipReader = new(ZipStream);
+                    string PartitionXml = ZipReader.ReadToEnd();
+                    GPT.MergePartitions(PartitionXml, true, Archive);
+                    GPTChanged |= GPT.HasChanged;
+                }
+
+                // First determine if we need a new GPT!
+                foreach (ZipArchiveEntry Entry in Archive.Entries)
+                {
+                    if (!Entry.FullName.Contains("/")) // No subfolders
                     {
-                        // Determine if there is a partition layout present
-                        ZipArchiveEntry PartitionEntry = Archive.GetEntry("Partitions.xml");
-                        if (PartitionEntry == null)
+                        string PartitionName = Entry.Name;
+                        int Pos = PartitionName.IndexOf('.');
+                        if (Pos >= 0)
                         {
-                            GPT.MergePartitions(null, true, Archive);
-                            GPTChanged |= GPT.HasChanged;
+                            PartitionName = PartitionName.Substring(0, Pos);
                         }
-                        else
+
+                        Partition Partition = GPT.Partitions.Find(p => string.Compare(p.Name, PartitionName, true) == 0);
+                        if (Partition != null)
                         {
-                            using (Stream ZipStream = PartitionEntry.Open())
+                            using DecompressedStream DecompressedStream = new(Entry.Open());
+                            ulong StreamLengthInSectors = (ulong)Entry.Length / 0x200;
+                            try
                             {
-                                using (StreamReader ZipReader = new StreamReader(ZipStream))
-                                {
-                                    string PartitionXml = ZipReader.ReadToEnd();
-                                    GPT.MergePartitions(PartitionXml, true, Archive);
-                                    GPTChanged |= GPT.HasChanged;
-                                }
+                                StreamLengthInSectors = (ulong)DecompressedStream.Length / 0x200;
                             }
-                        }
+                            catch { }
 
-                        // First determine if we need a new GPT!
-                        foreach (ZipArchiveEntry Entry in Archive.Entries)
-                        {
-                            if (!Entry.FullName.Contains("/")) // No subfolders
+                            TotalSizeSectors += StreamLengthInSectors;
+                            PartitionCount++;
+
+                            if (string.Compare(PartitionName, "MainOS", true) == 0)
                             {
-                                string PartitionName = Entry.Name;
-                                int Pos = PartitionName.IndexOf('.');
-                                if (Pos >= 0)
-                                    PartitionName = PartitionName.Substring(0, Pos);
-
-                                Partition Partition = GPT.Partitions.Where(p => string.Compare(p.Name, PartitionName, true) == 0).FirstOrDefault();
-                                if (Partition != null)
+                                MainOSOldSectorCount = Partition.SizeInSectors;
+                                MainOSNewSectorCount = StreamLengthInSectors;
+                                FirstMainOSSector = Partition.FirstSector;
+                            }
+                            else if (string.Compare(PartitionName, "Data", true) == 0)
+                            {
+                                DataOldSectorCount = Partition.SizeInSectors;
+                                DataNewSectorCount = StreamLengthInSectors;
+                            }
+                            else if (StreamLengthInSectors > Partition.SizeInSectors)
+                            {
+                                LogFile.Log("Flash failed! Size of partition '" + PartitionName + "' is too big.", LogType.FileAndConsole);
+                                ExitFailure("Flash failed!", "Size of partition '" + PartitionName + "' is too big.");
+                                return;
+                            }
+                            else if (string.Compare(PartitionName, "EFIESP", true) == 0)
+                            {
+                                ulong EfiespLength = StreamLengthInSectors * 0x200;
+                                byte[] EfiespBinary = new byte[EfiespLength];
+                                DecompressedStream.Read(EfiespBinary, 0, (int)EfiespLength);
+                                IsUnlocked = ((ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && (ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8)) == "MSDOS5.0");
+                                if (IsUnlocked)
                                 {
-                                    using (DecompressedStream DecompressedStream = new DecompressedStream(Entry.Open()))
+                                    Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
+                                    if (IsUnlockedFlag == null)
                                     {
-                                        ulong StreamLengthInSectors = (ulong)Entry.Length / 0x200;
-                                        try
+                                        IsUnlockedFlag = new Partition
                                         {
-                                            StreamLengthInSectors = (ulong)DecompressedStream.Length / 0x200;
-                                        }
-                                        catch { }
-
-                                        TotalSizeSectors += StreamLengthInSectors;
-                                        PartitionCount++;
-
-                                        if (string.Compare(PartitionName, "MainOS", true) == 0)
-                                        {
-                                            MainOSOldSectorCount = Partition.SizeInSectors;
-                                            MainOSNewSectorCount = StreamLengthInSectors;
-                                            FirstMainOSSector = Partition.FirstSector;
-                                        }
-                                        else if (string.Compare(PartitionName, "Data", true) == 0)
-                                        {
-                                            DataOldSectorCount = Partition.SizeInSectors;
-                                            DataNewSectorCount = StreamLengthInSectors;
-                                        }
-                                        else if (StreamLengthInSectors > Partition.SizeInSectors)
-                                        {
-                                            LogFile.Log("Flash failed! Size of partition '" + PartitionName + "' is too big.", LogType.FileAndConsole);
-                                            ExitFailure("Flash failed!", "Size of partition '" + PartitionName + "' is too big.");
-                                            return;
-                                        }
-                                        else if (string.Compare(PartitionName, "EFIESP", true) == 0)
-                                        {
-                                            ulong EfiespLength = StreamLengthInSectors * 0x200;
-                                            byte[] EfiespBinary = new byte[EfiespLength];
-                                            DecompressedStream.Read(EfiespBinary, 0, (int)EfiespLength);
-                                            IsUnlocked = ((ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && (ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8)) == "MSDOS5.0");
-                                            if (IsUnlocked)
-                                            {
-                                                Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
-                                                if (IsUnlockedFlag == null)
-                                                {
-                                                    IsUnlockedFlag = new Partition();
-                                                    IsUnlockedFlag.Name = "IS_UNLOCKED";
-                                                    IsUnlockedFlag.Attributes = 0;
-                                                    IsUnlockedFlag.PartitionGuid = Guid.NewGuid();
-                                                    IsUnlockedFlag.PartitionTypeGuid = Guid.NewGuid();
-                                                    IsUnlockedFlag.FirstSector = 0x40;
-                                                    IsUnlockedFlag.LastSector = 0x40;
-                                                    GPT.Partitions.Add(IsUnlockedFlag);
-                                                    GPTChanged = true;
-                                                    ClearFlashingStatus = false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
-                                                if (IsUnlockedFlag != null)
-                                                {
-                                                    GPT.Partitions.Remove(IsUnlockedFlag);
-                                                    GPTChanged = true;
-                                                    ClearFlashingStatus = false;
-                                                }
-                                            }
-                                        }
+                                            Name = "IS_UNLOCKED",
+                                            Attributes = 0,
+                                            PartitionGuid = Guid.NewGuid(),
+                                            PartitionTypeGuid = Guid.NewGuid(),
+                                            FirstSector = 0x40,
+                                            LastSector = 0x40
+                                        };
+                                        GPT.Partitions.Add(IsUnlockedFlag);
+                                        GPTChanged = true;
+                                        ClearFlashingStatus = false;
+                                    }
+                                }
+                                else
+                                {
+                                    Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
+                                    if (IsUnlockedFlag != null)
+                                    {
+                                        GPT.Partitions.Remove(IsUnlockedFlag);
+                                        GPTChanged = true;
+                                        ClearFlashingStatus = false;
                                     }
                                 }
                             }
                         }
+                    }
+                }
 
-                        if ((MainOSNewSectorCount > 0) && (DataNewSectorCount > 0))
+                if ((MainOSNewSectorCount > 0) && (DataNewSectorCount > 0))
+                {
+                    if ((MainOSNewSectorCount > MainOSOldSectorCount) || (DataNewSectorCount > DataOldSectorCount))
+                    {
+                        UInt64 OSSpace = GPT.LastUsableSector - FirstMainOSSector + 1;
+                        if ((MainOSNewSectorCount + DataNewSectorCount) <= OSSpace)
                         {
-                            if ((MainOSNewSectorCount > MainOSOldSectorCount) || (DataNewSectorCount > DataOldSectorCount))
+                            // MainOS and Data partitions need to be re-aligned!
+                            Partition MainOSPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "MainOS", true) == 0);
+                            Partition DataPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "Data", true) == 0);
+                            MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
+                            DataPartition.FirstSector = MainOSPartition.LastSector + 1;
+                            if ((DataPartition.FirstSector % 0x100) > 0)
                             {
-                                UInt64 OSSpace = GPT.LastUsableSector - FirstMainOSSector + 1;
-                                if ((MainOSNewSectorCount + DataNewSectorCount) <= OSSpace)
-                                {
-                                    // MainOS and Data partitions need to be re-aligned!
-                                    Partition MainOSPartition = GPT.Partitions.Where(p => string.Compare(p.Name, "MainOS", true) == 0).Single();
-                                    Partition DataPartition = GPT.Partitions.Where(p => string.Compare(p.Name, "Data", true) == 0).Single();
-                                    MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
-                                    DataPartition.FirstSector = MainOSPartition.LastSector + 1;
-                                    if ((DataPartition.FirstSector % 0x100) > 0)
-                                        DataPartition.FirstSector = ((UInt64)((DataPartition.FirstSector + 0x100) / 0x100)) * 0x100;
-                                    DataPartition.LastSector = DataPartition.FirstSector + DataNewSectorCount - 1;
-
-                                    GPTChanged = true;
-                                }
-                                else
-                                {
-                                    LogFile.Log("Flash failed! Sizes of partitions 'MainOS' and 'Data' together are too big.", LogType.FileAndConsole);
-                                    ExitFailure("Flash failed!", "Sizes of partitions 'MainOS' and 'Data' together are too big.");
-                                    return;
-                                }
+                                DataPartition.FirstSector = (DataPartition.FirstSector + 0x100) / 0x100 * 0x100;
                             }
+
+                            DataPartition.LastSector = DataPartition.FirstSector + DataNewSectorCount - 1;
+
+                            GPTChanged = true;
                         }
-                        else if ((MainOSNewSectorCount > 0) && (MainOSNewSectorCount > MainOSOldSectorCount))
+                        else
                         {
-                            LogFile.Log("Flash failed! Size of partition 'MainOS' is too big.", LogType.FileAndConsole);
-                            ExitFailure("Flash failed!", "Size of partition 'MainOS' is too big.");
+                            LogFile.Log("Flash failed! Sizes of partitions 'MainOS' and 'Data' together are too big.", LogType.FileAndConsole);
+                            ExitFailure("Flash failed!", "Sizes of partitions 'MainOS' and 'Data' together are too big.");
                             return;
                         }
-                        else if ((DataNewSectorCount > 0) && (DataNewSectorCount > DataOldSectorCount))
+                    }
+                }
+                else if ((MainOSNewSectorCount > 0) && (MainOSNewSectorCount > MainOSOldSectorCount))
+                {
+                    LogFile.Log("Flash failed! Size of partition 'MainOS' is too big.", LogType.FileAndConsole);
+                    ExitFailure("Flash failed!", "Size of partition 'MainOS' is too big.");
+                    return;
+                }
+                else if ((DataNewSectorCount > 0) && (DataNewSectorCount > DataOldSectorCount))
+                {
+                    LogFile.Log("Flash failed! Size of partition 'Data' is too big.", LogType.FileAndConsole);
+                    ExitFailure("Flash failed!", "Size of partition 'Data' is too big.");
+                    return;
+                }
+
+                if (!ClearFlashingStatus)
+                {
+                    if (!IsUnlocked)
+                    {
+                        // Undo secure boot exploit
+                        Partition NvBackupPartition = GPT.GetPartition("BACKUP_BS_NV");
+                        if (NvBackupPartition != null)
                         {
-                            LogFile.Log("Flash failed! Size of partition 'Data' is too big.", LogType.FileAndConsole);
-                            ExitFailure("Flash failed!", "Size of partition 'Data' is too big.");
-                            return;
+                            // This must be a left over of a half unlocked bootloader
+                            Partition NvPartition = GPT.GetPartition("UEFI_BS_NV");
+                            NvBackupPartition.Name = "UEFI_BS_NV";
+                            NvBackupPartition.PartitionGuid = NvPartition.PartitionGuid;
+                            NvBackupPartition.PartitionTypeGuid = NvPartition.PartitionTypeGuid;
+                            GPT.Partitions.Remove(NvPartition);
+                            GPTChanged = true;
                         }
 
-                        if (!ClearFlashingStatus)
+                        PhoneInfo Info = FlashModel.ReadPhoneInfo(false);
+
+                        // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
+                        if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)
                         {
-                            if (!IsUnlocked)
+                            // ClearNV
+                            Part = new FlashPart();
+                            Partition Target2 = GPT.GetPartition("UEFI_BS_NV");
+                            Part.StartSector = (UInt32)Target2.FirstSector;
+                            Part.Stream = new MemoryStream(new byte[0x40000]);
+                            Parts.Add(Part);
+                        }
+                    }
+                    else
+                    {
+                        // Now add NV partition
+                        Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
+                        Partition UEFI_BS_NV;
+                        if (BACKUP_BS_NV == null)
+                        {
+                            BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
+                            Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
+                            Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
+                            BACKUP_BS_NV.Name = "BACKUP_BS_NV";
+                            BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
+                            BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
+                            UEFI_BS_NV = new Partition
                             {
-                                // Undo secure boot exploit
-                                Partition NvBackupPartition = GPT.GetPartition("BACKUP_BS_NV");
-                                if (NvBackupPartition != null)
-                                {
-                                    // This must be a left over of a half unlocked bootloader
-                                    Partition NvPartition = GPT.GetPartition("UEFI_BS_NV");
-                                    NvBackupPartition.Name = "UEFI_BS_NV";
-                                    NvBackupPartition.PartitionGuid = NvPartition.PartitionGuid;
-                                    NvBackupPartition.PartitionTypeGuid = NvPartition.PartitionTypeGuid;
-                                    GPT.Partitions.Remove(NvPartition);
-                                    GPTChanged = true;
-                                }
+                                Name = "UEFI_BS_NV",
+                                Attributes = BACKUP_BS_NV.Attributes,
+                                PartitionGuid = OriginalPartitionGuid,
+                                PartitionTypeGuid = OriginalPartitionTypeGuid,
+                                FirstSector = BACKUP_BS_NV.LastSector + 1
+                            };
+                            UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
+                            GPT.Partitions.Add(UEFI_BS_NV);
+                            GPTChanged = true;
+                        }
 
-                                PhoneInfo Info = FlashModel.ReadPhoneInfo(false);
-
-                                // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
-                                if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)
-                                {
-                                    // ClearNV
-                                    Part = new FlashPart();
-                                    Partition Target2 = GPT.GetPartition("UEFI_BS_NV");
-                                    Part.StartSector = (UInt32)Target2.FirstSector;
-                                    Part.Stream = new MemoryStream(new byte[0x40000]);
-                                    Parts.Add(Part);
-                                }
-                            }
-                            else
-                            {
-                                // Now add NV partition
-                                Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
-                                Partition UEFI_BS_NV;
-                                if (BACKUP_BS_NV == null)
-                                {
-                                    BACKUP_BS_NV = GPT.GetPartition("UEFI_BS_NV");
-                                    Guid OriginalPartitionTypeGuid = BACKUP_BS_NV.PartitionTypeGuid;
-                                    Guid OriginalPartitionGuid = BACKUP_BS_NV.PartitionGuid;
-                                    BACKUP_BS_NV.Name = "BACKUP_BS_NV";
-                                    BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
-                                    BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                                    UEFI_BS_NV = new Partition();
-                                    UEFI_BS_NV.Name = "UEFI_BS_NV";
-                                    UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                                    UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                                    UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                                    UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
-                                    UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
-                                    GPT.Partitions.Add(UEFI_BS_NV);
-                                    GPTChanged = true;
-                                }
-
-                                Part = new FlashPart();
-                                Target = GPT.GetPartition("UEFI_BS_NV");
-                                Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
-                                Part.Stream = new SeekableStream(() =>
-                                {
-                                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
+                        Part = new FlashPart();
+                        Target = GPT.GetPartition("UEFI_BS_NV");
+                        Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
+                        Part.Stream = new SeekableStream(() =>
+                        {
+                            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                                     // Magic!
                                     // The SB resource is a compressed version of a raw NV-variable-partition.
@@ -2064,65 +2220,69 @@ namespace WPinternals
                                     // But the partition contains an extra hack to break out the endless loops.
                                     var stream = assembly.GetManifestResourceStream("WPinternals.SB");
 
-                                    return new DecompressedStream(stream);
-                                });
-                                Parts.Add(Part);
-                            }
-                        }
+                            return new DecompressedStream(stream);
+                        });
+                        Parts.Add(Part);
+                    }
+                }
 
-                        if (GPTChanged)
-                        {
-                            GPT.Rebuild();
-                            Part = new FlashPart();
-                            Part.StartSector = 0;
-                            Part.Stream = new MemoryStream(GPTChunk);
-                            Parts.Add(Part);
-                        }
+                if (GPTChanged)
+                {
+                    GPT.Rebuild();
+                    Part = new FlashPart
+                    {
+                        StartSector = 0,
+                        Stream = new MemoryStream(GPTChunk)
+                    };
+                    Parts.Add(Part);
+                }
 
-                        // And then add the partitions from the archive
-                        if (PartitionCount > 0)
+                // And then add the partitions from the archive
+                if (PartitionCount > 0)
+                {
+                    foreach (ZipArchiveEntry Entry in Archive.Entries)
+                    {
+                        if (!Entry.FullName.Contains("/")) // No subfolders
                         {
-                            foreach (ZipArchiveEntry Entry in Archive.Entries)
+                            // "MainOS.bin.gz" => "MainOS"
+                            string PartitionName = Entry.Name;
+                            int Pos = PartitionName.IndexOf('.');
+                            if (Pos >= 0)
                             {
-                                if (!Entry.FullName.Contains("/")) // No subfolders
+                                PartitionName = PartitionName.Substring(0, Pos);
+                            }
+
+                            Target = GPT.Partitions.Find(p => string.Compare(p.Name, PartitionName, true) == 0);
+                            if (Target != null)
+                            {
+                                Part = new FlashPart
                                 {
-                                    // "MainOS.bin.gz" => "MainOS"
-                                    string PartitionName = Entry.Name;
-                                    int Pos = PartitionName.IndexOf('.');
-                                    if (Pos >= 0)
-                                        PartitionName = PartitionName.Substring(0, Pos);
-
-                                    Target = GPT.Partitions.Where(p => string.Compare(p.Name, PartitionName, true) == 0).FirstOrDefault();
-                                    if (Target != null)
-                                    {
-                                        Part = new FlashPart();
-                                        Part.StartSector = (UInt32)Target.FirstSector;
-                                        Part.Stream = new SeekableStream(() => new DecompressedStream(Entry.Open()), Entry.Length);
-                                        Part.ProgressText = "Flashing partition " + Target.Name;
-                                        Parts.Add(Part);
-                                        LogFile.Log("Partition name=" + PartitionName + ", startsector=0x" + Target.FirstSector.ToString("X8") + ", sectorcount = 0x" + (Entry.Length / 0x200).ToString("X8"), LogType.FileOnly);
-                                    }
-                                }
+                                    StartSector = (UInt32)Target.FirstSector,
+                                    Stream = new SeekableStream(() => new DecompressedStream(Entry.Open()), Entry.Length),
+                                    ProgressText = "Flashing partition " + Target.Name
+                                };
+                                Parts.Add(Part);
+                                LogFile.Log("Partition name=" + PartitionName + ", startsector=0x" + Target.FirstSector.ToString("X8") + ", sectorcount = 0x" + (Entry.Length / 0x200).ToString("X8"), LogType.FileOnly);
                             }
-
-                            Parts = Parts.OrderBy(p => p.StartSector).ToList();
-                            int Count = 1;
-                            Parts.Where(p => ((p.ProgressText != null) && p.ProgressText.StartsWith("Flashing partition "))).ToList().ForEach((p) =>
-                            {
-                                p.ProgressText += " (" + Count.ToString() + "/" + PartitionCount.ToString() + ")";
-                                Count++;
-                            });
-
-                            // Do actual flashing!
-                            await LumiaV2CustomFlash(Notifier, null, false, false, Parts, true, ClearFlashingStatus, false, true, false, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
-                        }
-                        else
-                        {
-                            LogFile.Log("Flash failed! No valid partitions found in the archive.", LogType.FileAndConsole);
-                            ExitFailure("Flash failed!", "No valid partitions found in the archive");
-                            return;
                         }
                     }
+
+                    Parts = Parts.OrderBy(p => p.StartSector).ToList();
+                    int Count = 1;
+                    Parts.Where(p => (p.ProgressText?.StartsWith("Flashing partition ") == true)).ToList().ForEach((p) =>
+                    {
+                        p.ProgressText += " (" + Count.ToString() + "/" + PartitionCount.ToString() + ")";
+                        Count++;
+                    });
+
+                    // Do actual flashing!
+                    await LumiaV2CustomFlash(Notifier, null, false, false, Parts, true, ClearFlashingStatus, false, true, false, SetWorkingStatus, UpdateWorkingStatus, ExitSuccess, ExitFailure);
+                }
+                else
+                {
+                    LogFile.Log("Flash failed! No valid partitions found in the archive.", LogType.FileAndConsole);
+                    ExitFailure("Flash failed!", "No valid partitions found in the archive");
+                    return;
                 }
             }
             catch (Exception Ex)
@@ -2141,10 +2301,25 @@ namespace WPinternals
             LogFile.Log("Command: Fix boot after unlocking bootloader", LogType.FileAndConsole);
             NokiaFlashModel FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
 
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitFailure == null) ExitFailure = (m, s) => { };
+            if (SetWorkingStatus == null)
+            {
+                SetWorkingStatus = (m, s, v, a, st) => { };
+            }
+
+            if (UpdateWorkingStatus == null)
+            {
+                UpdateWorkingStatus = (m, s, v, st) => { };
+            }
+
+            if (ExitSuccess == null)
+            {
+                ExitSuccess = (m, s) => { };
+            }
+
+            if (ExitFailure == null)
+            {
+                ExitFailure = (m, s) => { };
+            }
 
             try
             {
@@ -2153,7 +2328,10 @@ namespace WPinternals
                 App.PatchEngine.TargetPath = ((MassStorage)Notifier.CurrentModel).Drive + "\\";
                 bool PatchResult = App.PatchEngine.Patch("SecureBootHack-MainOS");
                 if (!PatchResult)
+                {
                     throw new WPinternalsException("Patch failed", "An error occured while patching Operating System files on the MainOS partition of your phone. Make sure your phone runs a supported Operating System version.");
+                }
+
                 LogFile.Log("Fixed bootloader", LogType.FileAndConsole);
                 LogFile.Log("The phone is left in Mass Storage mode", LogType.FileAndConsole);
                 LogFile.Log("Press and hold the power-button of the phone for at least 10 seconds to reset the phone", LogType.FileAndConsole);
@@ -2177,11 +2355,11 @@ namespace WPinternals
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
             byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
-            GPT GPT = new GPT(GPTChunk);
+            GPT GPT = new(GPTChunk);
 
             Partition Target;
             FlashPart Part;
-            List<FlashPart> Parts = new List<FlashPart>();
+            List<FlashPart> Parts = new();
             ulong MainOSOldSectorCount = 0;
             ulong MainOSNewSectorCount = 0;
             ulong DataOldSectorCount = 0;
@@ -2195,10 +2373,25 @@ namespace WPinternals
             bool GPTChanged = false;
             bool ClearFlashingStatus = true;
 
-            if (SetWorkingStatus == null) SetWorkingStatus = (m, s, v, a, st) => { };
-            if (UpdateWorkingStatus == null) UpdateWorkingStatus = (m, s, v, st) => { };
-            if (ExitSuccess == null) ExitSuccess = (m, s) => { };
-            if (ExitFailure == null) ExitFailure = (m, s) => { };
+            if (SetWorkingStatus == null)
+            {
+                SetWorkingStatus = (m, s, v, a, st) => { };
+            }
+
+            if (UpdateWorkingStatus == null)
+            {
+                UpdateWorkingStatus = (m, s, v, st) => { };
+            }
+
+            if (ExitSuccess == null)
+            {
+                ExitSuccess = (m, s) => { };
+            }
+
+            if (ExitFailure == null)
+            {
+                ExitFailure = (m, s) => { };
+            }
 
             SetWorkingStatus("Initializing flash...", null, null, Status: WPinternalsStatus.Initializing);
 
@@ -2224,13 +2417,15 @@ namespace WPinternals
                         Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
                         if (IsUnlockedFlag == null)
                         {
-                            IsUnlockedFlag = new Partition();
-                            IsUnlockedFlag.Name = "IS_UNLOCKED";
-                            IsUnlockedFlag.Attributes = 0;
-                            IsUnlockedFlag.PartitionGuid = Guid.NewGuid();
-                            IsUnlockedFlag.PartitionTypeGuid = Guid.NewGuid();
-                            IsUnlockedFlag.FirstSector = 0x40;
-                            IsUnlockedFlag.LastSector = 0x40;
+                            IsUnlockedFlag = new Partition
+                            {
+                                Name = "IS_UNLOCKED",
+                                Attributes = 0,
+                                PartitionGuid = Guid.NewGuid(),
+                                PartitionTypeGuid = Guid.NewGuid(),
+                                FirstSector = 0x40,
+                                LastSector = 0x40
+                            };
                             GPT.Partitions.Add(IsUnlockedFlag);
                             GPTChanged = true;
                             ClearFlashingStatus = false;
@@ -2279,12 +2474,15 @@ namespace WPinternals
                             if ((MainOSNewSectorCount + DataNewSectorCount) <= OSSpace)
                             {
                                 // MainOS and Data partitions need to be re-aligned!
-                                Partition MainOSPartition = GPT.Partitions.Where(p => string.Compare(p.Name, "MainOS", true) == 0).Single();
-                                Partition DataPartition = GPT.Partitions.Where(p => string.Compare(p.Name, "Data", true) == 0).Single();
+                                Partition MainOSPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "MainOS", true) == 0);
+                                Partition DataPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "Data", true) == 0);
                                 MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
                                 DataPartition.FirstSector = MainOSPartition.LastSector + 1;
                                 if ((DataPartition.FirstSector % 0x100) > 0)
-                                    DataPartition.FirstSector = ((UInt64)((DataPartition.FirstSector + 0x100) / 0x100)) * 0x100;
+                                {
+                                    DataPartition.FirstSector = (DataPartition.FirstSector + 0x100) / 0x100 * 0x100;
+                                }
+
                                 DataPartition.LastSector = DataPartition.FirstSector + DataNewSectorCount - 1;
 
                                 GPTChanged = true;
@@ -2353,12 +2551,14 @@ namespace WPinternals
                                 BACKUP_BS_NV.Name = "BACKUP_BS_NV";
                                 BACKUP_BS_NV.PartitionGuid = Guid.NewGuid();
                                 BACKUP_BS_NV.PartitionTypeGuid = Guid.NewGuid();
-                                UEFI_BS_NV = new Partition();
-                                UEFI_BS_NV.Name = "UEFI_BS_NV";
-                                UEFI_BS_NV.Attributes = BACKUP_BS_NV.Attributes;
-                                UEFI_BS_NV.PartitionGuid = OriginalPartitionGuid;
-                                UEFI_BS_NV.PartitionTypeGuid = OriginalPartitionTypeGuid;
-                                UEFI_BS_NV.FirstSector = BACKUP_BS_NV.LastSector + 1;
+                                UEFI_BS_NV = new Partition
+                                {
+                                    Name = "UEFI_BS_NV",
+                                    Attributes = BACKUP_BS_NV.Attributes,
+                                    PartitionGuid = OriginalPartitionGuid,
+                                    PartitionTypeGuid = OriginalPartitionTypeGuid,
+                                    FirstSector = BACKUP_BS_NV.LastSector + 1
+                                };
                                 UEFI_BS_NV.LastSector = UEFI_BS_NV.FirstSector + BACKUP_BS_NV.LastSector - BACKUP_BS_NV.FirstSector;
                                 GPT.Partitions.Add(UEFI_BS_NV);
                                 GPTChanged = true;
@@ -2370,7 +2570,6 @@ namespace WPinternals
                             Part.Stream = new SeekableStream(() =>
                             {
                                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
 
                                 // Magic!
                                 // The SB resource is a compressed version of a raw NV-variable-partition.
@@ -2389,46 +2588,54 @@ namespace WPinternals
                     if (GPTChanged)
                     {
                         GPT.Rebuild();
-                        Part = new FlashPart();
-                        Part.StartSector = 0;
-                        Part.Stream = new MemoryStream(GPTChunk);
+                        Part = new FlashPart
+                        {
+                            StartSector = 0,
+                            Stream = new MemoryStream(GPTChunk)
+                        };
                         Parts.Add(Part);
                     }
 
                     int Count = 0;
 
-                    Target = GPT.Partitions.Where(p => string.Compare(p.Name, "EFIESP", true) == 0).FirstOrDefault();
+                    Target = GPT.Partitions.Find(p => string.Compare(p.Name, "EFIESP", true) == 0);
                     if ((EFIESPPath != null) && (Target != null))
                     {
                         Count++;
-                        Part = new FlashPart();
-                        Part.StartSector = (UInt32)Target.FirstSector;
-                        Part.Stream = new FileStream(EFIESPPath, FileMode.Open);
-                        Part.ProgressText = "Flashing partition EFIESP (" + Count.ToString() + " / " + PartitionCount.ToString() + ")";
+                        Part = new FlashPart
+                        {
+                            StartSector = (UInt32)Target.FirstSector,
+                            Stream = new FileStream(EFIESPPath, FileMode.Open),
+                            ProgressText = "Flashing partition EFIESP (" + Count.ToString() + " / " + PartitionCount.ToString() + ")"
+                        };
                         Parts.Add(Part);
                         LogFile.Log("Partition name=EFIESP, startsector=0x" + Target.FirstSector.ToString("X8") + ", sectorcount = 0x" + (Part.Stream.Length / 0x200).ToString("X8"), LogType.FileOnly);
                     }
 
-                    Target = GPT.Partitions.Where(p => string.Compare(p.Name, "MainOS", true) == 0).FirstOrDefault();
+                    Target = GPT.Partitions.Find(p => string.Compare(p.Name, "MainOS", true) == 0);
                     if ((MainOSPath != null) && (Target != null))
                     {
                         Count++;
-                        Part = new FlashPart();
-                        Part.StartSector = (UInt32)Target.FirstSector;
-                        Part.Stream = new FileStream(MainOSPath, FileMode.Open);
-                        Part.ProgressText = "Flashing partition MainOS (" + Count.ToString() + " / " + PartitionCount.ToString() + ")";
+                        Part = new FlashPart
+                        {
+                            StartSector = (UInt32)Target.FirstSector,
+                            Stream = new FileStream(MainOSPath, FileMode.Open),
+                            ProgressText = "Flashing partition MainOS (" + Count.ToString() + " / " + PartitionCount.ToString() + ")"
+                        };
                         Parts.Add(Part);
                         LogFile.Log("Partition name=MainOS, startsector=0x" + Target.FirstSector.ToString("X8") + ", sectorcount = 0x" + (Part.Stream.Length / 0x200).ToString("X8"), LogType.FileOnly);
                     }
 
-                    Target = GPT.Partitions.Where(p => string.Compare(p.Name, "Data", true) == 0).FirstOrDefault();
+                    Target = GPT.Partitions.Find(p => string.Compare(p.Name, "Data", true) == 0);
                     if ((DataPath != null) && (Target != null))
                     {
                         Count++;
-                        Part = new FlashPart();
-                        Part.StartSector = (UInt32)Target.FirstSector;
-                        Part.Stream = new FileStream(DataPath, FileMode.Open);
-                        Part.ProgressText = "Flashing partition Data (" + Count.ToString() + " / " + PartitionCount.ToString() + ")";
+                        Part = new FlashPart
+                        {
+                            StartSector = (UInt32)Target.FirstSector,
+                            Stream = new FileStream(DataPath, FileMode.Open),
+                            ProgressText = "Flashing partition Data (" + Count.ToString() + " / " + PartitionCount.ToString() + ")"
+                        };
                         Parts.Add(Part);
                         LogFile.Log("Partition name=Data, startsector=0x" + Target.FirstSector.ToString("X8") + ", sectorcount = 0x" + (Part.Stream.Length / 0x200).ToString("X8"), LogType.FileOnly);
                     }
@@ -2458,14 +2665,17 @@ namespace WPinternals
 
         private static UInt32 CurrentBufferSize = 0;
         public static byte[] Buffer;
-        private static List<Allocation> Allocations = new List<Allocation>();
-        private static List<FreeMemRange> FreeMemRanges = new List<FreeMemRange>();
+        private static readonly List<Allocation> Allocations = new();
+        private static readonly List<FreeMemRange> FreeMemRanges = new();
 
         public static UInt32 RoundUpToPages(UInt32 Size)
         {
             UInt32 Result = Size + 0x18;
             if ((Size % PageSize) != 0)
+            {
                 Size = ((Size / PageSize) + 1) * PageSize;
+            }
+
             return Result;
         }
 
@@ -2481,7 +2691,10 @@ namespace WPinternals
         {
             byte[] NewBuffer = new byte[CurrentBufferSize + Size];
             if (CurrentBufferSize > 0)
+            {
                 System.Buffer.BlockCopy(Buffer, 0, NewBuffer, (int)Size, (int)CurrentBufferSize);
+            }
+
             foreach (Allocation CurrentAllocation in Allocations)
             {
                 CurrentAllocation.TotalStart += Size;
@@ -2514,17 +2727,23 @@ namespace WPinternals
             }
             else
             {
-                for (int i = FreeMemRanges.Count() - 1; i >= 0; i--)
+                for (int i = FreeMemRanges.Count - 1; i >= 0; i--)
                 {
                     if (FreeMemRanges[i].Size >= TotalSize)
                     {
-                        NewAllocation = new Allocation();
-                        NewAllocation.TotalStart = FreeMemRanges[i].End - TotalSize + 1;
+                        NewAllocation = new Allocation
+                        {
+                            TotalStart = FreeMemRanges[i].End - TotalSize + 1
+                        };
 
                         if (FreeMemRanges[i].Size == TotalSize)
+                        {
                             FreeMemRanges.RemoveAt(i);
+                        }
                         else
+                        {
                             FreeMemRanges[i].End -= TotalSize;
+                        }
 
                         break;
                     }
@@ -2532,26 +2751,26 @@ namespace WPinternals
 
                 if (NewAllocation == null)
                 {
-                    UInt32 FreeBuffer;
-
-                    if (Allocations.Count() > 0)
-                        FreeBuffer = Allocations[0].TotalStart;
-                    else
-                        FreeBuffer = CurrentBufferSize;
-
+                    uint FreeBuffer = Allocations.Count > 0 ? Allocations[0].TotalStart : CurrentBufferSize;
                     if (FreeBuffer < TotalSize)
+                    {
                         ExtendBuffer(TotalSize - FreeBuffer);
+                    }
 
                     NewAllocation = new Allocation();
 
-                    if (Allocations.Count() > 0)
+                    if (Allocations.Count > 0)
+                    {
                         NewAllocation.TotalStart = Allocations[0].TotalStart - TotalSize;
+                    }
                     else
+                    {
                         FreeBuffer = CurrentBufferSize - TotalSize;
+                    }
                 }
 
                 bool Added = false;
-                for (int i = 0; i < Allocations.Count(); i++)
+                for (int i = 0; i < Allocations.Count; i++)
                 {
                     if (NewAllocation.TotalStart < Allocations[i].TotalStart)
                     {
@@ -2561,7 +2780,9 @@ namespace WPinternals
                     }
                 }
                 if (!Added)
+                {
                     Allocations.Add(NewAllocation);
+                }
             }
 
             return NewAllocation;
@@ -2580,19 +2801,27 @@ namespace WPinternals
             else
             {
                 if ((TotalSize % PageSize) != 0)
+                {
                     TotalSize = ((TotalSize / PageSize) + 1) * PageSize;
+                }
 
-                for (int i = FreeMemRanges.Count() - 1; i >= 0; i--)
+                for (int i = FreeMemRanges.Count - 1; i >= 0; i--)
                 {
                     if (FreeMemRanges[i].Size >= TotalSize)
                     {
-                        NewAllocation = new Allocation();
-                        NewAllocation.TotalStart = FreeMemRanges[i].End - TotalSize + 1;
+                        NewAllocation = new Allocation
+                        {
+                            TotalStart = FreeMemRanges[i].End - TotalSize + 1
+                        };
 
                         if (FreeMemRanges[i].Size == TotalSize)
+                        {
                             FreeMemRanges.RemoveAt(i);
+                        }
                         else
+                        {
                             FreeMemRanges[i].End -= TotalSize;
+                        }
 
                         break;
                     }
@@ -2600,22 +2829,22 @@ namespace WPinternals
 
                 if (NewAllocation == null)
                 {
-                    UInt32 FreeBuffer;
-
-                    if (Allocations.Count() > 0)
-                        FreeBuffer = Allocations[0].TotalStart;
-                    else
-                        FreeBuffer = CurrentBufferSize;
-
+                    uint FreeBuffer = Allocations.Count > 0 ? Allocations[0].TotalStart : CurrentBufferSize;
                     if (FreeBuffer < TotalSize)
+                    {
                         ExtendBuffer(TotalSize - FreeBuffer);
+                    }
 
                     NewAllocation = new Allocation();
 
-                    if (Allocations.Count() > 0)
+                    if (Allocations.Count > 0)
+                    {
                         NewAllocation.TotalStart = Allocations[0].TotalStart - TotalSize;
+                    }
                     else
+                    {
                         FreeBuffer = CurrentBufferSize - TotalSize;
+                    }
                 }
 
                 NewAllocation.TotalEnd = NewAllocation.TotalStart + TotalSize - 1;
@@ -2646,7 +2875,7 @@ namespace WPinternals
                 ByteOperations.WriteUInt32(Buffer, NewAllocation.TailStart + 0x04, Size + 24);
 
                 bool Added = false;
-                for (int i = 0; i < Allocations.Count(); i++)
+                for (int i = 0; i < Allocations.Count; i++)
                 {
                     if (NewAllocation.TotalStart < Allocations[i].TotalStart)
                     {
@@ -2656,7 +2885,9 @@ namespace WPinternals
                     }
                 }
                 if (!Added)
+                {
                     Allocations.Add(NewAllocation);
+                }
             }
 
             return NewAllocation;
@@ -2668,19 +2899,19 @@ namespace WPinternals
             {
                 Allocations.Remove(Allocation);
 
-                if (Allocations.Count() == 0)
+                if (Allocations.Count == 0)
                 {
                     FreeMemRanges.Clear();
                 }
                 else
                 {
-                    FreeMemRange NewFreeRange = new FreeMemRange();
+                    FreeMemRange NewFreeRange = new();
                     NewFreeRange.Start = Allocation.TotalStart;
                     NewFreeRange.End = Allocation.TotalEnd;
 
                     bool Added = false;
                     int i;
-                    for (i = 0; i < FreeMemRanges.Count(); i++)
+                    for (i = 0; i < FreeMemRanges.Count; i++)
                     {
                         if (NewFreeRange.Start < FreeMemRanges[i].Start)
                         {
@@ -2692,7 +2923,7 @@ namespace WPinternals
                     if (!Added)
                     {
                         FreeMemRanges.Add(NewFreeRange);
-                        i = FreeMemRanges.Count();
+                        i = FreeMemRanges.Count;
                     }
 
                     if ((i > 0) && (FreeMemRanges[i].Start == (FreeMemRanges[i - 1].End + 1)))
@@ -2702,14 +2933,16 @@ namespace WPinternals
                         i--;
                     }
 
-                    if ((i < (FreeMemRanges.Count() - 1)) && (FreeMemRanges[i].End == (FreeMemRanges[i - 1].Start - 1)))
+                    if ((i < (FreeMemRanges.Count - 1)) && (FreeMemRanges[i].End == (FreeMemRanges[i - 1].Start - 1)))
                     {
                         FreeMemRanges[i].End = FreeMemRanges[i + 1].End;
                         FreeMemRanges.RemoveAt(i + 1);
                     }
 
-                    if ((Allocations.Count() > 0) && (FreeMemRanges[i].Start < Allocations[0].TotalStart))
+                    if ((Allocations.Count > 0) && (FreeMemRanges[i].Start < Allocations[0].TotalStart))
+                    {
                         FreeMemRanges.RemoveAt(i);
+                    }
                 }
             }
         }

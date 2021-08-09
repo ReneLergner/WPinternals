@@ -30,9 +30,15 @@ namespace WPinternals
             LogFile.Log(Message);
 
             if (OkAction != null)
+            {
                 this.OkCommand = new DelegateCommand(OkAction);
+            }
+
             if (CancelAction != null)
+            {
                 this.CancelCommand = new DelegateCommand(CancelAction);
+            }
+
             this.Message = Message;
         }
 
@@ -46,7 +52,7 @@ namespace WPinternals
             set
             {
                 _Message = value;
-                OnPropertyChanged("Message");
+                OnPropertyChanged(nameof(Message));
             }
         }
 
@@ -60,34 +66,10 @@ namespace WPinternals
             set
             {
                 _SubMessage = value;
-                OnPropertyChanged("SubMessage");
+                OnPropertyChanged(nameof(SubMessage));
             }
         }
-
-        private DelegateCommand _OkCommand = null;
-        public DelegateCommand OkCommand
-        {
-            get
-            {
-                return _OkCommand;
-            }
-            private set
-            {
-                _OkCommand = value;
-            }
-        }
-
-        private DelegateCommand _CancelCommand = null;
-        public DelegateCommand CancelCommand
-        {
-            get
-            {
-                return _CancelCommand;
-            }
-            private set
-            {
-                _CancelCommand = value;
-            }
-        }
+        public DelegateCommand OkCommand { get; } = null;
+        public DelegateCommand CancelCommand { get; } = null;
     }
 }

@@ -34,8 +34,8 @@ namespace WPinternals
 {
     internal class DownloadsViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel Notifier;
-        private Timer SpeedTimer;
+        private readonly PhoneNotifierViewModel Notifier;
+        private readonly Timer SpeedTimer;
         private bool IsSearching = false;
 
         internal DownloadsViewModel(PhoneNotifierViewModel Notifier)
@@ -45,9 +45,8 @@ namespace WPinternals
             this.Notifier = Notifier;
             Notifier.NewDeviceArrived += Notifier_NewDeviceArrived;
 
-            RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software\WPInternals", true);
-            if (Key == null)
-                Key = Registry.CurrentUser.CreateSubKey(@"Software\WPInternals");
+            RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software\WPInternals", true) ?? Registry.CurrentUser.CreateSubKey(@"Software\WPInternals");
+
             DownloadFolder = (string)Key.GetValue("DownloadFolder", @"C:\ProgramData\WPinternals\Repository");
             Key.Close();
 
@@ -57,7 +56,7 @@ namespace WPinternals
             {
                 string FFUPath = null;
 
-                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+                OpenFileDialog dlg = new();
                 dlg.DefaultExt = ".ffu"; // Default file extension
                 dlg.Filter = "ROM images (.ffu)|*.ffu"; // Filter files by extension 
 
@@ -82,7 +81,6 @@ namespace WPinternals
                     {
                         LastStatusText = "Error: File \"" + FFUFile + "\" was not added.";
                     }
-
                 }
                 else
                 {
@@ -101,7 +99,7 @@ namespace WPinternals
             set
             {
                 _LastStatusText = value;
-                OnPropertyChanged("LastStatusText");
+                OnPropertyChanged(nameof(LastStatusText));
             }
         }
 
@@ -116,12 +114,12 @@ namespace WPinternals
                     int Count = (int)((Entry.SpeedIndex + 1) > 10 ? 10 : (Entry.SpeedIndex + 1));
                     long Sum = 0;
                     for (int i = 0; i < Count; i++)
+                    {
                         Sum += Entry.Speeds[i];
+                    }
+
                     Entry.Speed = Sum / Count;
-                    if (Entry.Speed < 1000)
-                        Entry.TimeLeft = Timeout.InfiniteTimeSpan;
-                    else
-                        Entry.TimeLeft = TimeSpan.FromSeconds((Entry.Size - Entry.BytesReceived) / Entry.Speed);
+                    Entry.TimeLeft = Entry.Speed < 1000 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds((Entry.Size - Entry.BytesReceived) / Entry.Speed);
                 }
                 Entry.LastBytesReceived = Entry.BytesReceived;
                 Entry.SpeedIndex++;
@@ -139,7 +137,7 @@ namespace WPinternals
             HttpWebRequest req = (HttpWebRequest)System.Net.HttpWebRequest.Create(URL);
             req.Method = "HEAD";
             req.ServicePoint.ConnectionLimit = 10;
-            using (System.Net.WebResponse resp = req.GetResponse())
+            using (WebResponse resp = req.GetResponse())
             {
                 long.TryParse(resp.Headers.Get("Content-Length"), out Length);
             }
@@ -151,14 +149,19 @@ namespace WPinternals
             string FileName = System.IO.Path.GetFileName(URL);
             int End = FileName.IndexOf('?');
             if (End >= 0)
+            {
                 FileName = FileName.Substring(0, End);
+            }
+
             return FileName;
         }
 
         private void Search()
         {
             if (IsSearching)
+            {
                 return;
+            }
 
             IsSearching = true;
 
@@ -172,23 +175,36 @@ namespace WPinternals
                 try
                 {
                     string TempProductType = ProductType.ToUpper();
-                    if ((TempProductType != null) && TempProductType.StartsWith("RM") && !TempProductType.StartsWith("RM-"))
-                        TempProductType = "RM-" + TempProductType.Substring(2);
+                    if ((TempProductType?.StartsWith("RM") == true) && !TempProductType.StartsWith("RM-"))
+                    {
+                        TempProductType = "RM-" + TempProductType[2..];
+                    }
+
                     ProductType = TempProductType;
                     FFUURL = LumiaDownloadModel.SearchFFU(ProductType, ProductCode, OperatorCode, out TempProductType);
                     if (TempProductType != null)
+                    {
                         ProductType = TempProductType;
+                    }
+
                     if (ProductType != null)
+                    {
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
+                    }
                 }
                 catch { }
 
                 UIContext.Post(s =>
                 {
                     if (FFUURL != null)
+                    {
                         SearchResultList.Add(new SearchResult(FFUURL, ProductType, FFUDownloaded, null));
+                    }
+
                     if (EmergencyURLs != null)
+                    {
                         SearchResultList.Add(new SearchResult(ProductType + " emergency-files", EmergencyURLs, ProductType, EmergencyDownloaded, ProductType));
+                    }
                 }, null);
 
                 IsSearching = false;
@@ -197,23 +213,17 @@ namespace WPinternals
 
         internal void Download(string URL, string Category, Action<string[], object> Callback, object State = null)
         {
-            string Folder;
-            if (Category == null)
-                Folder = DownloadFolder;
-            else
-                Folder = Path.Combine(DownloadFolder, Category);
+            string Folder = Category == null ? DownloadFolder : Path.Combine(DownloadFolder, Category);
             DownloadList.Add(new DownloadEntry(URL, Folder, null, Callback, State));
         }
 
         internal void Download(string[] URLs, string Category, Action<string[], object> Callback, object State = null)
         {
-            string Folder;
-            if (Category == null)
-                Folder = DownloadFolder;
-            else
-                Folder = Path.Combine(DownloadFolder, Category);
+            string Folder = Category == null ? DownloadFolder : Path.Combine(DownloadFolder, Category);
             foreach (string URL in URLs)
+            {
                 DownloadList.Add(new DownloadEntry(URL, Folder, URLs, Callback, State));
+            }
         }
 
         private void DownloadAll()
@@ -227,23 +237,36 @@ namespace WPinternals
                 try
                 {
                     string TempProductType = ProductType.ToUpper();
-                    if ((TempProductType != null) && TempProductType.StartsWith("RM") && !TempProductType.StartsWith("RM-"))
-                        TempProductType = "RM-" + TempProductType.Substring(2);
+                    if ((TempProductType?.StartsWith("RM") == true) && !TempProductType.StartsWith("RM-"))
+                    {
+                        TempProductType = "RM-" + TempProductType[2..];
+                    }
+
                     ProductType = TempProductType;
                     FFUURL = LumiaDownloadModel.SearchFFU(ProductType, ProductCode, OperatorCode, out TempProductType);
                     if (TempProductType != null)
+                    {
                         ProductType = TempProductType;
+                    }
+
                     if (ProductType != null)
+                    {
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
+                    }
                 }
                 catch { }
 
                 UIContext.Post(s =>
                 {
                     if (FFUURL != null)
+                    {
                         Download(FFUURL, ProductType, FFUDownloadedAndCheckSupported, null);
+                    }
+
                     if (EmergencyURLs != null)
+                    {
                         Download(EmergencyURLs, ProductType, EmergencyDownloaded, ProductType);
+                    }
                 }, null);
             }).Start();
         }
@@ -252,7 +275,9 @@ namespace WPinternals
         {
             IEnumerable<SearchResult> Selection = SearchResultList.Where(r => r.IsSelected);
             foreach (SearchResult Result in Selection)
+            {
                 App.DownloadManager.Download(Result.URLs, Result.Category, Result.Callback, Result.State);
+            }
         }
 
         private void FFUDownloaded(string[] Files, object State)
@@ -264,9 +289,9 @@ namespace WPinternals
         {
             App.Config.AddFfuToRepository(Files[0]);
 
-            if (App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.Where(p => p.Name == "SecureBootHack-V2-EFIESP").First().TargetVersions.Any(v => v.Description == e.OSVersion)).Count() == 0)
+            if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
             {
-                string ProductType2 = "RM-1085";
+                const string ProductType2 = "RM-1085";
                 string URL = LumiaDownloadModel.SearchFFU(ProductType2, null, null);
                 Download(URL, ProductType2, FFUDownloaded, null);
             }
@@ -281,46 +306,30 @@ namespace WPinternals
             for (int i = 0; i < Files.Length; i++)
             {
                 if (Files[i].EndsWith(".ede", StringComparison.OrdinalIgnoreCase))
+                {
                     ProgrammerPath = Files[i];
+                }
+
                 if (Files[i].EndsWith(".edp", StringComparison.OrdinalIgnoreCase))
+                {
                     PayloadPath = Files[i];
+                }
             }
 
             if ((Type != null) && (ProgrammerPath != null) && (PayloadPath != null))
+            {
                 App.Config.AddEmergencyToRepository(Type, ProgrammerPath, PayloadPath);
-        }
-
-        private ObservableCollection<DownloadEntry> _DownloadList = new ObservableCollection<DownloadEntry>();
-        public ObservableCollection<DownloadEntry> DownloadList
-        {
-            get
-            {
-                return _DownloadList;
             }
         }
-
-        private ObservableCollection<SearchResult> _SearchResultList = new ObservableCollection<SearchResult>();
-        public ObservableCollection<SearchResult> SearchResultList
-        {
-            get
-            {
-                return _SearchResultList;
-            }
-        }
+        public ObservableCollection<DownloadEntry> DownloadList { get; } = new();
+        public ObservableCollection<SearchResult> SearchResultList { get; } = new();
 
         private DelegateCommand _DownloadSelectedCommand = null;
         public DelegateCommand DownloadSelectedCommand
         {
             get
             {
-                if (_DownloadSelectedCommand == null)
-                {
-                    _DownloadSelectedCommand = new DelegateCommand(() =>
-                    {
-                        DownloadSelected();
-                    });
-                }
-                return _DownloadSelectedCommand;
+                return _DownloadSelectedCommand ??= new DelegateCommand(() => DownloadSelected());
             }
         }
 
@@ -329,14 +338,7 @@ namespace WPinternals
         {
             get
             {
-                if (_SearchCommand == null)
-                {
-                    _SearchCommand = new DelegateCommand(() =>
-                    {
-                        Search();
-                    });
-                }
-                return _SearchCommand;
+                return _SearchCommand ??= new DelegateCommand(() => Search());
             }
         }
 
@@ -345,14 +347,7 @@ namespace WPinternals
         {
             get
             {
-                if (_DownloadAllCommand == null)
-                {
-                    _DownloadAllCommand = new DelegateCommand(() =>
-                    {
-                        DownloadAll();
-                    });
-                }
-                return _DownloadAllCommand;
+                return _DownloadAllCommand ??= new DelegateCommand(() => DownloadAll());
             }
         }
 
@@ -385,14 +380,18 @@ namespace WPinternals
                     if (_DownloadFolder == null)
                     {
                         if (Key.GetValue("DownloadFolder") != null)
+                        {
                             Key.DeleteValue("DownloadFolder");
+                        }
                     }
                     else
+                    {
                         Key.SetValue("DownloadFolder", _DownloadFolder);
+                    }
 
                     Key.Close();
 
-                    OnPropertyChanged("DownloadFolder");
+                    OnPropertyChanged(nameof(DownloadFolder));
                 }
             }
         }
@@ -410,7 +409,7 @@ namespace WPinternals
                 {
                     _ProductCode = value;
 
-                    OnPropertyChanged("ProductCode");
+                    OnPropertyChanged(nameof(ProductCode));
                 }
             }
         }
@@ -428,7 +427,7 @@ namespace WPinternals
                 {
                     _ProductType = value;
 
-                    OnPropertyChanged("ProductType");
+                    OnPropertyChanged(nameof(ProductType));
                 }
             }
         }
@@ -446,7 +445,7 @@ namespace WPinternals
                 {
                     _OperatorCode = value;
 
-                    OnPropertyChanged("OperatorCode");
+                    OnPropertyChanged(nameof(OperatorCode));
                 }
             }
         }
@@ -454,9 +453,11 @@ namespace WPinternals
         internal override void EvaluateViewState()
         {
             if (!IsActive)
+            {
                 return;
+            }
 
-            if ((Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash))
+            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
             {
                 NokiaFlashModel LumiaFlashModel = (NokiaFlashModel)Notifier.CurrentModel;
                 PhoneInfo Info = LumiaFlashModel.ReadPhoneInfo();
@@ -469,24 +470,16 @@ namespace WPinternals
                 NokiaPhoneModel LumiaNormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
                 OperatorCode = LumiaNormalModel.ExecuteJsonMethodAsString("ReadOperatorName", "OperatorName"); // Example: 000-NL
                 string TempProductType = LumiaNormalModel.ExecuteJsonMethodAsString("ReadManufacturerModelName", "ManufacturerModelName"); // RM-821_eu_denmark_251
-                if (TempProductType.IndexOf('_') >= 0) TempProductType = TempProductType.Substring(0, TempProductType.IndexOf('_'));
+                if (TempProductType.Contains('_'))
+                {
+                    TempProductType = TempProductType.Substring(0, TempProductType.IndexOf('_'));
+                }
+
                 ProductType = TempProductType;
                 ProductCode = LumiaNormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode"); // 059Q9D7
             }
         }
-
-        private DelegateCommand _AddFFUCommand = null;
-        public DelegateCommand AddFFUCommand
-        {
-            get
-            {
-                return _AddFFUCommand;
-            }
-            private set
-            {
-                _AddFFUCommand = value;
-            }
-        }
+        public DelegateCommand AddFFUCommand { get; } = null;
     }
 
     internal enum DownloadStatus
@@ -498,7 +491,7 @@ namespace WPinternals
 
     internal class DownloadEntry : INotifyPropertyChanged
     {
-        private SynchronizationContext UIContext;
+        private readonly SynchronizationContext UIContext;
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         internal Action<string[], object> Callback;
         internal object State;
@@ -521,7 +514,7 @@ namespace WPinternals
             this.Folder = Folder;
             Directory.CreateDirectory(Folder);
             Name = DownloadsViewModel.GetFileNameFromURL(URL);
-            Uri Uri = new Uri(URL);
+            Uri Uri = new(URL);
             Status = DownloadStatus.Downloading;
             new Thread(() =>
             {
@@ -536,14 +529,13 @@ namespace WPinternals
 
         private void Client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-
-            Action Finish = () =>
+            void Finish()
             {
                 Status = e.Error == null ? DownloadStatus.Ready : DownloadStatus.Failed;
                 App.DownloadManager.DownloadList.Remove(this);
                 if (Status == DownloadStatus.Ready)
                 {
-                    if ((URLCollection == null) || (!URLCollection.Any(c => App.DownloadManager.DownloadList.Any(d => d.URL == c)))) // if there are no files left to download from this collection, then call the callback-function.
+                    if (URLCollection?.Any(c => App.DownloadManager.DownloadList.Any(d => d.URL == c)) != true) // if there are no files left to download from this collection, then call the callback-function.
                     {
                         string[] Files;
                         if (URLCollection == null)
@@ -555,16 +547,17 @@ namespace WPinternals
                         {
                             Files = new string[URLCollection.Length];
                             for (int i = 0; i < URLCollection.Length; i++)
+                            {
                                 Files[i] = System.IO.Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(URLCollection[i]));
+                            }
                         }
 
                         Callback(Files, State);
                     }
                 }
-            };
+            }
 
-            if (UIContext != null)
-                UIContext.Post(d => Finish(), null);
+            UIContext?.Post(d => Finish(), null);
         }
 
         private void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -578,7 +571,9 @@ namespace WPinternals
             if (this.PropertyChanged != null)
             {
                 if (SynchronizationContext.Current == UIContext)
+                {
                     PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                }
                 else
                 {
                     UIContext.Post((s) => PropertyChanged(this, new PropertyChangedEventArgs(propertyName)), null);
@@ -598,7 +593,7 @@ namespace WPinternals
                 if (_Status != value)
                 {
                     _Status = value;
-                    OnPropertyChanged("Status");
+                    OnPropertyChanged(nameof(Status));
                 }
             }
         }
@@ -615,7 +610,7 @@ namespace WPinternals
                 if (_Name != value)
                 {
                     _Name = value;
-                    OnPropertyChanged("Name");
+                    OnPropertyChanged(nameof(Name));
                 }
             }
         }
@@ -632,7 +627,7 @@ namespace WPinternals
                 if (_Size != value)
                 {
                     _Size = value;
-                    OnPropertyChanged("Size");
+                    OnPropertyChanged(nameof(Size));
                 }
             }
         }
@@ -649,7 +644,7 @@ namespace WPinternals
                 if (_TimeLeft != value)
                 {
                     _TimeLeft = value;
-                    OnPropertyChanged("TimeLeft");
+                    OnPropertyChanged(nameof(TimeLeft));
                 }
             }
         }
@@ -666,7 +661,7 @@ namespace WPinternals
                 if (_Speed != value)
                 {
                     _Speed = value;
-                    OnPropertyChanged("Speed");
+                    OnPropertyChanged(nameof(Speed));
                 }
             }
         }
@@ -683,7 +678,7 @@ namespace WPinternals
                 if (_Progress != value)
                 {
                     _Progress = value;
-                    OnPropertyChanged("Progress");
+                    OnPropertyChanged(nameof(Progress));
                 }
             }
         }
@@ -691,7 +686,7 @@ namespace WPinternals
 
     internal class SearchResult : INotifyPropertyChanged
     {
-        private SynchronizationContext UIContext;
+        private readonly SynchronizationContext UIContext;
         public event PropertyChangedEventHandler PropertyChanged;
         internal string[] URLs;
         internal Action<string[], object> Callback;
@@ -739,7 +734,9 @@ namespace WPinternals
             if (this.PropertyChanged != null)
             {
                 if (SynchronizationContext.Current == UIContext)
+                {
                     PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                }
                 else
                 {
                     UIContext.Post((s) => PropertyChanged(this, new PropertyChangedEventArgs(propertyName)), null);
@@ -759,7 +756,7 @@ namespace WPinternals
                 if (_Name != value)
                 {
                     _Name = value;
-                    OnPropertyChanged("Name");
+                    OnPropertyChanged(nameof(Name));
                 }
             }
         }
@@ -776,7 +773,7 @@ namespace WPinternals
                 if (_Size != value)
                 {
                     _Size = value;
-                    OnPropertyChanged("Size");
+                    OnPropertyChanged(nameof(Size));
                 }
             }
         }
@@ -793,7 +790,7 @@ namespace WPinternals
                 if (_IsSelected != value)
                 {
                     _IsSelected = value;
-                    OnPropertyChanged("IsSelected");
+                    OnPropertyChanged(nameof(IsSelected));
                 }
             }
         }
@@ -805,7 +802,7 @@ namespace WPinternals
         {
             HttpWebRequest req = (HttpWebRequest)base.GetWebRequest(address);
             req.ServicePoint.ConnectionLimit = 10;
-            return (WebRequest)req;
+            return req;
         }
     }
 
@@ -831,10 +828,16 @@ namespace WPinternals
         {
             long? Size = value as long?;
             if (Size < 1024)
+            {
                 return Size + " B";
+            }
+
             if (Size < (1024 * 1024))
-                return Math.Round(((double)Size / 1024), 0) + " KB";
-            return Math.Round(((double)Size / 1024 / 1024), 0) + " MB";
+            {
+                return Math.Round((double)Size / 1024, 0) + " KB";
+            }
+
+            return Math.Round((double)Size / 1024 / 1024, 0) + " MB";
         }
 
         public object ConvertBack(object value, Type targetType,
@@ -866,7 +869,10 @@ namespace WPinternals
         {
             TimeSpan TimeLeft = (TimeSpan)value;
             if (TimeLeft == Timeout.InfiniteTimeSpan)
+            {
                 return "";
+            }
+
             return TimeLeft.ToString(@"h\:mm\:ss");
         }
 

@@ -46,7 +46,7 @@ namespace WPinternals
     internal class NokiaFlashModel : NokiaPhoneModel
     {
         private UefiSecurityStatusResponse _SecurityStatus = null;
-        private PhoneInfo Info = new PhoneInfo();
+        private readonly PhoneInfo Info = new();
 
         internal event InterfaceChangedHandler InterfaceChanged = delegate { };
 
@@ -61,7 +61,10 @@ namespace WPinternals
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Param), 0, Request, 7, Param.Length);
 
             byte[] Response = ExecuteRawMethod(Request);
-            if ((Response == null) || (Response.Length < 0x10)) return null;
+            if ((Response == null) || (Response.Length < 0x10))
+            {
+                return null;
+            }
 
             byte[] Result = new byte[Response[0x10]];
             System.Buffer.BlockCopy(Response, 0x11, Result, 0, Response[0x10]);
@@ -71,7 +74,11 @@ namespace WPinternals
         public string ReadStringParam(string Param)
         {
             byte[] Bytes = ReadParam(Param);
-            if (Bytes == null) return null;
+            if (Bytes == null)
+            {
+                return null;
+            }
+
             return System.Text.ASCIIEncoding.ASCII.GetString(Bytes).Trim(new char[] { '\0' });
         }
 
@@ -99,7 +106,9 @@ namespace WPinternals
         {
             uint? flags = ReadSecurityFlags();
             if (!flags.HasValue)
+            {
                 return null;
+            }
 
             var finalconfig = (Fuse)flags.Value;
             return finalconfig.HasFlag(fuse);
@@ -108,7 +117,10 @@ namespace WPinternals
         public uint? ReadSecurityFlags()
         {
             byte[] Response = ReadParam("FCS");
-            if ((Response == null) || (Response.Length != 4)) return null;
+            if ((Response == null) || (Response.Length != 4))
+            {
+                return null;
+            }
 
             // This value is in big endian
             return (UInt32)((Response[0] << 24) | (Response[1] << 16) | (Response[2] << 8) | Response[3]);
@@ -117,7 +129,10 @@ namespace WPinternals
         public uint? ReadCurrentChargeLevel()
         {
             byte[] Response = ReadParam("CS");
-            if ((Response == null) || (Response.Length != 8)) return null;
+            if ((Response == null) || (Response.Length != 8))
+            {
+                return null;
+            }
 
             // This value is in big endian
             return (UInt32)((Response[0] << 24) | (Response[1] << 16) | (Response[2] << 8) | Response[3]) + 1;
@@ -126,7 +141,10 @@ namespace WPinternals
         public int? ReadCurrentChargeCurrent()
         {
             byte[] Response = ReadParam("CS");
-            if ((Response == null) || (Response.Length != 8)) return null;
+            if ((Response == null) || (Response.Length != 8))
+            {
+                return null;
+            }
 
             // This value is in big endian and needs to be XOR'd with 0xFFFFFFFF
             return (Int32)(((Response[4] << 24) | (Response[5] << 16) | (Response[6] << 8) | Response[7]) ^ 0xFFFFFFFF) + 1;
@@ -135,12 +153,17 @@ namespace WPinternals
         public UefiSecurityStatusResponse ReadSecurityStatus()
         {
             if (_SecurityStatus != null)
+            {
                 return _SecurityStatus;
+            }
 
             byte[] Response = ReadParam("SS");
-            if (Response == null) return null;
+            if (Response == null)
+            {
+                return null;
+            }
 
-            UefiSecurityStatusResponse Result = new UefiSecurityStatusResponse();
+            UefiSecurityStatusResponse Result = new();
 
             Result.IsTestDevice = Response[0];
             Result.PlatformSecureBootStatus = Convert.ToBoolean(Response[1]);
@@ -160,7 +183,10 @@ namespace WPinternals
         {
             UefiSecurityStatusResponse SecurityStatus = ReadSecurityStatus();
             if (SecurityStatus != null)
-                return (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+            {
+                return SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus;
+            }
+
             return null;
         }
 
@@ -168,7 +194,7 @@ namespace WPinternals
         {
             byte[] AsskMask = new byte[0x10] { 1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64 };
             byte[] Request = new byte[0xAC];
-            string Header = "NOKXFT";
+            const string Header = "NOKXFT";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[7] = 1;
             System.Buffer.BlockCopy(BigEndian.GetBytes(0x18, 4), 0, Request, 0x08, 4); // Subblocktype = 0x18
@@ -176,20 +202,23 @@ namespace WPinternals
             System.Buffer.BlockCopy(BigEndian.GetBytes(0x00, 4), 0, Request, 0x10, 4); // AsicIndex = 0x00
             System.Buffer.BlockCopy(AsskMask, 0, Request, 0x14, 0x10);
             byte[] TerminalResponse = ExecuteRawMethod(Request);
-            if ((TerminalResponse != null) && (TerminalResponse.Length > 0x20) && (BigEndian.ToUInt32(TerminalResponse, 0x14) == (TerminalResponse.Length - 0x18)) && (BitConverter.ToUInt32(TerminalResponse, 0x1C) == (TerminalResponse.Length - 0x20)))
+            if ((TerminalResponse?.Length > 0x20) && (BigEndian.ToUInt32(TerminalResponse, 0x14) == (TerminalResponse.Length - 0x18)) && (BitConverter.ToUInt32(TerminalResponse, 0x1C) == (TerminalResponse.Length - 0x20)))
             {
                 // Parse Terminal Response from offset 0x18
                 TerminalResponse ParsedResponse = Terminal.Parse(TerminalResponse, 0x18);
                 return ParsedResponse;
             }
-            else return null;
+            else
+            {
+                return null;
+            }
         }
 
         public void SendFfuHeaderV1(byte[] FfuHeader, byte Options = 0)
         {
             byte[] Request = new byte[FfuHeader.Length + 0x20];
 
-            string Header = "NOKXFS";
+            const string Header = "NOKXFS";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             System.Buffer.BlockCopy(BigEndian.GetBytes(0x0001, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
             Request[0x08] = 0; // Progress = 0%
@@ -204,17 +233,22 @@ namespace WPinternals
 
             byte[] Response = ExecuteRawMethod(Request);
             if (Response == null)
+            {
                 throw new BadConnectionException();
+            }
+
             int ResultCode = (Response[6] << 8) + Response[7];
             if (ResultCode != 0)
+            {
                 ThrowFlashError(ResultCode);
+            }
         }
 
         public void SendFfuHeaderV2(UInt32 TotalHeaderLength, UInt32 OffsetForThisPart, byte[] FfuHeader, byte Options = 0)
         {
             byte[] Request = new byte[FfuHeader.Length + 0x3C];
 
-            string Header = "NOKXFS";
+            const string Header = "NOKXFS";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV2, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
             Request[0x08] = 0; // Progress = 0%
@@ -235,19 +269,27 @@ namespace WPinternals
 
             byte[] Response = ExecuteRawMethod(Request);
             if (Response == null)
+            {
                 throw new BadConnectionException();
+            }
+
             if (Response.Length == 4)
+            {
                 throw new WPinternalsException("Flash protocol v2 not supported", "The device reported that the Flash protocol v2 was not supported while sending the FFU header.");
+            }
+
             int ResultCode = (Response[6] << 8) + Response[7];
             if (ResultCode != 0)
+            {
                 ThrowFlashError(ResultCode);
+            }
         }
 
         public void SendFfuPayloadV1(byte[] FfuChunk, int Progress = 0, byte Options = 0)
         {
             byte[] Request = new byte[FfuChunk.Length + 0x1C];
 
-            string Header = "NOKXFS";
+            const string Header = "NOKXFS";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV1, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
             Request[0x08] = (byte)Progress; // Progress = 0% (0 - 100)
@@ -263,17 +305,22 @@ namespace WPinternals
 
             byte[] Response = ExecuteRawMethod(Request);
             if (Response == null)
+            {
                 throw new BadConnectionException();
+            }
+
             int ResultCode = (Response[6] << 8) + Response[7];
             if (ResultCode != 0)
+            {
                 ThrowFlashError(ResultCode);
+            }
         }
 
         public void SendFfuPayloadV2(byte[] FfuChunk, int Progress = 0, byte Options = 0)
         {
             byte[] Request = new byte[FfuChunk.Length + 0x20];
 
-            string Header = "NOKXFS";
+            const string Header = "NOKXFS";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV2, 2), 0, Request, 0x06, 2); // Protocol
             Request[0x08] = (byte)Progress; // Progress = 0% (0 - 100)
@@ -289,17 +336,22 @@ namespace WPinternals
 
             byte[] Response = ExecuteRawMethod(Request);
             if (Response == null)
+            {
                 throw new BadConnectionException();
+            }
+
             int ResultCode = (Response[6] << 8) + Response[7];
             if (ResultCode != 0)
+            {
                 ThrowFlashError(ResultCode);
+            }
         }
 
         public void SendFfuPayloadV3(byte[] FfuChunk, UInt32 WriteDescriptorIndex, UInt32 CRC, int Progress = 0, byte Options = 0)
         {
             byte[] Request = new byte[FfuChunk.Length + 0x20];
 
-            string Header = "NOKXFS";
+            const string Header = "NOKXFS";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolAsyncV3, 2), 0, Request, 0x06, 2); // Protocol
             Request[0x08] = (byte)Progress; // Progress = 0% (0 - 100)
@@ -317,10 +369,15 @@ namespace WPinternals
 
             byte[] Response = ExecuteRawMethod(Request);
             if (Response == null)
+            {
                 throw new BadConnectionException();
+            }
+
             int ResultCode = (Response[6] << 8) + Response[7];
             if (ResultCode != 0)
+            {
                 ThrowFlashError(ResultCode);
+            }
         }
 
         public void BackupPartitionToRam(string PartitionName)
@@ -329,7 +386,7 @@ namespace WPinternals
             if (new string[] { "MODEM_FSG", "MODEM_FS1", "MODEM_FS2", "SSD", "DPP" }.Any(s => s == PartitionName))
             {
                 byte[] Request = new byte[84];
-                string Header = "NOKXFB";
+                const string Header = "NOKXFB";
                 System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
                 Request[0x07] = 1; // Subblock count = 1
                 Request[0x08] = 6; // Subblock ID = 6 = Create Partition Backup to RAM
@@ -344,16 +401,20 @@ namespace WPinternals
                 byte[] Response = ExecuteRawMethod(Request);
                 int ResultCode = (Response[6] << 8) + Response[7];
                 if (ResultCode != 0)
+                {
                     ThrowFlashError(ResultCode);
+                }
             }
             else
+            {
                 throw new WPinternalsException("Specified partition cannot be backupped to RAM", "Partition name: \"" + PartitionName + "\".");
+            }
         }
 
         public void LoadMmosBinary(UInt32 TotalLength, UInt32 Offset, bool SkipMmosSupportCheck, byte[] MmosPart)
         {
             byte[] Request = new byte[MmosPart.Length + 0x20];
-            string Header = "NOKXFL";
+            const string Header = "NOKXFL";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[0x07] = 1; // Subblock count = 1
             System.Buffer.BlockCopy(BigEndian.GetBytes(0x0000001E, 4), 0, Request, 0x08, 4); // Subblock ID = Load MMOS Binary = 0x1E
@@ -361,14 +422,19 @@ namespace WPinternals
             System.Buffer.BlockCopy(BigEndian.GetBytes(TotalLength, 4), 0, Request, 0x10, 4);
             System.Buffer.BlockCopy(BigEndian.GetBytes(Offset, 4), 0, Request, 0x14, 4);
             if (SkipMmosSupportCheck)
+            {
                 Request[0x18] = 1;
+            }
+
             System.Buffer.BlockCopy(BigEndian.GetBytes(MmosPart.Length, 4), 0, Request, 0x1C, 4);
             Buffer.BlockCopy(MmosPart, 0, Request, 0x20, MmosPart.Length);
 
             byte[] Response = ExecuteRawMethod(Request);
             int ResultCode = (Response[6] << 8) + Response[7];
             if (ResultCode != 0)
+            {
                 ThrowFlashError(ResultCode);
+            }
         }
 
         internal void SwitchToMmosContext()
@@ -384,51 +450,48 @@ namespace WPinternals
 
         private void ThrowFlashError(int ErrorCode)
         {
-            string SubMessage;
-
-            switch (ErrorCode)
+            string SubMessage = ErrorCode switch
             {
-                case 0x0008: SubMessage = "Unsupported protocol / Invalid options"; break;
-                case 0x000F: SubMessage = "Invalid sub block count"; break;
-                case 0x0010: SubMessage = "Invalid sub block length"; break;
-                case 0x0012: SubMessage = "Authentication required"; break;
-                case 0x000E: SubMessage = "Invalid sub block type"; break;
-                case 0x0013: SubMessage = "Failed async message"; break;
-                case 0x1000: SubMessage = "Invalid header type"; break;
-                case 0x1001: SubMessage = "FFU header contain unknown extra data"; break;
-                case 0x0001: SubMessage = "Couldn't allocate memory"; break;
-                case 0x1106: SubMessage = "Security header validation failed"; break;
-                case 0x1105: SubMessage = "Invalid hash table size"; break;
-                case 0x1104: SubMessage = "Invalid catalog size"; break;
-                case 0x1103: SubMessage = "Invalid chunk size"; break;
-                case 0x1102: SubMessage = "Unsupported algorithm"; break;
-                case 0x1101: SubMessage = "Invalid struct size"; break;
-                case 0x1100: SubMessage = "Invalid signature"; break;
-                case 0x1202: SubMessage = "Invalid struct size"; break;
-                case 0x1203: SubMessage = "Unsupported algorithm"; break;
-                case 0x1204: SubMessage = "Invalid chunk size"; break;
-                case 0x1005: SubMessage = "Data not aligned correctly"; break;
-                case 0x0009: SubMessage = "Locate protocol failed"; break;
-                case 0x1003: SubMessage = "Hash mismatch"; break;
-                case 0x1006: SubMessage = "Couldn't find hash from security header for index"; break;
-                case 0x1004: SubMessage = "Security header import missing / All FFU headers have not been imported"; break;
-                case 0x1304: SubMessage = "Invalid platform ID"; break;
-                case 0x1307: SubMessage = "Invalid write descriptor info"; break;
-                case 0x1306: SubMessage = "Invalid write descriptor info"; break;
-                case 0x1305: SubMessage = "Invalid block size"; break;
-                case 0x1303: SubMessage = "Unsupported FFU version"; break;
-                case 0x1302: SubMessage = "Unsupported struct version"; break;
-                case 0x1301: SubMessage = "Invalid update type"; break;
-                case 0x100B: SubMessage = "Too much payload data, all data has already been written"; break;
-                case 0x1008: SubMessage = "Internal error"; break;
-                case 0x1007: SubMessage = "Payload data does not contain all data"; break;
-                case 0x0004: SubMessage = "Flash write failed"; break;
-                case 0x000D: SubMessage = "Flash verify failed"; break;
-                case 0x0002: SubMessage = "Flash read failed"; break;
-                default: SubMessage = "Unknown error"; break;
-            }
-
-            WPinternalsException Ex = new WPinternalsException("Flash failed!");
+                0x0008 => "Unsupported protocol / Invalid options",
+                0x000F => "Invalid sub block count",
+                0x0010 => "Invalid sub block length",
+                0x0012 => "Authentication required",
+                0x000E => "Invalid sub block type",
+                0x0013 => "Failed async message",
+                0x1000 => "Invalid header type",
+                0x1001 => "FFU header contain unknown extra data",
+                0x0001 => "Couldn't allocate memory",
+                0x1106 => "Security header validation failed",
+                0x1105 => "Invalid hash table size",
+                0x1104 => "Invalid catalog size",
+                0x1103 => "Invalid chunk size",
+                0x1102 => "Unsupported algorithm",
+                0x1101 => "Invalid struct size",
+                0x1100 => "Invalid signature",
+                0x1202 => "Invalid struct size",
+                0x1203 => "Unsupported algorithm",
+                0x1204 => "Invalid chunk size",
+                0x1005 => "Data not aligned correctly",
+                0x0009 => "Locate protocol failed",
+                0x1003 => "Hash mismatch",
+                0x1006 => "Couldn't find hash from security header for index",
+                0x1004 => "Security header import missing / All FFU headers have not been imported",
+                0x1304 => "Invalid platform ID",
+                0x1307 => "Invalid write descriptor info",
+                0x1306 => "Invalid write descriptor info",
+                0x1305 => "Invalid block size",
+                0x1303 => "Unsupported FFU version",
+                0x1302 => "Unsupported struct version",
+                0x1301 => "Invalid update type",
+                0x100B => "Too much payload data, all data has already been written",
+                0x1008 => "Internal error",
+                0x1007 => "Payload data does not contain all data",
+                0x0004 => "Flash write failed",
+                0x000D => "Flash verify failed",
+                0x0002 => "Flash read failed",
+                _ => "Unknown error",
+            };
+            WPinternalsException Ex = new("Flash failed!");
             Ex.SubMessage = "Error 0x" + ErrorCode.ToString("X4") + ": " + SubMessage;
 
             throw Ex;
@@ -452,11 +515,13 @@ namespace WPinternals
 
             PhoneInfo Info = ReadPhoneInfo();
             if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV1 | (ushort)FfuProtocol.ProtocolSyncV2)) == 0)
+            {
                 throw new WPinternalsException("Flash failed!", "Protocols not supported. The device reports that both Protocol Sync v1 and Protocol Sync v2 are not supported for FFU flashing. Is this an old device?");
+            }
 
             UInt64 CombinedFFUHeaderSize = FFU.HeaderSize;
             byte[] FfuHeader = new byte[CombinedFFUHeaderSize];
-            using (System.IO.FileStream FfuFile = new System.IO.FileStream(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+            using (FileStream FfuFile = new(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
             {
                 FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
                 SendFfuHeaderV1(FfuHeader, Options);
@@ -477,8 +542,7 @@ namespace WPinternals
                         SendFfuPayloadV1(Payload, (int)((double)ChunkCount * 100 / FFU.TotalChunkCount), 0);
                         Position += (ulong)Payload.Length;
 
-                        if (Progress != null)
-                            Progress.IncreaseProgress(1);
+                        Progress?.IncreaseProgress(1);
                     }
                 }
                 else
@@ -500,14 +564,15 @@ namespace WPinternals
                         SendFfuPayloadV2(Payload, (int)((double)ChunkCount * 100 / FFU.TotalChunkCount), 0);
                         Position += PayloadSize;
 
-                        if (Progress != null)
-                            Progress.IncreaseProgress((ulong)(PayloadSize / FFU.ChunkSize));
+                        Progress?.IncreaseProgress((ulong)(PayloadSize / FFU.ChunkSize));
                     }
                 }
             }
 
             if (ResetAfterwards)
+            {
                 ResetPhone();
+            }
 
             LogFile.EndAction("FlashFFU");
         }
@@ -520,17 +585,19 @@ namespace WPinternals
 
             PhoneInfo Info = ReadPhoneInfo();
             if (!Info.MmosOverUsbSupported)
+            {
                 throw new WPinternalsException("Flash failed!", "Protocols not supported. The device reports that loading Microsoft Manufacturing Operating System over USB is not supported.");
+            }
 
-            FileInfo info = new FileInfo(MMOSPath);
+            FileInfo info = new(MMOSPath);
             uint length = uint.Parse(info.Length.ToString());
 
             int offset = 0;
-            int maximumbuffersize = 0x00240000;
+            const int maximumbuffersize = 0x00240000;
 
             uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
 
-            using (System.IO.FileStream MMOSFile = new System.IO.FileStream(MMOSPath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+            using (FileStream MMOSFile = new(MMOSPath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
             {
                 for (int i = 1; i <= (uint)Math.Truncate((decimal)length / maximumbuffersize); i++)
                 {
@@ -565,7 +632,7 @@ namespace WPinternals
 
             byte[] Request = new byte[Data.Length + 0x40];
 
-            string Header = "NOKF";
+            const string Header = "NOKF";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[0x05] = 0; // Device type = 0
             System.Buffer.BlockCopy(BigEndian.GetBytes(StartSector, 4), 0, Request, 0x0B, 4); // Start sector
@@ -582,7 +649,7 @@ namespace WPinternals
         public void DisableRebootTimeOut()
         {
             byte[] Request = new byte[4];
-            string Header = "NOKD";
+            const string Header = "NOKD";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             ExecuteRawMethod(Request);
         }
@@ -590,7 +657,7 @@ namespace WPinternals
         public void Shutdown()
         {
             byte[] Request = new byte[4];
-            string Header = "NOKZ";
+            const string Header = "NOKZ";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             ExecuteRawMethod(Request);
         }
@@ -598,9 +665,12 @@ namespace WPinternals
         public FlashVersion GetFlashVersion()
         {
             byte[] Response = ReadParam("FAI");
-            if ((Response == null) || (Response.Length < 6)) return null;
+            if ((Response == null) || (Response.Length < 6))
+            {
+                return null;
+            }
 
-            FlashVersion Result = new FlashVersion();
+            FlashVersion Result = new();
 
             Result.ProtocolMajor = Response[1];
             Result.ProtocolMinor = Response[2];
@@ -622,7 +692,9 @@ namespace WPinternals
             FlashAppType OriginalAppType = Info.App;
             bool Switch = ((Info.App != FlashAppType.BootManager) && Info.IsBootloaderSecure);
             if (Switch)
+            {
                 SwitchToBootManagerContext();
+            }
 
             byte[] Request = new byte[0x04];
             const string Header = "NOKT";
@@ -631,11 +703,15 @@ namespace WPinternals
 
             byte[] Buffer = ExecuteRawMethod(Request);
             if ((Buffer == null) || (Buffer.Length < 0x4408))
+            {
                 throw new InvalidOperationException("Unable to read GPT!");
+            }
 
             UInt16 Error = (UInt16)((Buffer[6] << 8) + Buffer[7]);
             if (Error > 0)
+            {
                 throw new NotSupportedException("ReadGPT: Error 0x" + Error.ToString("X4"));
+            }
 
             byte[] GPTBuffer = new byte[Buffer.Length - 0x208];
             System.Buffer.BlockCopy(Buffer, 0x208, GPTBuffer, 0, 0x4200);
@@ -643,9 +719,13 @@ namespace WPinternals
             if (Switch)
             {
                 if (OriginalAppType == FlashAppType.FlashApp)
+                {
                     SwitchToFlashAppContext();
+                }
                 else
+                {
                     SwitchToPhoneInfoAppContext();
+                }
             }
 
             return new GPT(GPTBuffer);  // NOKT message header and MBR are ignored
@@ -654,14 +734,18 @@ namespace WPinternals
         internal void WriteGPT(GPT NewGPT)
         {
             bool? unlocked = IsBootLoaderUnlocked();
-            if (unlocked.HasValue && !unlocked.Value)
+            if (unlocked == false)
+            {
                 throw new InvalidOperationException("Bootloader is not unlocked!");
+            }
 
             byte[] Buffer = NewGPT.Rebuild();
 
             UInt32? HeaderOffset = ByteOperations.FindAscii(Buffer, "EFI PART");
             if (HeaderOffset != 0)
+            {
                 throw new BadImageFormatException();
+            }
 
             FlashSectors(1, Buffer);
         }
@@ -694,24 +778,25 @@ namespace WPinternals
         private void FlashRawPartition(string Path, Stream Stream, string PartitionName, Action<int, TimeSpan?> ProgressUpdateCallback, ProgressUpdater UpdaterPerSector)
         {
             bool? unlocked = IsBootLoaderUnlocked();
-            if (unlocked.HasValue && !unlocked.Value)
+            if (unlocked == false)
+            {
                 throw new InvalidOperationException("Bootloader is not unlocked!");
+            }
 
             GPT GPT = ReadGPT();
 
-            Partition Partition = GPT.Partitions.Where((p) => p.Name == PartitionName).First();
+            Partition Partition = GPT.Partitions.First((p) => p.Name == PartitionName);
             ulong PartitionSize = (Partition.LastSector - Partition.FirstSector + 1) * 0x200;
 
             Stream InputStream = null;
 
             if (Path != null)
+            {
                 InputStream = new DecompressedStream(File.Open(Path, FileMode.Open));
+            }
             else if (Stream != null)
             {
-                if (Stream is DecompressedStream)
-                    InputStream = Stream;
-                else
-                    InputStream = new DecompressedStream(Stream);
+                InputStream = Stream is DecompressedStream ? Stream : new DecompressedStream(Stream);
             }
 
             if (InputStream != null)
@@ -726,11 +811,16 @@ namespace WPinternals
                     catch { }
 
                     if ((InputStreamLength != null) && ((UInt64)InputStream.Length > PartitionSize))
+                    {
                         throw new InvalidOperationException("Partition can not be flashed, because its size is too big!");
+                    }
 
                     ProgressUpdater Progress = UpdaterPerSector;
                     if ((Progress == null) && (ProgressUpdateCallback != null) && (InputStreamLength != null))
+                    {
                         Progress = new ProgressUpdater((UInt64)(InputStreamLength / 0x200), ProgressUpdateCallback);
+                    }
+
                     int ProgressPercentage = 0;
 
                     const int FlashBufferSize = 0x200000; // Flash 8 GB phone -> buffersize 0x200000 = 11:45 min, buffersize 0x20000 = 12:30 min
@@ -745,7 +835,9 @@ namespace WPinternals
                         if (BytesRead > 0)
                         {
                             if (BytesRead == FlashBufferSize)
+                            {
                                 FlashBufferFinalSize = FlashBuffer;
+                            }
                             else
                             {
                                 FlashBufferFinalSize = new byte[BytesRead];
@@ -773,10 +865,12 @@ namespace WPinternals
             // Partition "Data" can always be erased.
             // Other partitions can only be erased when a valid RDC certificate is present or full SX authentication was performed.
             if (PartitionName.Length > 0x23)
+            {
                 throw new ArgumentException("PartitionName cannot exceed 0x23 chars!");
+            }
 
             byte[] Request = new byte[0x50];
-            string Header = "NOKXFP";
+            const string Header = "NOKXFP";
             System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[0x06] = 1; // Protocol version must be 1
             Request[0x07] = 0; // Device type = 0
@@ -791,13 +885,14 @@ namespace WPinternals
 
         internal FlashAppType GetFlashAppType()
         {
-            byte[] Request;
-
-            Request = new byte[4];
+            byte[] Request = new byte[4];
             ByteOperations.WriteAsciiString(Request, 0, "NOKV");
             byte[] Response = ExecuteRawMethod(Request);
             if ((Response == null) || (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU"))
+            {
                 throw new NotSupportedException();
+            }
+
             return (FlashAppType)Response[5];
         }
 
@@ -811,8 +906,7 @@ namespace WPinternals
 
             if (Result.State == PhoneInfoState.Empty)
             {
-                byte[] Request;
-                Request = new byte[4];
+                byte[] Request = new byte[4];
                 ByteOperations.WriteAsciiString(Request, 0, "NOKV");
                 byte[] Response = ExecuteRawMethod(Request);
                 if ((Response != null) && (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU"))
@@ -878,7 +972,7 @@ namespace WPinternals
                                 Result.EmmcSizeInSectors = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 break;
                             case 0x05:
-                                Result.PlatformID = ByteOperations.ReadAsciiString(Response, (uint)SubblockPayloadOffset, (uint)SubblockLength).Trim(new char[] { ' ', '\0' });
+                                Result.PlatformID = ByteOperations.ReadAsciiString(Response, (uint)SubblockPayloadOffset, SubblockLength).Trim(new char[] { ' ', '\0' });
                                 break;
                             case 0x0D:
                                 Result.AsyncSupport = (Response[SubblockPayloadOffset + 1] == 1);
@@ -908,7 +1002,7 @@ namespace WPinternals
                 Result.State = PhoneInfoState.Basic;
             }
 
-            if ((ExtendedInfo) && (Result.State == PhoneInfoState.Basic))
+            if (ExtendedInfo && (Result.State == PhoneInfoState.Basic))
             {
                 FlashAppType OriginalType = Result.App;
 
@@ -946,7 +1040,9 @@ namespace WPinternals
             Result.IsBootloaderSecure = !(Info.Authenticated || Info.RdcPresent || !Info.SecureFfuEnabled);
 
             if (!PhoneInfoLogged)
+            {
                 Result.Log(LogType.FileOnly);
+            }
 
             return Result;
         }
@@ -990,9 +1086,14 @@ namespace WPinternals
             ByteOperations.WriteAsciiString(Request, 0, "NOKI");
             byte[] Response = ExecuteRawMethod(Request);
             if (Response == null)
+            {
                 throw new BadConnectionException();
+            }
+
             if (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKI")
+            {
                 throw new WPinternalsException("Bad response from phone!", "The phone did not answer properly to the Hello message sent.");
+            }
         }
 
         internal UInt16 ReadSecureFfuSupportedProtocolMask()
@@ -1006,10 +1107,16 @@ namespace WPinternals
             ByteOperations.WriteAsciiString(Request, 0, "NOKXCBP");
             byte[] Response = ExecuteRawMethod(Request);
             if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
+            {
                 throw new NotSupportedException();
+            }
+
             UInt16 Error = (UInt16)((Response[6] << 8) + Response[7]);
             if (Error > 0)
+            {
                 throw new NotSupportedException("SwitchToPhoneInfoAppContext: Error 0x" + Error.ToString("X4"));
+            }
+
             DisableRebootTimeOut();
             Info.App = FlashAppType.PhoneInfoApp;
             InterfaceChanged(PhoneInterfaces.Lumia_Flash);
@@ -1027,7 +1134,9 @@ namespace WPinternals
             byte[] Request;
 
             if (Info.State == PhoneInfoState.Empty)
+            {
                 ReadPhoneInfo(ExtendedInfo: false);
+            }
 
             if (Info.App == FlashAppType.BootManager)
             {
@@ -1049,10 +1158,15 @@ namespace WPinternals
                 ByteOperations.WriteAsciiString(Request, 0, "NOKXCBF"); // This will stop charging the phone
                 byte[] Response = ExecuteRawMethod(Request);
                 if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
+                {
                     throw new NotSupportedException();
+                }
+
                 UInt16 Error = (UInt16)((Response[6] << 8) + Response[7]);
                 if (Error > 0)
+                {
                     throw new NotSupportedException("SwitchToFlashAppContext: Error 0x" + Error.ToString("X4"));
+                }
             }
 
             DisableRebootTimeOut();
@@ -1061,7 +1175,9 @@ namespace WPinternals
 
             // If current Info class was retrieved while in BootMgr mode, then we need to invalidate this data, because it is incomplete. 
             if (Info.PlatformID == null)
+            {
                 Info.State = PhoneInfoState.Empty;
+            }
 
             InterfaceChanged(PhoneInterfaces.Lumia_Flash);
         }
@@ -1072,12 +1188,21 @@ namespace WPinternals
             ByteOperations.WriteAsciiString(Request, 0, "NOKXCBB");
             byte[] Response = ExecuteRawMethod(Request);
             if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
+            {
                 throw new NotSupportedException();
+            }
+
             UInt16 Error = (UInt16)((Response[6] << 8) + Response[7]);
             if (Error > 0)
+            {
                 throw new NotSupportedException("SwitchToBootManagerContext: Error 0x" + Error.ToString("X4"));
+            }
+
             if (DisableTimeOut)
+            {
                 DisableRebootTimeOut();
+            }
+
             Info.App = FlashAppType.BootManager;
             InterfaceChanged(PhoneInterfaces.Lumia_Bootloader);
         }
@@ -1133,7 +1258,9 @@ namespace WPinternals
             byte[] Response = ExecuteRawMethod(Request);
             UInt32 Status = ByteOperations.ReadUInt32(Response, 6);
             if (Status != 0)
+            {
                 ThrowFlashError((int)Status);
+            }
         }
     }
 
@@ -1202,15 +1329,29 @@ namespace WPinternals
             if (State == PhoneInfoState.Extended)
             {
                 if (this.Type != null)
+                {
                     LogFile.Log("Phone type: " + this.Type, Type);
+                }
+
                 if (ProductCode != null)
+                {
                     LogFile.Log("Product code: " + ProductCode, Type);
+                }
+
                 if (RKH != null)
+                {
                     LogFile.Log("Root key hash: " + Converter.ConvertHexToString(RKH, ""), Type);
-                if (Firmware != null && Firmware.Length > 0)
+                }
+
+                if (Firmware?.Length > 0)
+                {
                     LogFile.Log("Firmware version: " + Firmware, Type);
-                if (!(Type == LogType.ConsoleOnly) && (Imei != null))
+                }
+
+                if (Type != LogType.ConsoleOnly && (Imei != null))
+                {
                     LogFile.Log("IMEI: " + Imei, LogType.FileOnly);
+                }
             }
 
             switch (App)
@@ -1234,9 +1375,14 @@ namespace WPinternals
             LogFile.Log("SecureBoot: " + ((!PlatformSecureBootEnabled || !UefiSecureBootEnabled) ? "Disabled" : "Enabled") + " (Platform Secure Boot: " + (PlatformSecureBootEnabled ? "Enabled" : "Disabled") + ", UEFI Secure Boot: " + (PlatformSecureBootEnabled ? "Enabled" : "Disabled") + ")", Type);
 
             if ((Type == LogType.ConsoleOnly) || (Type == LogType.FileAndConsole))
+            {
                 LogFile.Log("Flash app security: " + (!IsBootloaderSecure ? "Disabled" : "Enabled"), LogType.ConsoleOnly);
+            }
+
             if ((Type == LogType.FileOnly) || (Type == LogType.FileAndConsole))
+            {
                 LogFile.Log("Flash app security: " + (!IsBootloaderSecure ? "Disabled" : "Enabled") + " (FFU security: " + (SecureFfuEnabled ? "Enabled" : "Disabled") + ", RDC: " + (RdcPresent ? "Present" : "Not found") + ", Authenticated: " + (Authenticated ? "True" : "False") + ")", LogType.FileOnly);
+            }
 
             LogFile.Log("JTAG: " + (JtagDisabled ? "Disabled" : "Enabled"), Type);
         }

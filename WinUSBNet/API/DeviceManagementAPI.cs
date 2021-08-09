@@ -15,10 +15,9 @@ using System.Runtime.InteropServices;
 namespace MadWizard.WinUSBNet.API
 {
     /// <summary>
-    /// API declarations relating to device management (SetupDixxx and 
-    /// RegisterDeviceNotification functions).   
+    /// API declarations relating to device management (SetupDixxx and
+    /// RegisterDeviceNotification functions).
     /// </summary>
-
     internal static partial class DeviceManagement
     {
         // from dbt.h
@@ -86,14 +85,14 @@ namespace MadWizard.WinUSBNet.API
         private struct SP_DEVICE_INTERFACE_DATA
         {
             internal Int32 cbSize;
-            internal System.Guid InterfaceClassGuid;
+            internal Guid InterfaceClassGuid;
             internal Int32 Flags;
             internal IntPtr Reserved;
         }
         private struct SP_DEVINFO_DATA
         {
             internal Int32 cbSize;
-            internal System.Guid ClassGuid;
+            internal Guid ClassGuid;
             internal Int32 DevInst;
             internal IntPtr Reserved;
         }
@@ -152,7 +151,7 @@ namespace MadWizard.WinUSBNet.API
         private static extern Int32 SetupDiDestroyDeviceInfoList(IntPtr DeviceInfoSet);
 
         [DllImport("setupapi.dll", SetLastError = true)]
-        private static extern bool SetupDiEnumDeviceInterfaces(IntPtr DeviceInfoSet, IntPtr DeviceInfoData, ref System.Guid InterfaceClassGuid, Int32 MemberIndex, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
+        private static extern bool SetupDiEnumDeviceInterfaces(IntPtr DeviceInfoSet, IntPtr DeviceInfoData, ref Guid InterfaceClassGuid, Int32 MemberIndex, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
 
         [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool SetupDiGetDeviceRegistryProperty(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, SPDRP Property, out int PropertyRegDataType, byte[] PropertyBuffer, uint PropertyBufferSize, out UInt32 RequiredSize);
@@ -161,10 +160,10 @@ namespace MadWizard.WinUSBNet.API
         private static extern bool SetupDiGetDeviceRegistryProperty(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, SPDRP Property, IntPtr PropertyRegDataType, IntPtr PropertyBuffer, uint PropertyBufferSize, out UInt32 RequiredSize);
 
         [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        static extern unsafe bool SetupDiGetDeviceProperty(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, ref DEVPROPKEY propertyKey, out UInt32 propertyType, byte[] propertyBuffer, Int32 propertyBufferSize, out int requiredSize, UInt32 flags);
+        private static extern unsafe bool SetupDiGetDeviceProperty(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, ref DEVPROPKEY propertyKey, out UInt32 propertyType, byte[] propertyBuffer, Int32 propertyBufferSize, out int requiredSize, UInt32 flags);
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern IntPtr SetupDiGetClassDevs(ref System.Guid ClassGuid, IntPtr Enumerator, IntPtr hwndParent, Int32 Flags);
+        private static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, IntPtr Enumerator, IntPtr hwndParent, Int32 Flags);
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool SetupDiGetDeviceInterfaceDetail(IntPtr DeviceInfoSet, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData, IntPtr DeviceInterfaceDetailData, Int32 DeviceInterfaceDetailDataSize, ref Int32 RequiredSize, ref SP_DEVINFO_DATA DeviceInfoData);

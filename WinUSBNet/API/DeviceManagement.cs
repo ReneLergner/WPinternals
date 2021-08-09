@@ -21,7 +21,6 @@ namespace MadWizard.WinUSBNet.API
     ///  </summary>
     internal static partial class DeviceManagement
     {
-
         // Get device name from notification message.
         // Also checks checkGuid with the GUID from the message to check the notification
         // is for a relevant device. Other messages might be received.
@@ -29,14 +28,14 @@ namespace MadWizard.WinUSBNet.API
         {
             int stringSize;
 
-            DEV_BROADCAST_DEVICEINTERFACE_1 devBroadcastDeviceInterface = new DEV_BROADCAST_DEVICEINTERFACE_1();
-            DEV_BROADCAST_HDR devBroadcastHeader = new DEV_BROADCAST_HDR();
+            DEV_BROADCAST_DEVICEINTERFACE_1 devBroadcastDeviceInterface = new();
+            DEV_BROADCAST_HDR devBroadcastHeader = new();
 
             // The LParam parameter of Message is a pointer to a DEV_BROADCAST_HDR structure.
 
             Marshal.PtrToStructure(pDevBroadcastHeader, devBroadcastHeader);
 
-            if ((devBroadcastHeader.dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE))
+            if (devBroadcastHeader.dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
             {
                 // The dbch_devicetype parameter indicates that the event applies to a device interface.
                 // So the structure in LParam is actually a DEV_BROADCAST_INTERFACE structure, 
@@ -60,16 +59,18 @@ namespace MadWizard.WinUSBNet.API
 
                 // Check if message is for the GUID
                 if (devBroadcastDeviceInterface.dbcc_classguid != checkGuid)
+                {
                     return null;
+                }
 
                 // Store the device name in a String.
-                string deviceNameString = new String(devBroadcastDeviceInterface.dbcc_name, 0, stringSize);
+                string deviceNameString = new(devBroadcastDeviceInterface.dbcc_name, 0, stringSize);
 
                 return deviceNameString;
             }
-            else if ((devBroadcastHeader.dbch_devicetype == DBT_DEVTYP_VOLUME))
+            else if (devBroadcastHeader.dbch_devicetype == DBT_DEVTYP_VOLUME)
             {
-                DEV_BROADCAST_VOLUME vol = new DEV_BROADCAST_VOLUME();
+                DEV_BROADCAST_VOLUME vol = new();
                 Marshal.PtrToStructure(pDevBroadcastHeader, vol);
                 Int32 Mask = vol.dbcv_unitmask;
                 Int32 DriveInt = Convert.ToInt32('A') - 1;
@@ -86,18 +87,20 @@ namespace MadWizard.WinUSBNet.API
 
         private static byte[] GetProperty(IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData, SPDRP property, out int regType)
         {
-            uint requiredSize;
-
-            if (!SetupDiGetDeviceRegistryProperty(deviceInfoSet, ref deviceInfoData, property, IntPtr.Zero, IntPtr.Zero, 0, out requiredSize))
+            if (!SetupDiGetDeviceRegistryProperty(deviceInfoSet, ref deviceInfoData, property, IntPtr.Zero, IntPtr.Zero, 0, out uint requiredSize))
             {
                 if (Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
+                {
                     throw APIException.Win32("Failed to get buffer size for device registry property.");
+                }
             }
 
             byte[] buffer = new byte[requiredSize];
 
             if (!SetupDiGetDeviceRegistryProperty(deviceInfoSet, ref deviceInfoData, property, out regType, buffer, (uint)buffer.Length, out requiredSize))
+            {
                 throw APIException.Win32("Failed to get device registry property.");
+            }
 
             return buffer;
         }
@@ -113,18 +116,20 @@ namespace MadWizard.WinUSBNet.API
         // Heathcliff74
         private static byte[] GetProperty(IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData, DEVPROPKEY property, out uint propertyType)
         {
-            int requiredSize;
-
-            if (!SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref property, out propertyType, null, 0, out requiredSize, 0))
+            if (!SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref property, out propertyType, null, 0, out int requiredSize, 0))
             {
                 if (Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
+                {
                     throw APIException.Win32("Failed to get buffer size for device registry property.");
+                }
             }
 
             byte[] buffer = new byte[requiredSize];
 
             if (!SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref property, out propertyType, buffer, buffer.Length, out requiredSize, 0))
+            {
                 throw APIException.Win32("Failed to get device registry property.");
+            }
 
             return buffer;
         }
@@ -132,10 +137,11 @@ namespace MadWizard.WinUSBNet.API
         // todo: is the queried data always available, or should we check ERROR_INVALID_DATA?
         private static string GetStringProperty(IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData, SPDRP property)
         {
-            int regType;
-            byte[] buffer = GetProperty(deviceInfoSet, deviceInfoData, property, out regType);
+            byte[] buffer = GetProperty(deviceInfoSet, deviceInfoData, property, out int regType);
             if (regType != (int)RegTypes.REG_SZ)
+            {
                 throw new APIException("Invalid registry type returned for device property.");
+            }
 
             // sizof(char), 2 bytes, are removed to leave out the string terminator
             return System.Text.Encoding.Unicode.GetString(buffer, 0, buffer.Length - sizeof(char));
@@ -145,10 +151,11 @@ namespace MadWizard.WinUSBNet.API
         // todo: is the queried data always available, or should we check ERROR_INVALID_DATA?
         private static string GetStringProperty(IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData, DEVPROPKEY property)
         {
-            uint propertyType;
-            byte[] buffer = GetProperty(deviceInfoSet, deviceInfoData, property, out propertyType);
+            byte[] buffer = GetProperty(deviceInfoSet, deviceInfoData, property, out uint propertyType);
             if (propertyType != 0x00000012) // DEVPROP_TYPE_STRING
+            {
                 throw new APIException("Invalid registry type returned for device property.");
+            }
 
             // sizof(char), 2 bytes, are removed to leave out the string terminator
             return System.Text.Encoding.Unicode.GetString(buffer, 0, buffer.Length - sizeof(char));
@@ -156,19 +163,19 @@ namespace MadWizard.WinUSBNet.API
 
         private static string[] GetMultiStringProperty(IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData, SPDRP property)
         {
-            int regType;
-            byte[] buffer = GetProperty(deviceInfoSet, deviceInfoData, property, out regType);
+            byte[] buffer = GetProperty(deviceInfoSet, deviceInfoData, property, out int regType);
             if (regType != (int)RegTypes.REG_MULTI_SZ)
+            {
                 throw new APIException("Invalid registry type returned for device property.");
+            }
 
             string fullString = System.Text.Encoding.Unicode.GetString(buffer);
 
             return fullString.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-
         }
         private static DeviceDetails GetDeviceDetails(string devicePath, IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData)
         {
-            DeviceDetails details = new DeviceDetails();
+            DeviceDetails details = new();
             details.DevicePath = devicePath;
             details.DeviceDescription = GetStringProperty(deviceInfoSet, deviceInfoData, SPDRP.SPDRP_DEVICEDESC);
             details.Manufacturer = GetStringProperty(deviceInfoSet, deviceInfoData, SPDRP.SPDRP_MFG);
@@ -183,7 +190,7 @@ namespace MadWizard.WinUSBNet.API
 
             string[] hardwareIDs = GetMultiStringProperty(deviceInfoSet, deviceInfoData, SPDRP.SPDRP_HARDWAREID);
 
-            Regex regex = new Regex("^USB\\\\VID_([0-9A-F]{4})&PID_([0-9A-F]{4})", RegexOptions.IgnoreCase);
+            Regex regex = new("^USB\\\\VID_([0-9A-F]{4})&PID_([0-9A-F]{4})", RegexOptions.IgnoreCase);
             foreach (string hardwareID in hardwareIDs)
             {
                 Match match = regex.Match(hardwareID);
@@ -204,39 +211,41 @@ namespace MadWizard.WinUSBNet.API
             return details;
         }
 
-
         public static DeviceDetails[] FindDevicesFromGuid(Guid guid)
         {
             IntPtr deviceInfoSet = IntPtr.Zero;
-            List<DeviceDetails> deviceList = new List<DeviceDetails>();
+            List<DeviceDetails> deviceList = new();
             try
             {
                 deviceInfoSet = SetupDiGetClassDevs(ref guid, IntPtr.Zero, IntPtr.Zero,
                     DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
                 if (deviceInfoSet == FileIO.INVALID_HANDLE_VALUE)
+                {
                     throw APIException.Win32("Failed to enumerate devices.");
+                }
+
                 int memberIndex = 0;
                 while (true)
                 {
                     // Begin with 0 and increment through the device information set until
                     // no more devices are available.					
-                    SP_DEVICE_INTERFACE_DATA deviceInterfaceData = new SP_DEVICE_INTERFACE_DATA();
+                    SP_DEVICE_INTERFACE_DATA deviceInterfaceData = new();
 
                     // The cbSize element of the deviceInterfaceData structure must be set to
                     // the structure's size in bytes. 
                     // The size is 28 bytes for 32-bit code and 32 bytes for 64-bit code.
                     deviceInterfaceData.cbSize = Marshal.SizeOf(deviceInterfaceData);
 
-                    bool success;
-
-                    success = SetupDiEnumDeviceInterfaces(deviceInfoSet, IntPtr.Zero, ref guid, memberIndex, ref deviceInterfaceData);
+                    bool success = SetupDiEnumDeviceInterfaces(deviceInfoSet, IntPtr.Zero, ref guid, memberIndex, ref deviceInterfaceData);
 
                     // Find out if a device information set was retrieved.
                     if (!success)
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         if (lastError == ERROR_NO_MORE_ITEMS)
+                        {
                             break;
+                        }
 
                         throw APIException.Win32("Failed to get device interface.");
                     }
@@ -255,13 +264,14 @@ namespace MadWizard.WinUSBNet.API
                     if (!success)
                     {
                         if (Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
+                        {
                             throw APIException.Win32("Failed to get interface details buffer size.");
+                        }
                     }
 
                     IntPtr detailDataBuffer = IntPtr.Zero;
                     try
                     {
-
                         // Allocate memory for the SP_DEVICE_INTERFACE_DETAIL_DATA structure using the returned buffer size.
                         detailDataBuffer = Marshal.AllocHGlobal(bufferSize);
 
@@ -274,9 +284,8 @@ namespace MadWizard.WinUSBNet.API
                         // and the returned required buffer size.
 
                         // build a DevInfo Data structure
-                        SP_DEVINFO_DATA da = new SP_DEVINFO_DATA();
+                        SP_DEVINFO_DATA da = new();
                         da.cbSize = Marshal.SizeOf(da);
-
 
                         success = SetupDiGetDeviceInterfaceDetail
                             (deviceInfoSet,
@@ -287,18 +296,18 @@ namespace MadWizard.WinUSBNet.API
                             ref da);
 
                         if (!success)
+                        {
                             throw APIException.Win32("Failed to get device interface details.");
-
+                        }
 
                         // Skip over cbsize (4 bytes) to get the address of the devicePathName.
 
-                        IntPtr pDevicePathName = new IntPtr(detailDataBuffer.ToInt64() + 4);
+                        IntPtr pDevicePathName = new(detailDataBuffer.ToInt64() + 4);
                         string pathName = Marshal.PtrToStringUni(pDevicePathName);
 
                         // Get the String containing the devicePathName.
 
                         DeviceDetails details = GetDeviceDetails(pathName, deviceInfoSet, da);
-
 
                         deviceList.Add(details);
                     }
@@ -323,11 +332,9 @@ namespace MadWizard.WinUSBNet.API
             return deviceList.ToArray();
         }
 
-
         public static void RegisterForDeviceNotifications(IntPtr controlHandle, Guid classGuid, ref IntPtr deviceNotificationHandle)
         {
-
-            DEV_BROADCAST_DEVICEINTERFACE devBroadcastDeviceInterface = new DEV_BROADCAST_DEVICEINTERFACE();
+            DEV_BROADCAST_DEVICEINTERFACE devBroadcastDeviceInterface = new();
             IntPtr devBroadcastDeviceInterfaceBuffer = IntPtr.Zero;
             try
             {
@@ -345,7 +352,9 @@ namespace MadWizard.WinUSBNet.API
 
                 deviceNotificationHandle = RegisterDeviceNotification(controlHandle, devBroadcastDeviceInterfaceBuffer, DEVICE_NOTIFY_WINDOW_HANDLE);
                 if (deviceNotificationHandle == IntPtr.Zero)
+                {
                     throw APIException.Win32("Failed to register device notification");
+                }
 
                 // Marshal data from the unmanaged block devBroadcastDeviceInterfaceBuffer to
                 // the managed object devBroadcastDeviceInterface
@@ -355,14 +364,18 @@ namespace MadWizard.WinUSBNet.API
             {
                 // Free the memory allocated previously by AllocHGlobal.
                 if (devBroadcastDeviceInterfaceBuffer != IntPtr.Zero)
+                {
                     Marshal.FreeHGlobal(devBroadcastDeviceInterfaceBuffer);
+                }
             }
         }
 
         public static void StopDeviceDeviceNotifications(IntPtr deviceNotificationHandle)
         {
             if (!DeviceManagement.UnregisterDeviceNotification(deviceNotificationHandle))
+            {
                 throw APIException.Win32("Failed to unregister device notification");
+            }
         }
     }
 }

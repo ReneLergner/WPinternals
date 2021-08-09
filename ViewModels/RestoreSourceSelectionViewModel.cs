@@ -25,9 +25,9 @@ namespace WPinternals
 {
     internal class RestoreSourceSelectionViewModel : ContextViewModel
     {
-        private PhoneNotifierViewModel PhoneNotifier;
-        private Action<string, string, string> RestoreCallback;
-        private Action<PhoneInterfaces> RequestModeSwitch;
+        private readonly PhoneNotifierViewModel PhoneNotifier;
+        private readonly Action<string, string, string> RestoreCallback;
+        private readonly Action<PhoneInterfaces> RequestModeSwitch;
         internal Action SwitchToUnlockBoot;
         internal Action SwitchToFlashRom;
 
@@ -58,7 +58,7 @@ namespace WPinternals
                 if (value != _EFIESPPath)
                 {
                     _EFIESPPath = value;
-                    OnPropertyChanged("EFIESPPath");
+                    OnPropertyChanged(nameof(EFIESPPath));
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace WPinternals
                 if (value != _MainOSPath)
                 {
                     _MainOSPath = value;
-                    OnPropertyChanged("MainOSPath");
+                    OnPropertyChanged(nameof(MainOSPath));
                 }
             }
         }
@@ -92,7 +92,7 @@ namespace WPinternals
                 if (value != _DataPath)
                 {
                     _DataPath = value;
-                    OnPropertyChanged("DataPath");
+                    OnPropertyChanged(nameof(DataPath));
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace WPinternals
                 if (value != _IsPhoneDisconnected)
                 {
                     _IsPhoneDisconnected = value;
-                    OnPropertyChanged("IsPhoneDisconnected");
+                    OnPropertyChanged(nameof(IsPhoneDisconnected));
                 }
             }
         }
@@ -126,7 +126,7 @@ namespace WPinternals
                 if (value != _IsPhoneInFlashMode)
                 {
                     _IsPhoneInFlashMode = value;
-                    OnPropertyChanged("IsPhoneInFlashMode");
+                    OnPropertyChanged(nameof(IsPhoneInFlashMode));
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace WPinternals
                 if (value != _IsPhoneInOtherMode)
                 {
                     _IsPhoneInOtherMode = value;
-                    OnPropertyChanged("IsPhoneInOtherMode");
+                    OnPropertyChanged(nameof(IsPhoneInOtherMode));
                 }
             }
         }
@@ -153,11 +153,7 @@ namespace WPinternals
         {
             get
             {
-                if (_RestoreCommand == null)
-                {
-                    _RestoreCommand = new DelegateCommand(() => { RestoreCallback(EFIESPPath, MainOSPath, DataPath); }, () => (((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null)));
-                }
-                return _RestoreCommand;
+                return _RestoreCommand ??= new DelegateCommand(() => RestoreCallback(EFIESPPath, MainOSPath, DataPath), () => (((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null)));
             }
         }
 
@@ -166,12 +162,12 @@ namespace WPinternals
             PhoneNotifier.NewDeviceArrived -= NewDeviceArrived;
         }
 
-        void NewDeviceArrived(ArrivalEventArgs Args)
+        private void NewDeviceArrived(ArrivalEventArgs Args)
         {
             new Thread(() => EvaluateViewState()).Start();
         }
 
-        void DeviceRemoved()
+        private void DeviceRemoved()
         {
             new Thread(() => EvaluateViewState()).Start();
         }

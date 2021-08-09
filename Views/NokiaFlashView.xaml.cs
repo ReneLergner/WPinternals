@@ -37,18 +37,18 @@ namespace WPinternals
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
             Hyperlink link = args.Source as Hyperlink;
-            if ((link != null) && (link.NavigateUri != null))
+            if (link?.NavigateUri != null)
             {
                 if (link.NavigateUri.ToString() == "GettingStarted")
-                    (this.DataContext as NokiaFlashViewModel).SwitchToGettingStarted();
-
-                (this.DataContext as NokiaFlashViewModel).RebootTo(link.NavigateUri.ToString());
+                {
+                    (this.DataContext as NokiaFlashViewModel)?.SwitchToGettingStarted();
+                } (this.DataContext as NokiaFlashViewModel)?.RebootTo(link.NavigateUri.ToString());
             }
         }
 
         private void Document_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as FlowDocument).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
     }
 }

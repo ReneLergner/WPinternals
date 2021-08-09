@@ -33,8 +33,8 @@ namespace WPinternals
     /// </summary>
     public partial class Empty : UserControl
     {
-        static PhoneNotifierViewModel PhoneNotifier;
-        static SynchronizationContext UIContext;
+        private static PhoneNotifierViewModel PhoneNotifier;
+        private static SynchronizationContext UIContext;
 
         // Dependency injection is not possible here, because this ViewModel is used in a Style.
         public Empty()
@@ -45,7 +45,7 @@ namespace WPinternals
             UIContext = SynchronizationContext.Current;
 
             // Setting these properties in XAML results in an error. Why?
-            GifImage.GifSource = @"/aerobusy.gif";
+            GifImage.GifSource = "/aerobusy.gif";
             GifImage.AutoStart = true;
 
             Loaded += Empty_Loaded;
@@ -62,7 +62,10 @@ namespace WPinternals
             // Find the phone notifier
             DependencyObject obj = (DependencyObject)sender;
             while (!(obj is MainWindow))
+            {
                 obj = VisualTreeHelper.GetParent(obj);
+            }
+
             PhoneNotifier = ((MainViewModel)(((MainWindow)obj).DataContext)).PhoneNotifier;
 
             PhoneNotifier.NewDeviceArrived += PhoneNotifier_NewDeviceArrived;
@@ -70,23 +73,30 @@ namespace WPinternals
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
-            Hyperlink link = args.Source as Hyperlink;
-            if (link != null)
+            if (args.Source is Hyperlink link)
             {
                 if (link.NavigateUri.ToString() == "Getting started")
+                {
                     App.NavigateToGettingStarted();
+                }
                 else if (link.NavigateUri.ToString() == "Unlock boot")
+                {
                     App.NavigateToUnlockBoot();
+                }
                 else if (link.NavigateUri.ToString() == "Interrupt boot")
+                {
                     InterruptBoot = true;
+                }
                 else if (link.NavigateUri.ToString() == "Normal boot")
+                {
                     InterruptBoot = false;
+                }
             }
         }
 
         private void Document_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as FlowDocument).AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
+            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
         }
 
         public static readonly DependencyProperty InterruptBootProperty =

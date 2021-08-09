@@ -14,20 +14,21 @@ namespace WPinternals
     public class FolderSelectDialog
     {
         // Wrapped dialog
-        System.Windows.Forms.OpenFileDialog ofd = null;
+        private readonly OpenFileDialog ofd = null;
 
         /// <summary>
         /// Default constructor
         /// </summary>
         public FolderSelectDialog()
         {
-            ofd = new System.Windows.Forms.OpenFileDialog();
-
-            ofd.Filter = "Folders|\n";
-            ofd.AddExtension = false;
-            ofd.CheckFileExists = false;
-            ofd.DereferenceLinks = true;
-            ofd.Multiselect = false;
+            ofd = new OpenFileDialog
+            {
+                Filter = "Folders|\n",
+                AddExtension = false,
+                CheckFileExists = false,
+                DereferenceLinks = true,
+                Multiselect = false
+            };
         }
 
         #region Properties
@@ -38,7 +39,7 @@ namespace WPinternals
         public string InitialDirectory
         {
             get { return ofd.InitialDirectory; }
-            set { ofd.InitialDirectory = value == null || value.Length == 0 ? Environment.CurrentDirectory : value; }
+            set { ofd.InitialDirectory = string.IsNullOrEmpty(value) ? Environment.CurrentDirectory : value; }
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace WPinternals
         public string Title
         {
             get { return ofd.Title; }
-            set { ofd.Title = value == null ? "Select a folder" : value; }
+            set { ofd.Title = value ?? "Select a folder"; }
         }
 
         /// <summary>
@@ -78,11 +79,17 @@ namespace WPinternals
         /// <returns>True if the user presses OK else false</returns>
         public bool ShowDialog(IntPtr hWndOwner)
         {
-            var fbd = new FolderBrowserDialog();
-            fbd.Description = this.Title;
-            fbd.SelectedPath = this.InitialDirectory;
-            fbd.ShowNewFolderButton = false;
-            if (fbd.ShowDialog(new WindowWrapper(hWndOwner)) != DialogResult.OK) return false;
+            var fbd = new FolderBrowserDialog
+            {
+                Description = this.Title,
+                SelectedPath = this.InitialDirectory,
+                ShowNewFolderButton = false
+            };
+            if (fbd.ShowDialog(new WindowWrapper(hWndOwner)) != DialogResult.OK)
+            {
+                return false;
+            }
+
             ofd.FileName = fbd.SelectedPath;
 
             return true;
@@ -94,7 +101,7 @@ namespace WPinternals
     /// <summary>
     /// Creates IWin32Window around an IntPtr
     /// </summary>
-    public class WindowWrapper : System.Windows.Forms.IWin32Window
+    public class WindowWrapper : IWin32Window
     {
         /// <summary>
         /// Constructor
@@ -102,17 +109,12 @@ namespace WPinternals
         /// <param name="handle">Handle to wrap</param>
         public WindowWrapper(IntPtr handle)
         {
-            _hwnd = handle;
+            Handle = handle;
         }
 
         /// <summary>
         /// Original ptr
         /// </summary>
-        public IntPtr Handle
-        {
-            get { return _hwnd; }
-        }
-
-        private IntPtr _hwnd;
+        public IntPtr Handle { get; }
     }
 }

@@ -20,7 +20,6 @@ namespace MadWizard.WinUSBNet
         public USBPipeCollection Pipes
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -29,7 +28,6 @@ namespace MadWizard.WinUSBNet
         public int Number
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -38,7 +36,6 @@ namespace MadWizard.WinUSBNet
         public USBDevice Device
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -47,7 +44,6 @@ namespace MadWizard.WinUSBNet
         public USBPipe InPipe
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -56,7 +52,6 @@ namespace MadWizard.WinUSBNet
         public USBPipe OutPipe
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -67,7 +62,6 @@ namespace MadWizard.WinUSBNet
         public USBBaseClass BaseClass
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -78,7 +72,6 @@ namespace MadWizard.WinUSBNet
         public byte ClassValue
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -87,7 +80,6 @@ namespace MadWizard.WinUSBNet
         public byte SubClass
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -96,7 +88,6 @@ namespace MadWizard.WinUSBNet
         public byte Protocol
         {
             get;
-            private set;
         }
 
         /// Zero based interface index in WinUSB.
@@ -106,7 +97,6 @@ namespace MadWizard.WinUSBNet
         internal int InterfaceIndex
         {
             get;
-            private set;
         }
 
         internal USBInterface(USBDevice device, int interfaceIndex, API.USB_INTERFACE_DESCRIPTOR rawDesc, USBPipeCollection pipes)
@@ -124,9 +114,8 @@ namespace MadWizard.WinUSBNet
             BaseClass = USBBaseClass.Unknown;
             if (Enum.IsDefined(typeof(USBBaseClass), (int)rawDesc.bInterfaceClass))
             {
-                BaseClass = (USBBaseClass)(int)rawDesc.bInterfaceClass;
+                BaseClass = (USBBaseClass)rawDesc.bInterfaceClass;
             }
-
 
             Device = device;
             Pipes = pipes;
@@ -139,12 +128,15 @@ namespace MadWizard.WinUSBNet
 
                 // If first in or out pipe, set InPipe and OutPipe
                 if (pipe.IsIn && InPipe == null)
+                {
                     InPipe = pipe;
+                }
+
                 if (pipe.IsOut && OutPipe == null)
+                {
                     OutPipe = pipe;
-
+                }
             }
-
         }
     }
 }

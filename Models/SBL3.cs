@@ -41,7 +41,7 @@ namespace WPinternals
             {
                 if (FFU.IsFFU(FileName))
                 {
-                    FFU FFUFile = new FFU(FileName);
+                    FFU FFUFile = new(FileName);
                     Binary = FFUFile.GetPartition("SBL3");
                 }
             }
@@ -50,18 +50,17 @@ namespace WPinternals
             // If not succeeded, then try to parse it as raw image
             if (Binary == null)
             {
-                byte[] SBL3Header;
                 byte[] SBL3Pattern = new byte[] { 0x18, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x8F, 0xFF, 0xFF, 0xFF, 0xFF };
                 byte[] SBL3Mask = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF };
 
-                UInt32? Offset = ByteOperations.FindPatternInFile(FileName, SBL3Pattern, SBL3Mask, out SBL3Header);
+                UInt32? Offset = ByteOperations.FindPatternInFile(FileName, SBL3Pattern, SBL3Mask, out byte[] SBL3Header);
 
                 if (Offset != null)
                 {
                     UInt32 Length = ByteOperations.ReadUInt32(SBL3Header, 0x10) + 0x28; // SBL3 Image Size + Header Size
                     Binary = new byte[Length];
 
-                    FileStream Stream = new FileStream(FileName, FileMode.Open, FileAccess.Read);
+                    FileStream Stream = new(FileName, FileMode.Open, FileAccess.Read);
                     Stream.Seek((long)Offset, SeekOrigin.Begin);
                     Stream.Read(Binary, 0, (int)Length);
                     Stream.Close();
@@ -77,7 +76,9 @@ namespace WPinternals
                 null, null);
 
             if (PatchOffset == null)
+            {
                 throw new BadImageFormatException();
+            }
 
             Buffer.BlockCopy(new byte[] { 0x00, 0x00, 0xA0, 0xE3 }, 0, Binary, (int)PatchOffset + 4, 4);
 

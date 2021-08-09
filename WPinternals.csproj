@@ -353,6 +353,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DiscUtils.BootConfig" Version="0.16.4" />
+    <PackageReference Include="DiscUtils.Fat" Version="0.16.4" />
+    <PackageReference Include="DiscUtils.Ntfs" Version="0.16.4" />
+    <PackageReference Include="DiscUtils.Streams" Version="0.16.4" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />

@@ -2,18 +2,18 @@ using System;
 
 namespace SevenZip.Compression.RangeCoder
 {
-    class Encoder
+    internal class Encoder
     {
         public const uint kTopValue = (1 << 24);
 
-        System.IO.Stream Stream;
+        private System.IO.Stream Stream;
 
         public UInt64 Low;
         public uint Range;
-        uint _cacheSize;
-        byte _cache;
+        private uint _cacheSize;
+        private byte _cache;
 
-        long StartPosition;
+        private long StartPosition;
 
         public void SetStream(System.IO.Stream stream)
         {
@@ -38,7 +38,9 @@ namespace SevenZip.Compression.RangeCoder
         public void FlushData()
         {
             for (int i = 0; i < 5; i++)
+            {
                 ShiftLow();
+            }
         }
 
         public void FlushStream()
@@ -64,7 +66,7 @@ namespace SevenZip.Compression.RangeCoder
 
         public void ShiftLow()
         {
-            if ((uint)Low < (uint)0xFF000000 || (uint)(Low >> 32) == 1)
+            if ((uint)Low < 0xFF000000 || (uint)(Low >> 32) == 1)
             {
                 byte temp = _cache;
                 do
@@ -85,7 +87,10 @@ namespace SevenZip.Compression.RangeCoder
             {
                 Range >>= 1;
                 if (((v >> i) & 1) == 1)
+                {
                     Low += Range;
+                }
+
                 if (Range < kTopValue)
                 {
                     Range <<= 8;
@@ -98,7 +103,9 @@ namespace SevenZip.Compression.RangeCoder
         {
             uint newBound = (Range >> numTotalBits) * size0;
             if (symbol == 0)
+            {
                 Range = newBound;
+            }
             else
             {
                 Low += newBound;
@@ -119,7 +126,7 @@ namespace SevenZip.Compression.RangeCoder
         }
     }
 
-    class Decoder
+    internal class Decoder
     {
         public const uint kTopValue = (1 << 24);
         public uint Range;
@@ -135,7 +142,9 @@ namespace SevenZip.Compression.RangeCoder
             Code = 0;
             Range = 0xFFFFFFFF;
             for (int i = 0; i < 5; i++)
+            {
                 Code = (Code << 8) | (byte)Stream.ReadByte();
+            }
         }
 
         public void ReleaseStream()

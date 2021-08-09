@@ -30,8 +30,8 @@ namespace WPinternals
 
     internal class NokiaNormalViewModel : ContextViewModel
     {
-        private NokiaPhoneModel CurrentModel;
-        private Action<PhoneInterfaces> RequestModeSwitch;
+        private readonly NokiaPhoneModel CurrentModel;
+        private readonly Action<PhoneInterfaces> RequestModeSwitch;
 
         internal NokiaNormalViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch)
             : base()
@@ -61,7 +61,9 @@ namespace WPinternals
                 string IMEI2 = CurrentModel.ExecuteJsonMethodAsString("ReadSerialNumber", new System.Collections.Generic.Dictionary<string, object>() { { "SubscriptionId", 1 } }, "SerialNumber"); // IMEI 2
 
                 if (!string.IsNullOrEmpty(IMEI2))
+                {
                     IMEI += "\n" + IMEI2;
+                }
 
                 LogFile.Log("IMEI: " + IMEI);
                 PublicID = CurrentModel.ExecuteJsonMethodAsBytes("ReadPublicId", "PublicId"); // 0x14 bytes: a5 e5 ...
@@ -78,10 +80,10 @@ namespace WPinternals
                 LogFile.Log("WLAN MAC 4: " + Converter.ConvertHexToString(WlanMac4, " "));
 
                 bool? ProductionDone = CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
-                if (ProductionDone == null)
-                    IsBootloaderSecurityEnabled = (CurrentModel.ExecuteJsonMethodAsString("GetSecurityMode", "SecMode").IndexOf("Restricted", StringComparison.OrdinalIgnoreCase) >= 0);
-                else
-                    IsBootloaderSecurityEnabled = ((CurrentModel.ExecuteJsonMethodAsString("GetSecurityMode", "SecMode").IndexOf("Restricted", StringComparison.OrdinalIgnoreCase) >= 0) && (bool)CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone"));
+                IsBootloaderSecurityEnabled = ProductionDone == null
+                    ? CurrentModel.ExecuteJsonMethodAsString("GetSecurityMode", "SecMode").Contains("Restricted", StringComparison.OrdinalIgnoreCase)
+                    : (CurrentModel.ExecuteJsonMethodAsString("GetSecurityMode", "SecMode").Contains("Restricted", StringComparison.OrdinalIgnoreCase)) && (bool)CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
+
                 LogFile.Log("Bootloader Security: " + ((bool)IsBootloaderSecurityEnabled ? "Enabled" : "Disabled"));
                 IsSimLocked = CurrentModel.ExecuteJsonMethodAsBoolean("ReadSimlockActive", "SimLockActive");
                 LogFile.Log("Simlock: " + ((bool)IsSimLocked ? "Active" : "Unlocked"));
@@ -116,7 +118,7 @@ namespace WPinternals
             set
             {
                 _ProductCode = value;
-                OnPropertyChanged("ProductCode");
+                OnPropertyChanged(nameof(ProductCode));
             }
         }
 
@@ -130,7 +132,7 @@ namespace WPinternals
             set
             {
                 _ManufacturerModelName = value;
-                OnPropertyChanged("ManufacturerModelName");
+                OnPropertyChanged(nameof(ManufacturerModelName));
             }
         }
 
@@ -144,7 +146,7 @@ namespace WPinternals
             set
             {
                 _Operator = value;
-                OnPropertyChanged("Operator");
+                OnPropertyChanged(nameof(Operator));
             }
         }
 
@@ -158,7 +160,7 @@ namespace WPinternals
             set
             {
                 _Firmware = value;
-                OnPropertyChanged("Firmware");
+                OnPropertyChanged(nameof(Firmware));
             }
         }
 
@@ -172,7 +174,7 @@ namespace WPinternals
             set
             {
                 _HWID = value;
-                OnPropertyChanged("HWID");
+                OnPropertyChanged(nameof(HWID));
             }
         }
 
@@ -186,7 +188,7 @@ namespace WPinternals
             set
             {
                 _IMEI = value;
-                OnPropertyChanged("IMEI");
+                OnPropertyChanged(nameof(IMEI));
             }
         }
 
@@ -200,10 +202,9 @@ namespace WPinternals
             set
             {
                 _BootPolicy = value;
-                OnPropertyChanged("BootPolicy");
+                OnPropertyChanged(nameof(BootPolicy));
             }
         }
-
 
         private string _Db = null;
         public string Db
@@ -215,10 +216,9 @@ namespace WPinternals
             set
             {
                 _Db = value;
-                OnPropertyChanged("Db");
+                OnPropertyChanged(nameof(Db));
             }
         }
-
 
         private string _Dbx = null;
         public string Dbx
@@ -230,10 +230,9 @@ namespace WPinternals
             set
             {
                 _Dbx = value;
-                OnPropertyChanged("Dbx");
+                OnPropertyChanged(nameof(Dbx));
             }
         }
-
 
         private string _Kek = null;
         public string Kek
@@ -245,10 +244,9 @@ namespace WPinternals
             set
             {
                 _Kek = value;
-                OnPropertyChanged("Kek");
+                OnPropertyChanged(nameof(Kek));
             }
         }
-
 
         private string _Pk = null;
         public string Pk
@@ -260,7 +258,7 @@ namespace WPinternals
             set
             {
                 _Pk = value;
-                OnPropertyChanged("Pk");
+                OnPropertyChanged(nameof(Pk));
             }
         }
 
@@ -274,7 +272,7 @@ namespace WPinternals
             set
             {
                 _PublicID = value;
-                OnPropertyChanged("PublicID");
+                OnPropertyChanged(nameof(PublicID));
             }
         }
 
@@ -288,7 +286,7 @@ namespace WPinternals
             set
             {
                 _WlanMac1 = value;
-                OnPropertyChanged("WlanMac1");
+                OnPropertyChanged(nameof(WlanMac1));
             }
         }
 
@@ -302,7 +300,7 @@ namespace WPinternals
             set
             {
                 _WlanMac2 = value;
-                OnPropertyChanged("WlanMac2");
+                OnPropertyChanged(nameof(WlanMac2));
             }
         }
 
@@ -316,7 +314,7 @@ namespace WPinternals
             set
             {
                 _WlanMac3 = value;
-                OnPropertyChanged("WlanMac3");
+                OnPropertyChanged(nameof(WlanMac3));
             }
         }
 
@@ -330,7 +328,7 @@ namespace WPinternals
             set
             {
                 _WlanMac4 = value;
-                OnPropertyChanged("WlanMac4");
+                OnPropertyChanged(nameof(WlanMac4));
             }
         }
 
@@ -344,7 +342,7 @@ namespace WPinternals
             set
             {
                 _BluetoothMac = value;
-                OnPropertyChanged("BluetoothMac");
+                OnPropertyChanged(nameof(BluetoothMac));
             }
         }
 
@@ -358,7 +356,7 @@ namespace WPinternals
             set
             {
                 _IsBootloaderSecurityEnabled = value;
-                OnPropertyChanged("IsBootloaderSecurityEnabled");
+                OnPropertyChanged(nameof(IsBootloaderSecurityEnabled));
             }
         }
 
@@ -372,7 +370,7 @@ namespace WPinternals
             set
             {
                 _IsSimLocked = value;
-                OnPropertyChanged("IsSimLocked");
+                OnPropertyChanged(nameof(IsSimLocked));
             }
         }
 

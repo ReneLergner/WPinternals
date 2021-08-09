@@ -51,8 +51,8 @@ namespace WPinternals
                     {
                         foreach (ManagementObject drive in partition.GetRelated("Win32_DiskDrive"))
                         {
-                            if ((drive["PNPDeviceID"].ToString().IndexOf("VEN_QUALCOMM&PROD_MMC_STORAGE") >= 0) ||
-                                (drive["PNPDeviceID"].ToString().IndexOf("VEN_MSFT&PROD_PHONE_MMC_STOR") >= 0))
+                            if ((drive["PNPDeviceID"].ToString().Contains("VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.CurrentCulture)) ||
+                                (drive["PNPDeviceID"].ToString().Contains("VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.CurrentCulture)))
                             {
                                 Label = (logical["VolumeName"] == null ? "" : logical["VolumeName"].ToString());
                                 if ((Drive == null) || (string.Compare(Label, "MainOS", true) == 0)) // Always prefer the MainOS drive-mapping
@@ -62,11 +62,15 @@ namespace WPinternals
                                     VolumeLabel = Label;
                                 }
                                 if (string.Compare(Label, "MainOS", true) == 0)
+                                {
                                     break;
+                                }
                             }
                         }
                         if (string.Compare(Label, "MainOS", true) == 0)
+                        {
                             break;
+                        }
                     }
                 }
             }
@@ -77,7 +81,7 @@ namespace WPinternals
         {
             try
             {
-                QualcommSerial SerialDevice = new QualcommSerial(DevicePath);
+                QualcommSerial SerialDevice = new(DevicePath);
                 SerialDevice.Close();
                 SerialDevice.Dispose();
 
@@ -97,11 +101,13 @@ namespace WPinternals
         internal void Reboot()
         {
             if (Serial == null)
+            {
                 return;
+            }
 
             try
             {
-                QualcommSerial SerialDevice = new QualcommSerial(Serial);
+                QualcommSerial SerialDevice = new(Serial);
 
                 SerialDevice.EncodeCommands = false;
 
@@ -120,7 +126,9 @@ namespace WPinternals
         protected override void Dispose(bool disposing)
         {
             if (Disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
@@ -135,7 +143,9 @@ namespace WPinternals
             OpenWithWriteAccess = false;
 
             if (IsVolumeOpen())
+            {
                 throw new Exception("Volume already opened");
+            }
 
             if (WriteAccess)
             {
@@ -169,7 +179,9 @@ namespace WPinternals
             }
 
             if ((int)hVolume == -1)
+            {
                 throw new Exception(Marshal.GetLastWin32Error().ToString());
+            }
 
             OpenWithWriteAccess = WriteAccess;
         }
@@ -197,7 +209,9 @@ namespace WPinternals
         internal void SetSectorPosition(UInt64 Sector)
         {
             if (!IsVolumeOpen())
+            {
                 throw new Exception("Volume is not opened");
+            }
 
             int High = (int)(Sector >> (32 - 9));
             NativeMethods.SetFilePointer(hVolume, (int)(Sector << 9), ref High, EMoveMethod.Begin);
@@ -206,38 +220,49 @@ namespace WPinternals
         internal void WriteSector(byte[] buffer)
         {
             if (!IsVolumeOpen())
+            {
                 throw new Exception("Volume is not opened");
+            }
 
             if (!OpenWithWriteAccess)
+            {
                 throw new Exception("Volume is not opened with Write Acces");
+            }
 
-            uint count = 0;
-            bool result = NativeMethods.WriteFile(hVolume, buffer, 512, out count, IntPtr.Zero);
+            bool result = NativeMethods.WriteFile(hVolume, buffer, 512, out uint count, IntPtr.Zero);
             if (!result)
+            {
                 throw new Exception("Exception: 0x" + Marshal.GetLastWin32Error().ToString("X8"));
+            }
         }
 
         internal void ReadSector(byte[] buffer)
         {
             if (!IsVolumeOpen())
+            {
                 throw new Exception("Volume is not opened");
+            }
 
-            uint count = 1;
-            bool result = NativeMethods.ReadFile(hVolume, buffer, 512, out count, IntPtr.Zero);
+            bool result = NativeMethods.ReadFile(hVolume, buffer, 512, out uint count, IntPtr.Zero);
             if (!result)
+            {
                 throw new Exception("Exception: 0x" + Marshal.GetLastWin32Error().ToString("X8"));
+            }
         }
 
         internal void ReadSectors(byte[] buffer, out uint ActualSectorsRead, uint SizeInSectors = uint.MaxValue)
         {
             if (!IsVolumeOpen())
+            {
                 throw new Exception("Volume is not opened");
+            }
 
-            uint count = 1;
-            bool Result = NativeMethods.ReadFile(hVolume, buffer, (SizeInSectors * 0x200) < buffer.Length ? (SizeInSectors * 0x200) : (uint)buffer.Length, out count, IntPtr.Zero);
+            bool Result = NativeMethods.ReadFile(hVolume, buffer, (SizeInSectors * 0x200) < buffer.Length ? (SizeInSectors * 0x200) : (uint)buffer.Length, out uint count, IntPtr.Zero);
             ActualSectorsRead = count / 0x200;
             if (!Result)
+            {
                 throw new Exception("Failed to read sectors. Exception: 0x" + Marshal.GetLastWin32Error().ToString("X8"));
+            }
         }
 
         internal byte[] ReadSectors(UInt64 StartSector, UInt64 SectorCount)
@@ -246,17 +271,22 @@ namespace WPinternals
 
             bool VolumeWasOpen = IsVolumeOpen();
             if (!VolumeWasOpen)
+            {
                 OpenVolume(false);
+            }
 
             SetSectorPosition(StartSector);
-            uint SectorsRead;
-            ReadSectors(Result, out SectorsRead);
+            ReadSectors(Result, out uint SectorsRead);
 
             if (!VolumeWasOpen)
+            {
                 CloseVolume();
+            }
 
             if (Result == null)
+            {
                 throw new Exception("Failed to read from phone");
+            }
 
             return Result;
         }
@@ -295,28 +325,22 @@ namespace WPinternals
         {
             bool VolumeWasOpen = IsVolumeOpen();
             if (!VolumeWasOpen)
+            {
                 OpenVolume(false);
+            }
 
             SetSectorPosition(StartSector);
             ProgressUpdater Progress = UpdaterPerSector;
             if ((Progress == null) && (ProgressUpdateCallback != null))
-                Progress = new ProgressUpdater(SectorCount, ProgressUpdateCallback);
-
-            byte[] Buffer;
-            if (SectorCount >= 0x80)
-                Buffer = new byte[0x10000];
-            else
-                Buffer = new byte[SectorCount * 0x200];
-
-            Stream Stream;
-            if (Path == null)
-                Stream = OutputStream;
-            else
-                Stream = File.Open(Path, FileMode.Create);
-
-            using (BinaryWriter Writer = new BinaryWriter(Stream))
             {
-                uint ActualSectorsRead;
+                Progress = new ProgressUpdater(SectorCount, ProgressUpdateCallback);
+            }
+
+            byte[] Buffer = SectorCount >= 0x80 ? (new byte[0x10000]) : (new byte[SectorCount * 0x200]);
+
+            Stream Stream = Path == null ? OutputStream : File.Open(Path, FileMode.Create);
+            using (BinaryWriter Writer = new(Stream))
+            {
                 for (UInt64 i = 0; i < SectorCount; i += 0x80)
                 {
                     // TODO: Reading sectors and writing to compressed stream should be on different threads.
@@ -326,16 +350,17 @@ namespace WPinternals
                     // BinaryWriter doesnt support async.
                     // Calling async directly on the EntryStream of a Ziparchive blocks.
 
-                    ReadSectors(Buffer, out ActualSectorsRead, (SectorCount - i) >= 0x80 ? 0x80 : (uint)(SectorCount - i));
+                    ReadSectors(Buffer, out uint ActualSectorsRead, (SectorCount - i) >= 0x80 ? 0x80 : (uint)(SectorCount - i));
                     Writer.Write(Buffer, 0, (int)ActualSectorsRead * 0x200);
-                    if (Progress != null)
-                        Progress.IncreaseProgress(ActualSectorsRead);
+                    Progress?.IncreaseProgress(ActualSectorsRead);
                 }
                 Stream.Flush();
             }
 
             if (!VolumeWasOpen)
+            {
                 CloseVolume();
+            }
         }
 
         internal void BackupPartition(string PartitionName, string Path)
@@ -372,17 +397,21 @@ namespace WPinternals
         {
             bool VolumeWasOpen = IsVolumeOpen();
             if (!VolumeWasOpen)
+            {
                 OpenVolume(false);
+            }
 
             SetSectorPosition(1);
             byte[] GPTBuffer = ReadSectors(1, 33);
-            GPT GPT = new GPT(GPTBuffer);
-            Partition Partition = GPT.Partitions.Where((p) => p.Name == PartitionName).First();
+            GPT GPT = new(GPTBuffer);
+            Partition Partition = GPT.Partitions.First((p) => p.Name == PartitionName);
 
             DumpSectors(Partition.FirstSector, Partition.LastSector - Partition.FirstSector + 1, Path, OutputStream, ProgressUpdateCallback, UpdaterPerSector);
 
             if (!VolumeWasOpen)
+            {
                 CloseVolume();
+            }
         }
 
         internal void WriteSectors(UInt64 StartSector, byte[] Buffer)
@@ -391,29 +420,37 @@ namespace WPinternals
 
             bool VolumeWasOpen = IsVolumeOpen();
             if (!VolumeWasOpen)
+            {
                 OpenVolume(true);
+            }
 
             SetSectorPosition(StartSector);
 
-            uint count = 1;
-            Result = NativeMethods.WriteFile(hVolume, Buffer, (uint)Buffer.Length, out count, IntPtr.Zero);
+            Result = NativeMethods.WriteFile(hVolume, Buffer, (uint)Buffer.Length, out uint count, IntPtr.Zero);
 
             if (!VolumeWasOpen)
+            {
                 CloseVolume();
+            }
 
             if (!Result)
+            {
                 throw new Exception("Failed to write sectors.");
+            }
         }
 
         internal void WriteSectors(byte[] Buffer, uint Length = uint.MaxValue)
         {
             if (!IsVolumeOpen())
+            {
                 throw new Exception("Volume is not opened");
+            }
 
-            uint count = 1;
-            bool Result = NativeMethods.WriteFile(hVolume, Buffer, (Length < Buffer.Length ? Length : (uint)Buffer.Length), out count, IntPtr.Zero);
+            bool Result = NativeMethods.WriteFile(hVolume, Buffer, Length < Buffer.Length ? Length : (uint)Buffer.Length, out uint count, IntPtr.Zero);
             if (!Result)
+            {
                 throw new Exception("Failed to write sectors. Exception: 0x" + Marshal.GetLastWin32Error().ToString("X8"));
+            }
         }
 
         internal void WriteSectors(UInt64 StartSector, string Path)
@@ -435,22 +472,23 @@ namespace WPinternals
         {
             bool VolumeWasOpen = IsVolumeOpen();
             if (!VolumeWasOpen)
+            {
                 OpenVolume(true);
+            }
 
             SetSectorPosition(StartSector);
 
             byte[] Buffer;
 
-            using (BinaryReader Reader = new BinaryReader(File.Open(Path, FileMode.Open)))
+            using (BinaryReader Reader = new(File.Open(Path, FileMode.Open)))
             {
                 ProgressUpdater Progress = UpdaterPerSector;
                 if ((Progress == null) && (ProgressUpdateCallback != null))
+                {
                     Progress = new ProgressUpdater((UInt64)(Reader.BaseStream.Length / 0x200), ProgressUpdateCallback);
+                }
 
-                if (Reader.BaseStream.Length >= 0x10000)
-                    Buffer = new byte[0x10000];
-                else
-                    Buffer = new byte[Reader.BaseStream.Length];
+                Buffer = Reader.BaseStream.Length >= 0x10000 ? (new byte[0x10000]) : (new byte[Reader.BaseStream.Length]);
 
                 int Count;
                 for (UInt64 i = 0; i < (UInt64)(Reader.BaseStream.Length / 0x200); i += 0x80)
@@ -459,13 +497,14 @@ namespace WPinternals
 
                     WriteSectors(Buffer, (uint)Count);
 
-                    if (Progress != null)
-                        Progress.IncreaseProgress((ulong)Count / 0x200);
+                    Progress?.IncreaseProgress((ulong)Count / 0x200);
                 }
             }
 
             if (!VolumeWasOpen)
+            {
                 CloseVolume();
+            }
         }
 
         internal void RestorePartition(string Path, string PartitionName)
@@ -487,21 +526,27 @@ namespace WPinternals
         {
             bool VolumeWasOpen = IsVolumeOpen();
             if (!VolumeWasOpen)
+            {
                 OpenVolume(true);
+            }
 
             SetSectorPosition(1);
             byte[] GPTBuffer = ReadSectors(1, 33);
-            GPT GPT = new GPT(GPTBuffer);
-            Partition Partition = GPT.Partitions.Where((p) => p.Name == PartitionName).First();
+            GPT GPT = new(GPTBuffer);
+            Partition Partition = GPT.Partitions.First((p) => p.Name == PartitionName);
             ulong PartitionSize = (Partition.LastSector - Partition.FirstSector + 1) * 0x200;
             ulong FileSize = (ulong)new FileInfo(Path).Length;
             if (FileSize > PartitionSize)
+            {
                 throw new InvalidOperationException("Partition can not be restored, because its size is too big!");
+            }
 
             WriteSectors(Partition.FirstSector, Path, ProgressUpdateCallback);
 
             if (!VolumeWasOpen)
+            {
                 CloseVolume();
+            }
         }
     }
 }
