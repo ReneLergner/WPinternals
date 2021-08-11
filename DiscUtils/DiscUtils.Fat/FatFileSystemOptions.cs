@@ -20,11 +20,11 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using System;
+using System.Text;
+
 namespace DiscUtils.Fat
 {
-    using System;
-    using System.Text;
-
     /// <summary>
     /// FAT file system options.
     /// </summary>
@@ -34,7 +34,6 @@ namespace DiscUtils.Fat
 
         internal FatFileSystemOptions()
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             FileNameEncoding = Encoding.GetEncoding(437);
         }
 
@@ -46,7 +45,6 @@ namespace DiscUtils.Fat
             }
             else
             {
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 FileNameEncoding = Encoding.GetEncoding(437);
             }
         }
@@ -56,10 +54,7 @@ namespace DiscUtils.Fat
         /// </summary>
         public Encoding FileNameEncoding
         {
-            get
-            {
-                return _encoding;
-            }
+            get { return _encoding; }
 
             set
             {

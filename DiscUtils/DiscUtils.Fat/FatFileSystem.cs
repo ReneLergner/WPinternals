@@ -22,6 +22,7 @@
 
 namespace DiscUtils.Fat
 {
+    using DiscUtils.CoreCompat;
     using DiscUtils.Internal;
     using DiscUtils.Streams;
     using System;
@@ -77,6 +78,11 @@ namespace DiscUtils.Fat
         private uint _bpbRootClus;
         private ushort _bpbFSInfo;
         private ushort _bpbBkBootSec;
+
+        static FatFileSystem()
+        {
+            EncodingHelper.RegisterEncodings();
+        }
 
         /// <summary>
         /// Initializes a new instance of the FatFileSystem class.
