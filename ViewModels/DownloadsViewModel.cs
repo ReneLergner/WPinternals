@@ -27,7 +27,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace WPinternals
@@ -498,7 +500,7 @@ namespace WPinternals
         internal string URL;
         internal string[] URLCollection;
         internal string Folder;
-        internal MyWebClient Client;
+        internal HttpClient Client;
         internal long SpeedIndex = -1;
         internal long[] Speeds = new long[10];
         internal long LastBytesReceived;
@@ -520,18 +522,16 @@ namespace WPinternals
             {
                 Size = DownloadsViewModel.GetFileLengthFromURL(URL);
 
-                Client = new MyWebClient();
-                Client.DownloadFileCompleted += Client_DownloadFileCompleted;
-                Client.DownloadProgressChanged += Client_DownloadProgressChanged;
-                Client.DownloadFileAsync(Uri, Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(Uri.LocalPath)), null);
+                Client = new HttpClient();
+                _ = Client.DownloadFileAsync(Uri, Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(Uri.LocalPath)), Client_DownloadProgressChanged, Client_DownloadFileCompleted);
             }).Start();
         }
 
-        private void Client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
+        private void Client_DownloadFileCompleted(bool Error)
         {
             void Finish()
             {
-                Status = e.Error == null ? DownloadStatus.Ready : DownloadStatus.Failed;
+                Status = Error ? DownloadStatus.Failed : DownloadStatus.Ready;
                 App.DownloadManager.DownloadList.Remove(this);
                 if (Status == DownloadStatus.Ready)
                 {
@@ -560,7 +560,7 @@ namespace WPinternals
             UIContext?.Post(d => Finish(), null);
         }
 
-        private void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        private void Client_DownloadProgressChanged(HttpClientDownloadProgress e)
         {
             BytesReceived = e.BytesReceived;
             Progress = e.ProgressPercentage;
@@ -796,13 +796,94 @@ namespace WPinternals
         }
     }
 
-    internal class MyWebClient : WebClient
+    public class HttpClientDownloadProgress
     {
-        protected override WebRequest GetWebRequest(Uri address)
+        //
+        // Summary:
+        //     Gets the asynchronous task progress percentage.
+        //
+        // Returns:
+        //     A percentage value indicating the asynchronous task progress.
+        public int ProgressPercentage { get; }
+
+        //
+        // Summary:
+        //     Gets the number of bytes received.
+        //
+        // Returns:
+        //     An System.Int64 value that indicates the number of bytes received.
+        public long BytesReceived { get; }
+
+        //
+        // Summary:
+        //     Gets the total number of bytes in a System.Net.WebClient data download operation.
+        //
+        // Returns:
+        //     An System.Int64 value that indicates the number of bytes that will be received.
+        public long TotalBytesToReceive { get; }
+
+        internal HttpClientDownloadProgress(long BytesReceived, long TotalBytesToReceive)
         {
-            HttpWebRequest req = (HttpWebRequest)base.GetWebRequest(address);
-            req.ServicePoint.ConnectionLimit = 10;
-            return req;
+            this.TotalBytesToReceive = TotalBytesToReceive;
+            this.BytesReceived = BytesReceived;
+            ProgressPercentage = (int)Math.Round((float)BytesReceived / TotalBytesToReceive * 100f);
+        }
+    }
+
+    public static class HttpClientProgressExtensions
+    {
+        public static async Task DownloadFileAsync(this HttpClient client, Uri address, string fileName, Action<HttpClientDownloadProgress> progress = null, Action<bool> completed = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                using FileStream destination = File.Create(fileName);
+                using HttpResponseMessage response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
+                long? contentLength = response.Content.Headers.ContentLength;
+                using Stream download = await response.Content.ReadAsStreamAsync();
+
+                if (progress is null || !contentLength.HasValue)
+                {
+                    await download.CopyToAsync(destination);
+                    if (completed != null)
+                        completed(true);
+                    return;
+                }
+
+                Progress<long> progressWrapper = new Progress<long>(totalBytes => progress(new HttpClientDownloadProgress(totalBytes, contentLength.Value)));
+                await download.CopyToAsync(destination, 81920, progressWrapper, cancellationToken);
+
+                if (completed != null)
+                    completed(true);
+            }
+            catch
+            {
+                if (completed != null)
+                    completed(false);
+            }
+        }
+
+        private static async Task CopyToAsync(this Stream source, Stream destination, int bufferSize, IProgress<long> progress = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (bufferSize < 0)
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
+            if (source is null)
+                throw new ArgumentNullException(nameof(source));
+            if (!source.CanRead)
+                throw new InvalidOperationException($"'{nameof(source)}' is not readable.");
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+            if (!destination.CanWrite)
+                throw new InvalidOperationException($"'{nameof(destination)}' is not writable.");
+
+            byte[] buffer = new byte[bufferSize];
+            long totalBytesRead = 0;
+            int bytesRead;
+            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+                totalBytesRead += bytesRead;
+                progress?.Report(totalBytesRead);
+            }
         }
     }
 
