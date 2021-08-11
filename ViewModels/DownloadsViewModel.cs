@@ -65,7 +65,7 @@ namespace WPinternals
                 if (result == true)
                 {
                     FFUPath = dlg.FileName;
-                    string FFUFile = System.IO.Path.GetFileName(FFUPath);
+                    string FFUFile = Path.GetFileName(FFUPath);
 
                     try
                     {
@@ -134,7 +134,7 @@ namespace WPinternals
         internal static long GetFileLengthFromURL(string URL)
         {
             long Length = 0;
-            HttpWebRequest req = (HttpWebRequest)System.Net.HttpWebRequest.Create(URL);
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(URL);
             req.Method = "HEAD";
             req.ServicePoint.ConnectionLimit = 10;
             using (WebResponse resp = req.GetResponse())
@@ -146,7 +146,7 @@ namespace WPinternals
 
         internal static string GetFileNameFromURL(string URL)
         {
-            string FileName = System.IO.Path.GetFileName(URL);
+            string FileName = Path.GetFileName(URL);
             int End = FileName.IndexOf('?');
             if (End >= 0)
             {
@@ -541,14 +541,14 @@ namespace WPinternals
                         if (URLCollection == null)
                         {
                             Files = new string[1];
-                            Files[0] = System.IO.Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(URL));
+                            Files[0] = Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(URL));
                         }
                         else
                         {
                             Files = new string[URLCollection.Length];
                             for (int i = 0; i < URLCollection.Length; i++)
                             {
-                                Files[i] = System.IO.Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(URLCollection[i]));
+                                Files[i] = Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(URLCollection[i]));
                             }
                         }
 
@@ -811,7 +811,7 @@ namespace WPinternals
         public object Convert(object value, Type targetType,
                               object parameter, CultureInfo culture)
         {
-            return System.IO.Path.GetFileNameWithoutExtension((string)value);
+            return Path.GetFileNameWithoutExtension((string)value);
         }
 
         public object ConvertBack(object value, Type targetType,

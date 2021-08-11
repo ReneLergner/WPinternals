@@ -187,7 +187,7 @@ namespace WPinternals
         {
             get
             {
-                return _BackupArchiveCommand ??= new DelegateCommand(() => BackupArchiveCallback(ArchivePath), () => ((ArchivePath != null) && (PhoneNotifier.CurrentInterface != null)));
+                return _BackupArchiveCommand ??= new DelegateCommand(() => BackupArchiveCallback(ArchivePath), () => (ArchivePath != null) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -196,7 +196,7 @@ namespace WPinternals
         {
             get
             {
-                return _BackupCommand ??= new DelegateCommand(() => BackupCallback(EFIESPPath, MainOSPath, DataPath), () => (((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null)));
+                return _BackupCommand ??= new DelegateCommand(() => BackupCallback(EFIESPPath, MainOSPath, DataPath), () => ((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -205,7 +205,7 @@ namespace WPinternals
         {
             get
             {
-                return _BackupArchiveProvisioningCommand ??= new DelegateCommand(() => BackupArchiveProvisioningCallback(ArchiveProvisioningPath), () => ((ArchiveProvisioningPath != null) && (PhoneNotifier.CurrentInterface != null)));
+                return _BackupArchiveProvisioningCommand ??= new DelegateCommand(() => BackupArchiveProvisioningCallback(ArchiveProvisioningPath), () => (ArchiveProvisioningPath != null) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -228,7 +228,7 @@ namespace WPinternals
         {
             IsPhoneDisconnected = PhoneNotifier.CurrentInterface == null;
             IsPhoneInMassStorage = PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_MassStorage;
-            IsPhoneInOtherMode = (!IsPhoneDisconnected && !IsPhoneInMassStorage);
+            IsPhoneInOtherMode = !IsPhoneDisconnected && !IsPhoneInMassStorage;
             BackupCommand.RaiseCanExecuteChanged();
             BackupArchiveCommand.RaiseCanExecuteChanged();
             BackupArchiveProvisioningCommand.RaiseCanExecuteChanged();

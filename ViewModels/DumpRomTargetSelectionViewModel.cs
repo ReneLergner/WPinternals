@@ -216,7 +216,7 @@ namespace WPinternals
         {
             get
             {
-                return _DumpCommand ??= new DelegateCommand(() => DumpCallback(FFUPath, EFIESPPath, CompressEFIESP, MainOSPath, CompressMainOS, DataPath, CompressData), () => ((FFUPath != null) && ((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null))));
+                return _DumpCommand ??= new DelegateCommand(() => DumpCallback(FFUPath, EFIESPPath, CompressEFIESP, MainOSPath, CompressMainOS, DataPath, CompressData), () => (FFUPath != null) && ((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)));
             }
         }
 

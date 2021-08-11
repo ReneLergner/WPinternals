@@ -32,7 +32,7 @@ namespace WPinternals
         {
             InitializeComponent();
 
-            Visibility = System.Windows.Visibility.Collapsed;
+            Visibility = Visibility.Collapsed;
         }
 
         protected override void OnSourceInitialized(EventArgs e)

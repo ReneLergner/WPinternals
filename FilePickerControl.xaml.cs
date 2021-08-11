@@ -213,9 +213,9 @@ namespace WPinternals
                 CaptionWidth += 10;
             }
 
-            bool SelectVisible = (Path == null);
-            bool ChangeVisible = (Path != null);
-            bool ClearVisible = ((Path != null) && AllowNull);
+            bool SelectVisible = Path == null;
+            bool ChangeVisible = Path != null;
+            bool ClearVisible = (Path != null) && AllowNull;
 
             double NewWidth = ActualWidth - CaptionWidth;
             if (SelectVisible)
@@ -225,12 +225,12 @@ namespace WPinternals
 
             if (ChangeVisible)
             {
-                NewWidth -= (ChangeLink.ActualWidth + 10);
+                NewWidth -= ChangeLink.ActualWidth + 10;
             }
 
             if (ClearVisible)
             {
-                NewWidth -= (ClearLink.ActualWidth + 10);
+                NewWidth -= ClearLink.ActualWidth + 10;
             }
 
             SetText(NewWidth);

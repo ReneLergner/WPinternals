@@ -153,7 +153,7 @@ namespace WPinternals
         {
             get
             {
-                return _RestoreCommand ??= new DelegateCommand(() => RestoreCallback(EFIESPPath, MainOSPath, DataPath), () => (((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null)));
+                return _RestoreCommand ??= new DelegateCommand(() => RestoreCallback(EFIESPPath, MainOSPath, DataPath), () => ((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -176,7 +176,7 @@ namespace WPinternals
         {
             IsPhoneDisconnected = PhoneNotifier.CurrentInterface == null;
             IsPhoneInFlashMode = PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Flash;
-            IsPhoneInOtherMode = (!IsPhoneDisconnected && !IsPhoneInFlashMode);
+            IsPhoneInOtherMode = !IsPhoneDisconnected && !IsPhoneInFlashMode;
             RestoreCommand.RaiseCanExecuteChanged();
         }
 

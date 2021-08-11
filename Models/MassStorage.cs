@@ -51,23 +51,23 @@ namespace WPinternals
                     {
                         foreach (ManagementObject drive in partition.GetRelated("Win32_DiskDrive"))
                         {
-                            if ((drive["PNPDeviceID"].ToString().Contains("VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.CurrentCulture)) ||
-                                (drive["PNPDeviceID"].ToString().Contains("VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.CurrentCulture)))
+                            if (drive["PNPDeviceID"].ToString().Contains("VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.CurrentCulture) ||
+                                drive["PNPDeviceID"].ToString().Contains("VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.CurrentCulture))
                             {
-                                Label = (logical["VolumeName"] == null ? "" : logical["VolumeName"].ToString());
-                                if ((Drive == null) || (string.Compare(Label, "MainOS", true) == 0)) // Always prefer the MainOS drive-mapping
+                                Label = logical["VolumeName"] == null ? "" : logical["VolumeName"].ToString();
+                                if ((Drive == null) || string.Equals(Label, "MainOS", StringComparison.CurrentCultureIgnoreCase)) // Always prefer the MainOS drive-mapping
                                 {
                                     Drive = logical["Name"].ToString();
                                     PhysicalDrive = drive["DeviceID"].ToString();
                                     VolumeLabel = Label;
                                 }
-                                if (string.Compare(Label, "MainOS", true) == 0)
+                                if (string.Equals(Label, "MainOS", StringComparison.CurrentCultureIgnoreCase))
                                 {
                                     break;
                                 }
                             }
                         }
-                        if (string.Compare(Label, "MainOS", true) == 0)
+                        if (string.Equals(Label, "MainOS", StringComparison.CurrentCultureIgnoreCase))
                         {
                             break;
                         }
@@ -188,7 +188,7 @@ namespace WPinternals
 
         internal bool IsVolumeOpen()
         {
-            return (int)(hVolume) != -1;
+            return (int)hVolume != -1;
         }
 
         internal void CloseVolume()

@@ -48,7 +48,7 @@ namespace WPinternals
                 Array.Clear(ByteArray, (int)Offset, (int)MaxBufferLength);
             }
 
-            byte[] TextBytes = System.Text.ASCIIEncoding.ASCII.GetBytes(Text);
+            byte[] TextBytes = System.Text.Encoding.ASCII.GetBytes(Text);
             int WriteLength = TextBytes.Length;
             if (WriteLength > MaxBufferLength)
             {
@@ -65,7 +65,7 @@ namespace WPinternals
                 Array.Clear(ByteArray, (int)Offset, (int)MaxBufferLength);
             }
 
-            byte[] TextBytes = System.Text.UnicodeEncoding.Unicode.GetBytes(Text);
+            byte[] TextBytes = System.Text.Encoding.Unicode.GetBytes(Text);
             int WriteLength = TextBytes.Length;
             if (WriteLength > MaxBufferLength)
             {
@@ -82,7 +82,7 @@ namespace WPinternals
 
         internal static void WriteUInt32(byte[] ByteArray, UInt32 Offset, UInt32 Value)
         {
-            System.Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 4);
         }
 
         internal static Int32 ReadInt32(byte[] ByteArray, UInt32 Offset)
@@ -92,7 +92,7 @@ namespace WPinternals
 
         internal static void WriteInt32(byte[] ByteArray, UInt32 Offset, Int32 Value)
         {
-            System.Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 4);
         }
 
         internal static UInt16 ReadUInt16(byte[] ByteArray, UInt32 Offset)
@@ -102,7 +102,7 @@ namespace WPinternals
 
         internal static void WriteUInt16(byte[] ByteArray, UInt32 Offset, UInt16 Value)
         {
-            System.Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 2);
         }
 
         internal static Int16 ReadInt16(byte[] ByteArray, UInt32 Offset)
@@ -112,7 +112,7 @@ namespace WPinternals
 
         internal static void WriteInt16(byte[] ByteArray, UInt32 Offset, Int16 Value)
         {
-            System.Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 2);
         }
 
         internal static byte ReadUInt8(byte[] ByteArray, UInt32 Offset)
@@ -132,7 +132,7 @@ namespace WPinternals
 
         internal static void WriteUInt24(byte[] ByteArray, UInt32 Offset, UInt32 Value)
         {
-            System.Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 3);
+            Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 3);
         }
 
         internal static UInt64 ReadUInt64(byte[] ByteArray, UInt32 Offset)
@@ -142,7 +142,7 @@ namespace WPinternals
 
         internal static void WriteUInt64(byte[] ByteArray, UInt32 Offset, UInt64 Value)
         {
-            System.Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 8);
+            Buffer.BlockCopy(BitConverter.GetBytes(Value), 0, ByteArray, (int)Offset, 8);
         }
 
         internal static Guid ReadGuid(byte[] ByteArray, UInt32 Offset)
@@ -241,12 +241,12 @@ namespace WPinternals
 
         internal static UInt32? FindAscii(byte[] SourceBuffer, string Pattern)
         {
-            return FindPattern(SourceBuffer, System.Text.ASCIIEncoding.ASCII.GetBytes(Pattern), null, null);
+            return FindPattern(SourceBuffer, System.Text.Encoding.ASCII.GetBytes(Pattern), null, null);
         }
 
         internal static UInt32? FindUnicode(byte[] SourceBuffer, string Pattern)
         {
-            return FindPattern(SourceBuffer, System.Text.UnicodeEncoding.Unicode.GetBytes(Pattern), null, null);
+            return FindPattern(SourceBuffer, System.Text.Encoding.Unicode.GetBytes(Pattern), null, null);
         }
 
         internal static UInt32? FindUint(byte[] SourceBuffer, UInt32 Pattern)
@@ -296,7 +296,7 @@ namespace WPinternals
 
                     if (OutPattern != null)
                     {
-                        System.Buffer.BlockCopy(SourceBuffer, (int)SearchPosition, OutPattern, 0, Pattern.Length);
+                        Buffer.BlockCopy(SourceBuffer, (int)SearchPosition, OutPattern, 0, Pattern.Length);
                     }
 
                     break;
@@ -393,11 +393,6 @@ namespace WPinternals
                     crc = (crc >> 8) ^ CRC32Table[(crc ^ Input[i]) & 0xFF];
                 }
                 crc = (uint)(crc ^ (-1));
-
-                if (crc < 0)
-                {
-                    crc += (uint)4294967296;
-                }
 
                 return crc;
             }

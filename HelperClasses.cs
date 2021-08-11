@@ -307,14 +307,11 @@ namespace WPinternals
 
                 Blocks.Clear();
 
-                if (IsInitialized)
+                if (IsInitialized && !value)
                 {
-                    if (!value)
+                    foreach (Block Block in CollapsibleBlocks)
                     {
-                        foreach (Block Block in CollapsibleBlocks)
-                        {
-                            Blocks.Add(Block);
-                        }
+                        Blocks.Add(Block);
                     }
                 }
             }
@@ -335,11 +332,11 @@ namespace WPinternals
             for (int i = 0; i < inlinesCount; i++)
             {
                 Inline inline = this.Inlines.ElementAt(i);
-                if (inline is Run)
+                if (inline is Run run)
                 {
-                    if ((inline as Run)?.Text == Convert.ToChar(32).ToString()) //ACSII 32 is the white space
+                    if (run.Text == Convert.ToChar(32).ToString()) //ACSII 32 is the white space
                     {
-                        (inline as Run).Text = string.Empty;
+                        run.Text = string.Empty;
                     }
                 }
             }
@@ -401,13 +398,13 @@ namespace WPinternals
             else if (BigEndianBytes.Length > Width)
             {
                 Result = new byte[Width];
-                System.Buffer.BlockCopy(BigEndianBytes, BigEndianBytes.Length - Width, Result, 0, Width);
+                Buffer.BlockCopy(BigEndianBytes, BigEndianBytes.Length - Width, Result, 0, Width);
                 return Result;
             }
             else
             {
                 Result = new byte[Width];
-                System.Buffer.BlockCopy(BigEndianBytes, 0, Result, Width - BigEndianBytes.Length, BigEndianBytes.Length);
+                Buffer.BlockCopy(BigEndianBytes, 0, Result, Width - BigEndianBytes.Length, BigEndianBytes.Length);
                 return Result;
             }
         }
@@ -610,7 +607,7 @@ namespace WPinternals
 #endif
                 }
 
-                if ((CommandLine.IsConsoleVisible) && ((Type == LogType.ConsoleOnly) || (Type == LogType.FileAndConsole)))
+                if (CommandLine.IsConsoleVisible && ((Type == LogType.ConsoleOnly) || (Type == LogType.FileAndConsole)))
                 {
                     Console.WriteLine(logMessage);
                 }
@@ -764,7 +761,7 @@ namespace WPinternals
 
             for (int i = 0; i < (HexString.Length >> 1); ++i)
             {
-                arr[i] = (byte)((GetHexVal(HexString[i << 1]) << 4) + (GetHexVal(HexString[(i << 1) + 1])));
+                arr[i] = (byte)((GetHexVal(HexString[i << 1]) << 4) + GetHexVal(HexString[(i << 1) + 1]));
             }
 
             return arr;
@@ -927,7 +924,7 @@ namespace WPinternals
             {
                 if (proxy?.CheckAccess() == false)
                 {
-                    proxy.BeginInvoke(new Action<object, EventHandler>(WeakEventHandlerManager.CallHandler), new object[] { sender, eventHandler });
+                    proxy.BeginInvoke(new Action<object, EventHandler>(CallHandler), new object[] { sender, eventHandler });
                 }
                 else
                 {
@@ -1133,12 +1130,12 @@ namespace WPinternals
 
         public bool CanExecute()
         {
-            return base.CanExecute(null);
+            return CanExecute(null);
         }
 
         public void Execute()
         {
-            base.Execute(null);
+            Execute(null);
         }
     }
 
@@ -1809,8 +1806,8 @@ namespace WPinternals
         RT_ACCELERATOR = 9,
         RT_RCDATA = 10,
         RT_MESSAGETABLE = 11,
-        RT_GROUP_CURSOR = (RT_CURSOR + 11),
-        RT_GROUP_ICON = (RT_ICON + 11),
+        RT_GROUP_CURSOR = RT_CURSOR + 11,
+        RT_GROUP_ICON = RT_ICON + 11,
         RT_VERSION = 16,
         RT_DLGINCLUDE = 17,
         RT_PLUGPLAY = 19,
@@ -1823,7 +1820,7 @@ namespace WPinternals
         RT_TOOLBAR = 241
     };
 
-    internal class PE
+    internal static class PE
     {
         internal static byte[] GetResource(byte[] PEfile, int[] Index)
         {
@@ -1871,7 +1868,7 @@ namespace WPinternals
                     if (ResourceID == (UInt32)Index[i])
                     {
                         // Check high bit
-                        if (((NextPointer & 0x80000000) == 0) != (i == (Index.Length - 1)))
+                        if ((NextPointer & 0x80000000) == 0 != (i == (Index.Length - 1)))
                         {
                             throw new WPinternalsException("Bad resource path");
                         }
@@ -1893,7 +1890,7 @@ namespace WPinternals
 
         internal static Version GetFileVersion(byte[] PEfile)
         {
-            byte[] version = PE.GetResource(PEfile, new int[] { (int)ResourceType.RT_VERSION, 1, 1033 });
+            byte[] version = GetResource(PEfile, new int[] { (int)ResourceType.RT_VERSION, 1, 1033 });
 
             // RT_VERSION format:
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647001(v=vs.85).aspx
@@ -1909,7 +1906,7 @@ namespace WPinternals
 
         internal static Version GetProductVersion(byte[] PEfile)
         {
-            byte[] version = PE.GetResource(PEfile, new int[] { (int)ResourceType.RT_VERSION, 1, 1033 });
+            byte[] version = GetResource(PEfile, new int[] { (int)ResourceType.RT_VERSION, 1, 1033 });
 
             // RT_VERSION format:
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647001(v=vs.85).aspx
@@ -2208,12 +2205,9 @@ namespace WPinternals
                         return 1;
                     }
 
-                    if (Width.EndsWith("*"))
+                    if (Width.EndsWith("*") && double.TryParse(Width[0..^1], out double perc))
                     {
-                        if (double.TryParse(Width[0..^1], out double perc))
-                        {
-                            return perc;
-                        }
+                        return perc;
                     }
                     return 1;
                 }

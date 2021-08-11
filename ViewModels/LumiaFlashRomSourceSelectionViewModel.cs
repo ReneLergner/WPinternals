@@ -212,7 +212,7 @@ namespace WPinternals
         {
             get
             {
-                return _FlashPartitionsCommand ??= new DelegateCommand(() => FlashPartitionsCallback(EFIESPPath, MainOSPath, DataPath), () => (((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null)));
+                return _FlashPartitionsCommand ??= new DelegateCommand(() => FlashPartitionsCallback(EFIESPPath, MainOSPath, DataPath), () => ((EFIESPPath != null) || (MainOSPath != null) || (DataPath != null)) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -221,7 +221,7 @@ namespace WPinternals
         {
             get
             {
-                return _FlashFFUCommand ??= new DelegateCommand(() => FlashFFUCallback(FFUPath), () => ((FFUPath != null) && (PhoneNotifier.CurrentInterface != null)));
+                return _FlashFFUCommand ??= new DelegateCommand(() => FlashFFUCallback(FFUPath), () => (FFUPath != null) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -230,7 +230,7 @@ namespace WPinternals
         {
             get
             {
-                return _FlashMMOSCommand ??= new DelegateCommand(() => FlashMMOSCallback(MMOSPath), () => ((MMOSPath != null) && (PhoneNotifier.CurrentInterface != null)));
+                return _FlashMMOSCommand ??= new DelegateCommand(() => FlashMMOSCallback(MMOSPath), () => (MMOSPath != null) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -239,7 +239,7 @@ namespace WPinternals
         {
             get
             {
-                return _FlashArchiveCommand ??= new DelegateCommand(() => FlashArchiveCallback(ArchivePath), () => ((ArchivePath != null) && (PhoneNotifier.CurrentInterface != null)));
+                return _FlashArchiveCommand ??= new DelegateCommand(() => FlashArchiveCallback(ArchivePath), () => (ArchivePath != null) && (PhoneNotifier.CurrentInterface != null));
             }
         }
 
@@ -269,7 +269,7 @@ namespace WPinternals
         {
             IsPhoneDisconnected = PhoneNotifier.CurrentInterface == null;
             IsPhoneInFlashMode = PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Flash;
-            IsPhoneInOtherMode = (!IsPhoneDisconnected && !IsPhoneInFlashMode);
+            IsPhoneInOtherMode = !IsPhoneDisconnected && !IsPhoneInFlashMode;
             FlashPartitionsCommand.RaiseCanExecuteChanged();
             FlashArchiveCommand.RaiseCanExecuteChanged();
             FlashFFUCommand.RaiseCanExecuteChanged();

@@ -82,7 +82,7 @@ namespace WPinternals
                 bool? ProductionDone = CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
                 IsBootloaderSecurityEnabled = ProductionDone == null
                     ? CurrentModel.ExecuteJsonMethodAsString("GetSecurityMode", "SecMode").Contains("Restricted", StringComparison.OrdinalIgnoreCase)
-                    : (CurrentModel.ExecuteJsonMethodAsString("GetSecurityMode", "SecMode").Contains("Restricted", StringComparison.OrdinalIgnoreCase)) && (bool)CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
+                    : CurrentModel.ExecuteJsonMethodAsString("GetSecurityMode", "SecMode").Contains("Restricted", StringComparison.OrdinalIgnoreCase) && (bool)CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
 
                 LogFile.Log("Bootloader Security: " + ((bool)IsBootloaderSecurityEnabled ? "Enabled" : "Disabled"));
                 IsSimLocked = CurrentModel.ExecuteJsonMethodAsBoolean("ReadSimlockActive", "SimLockActive");

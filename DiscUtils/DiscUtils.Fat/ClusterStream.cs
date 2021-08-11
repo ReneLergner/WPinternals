@@ -194,8 +194,7 @@ namespace DiscUtils.Fat
 
             if (desiredNumClusters < actualNumClusters)
             {
-                uint cluster;
-                if (!TryGetClusterByPosition(value, out cluster))
+                if (!TryGetClusterByPosition(value, out uint cluster))
                 {
                     throw new IOException("Internal state corrupt - unable to find cluster");
                 }
@@ -218,8 +217,7 @@ namespace DiscUtils.Fat
             }
             else if (desiredNumClusters > actualNumClusters)
             {
-                uint cluster;
-                while (!TryGetClusterByPosition(value, out cluster))
+                while (!TryGetClusterByPosition(value, out uint cluster))
                 {
                     cluster = ExtendChain();
                     _reader.WipeCluster(cluster);
@@ -314,7 +312,7 @@ namespace DiscUtils.Fat
             // Partial cluster, so need to read existing cluster data first
             LoadCluster(cluster);
 
-            int copyLength = Math.Min(count, _reader.ClusterSize - pos % _reader.ClusterSize);
+            int copyLength = Math.Min(count, _reader.ClusterSize - (pos % _reader.ClusterSize));
             Array.Copy(buffer, offset, _clusterBuffer, pos, copyLength);
 
             WriteCurrentCluster();
@@ -331,13 +329,12 @@ namespace DiscUtils.Fat
         private uint ExtendChain()
         {
             // Sanity check - make sure the final known cluster is the EOC marker
-            if (!_fat.IsEndOfChain(_knownClusters[_knownClusters.Count - 1]))
+            if (!_fat.IsEndOfChain(_knownClusters[^1]))
             {
                 throw new IOException("Corrupt file system: final cluster isn't End-of-Chain");
             }
 
-            uint cluster;
-            if (!_fat.TryGetFreeCluster(out cluster))
+            if (!_fat.TryGetFreeCluster(out uint cluster))
             {
                 throw new IOException("Out of disk space");
             }
@@ -349,10 +346,10 @@ namespace DiscUtils.Fat
             }
             else
             {
-                _fat.SetNext(_knownClusters[_knownClusters.Count - 2], cluster);
+                _fat.SetNext(_knownClusters[^2], cluster);
             }
 
-            _knownClusters[_knownClusters.Count - 1] = cluster;
+            _knownClusters[^1] = cluster;
             _knownClusters.Add(_fat.GetNext(cluster));
 
             return cluster;
@@ -373,8 +370,7 @@ namespace DiscUtils.Fat
 
         private bool TryLoadClusterByPosition(long pos)
         {
-            uint cluster;
-            if (!TryGetClusterByPosition(pos, out cluster))
+            if (!TryGetClusterByPosition(pos, out uint cluster))
             {
                 return false;
             }
@@ -408,13 +404,10 @@ namespace DiscUtils.Fat
         {
             int index = (int)(pos / _reader.ClusterSize);
 
-            if (_knownClusters.Count <= index)
+            if (_knownClusters.Count <= index && !TryPopulateKnownClusters(index))
             {
-                if (!TryPopulateKnownClusters(index))
-                {
-                    cluster = uint.MaxValue;
-                    return false;
-                }
+                cluster = uint.MaxValue;
+                return false;
             }
 
             // Chain is shorter than the current stream position
@@ -438,7 +431,7 @@ namespace DiscUtils.Fat
 
         private bool TryPopulateKnownClusters(int index)
         {
-            uint lastKnown = _knownClusters[_knownClusters.Count - 1];
+            uint lastKnown = _knownClusters[^1];
             while (!_fat.IsEndOfChain(lastKnown) && _knownClusters.Count <= index)
             {
                 lastKnown = _fat.GetNext(lastKnown);
@@ -450,7 +443,7 @@ namespace DiscUtils.Fat
 
         private uint DetectLength()
         {
-            while (!_fat.IsEndOfChain(_knownClusters[_knownClusters.Count - 1]))
+            while (!_fat.IsEndOfChain(_knownClusters[^1]))
             {
                 if (!TryPopulateKnownClusters(_knownClusters.Count))
                 {

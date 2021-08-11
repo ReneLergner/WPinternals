@@ -120,7 +120,7 @@ namespace WPinternals
             LogFile.Log("Attempt patch: " + PatchDefinition);
 
             // Find a matching TargetVersion
-            PatchDefinition Definition = PatchDefinitions.Single(d => string.Compare(d.Name, PatchDefinition, true) == 0);
+            PatchDefinition Definition = PatchDefinitions.Single(d => string.Equals(d.Name, PatchDefinition, StringComparison.CurrentCultureIgnoreCase));
             TargetVersion MatchedVersion = null;
             int VersionIndex = 0;
             foreach (TargetVersion CurrentVersion in Definition.TargetVersions)
@@ -146,7 +146,7 @@ namespace WPinternals
                     }
 
                     // Lookup file
-                    FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Compare(f.FilePath, TargetPath, true) == 0);
+                    FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Equals(f.FilePath, TargetPath, StringComparison.CurrentCultureIgnoreCase));
                     if (CurrentFile == null)
                     {
                         CurrentFile = (TargetImage != null) && (!TargetPath.Contains(':'))
@@ -196,7 +196,7 @@ namespace WPinternals
 
                 foreach (TargetFile CurrentTargetFile in MatchedVersion.TargetFiles)
                 {
-                    FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Compare(f.FilePath, Path.Combine(TargetPath + "\\", CurrentTargetFile.Path), true) == 0);
+                    FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Equals(f.FilePath, Path.Combine(TargetPath + "\\", CurrentTargetFile.Path), StringComparison.CurrentCultureIgnoreCase));
 
                     if (!StructuralComparisons.StructuralEqualityComparer.Equals(CurrentFile.Hash, CurrentTargetFile.HashPatched))
                     {
@@ -242,7 +242,7 @@ namespace WPinternals
             try
             {
                 // Find a matching TargetVersion
-                PatchDefinition Definition = PatchDefinitions.Single(d => string.Compare(d.Name, PatchDefinition, true) == 0);
+                PatchDefinition Definition = PatchDefinitions.Single(d => string.Equals(d.Name, PatchDefinition, StringComparison.CurrentCultureIgnoreCase));
                 TargetVersion MatchedVersion = null;
                 foreach (TargetVersion CurrentVersion in Definition.TargetVersions)
                 {
@@ -266,7 +266,7 @@ namespace WPinternals
                         }
 
                         // Lookup file
-                        FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Compare(f.FilePath, TargetPath, true) == 0);
+                        FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Equals(f.FilePath, TargetPath, StringComparison.CurrentCultureIgnoreCase));
                         if (CurrentFile == null)
                         {
                             CurrentFile = new FilePatcher(TargetPath);
@@ -306,7 +306,7 @@ namespace WPinternals
                 {
                     foreach (TargetFile CurrentTargetFile in MatchedVersion.TargetFiles)
                     {
-                        FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Compare(f.FilePath, Path.Combine(TargetPath, CurrentTargetFile.Path), true) == 0);
+                        FilePatcher CurrentFile = LoadedFiles.SingleOrDefault(f => string.Equals(f.FilePath, Path.Combine(TargetPath, CurrentTargetFile.Path), StringComparison.CurrentCultureIgnoreCase));
 
                         if (!StructuralComparisons.StructuralEqualityComparer.Equals(CurrentFile.Hash, CurrentTargetFile.HashOriginal))
                         {

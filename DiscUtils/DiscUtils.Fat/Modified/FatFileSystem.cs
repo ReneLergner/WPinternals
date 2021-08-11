@@ -40,7 +40,7 @@ namespace DiscUtils.Fat
         /// <summary>
         /// The Epoch for FAT file systems (1st Jan, 1980).
         /// </summary>
-        public static readonly DateTime Epoch = new DateTime(1980, 1, 1);
+        public static readonly DateTime Epoch = new(1980, 1, 1);
 
         private TimeConverter _timeConverter;
         private Stream _data;
@@ -158,7 +158,7 @@ namespace DiscUtils.Fat
         {
             _dirCache = new Dictionary<uint, Directory>();
 
-            if (parameters != null && parameters.TimeConverter != null)
+            if (parameters?.TimeConverter != null)
             {
                 _timeConverter = parameters.TimeConverter;
             }
@@ -196,13 +196,13 @@ namespace DiscUtils.Fat
         {
             get
             {
-                switch (_type)
+                return _type switch
                 {
-                    case FatType.Fat12: return "Microsoft FAT12";
-                    case FatType.Fat16: return "Microsoft FAT16";
-                    case FatType.Fat32: return "Microsoft FAT32";
-                    default: return "Unknown FAT";
-                }
+                    FatType.Fat12 => "Microsoft FAT12",
+                    FatType.Fat16 => "Microsoft FAT16",
+                    FatType.Fat32 => "Microsoft FAT32",
+                    _ => "Unknown FAT",
+                };
             }
         }
 
@@ -463,14 +463,14 @@ namespace DiscUtils.Fat
             // Write both FAT copies
             uint fatSize = CalcFatSize(sectors, FatType.Fat12, 1);
             byte[] fat = new byte[fatSize * Sizes.Sector];
-            FatBuffer fatBuffer = new FatBuffer(FatType.Fat12, fat);
+            FatBuffer fatBuffer = new(FatType.Fat12, fat);
             fatBuffer.SetNext(0, 0xFFFFFFF0);
             fatBuffer.SetEndOfChain(1);
             stream.Write(fat, 0, fat.Length);
             stream.Write(fat, 0, fat.Length);
 
             // Write the (empty) root directory
-            uint rootDirSectors = ((224 * 32) + Sizes.Sector - 1) / Sizes.Sector;
+            const uint rootDirSectors = ((224 * 32) + Sizes.Sector - 1) / Sizes.Sector;
             byte[] rootDir = new byte[rootDirSectors * Sizes.Sector];
             stream.Write(rootDir, 0, rootDir.Length);
 
@@ -493,16 +493,14 @@ namespace DiscUtils.Fat
         /// <returns>An object that provides access to the newly created partition file system.</returns>
         public static FatFileSystem FormatPartition(VirtualDisk disk, int partitionIndex, string label)
         {
-            using (Stream partitionStream = disk.Partitions[partitionIndex].Open())
-            {
-                return FormatPartition(
-                    partitionStream,
-                    label,
-                    disk.Geometry,
-                    (int)disk.Partitions[partitionIndex].FirstSector,
-                    (int)(1 + disk.Partitions[partitionIndex].LastSector - disk.Partitions[partitionIndex].FirstSector),
-                    0);
-            }
+            using Stream partitionStream = disk.Partitions[partitionIndex].Open();
+            return FormatPartition(
+                partitionStream,
+                label,
+                disk.Geometry,
+                (int)disk.Partitions[partitionIndex].FirstSector,
+                (int)(1 + disk.Partitions[partitionIndex].LastSector - disk.Partitions[partitionIndex].FirstSector),
+                0);
         }
 
         /// <summary>
@@ -612,7 +610,7 @@ namespace DiscUtils.Fat
              */
 
             byte[] fat = new byte[CalcFatSize((uint)sectorCount, fatType, sectorsPerCluster) * Sizes.Sector];
-            FatBuffer fatBuffer = new FatBuffer(fatType, fat);
+            FatBuffer fatBuffer = new(fatType, fat);
             fatBuffer.SetNext(0, 0xFFFFFFF8);
             fatBuffer.SetEndOfChain(1);
             if (fatType >= FatType.Fat32)
@@ -780,8 +778,7 @@ namespace DiscUtils.Fat
                 return;
             }
 
-            Directory parent;
-            long id = GetDirectoryEntry(path, out parent);
+            long id = GetDirectoryEntry(path, out Directory parent);
             DirectoryEntry dirEntry = parent.GetEntry(id);
 
             FatAttributes newFatAttr = (FatAttributes)newValue;
@@ -836,7 +833,7 @@ namespace DiscUtils.Fat
                 return;
             }
 
-            UpdateDirEntry(path, (e) => { e.CreationTime = newTime; });
+            UpdateDirEntry(path, (e) => e.CreationTime = newTime);
         }
 
         /// <summary>
@@ -871,7 +868,7 @@ namespace DiscUtils.Fat
                 return;
             }
 
-            UpdateDirEntry(path, (e) => { e.CreationTime = ConvertFromUtc(newTime); });
+            UpdateDirEntry(path, (e) => e.CreationTime = ConvertFromUtc(newTime));
         }
 
         /// <summary>
@@ -906,7 +903,7 @@ namespace DiscUtils.Fat
                 return;
             }
 
-            UpdateDirEntry(path, (e) => { e.LastAccessTime = newTime; });
+            UpdateDirEntry(path, (e) => e.LastAccessTime = newTime);
         }
 
         /// <summary>
@@ -941,7 +938,7 @@ namespace DiscUtils.Fat
                 return;
             }
 
-            UpdateDirEntry(path, (e) => { e.LastAccessTime = ConvertFromUtc(newTime); });
+            UpdateDirEntry(path, (e) => e.LastAccessTime = ConvertFromUtc(newTime));
         }
 
         /// <summary>
@@ -976,7 +973,7 @@ namespace DiscUtils.Fat
                 return;
             }
 
-            UpdateDirEntry(path, (e) => { e.LastWriteTime = newTime; });
+            UpdateDirEntry(path, (e) => e.LastWriteTime = newTime);
         }
 
         /// <summary>
@@ -1011,7 +1008,7 @@ namespace DiscUtils.Fat
                 return;
             }
 
-            UpdateDirEntry(path, (e) => { e.LastWriteTime = ConvertFromUtc(newTime); });
+            UpdateDirEntry(path, (e) => e.LastWriteTime = ConvertFromUtc(newTime));
         }
 
         /// <summary>
@@ -1032,8 +1029,7 @@ namespace DiscUtils.Fat
         /// <param name="overwrite">Whether to permit over-writing of an existing file.</param>
         public override void CopyFile(string sourceFile, string destinationFile, bool overwrite)
         {
-            Directory sourceDir;
-            long sourceEntryId = GetDirectoryEntry(sourceFile, out sourceDir);
+            long sourceEntryId = GetDirectoryEntry(sourceFile, out Directory sourceDir);
 
             if (sourceDir == null || sourceEntryId < 0)
             {
@@ -1047,12 +1043,11 @@ namespace DiscUtils.Fat
                 throw new IOException("The source file is a directory");
             }
 
-            DirectoryEntry newEntry = new DirectoryEntry(sourceEntry);
+            DirectoryEntry newEntry = new(sourceEntry);
             newEntry.Name = FileName.FromPath(destinationFile, FatOptions.FileNameEncoding);
             newEntry.FirstCluster = 0;
 
-            Directory destDir;
-            long destEntryId = GetDirectoryEntry(destinationFile, out destDir);
+            long destEntryId = GetDirectoryEntry(destinationFile, out Directory destDir);
 
             if (destDir == null)
             {
@@ -1095,11 +1090,9 @@ namespace DiscUtils.Fat
             destEntryId = destDir.AddEntry(newEntry);
 
             // Copy the contents...
-            using (Stream sourceStream = new FatFileStream(this, sourceDir, sourceEntryId, FileAccess.Read),
-                destStream = new FatFileStream(this, destDir, destEntryId, FileAccess.Write))
-            {
-                StreamUtilities.PumpStreams(sourceStream, destStream);
-            }
+            using Stream sourceStream = new FatFileStream(this, sourceDir, sourceEntryId, FileAccess.Read),
+                destStream = new FatFileStream(this, destDir, destEntryId, FileAccess.Write);
+            StreamUtilities.PumpStreams(sourceStream, destStream);
         }
 
         /// <summary>
@@ -1151,8 +1144,7 @@ namespace DiscUtils.Fat
                 throw new IOException("Unable to delete non-empty directory");
             }
 
-            Directory parent;
-            long id = GetDirectoryEntry(path, out parent);
+            long id = GetDirectoryEntry(path, out Directory parent);
             if (parent == null && id == 0)
             {
                 throw new IOException("Unable to delete root directory");
@@ -1175,8 +1167,7 @@ namespace DiscUtils.Fat
         /// <param name="path">The path of the file to delete.</param>
         public override void DeleteFile(string path)
         {
-            Directory parent;
-            long id = GetDirectoryEntry(path, out parent);
+            long id = GetDirectoryEntry(path, out Directory parent);
             if (parent == null || id < 0)
             {
                 throw new FileNotFoundException("No such file", path);
@@ -1261,7 +1252,7 @@ namespace DiscUtils.Fat
             }
 
             DirectoryEntry[] entries = dir.GetDirectories();
-            List<string> dirs = new List<string>(entries.Length);
+            List<string> dirs = new(entries.Length);
             foreach (DirectoryEntry dirEntry in entries)
             {
                 dirs.Add(Utilities.CombinePaths(path, dirEntry.Name.GetDisplayName(FatOptions.FileNameEncoding)));
@@ -1282,7 +1273,7 @@ namespace DiscUtils.Fat
         {
             Regex re = Utilities.ConvertWildcardsToRegEx(searchPattern);
 
-            List<string> dirs = new List<string>();
+            List<string> dirs = new();
             DoSearch(dirs, path, re, searchOption == SearchOption.AllDirectories, true, false);
             return dirs.ToArray();
         }
@@ -1297,7 +1288,7 @@ namespace DiscUtils.Fat
             Directory dir = GetDirectory(path);
             DirectoryEntry[] entries = dir.GetFiles();
 
-            List<string> files = new List<string>(entries.Length);
+            List<string> files = new(entries.Length);
             foreach (DirectoryEntry dirEntry in entries)
             {
                 files.Add(Utilities.CombinePaths(path, dirEntry.Name.GetDisplayName(FatOptions.FileNameEncoding)));
@@ -1318,7 +1309,7 @@ namespace DiscUtils.Fat
         {
             Regex re = Utilities.ConvertWildcardsToRegEx(searchPattern);
 
-            List<string> results = new List<string>();
+            List<string> results = new();
             DoSearch(results, path, re, searchOption == SearchOption.AllDirectories, false, true);
             return results.ToArray();
         }
@@ -1333,7 +1324,7 @@ namespace DiscUtils.Fat
             Directory dir = GetDirectory(path);
             DirectoryEntry[] entries = dir.Entries;
 
-            List<string> result = new List<string>(entries.Length);
+            List<string> result = new(entries.Length);
             foreach (DirectoryEntry dirEntry in entries)
             {
                 result.Add(Utilities.CombinePaths(path, dirEntry.Name.GetDisplayName(FatOptions.FileNameEncoding)));
@@ -1356,7 +1347,7 @@ namespace DiscUtils.Fat
             Directory dir = GetDirectory(path);
             DirectoryEntry[] entries = dir.Entries;
 
-            List<string> result = new List<string>(entries.Length);
+            List<string> result = new(entries.Length);
             foreach (DirectoryEntry dirEntry in entries)
             {
                 if (re.IsMatch(dirEntry.Name.GetSearchName(FatOptions.FileNameEncoding)))
@@ -1387,8 +1378,7 @@ namespace DiscUtils.Fat
                 }
             }
 
-            Directory destParent;
-            long destId = GetDirectoryEntry(destinationDirectoryName, out destParent);
+            long destId = GetDirectoryEntry(destinationDirectoryName, out Directory destParent);
             if (destParent == null)
             {
                 throw new DirectoryNotFoundException("Target directory doesn't exist");
@@ -1398,8 +1388,7 @@ namespace DiscUtils.Fat
                 throw new IOException("Target directory already exists");
             }
 
-            Directory sourceParent;
-            long sourceId = GetDirectoryEntry(sourceDirectoryName, out sourceParent);
+            long sourceId = GetDirectoryEntry(sourceDirectoryName, out Directory sourceParent);
             if (sourceParent == null || sourceId < 0)
             {
                 throw new IOException("Source directory doesn't exist");
@@ -1417,8 +1406,7 @@ namespace DiscUtils.Fat
         /// <param name="overwrite">Whether to permit a destination file to be overwritten.</param>
         public override void MoveFile(string sourceName, string destinationName, bool overwrite)
         {
-            Directory sourceDir;
-            long sourceEntryId = GetDirectoryEntry(sourceName, out sourceDir);
+            long sourceEntryId = GetDirectoryEntry(sourceName, out Directory sourceDir);
 
             if (sourceDir == null || sourceEntryId < 0)
             {
@@ -1432,11 +1420,10 @@ namespace DiscUtils.Fat
                 throw new IOException("The source file is a directory");
             }
 
-            DirectoryEntry newEntry = new DirectoryEntry(sourceEntry);
+            DirectoryEntry newEntry = new(sourceEntry);
             newEntry.Name = FileName.FromPath(destinationName, FatOptions.FileNameEncoding);
 
-            Directory destDir;
-            long destEntryId = GetDirectoryEntry(destinationName, out destDir);
+            long destEntryId = GetDirectoryEntry(destinationName, out Directory destDir);
 
             if (destDir == null)
             {
@@ -1492,14 +1479,13 @@ namespace DiscUtils.Fat
 
         internal Directory GetDirectory(string path)
         {
-            Directory parent;
 
             if (string.IsNullOrEmpty(path) || path == "\\")
             {
                 return _rootDir;
             }
 
-            long id = GetDirectoryEntry(_rootDir, path, out parent);
+            long id = GetDirectoryEntry(_rootDir, path, out Directory parent);
             if (id >= 0)
             {
                 return GetDirectory(parent, id);
@@ -1524,8 +1510,7 @@ namespace DiscUtils.Fat
             }
 
             // If we have this one cached, return it
-            Directory result;
-            if (_dirCache.TryGetValue(dirEntry.FirstCluster, out result))
+            if (_dirCache.TryGetValue(dirEntry.FirstCluster, out Directory result))
             {
                 return result;
             }
@@ -1549,9 +1534,8 @@ namespace DiscUtils.Fat
 
         internal DirectoryEntry GetDirectoryEntry(string path)
         {
-            Directory parent;
 
-            long id = GetDirectoryEntry(_rootDir, path, out parent);
+            long id = GetDirectoryEntry(_rootDir, path, out Directory parent);
             if (parent == null || id < 0)
             {
                 return null;
@@ -1707,7 +1691,7 @@ namespace DiscUtils.Fat
         private static uint CalcFatSize(uint sectors, FatType fatType, byte sectorsPerCluster)
         {
             uint numClusters = (uint)(sectors / sectorsPerCluster);
-            uint fatBytes = (numClusters * (ushort)fatType) / 8;
+            uint fatBytes = numClusters * (ushort)fatType / 8;
             return (fatBytes + Sizes.Sector - 1) / Sizes.Sector;
         }
 
@@ -1894,8 +1878,7 @@ namespace DiscUtils.Fat
             else
             {
                 // Long filename support - translate long filename lookup to short filename
-                string ShortName;
-                if (dir.LongFileNames_LongKey.TryGetValue(pathEntries[pathOffset], out ShortName))
+                if (dir.LongFileNames_LongKey.TryGetValue(pathEntries[pathOffset], out string ShortName))
                     pathEntries[pathOffset] = ShortName;
 
                 entryId = dir.FindEntry(new FileName(pathEntries[pathOffset], FatOptions.FileNameEncoding));
@@ -1955,8 +1938,7 @@ namespace DiscUtils.Fat
 
         private void UpdateDirEntry(string path, EntryUpdateAction action)
         {
-            Directory parent;
-            long id = GetDirectoryEntry(path, out parent);
+            long id = GetDirectoryEntry(path, out Directory parent);
             DirectoryEntry entry = parent.GetEntry(id);
             action(entry);
             parent.UpdateEntry(id, entry);
@@ -1973,7 +1955,7 @@ namespace DiscUtils.Fat
         /// <summary>
         /// Size of the Filesystem in bytes
         /// </summary>
-        public override long Size { get { return ((TotalSectors - ReservedSectorCount - (FatSize * FatCount)) * BytesPerSector); } }
+        public override long Size { get { return (TotalSectors - ReservedSectorCount - (FatSize * FatCount)) * BytesPerSector; } }
 
         /// <summary>
         /// Used space of the Filesystem in bytes
@@ -1991,7 +1973,7 @@ namespace DiscUtils.Fat
                         usedCluster++;
                     }
                 }
-                return (usedCluster * SectorsPerCluster * BytesPerSector);
+                return usedCluster * SectorsPerCluster * BytesPerSector;
             }
         }
 
@@ -2016,8 +1998,7 @@ namespace DiscUtils.Fat
             if (dir == null)
                 return fileName;
 
-            string lfn;
-            if (dir.LongFileNames_ShortKey.TryGetValue(Path.GetFileName(shortFullPath), out lfn))
+            if (dir.LongFileNames_ShortKey.TryGetValue(Path.GetFileName(shortFullPath), out string lfn))
                 return lfn;
 
             return fileName;

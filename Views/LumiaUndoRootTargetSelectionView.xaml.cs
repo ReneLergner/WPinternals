@@ -36,12 +36,9 @@ namespace WPinternals
 
         private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
         {
-            if (args.Source is Hyperlink link)
+            if (args.Source is Hyperlink link && link.NavigateUri.ToString() == "UnlockBoot")
             {
-                if (link.NavigateUri.ToString() == "UnlockBoot")
-                {
-                    ((LumiaUndoRootTargetSelectionViewModel)DataContext).SwitchToUnlockBoot();
-                }
+                ((LumiaUndoRootTargetSelectionViewModel)DataContext).SwitchToUnlockBoot();
             }
         }
 

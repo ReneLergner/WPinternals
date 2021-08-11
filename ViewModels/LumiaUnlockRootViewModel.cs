@@ -266,10 +266,10 @@ namespace WPinternals
             Partition Partition = GPT.GetPartition("UEFI");
             byte[] UefiBuffer = Phone.ReadSectors(Partition.FirstSector, Partition.LastSector - Partition.FirstSector + 1);
             UEFI UEFI = new(UefiBuffer);
-            string BootMgrName = UEFI.EFIs.First(efi => ((efi.Name != null) && ((efi.Name.Contains("BootMgrApp")) || (efi.Name.Contains("FlashApp"))))).Name;
+            string BootMgrName = UEFI.EFIs.First(efi => (efi.Name != null) && (efi.Name.Contains("BootMgrApp") || efi.Name.Contains("FlashApp"))).Name;
             byte[] BootMgr = UEFI.GetFile(BootMgrName);
             // "Header V2"
-            Result = (ByteOperations.FindAscii(BootMgr, "Header V2") != null);
+            Result = ByteOperations.FindAscii(BootMgr, "Header V2") != null;
             Phone.CloseVolume();
             return Result;
         }

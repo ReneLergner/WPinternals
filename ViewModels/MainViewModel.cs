@@ -127,7 +127,7 @@ namespace WPinternals
                 Registry.CurrentUser.OpenSubKey("Software", true).CreateSubKey("WPInternals");
             }
 
-            if ((Registration.IsPrerelease) && (Registry.CurrentUser.OpenSubKey("Software\\WPInternals").GetValue("NdaAccepted") == null))
+            if (Registration.IsPrerelease && (Registry.CurrentUser.OpenSubKey("Software\\WPInternals").GetValue("NdaAccepted") == null))
             {
                 this.ContextViewModel = new DisclaimerAndNdaViewModel(Disclaimer_Accepted);
             }
@@ -135,7 +135,7 @@ namespace WPinternals
             {
                 this.ContextViewModel = new DisclaimerViewModel(Disclaimer_Accepted);
             }
-            else if ((Registration.IsPrerelease) && !Registration.IsRegistered())
+            else if (Registration.IsPrerelease && !Registration.IsRegistered())
             {
                 ContextViewModel = new RegistrationViewModel(Registration_Completed, Registration_Failed);
             }
@@ -149,7 +149,7 @@ namespace WPinternals
         {
             ContextViewModel = null;
 
-            if ((Registration.IsPrerelease) && !Registration.IsRegistered())
+            if (Registration.IsPrerelease && !Registration.IsRegistered())
             {
                 ContextViewModel = new RegistrationViewModel(Registration_Completed, Registration_Failed);
             }

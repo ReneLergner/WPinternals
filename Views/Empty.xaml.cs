@@ -66,7 +66,7 @@ namespace WPinternals
                 obj = VisualTreeHelper.GetParent(obj);
             }
 
-            PhoneNotifier = ((MainViewModel)(((MainWindow)obj).DataContext)).PhoneNotifier;
+            PhoneNotifier = ((MainViewModel)((MainWindow)obj).DataContext).PhoneNotifier;
 
             PhoneNotifier.NewDeviceArrived += PhoneNotifier_NewDeviceArrived;
         }
@@ -117,14 +117,11 @@ namespace WPinternals
         {
             App.InterruptBoot = (bool)e.NewValue;
 
-            if ((bool)e.NewValue)
+            if ((bool)e.NewValue && PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
             {
-                if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
-                {
-                    App.InterruptBoot = false;
-                    LogFile.Log("Found Lumia BootMgr and user forced to interrupt the boot process. Force to Flash-mode.");
-                    Task.Run(() => SwitchModeViewModel.SwitchTo(PhoneNotifier, PhoneInterfaces.Lumia_Flash));
-                }
+                App.InterruptBoot = false;
+                LogFile.Log("Found Lumia BootMgr and user forced to interrupt the boot process. Force to Flash-mode.");
+                Task.Run(() => SwitchModeViewModel.SwitchTo(PhoneNotifier, PhoneInterfaces.Lumia_Flash));
             }
         }
 

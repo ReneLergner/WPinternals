@@ -246,15 +246,15 @@ namespace WPinternals
                             BufferSize -= b.Length;
                             Monitor.Pulse(BufferQueue);
 
-                            BytesRead += (b.Length - BufferOffset);
+                            BytesRead += b.Length - BufferOffset;
                             BufferOffset = 0;
                         }
                         else
                         {
                             Array.Copy(b, BufferOffset, buffer, offset + BytesRead, count - BytesRead);
 
-                            BufferOffset += (count - BytesRead);
-                            BytesRead += (count - BytesRead);
+                            BufferOffset += count - BytesRead;
+                            BytesRead += count - BytesRead;
                         }
                     }
                     else

@@ -5,7 +5,7 @@ namespace SevenZip.Compression.RangeCoder
     internal struct BitEncoder
     {
         public const int kNumBitModelTotalBits = 11;
-        public const uint kBitModelTotal = (1 << kNumBitModelTotalBits);
+        public const uint kBitModelTotal = 1 << kNumBitModelTotalBits;
         private const int kNumMoveBits = 5;
         private const int kNumMoveReducingBits = 2;
         public const int kNumBitPriceShiftBits = 6;
@@ -53,7 +53,7 @@ namespace SevenZip.Compression.RangeCoder
 
         static BitEncoder()
         {
-            const int kNumBits = (kNumBitModelTotalBits - kNumMoveReducingBits);
+            const int kNumBits = kNumBitModelTotalBits - kNumMoveReducingBits;
             for (int i = kNumBits - 1; i >= 0; i--)
             {
                 UInt32 start = (UInt32)1 << (kNumBits - i - 1);
@@ -77,7 +77,7 @@ namespace SevenZip.Compression.RangeCoder
     internal struct BitDecoder
     {
         public const int kNumBitModelTotalBits = 11;
-        public const uint kBitModelTotal = (1 << kNumBitModelTotalBits);
+        public const uint kBitModelTotal = 1 << kNumBitModelTotalBits;
         private const int kNumMoveBits = 5;
 
         private uint Prob;

@@ -60,7 +60,7 @@ namespace WPinternals
             bool Result = false;
             if (App.Config.RegistrationName != null)
             {
-                Result = (CalcRegKey() == App.Config.RegistrationKey);
+                Result = CalcRegKey() == App.Config.RegistrationKey;
             }
             return Result;
         }
@@ -80,7 +80,7 @@ namespace WPinternals
             byte[] KeyBytes = System.Text.Encoding.UTF8.GetBytes(KeyBase);
             SHA1Managed sha = new();
             byte[] Key = sha.ComputeHash(KeyBytes);
-            return System.Convert.ToBase64String(Key);
+            return Convert.ToBase64String(Key);
         }
     }
 
@@ -88,8 +88,6 @@ namespace WPinternals
     {
         internal static WPinternalsConfig ReadConfig()
         {
-            WPinternalsConfig Result;
-
             string FilePath = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\WPInternals.config");
             if (File.Exists(FilePath))
             {
@@ -149,7 +147,7 @@ namespace WPinternals
 
         internal FlashProfile GetProfile(string PlatformID, string PhoneFirmware, string FfuFirmware = null)
         {
-            return FlashProfiles.Find(p => ((string.Compare(p.PlatformID, PlatformID, true) == 0) && (string.Compare(p.PhoneFirmware, PhoneFirmware, true) == 0) && ((FfuFirmware == null) || (string.Compare(p.FfuFirmware, FfuFirmware, true) == 0))));
+            return FlashProfiles.Find(p => string.Equals(p.PlatformID, PlatformID, StringComparison.CurrentCultureIgnoreCase) && string.Equals(p.PhoneFirmware, PhoneFirmware, StringComparison.CurrentCultureIgnoreCase) && ((FfuFirmware == null) || string.Equals(p.FfuFirmware, FfuFirmware, StringComparison.CurrentCultureIgnoreCase)));
         }
 
         public List<FlashProfile> FlashProfiles = new();
@@ -169,7 +167,7 @@ namespace WPinternals
 
         internal void AddFfuToRepository(string FFUPath, string PlatformID, string FirmwareVersion, string OSVersion)
         {
-            FFUEntry Entry = FFURepository.Find(e => ((e.PlatformID == PlatformID) && (e.FirmwareVersion == FirmwareVersion) && (string.Compare(e.Path, FFUPath, true) == 0)));
+            FFUEntry Entry = FFURepository.Find(e => (e.PlatformID == PlatformID) && (e.FirmwareVersion == FirmwareVersion) && string.Equals(e.Path, FFUPath, StringComparison.CurrentCultureIgnoreCase));
             if (Entry == null)
             {
                 LogFile.Log("Adding FFU to repository: " + FFUPath, LogType.FileAndConsole);
@@ -203,7 +201,7 @@ namespace WPinternals
         internal void RemoveFfuFromRepository(string FFUPath)
         {
             int Count = 0;
-            FFURepository.Where(e => (string.Compare(e.Path, FFUPath, true) == 0)).ToList().ForEach(e =>
+            FFURepository.Where(e => string.Equals(e.Path, FFUPath, StringComparison.CurrentCultureIgnoreCase)).ToList().ForEach(e =>
                 {
                     Count++;
                     FFURepository.Remove(e);
@@ -225,8 +223,8 @@ namespace WPinternals
 
         internal void AddEmergencyToRepository(string Type, string ProgrammerPath, string PayloadPath)
         {
-            EmergencyFileEntry Entry = EmergencyRepository.Find(e => ((e.Type == Type) && (string.Compare(e.ProgrammerPath, ProgrammerPath, true) == 0)));
-            if ((Entry != null) && (PayloadPath != null) && (string.Compare(Entry.PayloadPath, PayloadPath, true) != 0))
+            EmergencyFileEntry Entry = EmergencyRepository.Find(e => (e.Type == Type) && string.Equals(e.ProgrammerPath, ProgrammerPath, StringComparison.CurrentCultureIgnoreCase));
+            if ((Entry != null) && (PayloadPath != null) && (!string.Equals(Entry.PayloadPath, PayloadPath, StringComparison.CurrentCultureIgnoreCase)))
             {
                 LogFile.Log("Updating emergency payload path in repository: " + PayloadPath, LogType.FileAndConsole);
                 Entry.PayloadPath = PayloadPath;
@@ -259,7 +257,7 @@ namespace WPinternals
         internal void RemoveEmergencyFromRepository(string ProgrammerPath)
         {
             int Count = 0;
-            EmergencyRepository.Where(e => (string.Compare(e.ProgrammerPath, ProgrammerPath, true) == 0)).ToList().ForEach(e =>
+            EmergencyRepository.Where(e => string.Equals(e.ProgrammerPath, ProgrammerPath, StringComparison.CurrentCultureIgnoreCase)).ToList().ForEach(e =>
             {
                 Count++;
                 EmergencyRepository.Remove(e);
@@ -318,11 +316,11 @@ namespace WPinternals
                     ValueBuffer[9] |= 2;
                 }
 
-                return System.Convert.ToBase64String(ValueBuffer);
+                return Convert.ToBase64String(ValueBuffer);
             }
             set
             {
-                byte[] ValueBuffer = System.Convert.FromBase64String(value);
+                byte[] ValueBuffer = Convert.FromBase64String(value);
                 byte Version = ValueBuffer[0];
                 FillSize = ByteOperations.ReadUInt32(ValueBuffer, 1);
                 HeaderSize = ByteOperations.ReadUInt32(ValueBuffer, 5);

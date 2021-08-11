@@ -33,6 +33,7 @@ namespace WPinternals
         ProtocolAsyncV3 = 16
     }
 
+    [Flags]
     internal enum FlashOptions : byte
     {
         SkipWrite = 1,
@@ -57,8 +58,8 @@ namespace WPinternals
             byte[] Request = new byte[0x0B];
             const string Header = "NOKXFR";
 
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Param), 0, Request, 7, Param.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Param), 0, Request, 7, Param.Length);
 
             byte[] Response = ExecuteRawMethod(Request);
             if ((Response == null) || (Response.Length < 0x10))
@@ -67,7 +68,7 @@ namespace WPinternals
             }
 
             byte[] Result = new byte[Response[0x10]];
-            System.Buffer.BlockCopy(Response, 0x11, Result, 0, Response[0x10]);
+            Buffer.BlockCopy(Response, 0x11, Result, 0, Response[0x10]);
             return Result;
         }
 
@@ -79,7 +80,7 @@ namespace WPinternals
                 return null;
             }
 
-            return System.Text.ASCIIEncoding.ASCII.GetString(Bytes).Trim(new char[] { '\0' });
+            return System.Text.Encoding.ASCII.GetString(Bytes).Trim(new char[] { '\0' });
         }
 
         [Flags]
@@ -195,12 +196,12 @@ namespace WPinternals
             byte[] AsskMask = new byte[0x10] { 1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64 };
             byte[] Request = new byte[0xAC];
             const string Header = "NOKXFT";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[7] = 1;
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x18, 4), 0, Request, 0x08, 4); // Subblocktype = 0x18
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x9C, 4), 0, Request, 0x0C, 4); // Subblocklength = 0x9C
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x00, 4), 0, Request, 0x10, 4); // AsicIndex = 0x00
-            System.Buffer.BlockCopy(AsskMask, 0, Request, 0x14, 0x10);
+            Buffer.BlockCopy(BigEndian.GetBytes(0x18, 4), 0, Request, 0x08, 4); // Subblocktype = 0x18
+            Buffer.BlockCopy(BigEndian.GetBytes(0x9C, 4), 0, Request, 0x0C, 4); // Subblocklength = 0x9C
+            Buffer.BlockCopy(BigEndian.GetBytes(0x00, 4), 0, Request, 0x10, 4); // AsicIndex = 0x00
+            Buffer.BlockCopy(AsskMask, 0, Request, 0x14, 0x10);
             byte[] TerminalResponse = ExecuteRawMethod(Request);
             if ((TerminalResponse?.Length > 0x20) && (BigEndian.ToUInt32(TerminalResponse, 0x14) == (TerminalResponse.Length - 0x18)) && (BitConverter.ToUInt32(TerminalResponse, 0x1C) == (TerminalResponse.Length - 0x20)))
             {
@@ -219,14 +220,14 @@ namespace WPinternals
             byte[] Request = new byte[FfuHeader.Length + 0x20];
 
             const string Header = "NOKXFS";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x0001, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(BigEndian.GetBytes(0x0001, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
             Request[0x08] = 0; // Progress = 0%
             Request[0x0B] = 1; // Subblock count = 1
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x0000000B, 4), 0, Request, 0x0C, 4); // Subblock type for header = 0x0B
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length + 0x0C, 4), 0, Request, 0x10, 4); // Subblock length = length of header + 0x0C
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x00000000, 4), 0, Request, 0x14, 4); // Header type = 0
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length, 4), 0, Request, 0x18, 4); // Payload length = length of header
+            Buffer.BlockCopy(BigEndian.GetBytes(0x0000000B, 4), 0, Request, 0x0C, 4); // Subblock type for header = 0x0B
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length + 0x0C, 4), 0, Request, 0x10, 4); // Subblock length = length of header + 0x0C
+            Buffer.BlockCopy(BigEndian.GetBytes(0x00000000, 4), 0, Request, 0x14, 4); // Header type = 0
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length, 4), 0, Request, 0x18, 4); // Payload length = length of header
             Request[0x1C] = Options; // Header options = 0
 
             Buffer.BlockCopy(FfuHeader, 0, Request, 0x20, FfuHeader.Length);
@@ -249,20 +250,20 @@ namespace WPinternals
             byte[] Request = new byte[FfuHeader.Length + 0x3C];
 
             const string Header = "NOKXFS";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
-            System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV2, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV2, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
             Request[0x08] = 0; // Progress = 0%
             Request[0x0B] = 1; // Subblock count = 1
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x00000021, 4), 0, Request, 0x0C, 4); // Subblock type for header v2 = 0x21
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length + 0x28, 4), 0, Request, 0x10, 4); // Subblock starts at 0x14, payload starts at 0x3C.
+            Buffer.BlockCopy(BigEndian.GetBytes(0x00000021, 4), 0, Request, 0x0C, 4); // Subblock type for header v2 = 0x21
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length + 0x28, 4), 0, Request, 0x10, 4); // Subblock starts at 0x14, payload starts at 0x3C.
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x00000000, 4), 0, Request, 0x14, 4); // Header type = 0
-            System.Buffer.BlockCopy(BigEndian.GetBytes(TotalHeaderLength, 4), 0, Request, 0x18, 4); // Payload length = length of header
+            Buffer.BlockCopy(BigEndian.GetBytes(0x00000000, 4), 0, Request, 0x14, 4); // Header type = 0
+            Buffer.BlockCopy(BigEndian.GetBytes(TotalHeaderLength, 4), 0, Request, 0x18, 4); // Payload length = length of header
             Request[0x1C] = Options; // Header options = 0
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(OffsetForThisPart, 4), 0, Request, 0x1D, 4);
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length, 4), 0, Request, 0x21, 4);
+            Buffer.BlockCopy(BigEndian.GetBytes(OffsetForThisPart, 4), 0, Request, 0x1D, 4);
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuHeader.Length, 4), 0, Request, 0x21, 4);
             Request[0x25] = 0; // No Erase
 
             Buffer.BlockCopy(FfuHeader, 0, Request, 0x3C, FfuHeader.Length);
@@ -290,15 +291,15 @@ namespace WPinternals
             byte[] Request = new byte[FfuChunk.Length + 0x1C];
 
             const string Header = "NOKXFS";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
-            System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV1, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV1, 2), 0, Request, 0x06, 2); // Protocol version = 0x0001
             Request[0x08] = (byte)Progress; // Progress = 0% (0 - 100)
             Request[0x0B] = 1; // Subblock count = 1
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x0000000C, 4), 0, Request, 0x0C, 4); // Subblock type for ChunkData = 0x0C
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length + 0x08, 4), 0, Request, 0x10, 4); // Subblock length = length of chunk + 0x08
+            Buffer.BlockCopy(BigEndian.GetBytes(0x0000000C, 4), 0, Request, 0x0C, 4); // Subblock type for ChunkData = 0x0C
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length + 0x08, 4), 0, Request, 0x10, 4); // Subblock length = length of chunk + 0x08
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length, 4), 0, Request, 0x14, 4); // Payload length = length of chunk
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length, 4), 0, Request, 0x14, 4); // Payload length = length of chunk
             Request[0x18] = Options; // Data options = 0 (1 = verify)
 
             Buffer.BlockCopy(FfuChunk, 0, Request, 0x1C, FfuChunk.Length);
@@ -321,15 +322,15 @@ namespace WPinternals
             byte[] Request = new byte[FfuChunk.Length + 0x20];
 
             const string Header = "NOKXFS";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
-            System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV2, 2), 0, Request, 0x06, 2); // Protocol
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolSyncV2, 2), 0, Request, 0x06, 2); // Protocol
             Request[0x08] = (byte)Progress; // Progress = 0% (0 - 100)
             Request[0x0B] = 1; // Subblock count = 1
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x0000001B, 4), 0, Request, 0x0C, 4); // Subblock type for Payload v2 = 0x1B
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length + 0x0C, 4), 0, Request, 0x10, 4); // Subblock length = length of chunk + 0x08
+            Buffer.BlockCopy(BigEndian.GetBytes(0x0000001B, 4), 0, Request, 0x0C, 4); // Subblock type for Payload v2 = 0x1B
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length + 0x0C, 4), 0, Request, 0x10, 4); // Subblock length = length of chunk + 0x08
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length, 4), 0, Request, 0x14, 4); // Payload length = length of chunk
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length, 4), 0, Request, 0x14, 4); // Payload length = length of chunk
             Request[0x18] = Options; // Data options = 0 (1 = verify)
 
             Buffer.BlockCopy(FfuChunk, 0, Request, 0x20, FfuChunk.Length);
@@ -352,18 +353,18 @@ namespace WPinternals
             byte[] Request = new byte[FfuChunk.Length + 0x20];
 
             const string Header = "NOKXFS";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
-            System.Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolAsyncV3, 2), 0, Request, 0x06, 2); // Protocol
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(BigEndian.GetBytes((int)FfuProtocol.ProtocolAsyncV3, 2), 0, Request, 0x06, 2); // Protocol
             Request[0x08] = (byte)Progress; // Progress = 0% (0 - 100)
             Request[0x0B] = 1; // Subblock count = 1
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x0000001D, 4), 0, Request, 0x0C, 4); // Subblock type for Payload v2 = 0x1B
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length + 0x2C, 4), 0, Request, 0x10, 4); // Subblock length = length of chunk + 0x08
+            Buffer.BlockCopy(BigEndian.GetBytes(0x0000001D, 4), 0, Request, 0x0C, 4); // Subblock type for Payload v2 = 0x1B
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length + 0x2C, 4), 0, Request, 0x10, 4); // Subblock length = length of chunk + 0x08
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length, 4), 0, Request, 0x14, 4); // Payload length = length of chunk
+            Buffer.BlockCopy(BigEndian.GetBytes(FfuChunk.Length, 4), 0, Request, 0x14, 4); // Payload length = length of chunk
             Request[0x18] = Options; // Data options = 0 (1 = verify)
-            System.Buffer.BlockCopy(BigEndian.GetBytes(WriteDescriptorIndex, 4), 0, Request, 0x19, 4); // Payload length = length of chunk
-            System.Buffer.BlockCopy(BigEndian.GetBytes(CRC, 4), 0, Request, 0x1D, 4); // Payload length = length of chunk
+            Buffer.BlockCopy(BigEndian.GetBytes(WriteDescriptorIndex, 4), 0, Request, 0x19, 4); // Payload length = length of chunk
+            Buffer.BlockCopy(BigEndian.GetBytes(CRC, 4), 0, Request, 0x1D, 4); // Payload length = length of chunk
 
             Buffer.BlockCopy(FfuChunk, 0, Request, 0x40, FfuChunk.Length);
 
@@ -387,11 +388,11 @@ namespace WPinternals
             {
                 byte[] Request = new byte[84];
                 const string Header = "NOKXFB";
-                System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+                Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
                 Request[0x07] = 1; // Subblock count = 1
                 Request[0x08] = 6; // Subblock ID = 6 = Create Partition Backup to RAM
-                System.Buffer.BlockCopy(BigEndian.GetBytes(73, 2), 0, Request, 0x09, 2); // Subblock length = Length of data in subblock including fillers (subblock-ID-field and subblock-length-field are not counted for the subblock-length)
-                System.Text.UnicodeEncoding.Unicode.GetBytes(PartitionName);
+                Buffer.BlockCopy(BigEndian.GetBytes(73, 2), 0, Request, 0x09, 2); // Subblock length = Length of data in subblock including fillers (subblock-ID-field and subblock-length-field are not counted for the subblock-length)
+                System.Text.Encoding.Unicode.GetBytes(PartitionName);
 
                 byte[] PartitionBytes = System.Text.Encoding.Unicode.GetBytes(PartitionName);
                 Buffer.BlockCopy(PartitionBytes, 0, Request, 0x0C, PartitionBytes.Length);
@@ -415,18 +416,18 @@ namespace WPinternals
         {
             byte[] Request = new byte[MmosPart.Length + 0x20];
             const string Header = "NOKXFL";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[0x07] = 1; // Subblock count = 1
-            System.Buffer.BlockCopy(BigEndian.GetBytes(0x0000001E, 4), 0, Request, 0x08, 4); // Subblock ID = Load MMOS Binary = 0x1E
-            System.Buffer.BlockCopy(BigEndian.GetBytes(MmosPart.Length + 0x10, 4), 0, Request, 0x0C, 4); // Subblock length = Payload-length + 0x10
-            System.Buffer.BlockCopy(BigEndian.GetBytes(TotalLength, 4), 0, Request, 0x10, 4);
-            System.Buffer.BlockCopy(BigEndian.GetBytes(Offset, 4), 0, Request, 0x14, 4);
+            Buffer.BlockCopy(BigEndian.GetBytes(0x0000001E, 4), 0, Request, 0x08, 4); // Subblock ID = Load MMOS Binary = 0x1E
+            Buffer.BlockCopy(BigEndian.GetBytes(MmosPart.Length + 0x10, 4), 0, Request, 0x0C, 4); // Subblock length = Payload-length + 0x10
+            Buffer.BlockCopy(BigEndian.GetBytes(TotalLength, 4), 0, Request, 0x10, 4);
+            Buffer.BlockCopy(BigEndian.GetBytes(Offset, 4), 0, Request, 0x14, 4);
             if (SkipMmosSupportCheck)
             {
                 Request[0x18] = 1;
             }
 
-            System.Buffer.BlockCopy(BigEndian.GetBytes(MmosPart.Length, 4), 0, Request, 0x1C, 4);
+            Buffer.BlockCopy(BigEndian.GetBytes(MmosPart.Length, 4), 0, Request, 0x1C, 4);
             Buffer.BlockCopy(MmosPart, 0, Request, 0x20, MmosPart.Length);
 
             byte[] Response = ExecuteRawMethod(Request);
@@ -521,7 +522,7 @@ namespace WPinternals
 
             UInt64 CombinedFFUHeaderSize = FFU.HeaderSize;
             byte[] FfuHeader = new byte[CombinedFFUHeaderSize];
-            using (FileStream FfuFile = new(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+            using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
             {
                 FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
                 SendFfuHeaderV1(FfuHeader, Options);
@@ -597,7 +598,7 @@ namespace WPinternals
 
             uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
 
-            using (FileStream MMOSFile = new(MMOSPath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+            using (FileStream MMOSFile = new(MMOSPath, FileMode.Open, FileAccess.Read))
             {
                 for (int i = 1; i <= (uint)Math.Truncate((decimal)length / maximumbuffersize); i++)
                 {
@@ -633,10 +634,10 @@ namespace WPinternals
             byte[] Request = new byte[Data.Length + 0x40];
 
             const string Header = "NOKF";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[0x05] = 0; // Device type = 0
-            System.Buffer.BlockCopy(BigEndian.GetBytes(StartSector, 4), 0, Request, 0x0B, 4); // Start sector
-            System.Buffer.BlockCopy(BigEndian.GetBytes(Data.Length / 0x200, 4), 0, Request, 0x0F, 4); // Sector count
+            Buffer.BlockCopy(BigEndian.GetBytes(StartSector, 4), 0, Request, 0x0B, 4); // Start sector
+            Buffer.BlockCopy(BigEndian.GetBytes(Data.Length / 0x200, 4), 0, Request, 0x0F, 4); // Sector count
             Request[0x13] = (byte)Progress; // Progress (0 - 100)
             Request[0x18] = 0; // Do Verify
             Request[0x19] = 0; // Is Test
@@ -650,7 +651,7 @@ namespace WPinternals
         {
             byte[] Request = new byte[4];
             const string Header = "NOKD";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             ExecuteRawMethod(Request);
         }
 
@@ -658,7 +659,7 @@ namespace WPinternals
         {
             byte[] Request = new byte[4];
             const string Header = "NOKZ";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             ExecuteRawMethod(Request);
         }
 
@@ -690,7 +691,7 @@ namespace WPinternals
 
             PhoneInfo Info = ReadPhoneInfo(ExtendedInfo: false);
             FlashAppType OriginalAppType = Info.App;
-            bool Switch = ((Info.App != FlashAppType.BootManager) && Info.IsBootloaderSecure);
+            bool Switch = (Info.App != FlashAppType.BootManager) && Info.IsBootloaderSecure;
             if (Switch)
             {
                 SwitchToBootManagerContext();
@@ -871,7 +872,7 @@ namespace WPinternals
 
             byte[] Request = new byte[0x50];
             const string Header = "NOKXFP";
-            System.Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
+            Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
             Request[0x06] = 1; // Protocol version must be 1
             Request[0x07] = 0; // Device type = 0
 
@@ -950,7 +951,7 @@ namespace WPinternals
                                 Result.TransferSize = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 break;
                             case 0x1F:
-                                Result.MmosOverUsbSupported = (Response[SubblockPayloadOffset] == 1);
+                                Result.MmosOverUsbSupported = Response[SubblockPayloadOffset] == 1;
                                 break;
                             case 0x04:
                                 if (Result.App == FlashAppType.BootManager)
@@ -975,17 +976,17 @@ namespace WPinternals
                                 Result.PlatformID = ByteOperations.ReadAsciiString(Response, (uint)SubblockPayloadOffset, SubblockLength).Trim(new char[] { ' ', '\0' });
                                 break;
                             case 0x0D:
-                                Result.AsyncSupport = (Response[SubblockPayloadOffset + 1] == 1);
+                                Result.AsyncSupport = Response[SubblockPayloadOffset + 1] == 1;
                                 break;
                             case 0x0F:
                                 SubblockVersion = Response[SubblockPayloadOffset]; // 0x03
-                                Result.PlatformSecureBootEnabled = (Response[SubblockPayloadOffset + 0x01] == 0x01);
-                                Result.SecureFfuEnabled = (Response[SubblockPayloadOffset + 0x02] == 0x01);
-                                Result.JtagDisabled = (Response[SubblockPayloadOffset + 0x03] == 0x01);
-                                Result.RdcPresent = (Response[SubblockPayloadOffset + 0x04] == 0x01);
-                                Result.Authenticated = ((Response[SubblockPayloadOffset + 0x05] == 0x01) || (Response[SubblockPayloadOffset + 0x05] == 0x02));
-                                Result.UefiSecureBootEnabled = (Response[SubblockPayloadOffset + 0x06] == 0x01);
-                                Result.SecondaryHardwareKeyPresent = (Response[SubblockPayloadOffset + 0x07] == 0x01);
+                                Result.PlatformSecureBootEnabled = Response[SubblockPayloadOffset + 0x01] == 0x01;
+                                Result.SecureFfuEnabled = Response[SubblockPayloadOffset + 0x02] == 0x01;
+                                Result.JtagDisabled = Response[SubblockPayloadOffset + 0x03] == 0x01;
+                                Result.RdcPresent = Response[SubblockPayloadOffset + 0x04] == 0x01;
+                                Result.Authenticated = (Response[SubblockPayloadOffset + 0x05] == 0x01) || (Response[SubblockPayloadOffset + 0x05] == 0x02);
+                                Result.UefiSecureBootEnabled = Response[SubblockPayloadOffset + 0x06] == 0x01;
+                                Result.SecondaryHardwareKeyPresent = Response[SubblockPayloadOffset + 0x07] == 0x01;
                                 break;
                             case 0x10:
                                 SubblockVersion = Response[SubblockPayloadOffset]; // 0x01

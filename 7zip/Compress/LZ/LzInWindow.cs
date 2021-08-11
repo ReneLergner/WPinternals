@@ -50,7 +50,7 @@ namespace SevenZip.Compression.LZ
 
             while (true)
             {
-                int size = (int)((0 - _bufferOffset) + _blockSize - _streamPos);
+                int size = (int)(0 - _bufferOffset + _blockSize - _streamPos);
                 if (size == 0)
                 {
                     return;
@@ -125,12 +125,9 @@ namespace SevenZip.Compression.LZ
         // index + limit have not to exceed _keepSizeAfter;
         public UInt32 GetMatchLen(Int32 index, UInt32 distance, UInt32 limit)
         {
-            if (_streamEndWasReached)
+            if (_streamEndWasReached && _pos + index + limit > _streamPos)
             {
-                if (_pos + index + limit > _streamPos)
-                {
-                    limit = _streamPos - (UInt32)(_pos + index);
-                }
+                limit = _streamPos - (UInt32)(_pos + index);
             }
 
             distance++;

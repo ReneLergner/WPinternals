@@ -39,7 +39,7 @@ namespace DiscUtils.Fat
 
         internal FatFileSystemOptions(FileSystemParameters parameters)
         {
-            if (parameters != null && parameters.FileNameEncoding != null)
+            if (parameters?.FileNameEncoding != null)
             {
                 FileNameEncoding = parameters.FileNameEncoding;
             }

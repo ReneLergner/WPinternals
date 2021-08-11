@@ -659,15 +659,15 @@ namespace WPinternals
                 }
             }
 
-            bool IsOldLumia = (Info.FlashAppProtocolVersionMajor < 2);
-            bool IsNewLumia = (Info.FlashAppProtocolVersionMajor >= 2);
+            bool IsOldLumia = Info.FlashAppProtocolVersionMajor < 2;
+            bool IsNewLumia = Info.FlashAppProtocolVersionMajor >= 2;
             bool IsUnlockedNew = false;
             if (IsNewLumia)
             {
                 GPT GPT = FlashModel.ReadGPT();
-                IsUnlockedNew = ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null) || (GPT.GetPartition("BACKUP_BS_NV") != null));
+                IsUnlockedNew = (GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null) || (GPT.GetPartition("BACKUP_BS_NV") != null);
             }
-            bool IsOriginalEngineeringLumia = (!Info.IsBootloaderSecure && !IsUnlockedNew);
+            bool IsOriginalEngineeringLumia = !Info.IsBootloaderSecure && !IsUnlockedNew;
 
             if (IsOldLumia || IsOriginalEngineeringLumia)
             {

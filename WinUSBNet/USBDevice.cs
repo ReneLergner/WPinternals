@@ -804,7 +804,7 @@ namespace MadWizard.WinUSBNet
         /// no device with the given GUID could be found null is returned.</returns>
         public static USBDevice GetSingleDevice(string guidString)
         {
-            return USBDevice.GetSingleDevice(new Guid(guidString));
+            return GetSingleDevice(new Guid(guidString));
         }
 
         private static USBDeviceDescriptor GetDeviceDescriptor(string devicePath)

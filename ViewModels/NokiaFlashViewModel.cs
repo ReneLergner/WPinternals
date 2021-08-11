@@ -198,7 +198,7 @@ namespace WPinternals
                             }
                             eMMC = Manufacturer == null ? MemSizeDouble.ToString() + " GB" : Manufacturer + " " + MemSizeDouble.ToString() + " GB";
 
-                            SamsungWarningVisible = (MID == 0x0015);
+                            SamsungWarningVisible = MID == 0x0015;
                         }
                         else
                         {

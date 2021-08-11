@@ -25,9 +25,13 @@ namespace MadWizard.WinUSBNet.API
         {
         }
 
+        public APIException() : base()
+        {
+        }
+
         public static APIException Win32(string message)
         {
-            return APIException.Win32(message, Marshal.GetLastWin32Error());
+            return Win32(message, Marshal.GetLastWin32Error());
 
             // TEST!!
             // int ErrorCode = Marshal.GetLastWin32Error();

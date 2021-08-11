@@ -64,7 +64,7 @@ namespace WPinternals
             public UInt32 HashTableSize;
         }
 
-        internal class ManifestIni
+        internal static class ManifestIni
         {
             internal static string BuildUpManifest(FullFlash fullFlash, Store store)
             {
@@ -178,17 +178,14 @@ namespace WPinternals
                         throw new ArgumentException("Streams must be seekable");
                     }
 
-                    if (((Part.StartSector * 0x200) % chunkSize) != 0)
+                    if ((Part.StartSector * 0x200 % chunkSize) != 0)
                     {
                         throw new ArgumentException("Invalid StartSector alignment");
                     }
 
-                    if (CheckSectorAlignment)
+                    if (CheckSectorAlignment && (Part.Stream.Length % chunkSize) != 0)
                     {
-                        if ((Part.Stream.Length % chunkSize) != 0)
-                        {
-                            throw new ArgumentException("Invalid Data length");
-                        }
+                        throw new ArgumentException("Invalid Data length");
                     }
                 }
             }
@@ -247,7 +244,7 @@ namespace WPinternals
                 //Logging.Log("Generating image manifest...");
                 string manifest = ManifestIni.BuildUpManifest(ffimage, simage);//, partitions);
 
-                byte[] TextBytes = System.Text.Encoding.ASCII.GetBytes(manifest);
+                byte[] TextBytes = Encoding.ASCII.GetBytes(manifest);
 
                 image.ManifestLength = (UInt32)TextBytes.Length;
 

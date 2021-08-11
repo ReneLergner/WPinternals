@@ -162,12 +162,12 @@ namespace WPinternals
         {
             try
             {
-                if ((e.DevicePath.Contains("VID_0421&", StringComparison.OrdinalIgnoreCase)) ||
-                    (e.DevicePath.Contains("VID_045E&", StringComparison.OrdinalIgnoreCase)))
+                if (e.DevicePath.Contains("VID_0421&", StringComparison.OrdinalIgnoreCase) ||
+                    e.DevicePath.Contains("VID_045E&", StringComparison.OrdinalIgnoreCase))
                 {
-                    if ((e.DevicePath.Contains("&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase)) ||
-                        (e.DevicePath.Contains("&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase)) || // for Spec B
-                        (e.DevicePath.Contains("&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase))) // for Spec B (650)
+                    if (e.DevicePath.Contains("&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) ||
+                        e.DevicePath.Contains("&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) || // for Spec B
+                        e.DevicePath.Contains("&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase)) // for Spec B (650)
                     {
                         CurrentInterface = PhoneInterfaces.Lumia_Label;
                         CurrentModel = new NokiaPhoneModel(e.DevicePath);
@@ -177,9 +177,9 @@ namespace WPinternals
                         LogFile.Log("Mode: Label", LogType.FileAndConsole);
                         NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                     }
-                    else if ((e.DevicePath.Contains("&PID_0661", StringComparison.OrdinalIgnoreCase)) ||
-                             (e.DevicePath.Contains("&PID_06FC", StringComparison.OrdinalIgnoreCase)) || // VID_0421&PID_06FC is for Lumia 930
-                             (e.DevicePath.Contains("&PID_0A00", StringComparison.OrdinalIgnoreCase)))   // vid_045e & pid_0a00 & mi_03 = Lumia 950 XL normal mode
+                    else if (e.DevicePath.Contains("&PID_0661", StringComparison.OrdinalIgnoreCase) ||
+                             e.DevicePath.Contains("&PID_06FC", StringComparison.OrdinalIgnoreCase) || // VID_0421&PID_06FC is for Lumia 930
+                             e.DevicePath.Contains("&PID_0A00", StringComparison.OrdinalIgnoreCase))   // vid_045e & pid_0a00 & mi_03 = Lumia 950 XL normal mode
                     {
                         if (((USBNotifier)sender).Guid == OldCombiInterfaceGuid)
                         {
@@ -229,10 +229,10 @@ namespace WPinternals
                             NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
                         }
                     }
-                    else if ((e.DevicePath.Contains("&PID_066E", StringComparison.OrdinalIgnoreCase)) ||
-                             (e.DevicePath.Contains("&PID_0714", StringComparison.OrdinalIgnoreCase)) || // VID_0421&PID_0714 is for Lumia 930
-                             (e.DevicePath.Contains("&PID_0A02", StringComparison.OrdinalIgnoreCase)) || // VID_045E&PID_0A02 is for Lumia 950
-                             (e.DevicePath.Contains("&PID_05EE", StringComparison.OrdinalIgnoreCase)))   // VID_0421&PID_05EE is for early RX100
+                    else if (e.DevicePath.Contains("&PID_066E", StringComparison.OrdinalIgnoreCase) ||
+                             e.DevicePath.Contains("&PID_0714", StringComparison.OrdinalIgnoreCase) || // VID_0421&PID_0714 is for Lumia 930
+                             e.DevicePath.Contains("&PID_0A02", StringComparison.OrdinalIgnoreCase) || // VID_045E&PID_0A02 is for Lumia 950
+                             e.DevicePath.Contains("&PID_05EE", StringComparison.OrdinalIgnoreCase))   // VID_0421&PID_05EE is for early RX100
                     {
                         CurrentModel = new NokiaFlashModel(e.DevicePath);
                         ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
@@ -284,9 +284,9 @@ namespace WPinternals
                         }
                     }
                 }
-                else if ((e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase)) ||
-                         (e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase)) ||
-                         ((e.DevicePath.Length == @"\\.\E:".Length) && (e.DevicePath.StartsWith(@"\\.\")) && (e.DevicePath.EndsWith(":"))))
+                else if (e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) ||
+                         e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase) ||
+                         ((e.DevicePath.Length == @"\\.\E:".Length) && e.DevicePath.StartsWith(@"\\.\") && e.DevicePath.EndsWith(":")))
                 {
 #if DEBUG
                     LogFile.Log("Mass storage arrived: " + e.DevicePath, LogType.FileOnly);
@@ -335,7 +335,7 @@ namespace WPinternals
                 {
                     if (e.DevicePath.Contains("&PID_9008", StringComparison.OrdinalIgnoreCase))
                     {
-                        USBDeviceInfo DeviceInfo = Array.Find(USBDevice.GetDevices(((USBNotifier)sender).Guid), (d) => string.Compare(d.DevicePath, e.DevicePath, true) == 0);
+                        USBDeviceInfo DeviceInfo = Array.Find(USBDevice.GetDevices(((USBNotifier)sender).Guid), (d) => string.Equals(d.DevicePath, e.DevicePath, StringComparison.CurrentCultureIgnoreCase));
 
                         if ((DeviceInfo.BusName == "QHSUSB_DLOAD") || (DeviceInfo.BusName == "QHSUSB__BULK") || ((DeviceInfo.BusName?.Length == 0) && (LastInterface != PhoneInterfaces.Qualcomm_Download))) // TODO: Separate for Sahara!
                         {
@@ -424,19 +424,19 @@ namespace WPinternals
             }
 
             if (
-                (e.DevicePath.Contains("VID_0421&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_0421&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_045E&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_0421&PID_066E", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_0421&PID_05EE", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase)) ||
-                (e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase))
+                e.DevicePath.Contains("VID_0421&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_0421&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_045E&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_0421&PID_0661", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_0421&PID_06FC", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_0421&PID_066E", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_0421&PID_0714", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_0421&PID_05EE", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase)
             )
             {
                 if (CurrentInterface != null)

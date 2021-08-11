@@ -18,6 +18,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+//#define DUMPPARTITIONS
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,7 +29,7 @@ using System.Threading.Tasks;
 
 namespace WPinternals
 {
-    internal class LumiaUnlockBootloaderViewModel
+    internal static class LumiaUnlockBootloaderViewModel
     {
         // TODO: Add logging
         private static void PerformSoftBrick(PhoneNotifierViewModel Notifier, FFU FFU)
@@ -37,7 +39,7 @@ namespace WPinternals
             // Send FFU headers
             UInt64 CombinedFFUHeaderSize = FFU.HeaderSize;
             byte[] FfuHeader = new byte[CombinedFFUHeaderSize];
-            FileStream FfuFile = new(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+            FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read);
             FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
             FfuFile.Close();
 
@@ -166,7 +168,7 @@ namespace WPinternals
                 ExitSuccess("Bootloader restored successfully!");
             }
 
-            await LumiaUnlockBootloaderViewModel.LumiaRelockUEFI(Notifier, FFUPath, DoResetFirst, SetWorkingStatus, UpdateWorkingStatus, tmpExitSuccess, tmpExitFailure);
+            await LumiaRelockUEFI(Notifier, FFUPath, DoResetFirst, SetWorkingStatus, UpdateWorkingStatus, tmpExitSuccess, tmpExitFailure);
         }
 
         internal static async Task LumiaV2UnlockUEFI(PhoneNotifierViewModel Notifier, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, bool ReUnlockDevice = false)
@@ -232,7 +234,7 @@ namespace WPinternals
                 ExitSuccess("Bootloader unlocked successfully!", null);
             }
 
-            await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, tmpExitSuccess, tmpExitFailure, ReUnlockDevice: ReUnlockDevice);
+            await LumiaUnlockUEFI(Notifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, tmpExitSuccess, tmpExitFailure, ReUnlockDevice: ReUnlockDevice);
         }
 
         // Magic!
@@ -270,7 +272,7 @@ namespace WPinternals
             {
                 if (Notifier.CurrentModel is NokiaFlashModel)
                 {
-                    await LumiaUnlockBootloaderViewModel.LumiaRelockUEFI(Notifier, FFUPath, true, SetWorkingStatus, UpdateWorkingStatus, null, (string Message, string SubMessage) =>
+                    await LumiaRelockUEFI(Notifier, FFUPath, true, SetWorkingStatus, UpdateWorkingStatus, null, (string Message, string SubMessage) =>
                     {
                         ExitFailure(Message, SubMessage);
                         LogFile.EndAction("RelockBootloader");
@@ -296,15 +298,11 @@ namespace WPinternals
                     throw new ArgumentNullException("FFU path is missing");
                 }
 
-                if (Notifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download)
+                if (Notifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download && string.IsNullOrEmpty(LoadersPath))
                 {
-                    if (string.IsNullOrEmpty(LoadersPath))
-                    {
-                        throw new Exception("Error: Path for Loaders is mandatory.");
-                    }
+                    throw new Exception("Error: Path for Loaders is mandatory.");
                 }
 
-                const bool DumpPartitions = false;
                 string DumpFilePrefix = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\") + DateTime.Now.ToString("yyyy-MM-dd hh.mm.ss") + " - ";
                 bool IsBootLoaderUnlocked = false;
 
@@ -333,11 +331,10 @@ namespace WPinternals
                     }
 
                     UefiSecurityStatusResponse SecurityStatus = ((NokiaFlashModel)Notifier.CurrentModel).ReadSecurityStatus();
-                    IsBootLoaderUnlocked = (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+                    IsBootLoaderUnlocked = SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus;
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "01.bin", FFU.GetSectors(0, 34)); // Original GPT
@@ -347,7 +344,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 GPT NewGPT = null;
                 if (Notifier.CurrentModel is NokiaFlashModel)
@@ -405,8 +402,7 @@ namespace WPinternals
                     GPT = NewGPT.Rebuild();
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "02.bin", GPT); // Patched GPT
@@ -416,7 +412,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 SBL1 SBL1 = null;
                 try
@@ -429,8 +425,7 @@ namespace WPinternals
                     throw new Exception("Error: Parsing SBL1 failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "03.bin", SBL1.Binary); // Original SBL1
@@ -440,7 +435,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] RootKeyHash = null;
                 if (Notifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download)
@@ -489,8 +484,7 @@ namespace WPinternals
                     throw new Exception("Error: Parsing SBL2 failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "05.bin", SBL2Partition.Binary); // Original SBL2
@@ -500,7 +494,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] SBL2 = SBL2Partition.Binary;
 
@@ -516,8 +510,7 @@ namespace WPinternals
                     throw new Exception("Error: Parsing SBL3 from FFU failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "07.bin", SBL3Partition.Binary); // Original SBL3
@@ -527,7 +520,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] SBL3 = SBL3Partition.Binary;
 
@@ -542,8 +535,7 @@ namespace WPinternals
                     throw new Exception("Error: Parsing UEFI failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "09.bin", UEFIPartition.Binary); // Original UEFI
@@ -553,7 +545,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] UEFI = UEFIPartition.Binary;
 
@@ -834,7 +826,6 @@ namespace WPinternals
                     throw new ArgumentNullException("FFU path is missing");
                 }
 
-                const bool DumpPartitions = false;
                 string DumpFilePrefix = Environment.ExpandEnvironmentVariables("%ALLUSERSPROFILE%\\WPInternals\\") + DateTime.Now.ToString("yyyy-MM-dd hh.mm.ss") + " - ";
                 bool IsBootLoaderUnlocked = false;
 
@@ -863,15 +854,12 @@ namespace WPinternals
                     }
 
                     UefiSecurityStatusResponse SecurityStatus = ((NokiaFlashModel)Notifier.CurrentModel).ReadSecurityStatus();
-                    IsBootLoaderUnlocked = (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+                    IsBootLoaderUnlocked = SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus;
                 }
 
-                if (!IsBootLoaderUnlocked)
+                if (!IsBootLoaderUnlocked && string.IsNullOrEmpty(LoadersPath))
                 {
-                    if (string.IsNullOrEmpty(LoadersPath))
-                    {
-                        throw new Exception("Error: Path for Loaders is mandatory.");
-                    }
+                    throw new Exception("Error: Path for Loaders is mandatory.");
                 }
 
                 FFU SupportedFFU = null;
@@ -900,8 +888,7 @@ namespace WPinternals
                     }
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "01.bin", FFU.GetSectors(0, 34)); // Original GPT
@@ -911,7 +898,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 GPT NewGPT = null;
                 if (Notifier.CurrentModel is NokiaFlashModel)
@@ -980,8 +967,7 @@ namespace WPinternals
                     }
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "02.bin", GPT); // Patched GPT
@@ -991,7 +977,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 SBL1 SBL1 = null;
                 try
@@ -1004,8 +990,7 @@ namespace WPinternals
                     throw new Exception("Error: Parsing SBL1 failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "03.bin", SBL1.Binary); // Original SBL1
@@ -1015,7 +1000,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] RootKeyHash = null;
                 if (Notifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download)
@@ -1064,8 +1049,7 @@ namespace WPinternals
                     throw new Exception("Error: Parsing SBL2 failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "05.bin", SBL2Partition.Binary); // Original SBL2
@@ -1075,7 +1059,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] SBL2;
                 try
@@ -1088,8 +1072,7 @@ namespace WPinternals
                     throw new Exception("Error: Patching SBL2 failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "06.bin", SBL2Partition.Binary); // Patched SBL2
@@ -1099,7 +1082,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] ExtraSector = null;
                 try
@@ -1114,8 +1097,7 @@ namespace WPinternals
                     throw new Exception("Error: Code generation failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "04.bin", ExtraSector); // Extra sector
@@ -1125,7 +1107,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 SBL3 SBL3Partition;
                 SBL3 OriginalSBL3;
@@ -1165,8 +1147,7 @@ namespace WPinternals
                     LogFile.Log("Taking selected SBL3");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "07.bin", SBL3Partition.Binary); // Original SBL3
@@ -1176,7 +1157,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] SBL3;
                 try
@@ -1189,8 +1170,7 @@ namespace WPinternals
                     throw new Exception("Error: Patching SBL3 failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "08.bin", SBL3Partition.Binary); // Patched SBL3
@@ -1200,7 +1180,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 UEFI UEFIPartition = null;
                 try
@@ -1213,8 +1193,7 @@ namespace WPinternals
                     throw new Exception("Error: Parsing UEFI failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "09.bin", UEFIPartition.Binary); // Original UEFI
@@ -1224,7 +1203,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 byte[] UEFI;
                 try
@@ -1237,8 +1216,7 @@ namespace WPinternals
                     throw new Exception("Error: Patching UEFI failed.");
                 }
 
-                if (DumpPartitions)
-                {
+#if DUMPPARTITIONS
                     try
                     {
                         File.WriteAllBytes(DumpFilePrefix + "0A.bin", UEFIPartition.Binary); // Patched UEFI
@@ -1248,7 +1226,7 @@ namespace WPinternals
                         LogFile.LogException(Ex);
                         throw new Exception("Error: Writing binary for logging failed.");
                     }
-                }
+#endif
 
                 List<QualcommPartition> PossibleLoaders = null;
                 if (!IsBootLoaderUnlocked || Notifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download)
@@ -1431,7 +1409,7 @@ namespace WPinternals
                     throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash, download or emergency flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
 
-                await LumiaUnlockBootloaderViewModel.LumiaUnlockUEFI(Notifier, FFUPath, LoadersPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, null, (string Message, string SubMessage) =>
+                await LumiaUnlockUEFI(Notifier, FFUPath, LoadersPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, null, (string Message, string SubMessage) =>
                 {
                     ExitFailure(Message, SubMessage);
                     LogFile.EndAction("UnlockBootloader");
@@ -1494,7 +1472,7 @@ namespace WPinternals
 
             PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
             FlashAppType OriginalAppType = Info.App;
-            bool Switch = ((Info.App != FlashAppType.BootManager) && Info.IsBootloaderSecure);
+            bool Switch = (Info.App != FlashAppType.BootManager) && Info.IsBootloaderSecure;
             if (Switch)
             {
                 FlashModel.SwitchToBootManagerContext();
@@ -1684,13 +1662,13 @@ namespace WPinternals
                         // The second check should be more than enough in any case, if we find a header named MSDOS5.0 right in the middle of EFIESP,
                         // there's not many cases other than us splitting the partition in half to get this here.
                         //
-                        if ((ByteOperations.ReadAsciiString(EFIESP, (UInt32)(EFIESP.Length / 2) + 3, 8)) == "MSDOS5.0")
+                        if (ByteOperations.ReadAsciiString(EFIESP, (UInt32)(EFIESP.Length / 2) + 3, 8) == "MSDOS5.0")
                         {
                             EFIESPBackup = new byte[EfiespSizeInSectors * 0x200 / 2];
                             Buffer.BlockCopy(EFIESP, (Int32)EfiespSizeInSectors * 0x200 / 2, EFIESPBackup, 0, (Int32)EfiespSizeInSectors * 0x200 / 2);
                         }
 
-                        if (ByteOperations.ReadUInt16(EFIESP, 0xE) == LumiaUnlockBootloaderViewModel.LumiaGetFirstEFIESPSectorCount(GPT, new FFU(FFUPath), IsSpecB))
+                        if (ByteOperations.ReadUInt16(EFIESP, 0xE) == LumiaGetFirstEFIESPSectorCount(GPT, new FFU(FFUPath), IsSpecB))
                         {
                             UndoEFIESPPadding = true;
                         }
@@ -1744,7 +1722,7 @@ namespace WPinternals
 
                 if (UndoEFIESPPadding)
                 {
-                    FlashParts = LumiaUnlockBootloaderViewModel.LumiaGenerateUndoEFIESPFlashPayload(GPT, new FFU(FFUPath), IsSpecB);
+                    FlashParts = LumiaGenerateUndoEFIESPFlashPayload(GPT, new FFU(FFUPath), IsSpecB);
                 }
 
                 FlashPart Part;
@@ -1821,7 +1799,7 @@ namespace WPinternals
 
                 WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
                 ulong? MaxProgressValue = null;
-                await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, FFUPath, false, false, FlashParts, DoResetFirst, ClearFlashingStatusAtEnd: !NvCleared,
+                await LumiaFlashParts(Notifier, FFUPath, false, false, FlashParts, DoResetFirst, ClearFlashingStatusAtEnd: !NvCleared,
                     SetWorkingStatus: (m, s, v, a, st) =>
                     {
                         if (SetWorkingStatus != null)
@@ -1881,7 +1859,7 @@ namespace WPinternals
 
                     if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
                     {
-                        await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, FFUPath, false, false, null, DoResetFirst, ClearFlashingStatusAtEnd: true, ShowProgress: false);
+                        await LumiaFlashParts(Notifier, FFUPath, false, false, null, DoResetFirst, ClearFlashingStatusAtEnd: true, ShowProgress: false);
                     }
                 }
 
@@ -1939,12 +1917,9 @@ namespace WPinternals
 
                 FFU ProfileFFU = new(ProfileFFUPath);
 
-                if (Info.IsBootloaderSecure)
+                if (Info.IsBootloaderSecure && !Info.PlatformID.StartsWith(ProfileFFU.PlatformID, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!Info.PlatformID.StartsWith(ProfileFFU.PlatformID, StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new ArgumentNullException("Profile FFU has wrong Platform ID for connected phone");
-                    }
+                    throw new ArgumentNullException("Profile FFU has wrong Platform ID for connected phone");
                 }
 
                 string Patch = "SecureBootHack-V1.1-EFIESP";
@@ -1977,7 +1952,7 @@ namespace WPinternals
                 SetWorkingStatus("Assembling data for unlock", null, null);
                 byte[] UnlockedEFIESP = ProfileFFU.GetPartition("EFIESP");
 
-                LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, UnlockedEFIESP, IsSpecB);
+                LumiaPatchEFIESP(SupportedFFU, UnlockedEFIESP, IsSpecB);
 
                 byte[] GPTChunk = GetGptChunk(FlashModel, (UInt32)ProfileFFU.ChunkSize);
                 byte[] GPTChunkBackup = new byte[GPTChunk.Length];
@@ -2050,7 +2025,7 @@ namespace WPinternals
                     _part.ProgressText = "Enabling Test Signing...";
                 }
 
-                await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                await LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
 
                 if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
                 {
@@ -2080,7 +2055,7 @@ namespace WPinternals
                     ShouldApplyOldEFIESPMethod = false;
                 }
 
-                Parts = ShouldApplyOldEFIESPMethod ? new List<FlashPart>() : LumiaUnlockBootloaderViewModel.LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
+                Parts = ShouldApplyOldEFIESPMethod ? new List<FlashPart>() : LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
                 Part = null;
 
                 UInt32 OriginalEfiespSizeInSectors = (UInt32)GPT.GetPartition("EFIESP").SizeInSectors;
@@ -2216,7 +2191,7 @@ namespace WPinternals
                     _part.ProgressText = IsSpecB ? "Flashing unlocked bootloader (part 1)..." : "Flashing unlocked bootloader (part 2)...";
                 }
 
-                await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                await LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
 
                 if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
                 {
@@ -2284,7 +2259,7 @@ namespace WPinternals
                     };
                     Parts.Add(Part);
 
-                    await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                    await LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, false, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
 
                     // An old NV backup was restored and it possibly contained the IsFlashing flag.
                     // Can't clear it immeadiately, so we need another flash.
@@ -2295,7 +2270,7 @@ namespace WPinternals
 
                     if ((Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) || (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash))
                     {
-                        await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, null, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                        await LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, null, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
                     }
 
                     if (IsPhoneInBadMassStorageMode)
@@ -2327,7 +2302,7 @@ namespace WPinternals
 
                     try
                     {
-                        LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
+                        LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
                     }
                     catch (Exception ex)
                     {
@@ -2341,7 +2316,7 @@ namespace WPinternals
                         BackupUnlockedEFIESP = new byte[UnlockedEFIESP.Length];
                         Buffer.BlockCopy(BackupEFIESP, 0, BackupUnlockedEFIESP, 0, UnlockedEFIESP.Length);
 
-                        LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
+                        LumiaPatchEFIESP(SupportedFFU, BackupUnlockedEFIESP, IsSpecB);
                     }
 
                     SetWorkingStatus("Boot optimization...", null, null);
@@ -2476,12 +2451,12 @@ namespace WPinternals
                         _part.ProgressText = "Flashing unlocked bootloader (part 2)...";
                     }
 
-                    await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                    await LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
                 }
                 else
                 {
                     ulong FirstSector = GPT.GetPartition("EFIESP").FirstSector;
-                    ulong SectorCount = LumiaUnlockBootloaderViewModel.LumiaGetFirstEFIESPSectorCount(GPT, ProfileFFU, IsSpecB);
+                    ulong SectorCount = LumiaGetFirstEFIESPSectorCount(GPT, ProfileFFU, IsSpecB);
                     byte[] BackupEFIESPAllocation = MassStorage.ReadSectors(FirstSector, SectorCount);
 
                     // The backed up buffer includes our changed header done previously to have two EFIESPs in a single partition
@@ -2493,7 +2468,7 @@ namespace WPinternals
                     LogFile.Log("Unlocking backup partition", LogType.FileAndConsole);
                     SetWorkingStatus("Unlocking backup partition", null, null);
 
-                    LumiaUnlockBootloaderViewModel.LumiaPatchEFIESP(SupportedFFU, UnlockedEFIESP, IsSpecB);
+                    LumiaPatchEFIESP(SupportedFFU, UnlockedEFIESP, IsSpecB);
 
                     SetWorkingStatus("Boot optimization...", null, null);
 
@@ -2528,14 +2503,14 @@ namespace WPinternals
                     }
                     ((NokiaFlashModel)Notifier.CurrentModel).SwitchToFlashAppContext();
 
-                    Parts = LumiaUnlockBootloaderViewModel.LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
+                    Parts = LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
 
                     foreach (FlashPart _part in Parts)
                     {
                         _part.ProgressText = IsSpecB ? "Flashing unlocked bootloader (part 2)..." : "Flashing unlocked bootloader (part 3)...";
                     }
 
-                    await LumiaUnlockBootloaderViewModel.LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
+                    await LumiaFlashParts(Notifier, ProfileFFU.Path, false, false, Parts, true, true, true, true, false, SetWorkingStatus, UpdateWorkingStatus, null, null, EDEPath);
 
                     if (!IsSpecB)
                     {

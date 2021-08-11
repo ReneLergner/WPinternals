@@ -43,8 +43,8 @@ namespace DiscUtils.Fat
         private DirectoryEntry _parentEntry;
         private long _parentEntryLocation;
 
-        internal Dictionary<string, string> LongFileNames_ShortKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        internal Dictionary<string, string> LongFileNames_LongKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        internal Dictionary<string, string> LongFileNames_ShortKey = new(StringComparer.OrdinalIgnoreCase);
+        internal Dictionary<string, string> LongFileNames_LongKey = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the Directory class.  Use this constructor to represent non-root directories.
@@ -81,22 +81,22 @@ namespace DiscUtils.Fat
             // see http://home.teleport.com/~brainy/lfn.htm
             // NOTE: we assume ordinals are ok here.
             char[] chars = new char[13];
-            chars[0] = (char)(256 * buffer[2] + buffer[1]);
-            chars[1] = (char)(256 * buffer[4] + buffer[3]);
-            chars[2] = (char)(256 * buffer[6] + buffer[5]);
-            chars[3] = (char)(256 * buffer[8] + buffer[7]);
-            chars[4] = (char)(256 * buffer[10] + buffer[9]);
+            chars[0] = (char)((256 * buffer[2]) + buffer[1]);
+            chars[1] = (char)((256 * buffer[4]) + buffer[3]);
+            chars[2] = (char)((256 * buffer[6]) + buffer[5]);
+            chars[3] = (char)((256 * buffer[8]) + buffer[7]);
+            chars[4] = (char)((256 * buffer[10]) + buffer[9]);
 
-            chars[5] = (char)(256 * buffer[15] + buffer[14]);
-            chars[6] = (char)(256 * buffer[17] + buffer[16]);
-            chars[7] = (char)(256 * buffer[19] + buffer[18]);
-            chars[8] = (char)(256 * buffer[21] + buffer[20]);
-            chars[9] = (char)(256 * buffer[23] + buffer[22]);
-            chars[10] = (char)(256 * buffer[25] + buffer[24]);
+            chars[5] = (char)((256 * buffer[15]) + buffer[14]);
+            chars[6] = (char)((256 * buffer[17]) + buffer[16]);
+            chars[7] = (char)((256 * buffer[19]) + buffer[18]);
+            chars[8] = (char)((256 * buffer[21]) + buffer[20]);
+            chars[9] = (char)((256 * buffer[23]) + buffer[22]);
+            chars[10] = (char)((256 * buffer[25]) + buffer[24]);
 
-            chars[11] = (char)(256 * buffer[29] + buffer[28]);
-            chars[12] = (char)(256 * buffer[31] + buffer[30]);
-            string chunk = new string(chars);
+            chars[11] = (char)((256 * buffer[29]) + buffer[28]);
+            chars[12] = (char)((256 * buffer[31]) + buffer[30]);
+            string chunk = new(chars);
             int zero = chunk.IndexOf('\0');
             return zero >= 0 ? chunk.Substring(0, zero) : chunk;
         }
@@ -133,10 +133,7 @@ namespace DiscUtils.Fat
 
             set
             {
-                if (_parent != null)
-                {
-                    _parent.UpdateEntry(_parentId, value);
-                }
+                _parent?.UpdateEntry(_parentId, value);
             }
         }
 
@@ -195,7 +192,7 @@ namespace DiscUtils.Fat
 
         public DirectoryEntry[] GetDirectories()
         {
-            List<DirectoryEntry> dirs = new List<DirectoryEntry>(_entries.Count);
+            List<DirectoryEntry> dirs = new(_entries.Count);
             foreach (DirectoryEntry dirEntry in _entries.Values)
             {
                 if ((dirEntry.Attributes & FatAttributes.Directory) != 0)
@@ -209,7 +206,7 @@ namespace DiscUtils.Fat
 
         public DirectoryEntry[] GetFiles()
         {
-            List<DirectoryEntry> files = new List<DirectoryEntry>(_entries.Count);
+            List<DirectoryEntry> files = new(_entries.Count);
             foreach (DirectoryEntry dirEntry in _entries.Values)
             {
                 if ((dirEntry.Attributes & (FatAttributes.Directory | FatAttributes.VolumeId)) == 0)
@@ -261,15 +258,14 @@ namespace DiscUtils.Fat
             {
                 try
                 {
-                    uint firstCluster;
-                    if (!_fileSystem.Fat.TryGetFreeCluster(out firstCluster))
+                    if (!_fileSystem.Fat.TryGetFreeCluster(out uint firstCluster))
                     {
                         throw new IOException("Failed to allocate first cluster for new directory");
                     }
 
                     _fileSystem.Fat.SetEndOfChain(firstCluster);
 
-                    DirectoryEntry newEntry = new DirectoryEntry(_fileSystem.FatOptions, name, FatAttributes.Directory, _fileSystem.FatVariant);
+                    DirectoryEntry newEntry = new(_fileSystem.FatOptions, name, FatAttributes.Directory, _fileSystem.FatVariant);
                     newEntry.FirstCluster = firstCluster;
                     newEntry.CreationTime = _fileSystem.ConvertFromUtc(DateTime.UtcNow);
                     newEntry.LastWriteTime = newEntry.CreationTime;
@@ -297,11 +293,11 @@ namespace DiscUtils.Fat
                 throw new IOException("Directory entry already exists");
             }
 
-            DirectoryEntry newEntry = new DirectoryEntry(newChild.ParentsChildEntry);
+            DirectoryEntry newEntry = new(newChild.ParentsChildEntry);
             newEntry.Name = name;
             AddEntry(newEntry);
 
-            DirectoryEntry newParentEntry = new DirectoryEntry(SelfEntry);
+            DirectoryEntry newParentEntry = new(SelfEntry);
             newParentEntry.Name = FileName.ParentEntryName;
             newChild.ParentEntry = newParentEntry;
         }
@@ -367,7 +363,7 @@ namespace DiscUtils.Fat
             else if ((mode == FileMode.OpenOrCreate || mode == FileMode.CreateNew || mode == FileMode.Create) && !exists)
             {
                 // Create new file
-                DirectoryEntry newEntry = new DirectoryEntry(_fileSystem.FatOptions, name, FatAttributes.Archive, _fileSystem.FatVariant);
+                DirectoryEntry newEntry = new(_fileSystem.FatOptions, name, FatAttributes.Archive, _fileSystem.FatVariant);
                 newEntry.FirstCluster = 0; // i.e. Zero-length
                 newEntry.CreationTime = _fileSystem.ConvertFromUtc(DateTime.UtcNow);
                 newEntry.LastWriteTime = newEntry.CreationTime;
@@ -421,7 +417,7 @@ namespace DiscUtils.Fat
             {
                 DirectoryEntry entry = _entries[id];
 
-                DirectoryEntry copy = new DirectoryEntry(entry);
+                DirectoryEntry copy = new(entry);
                 copy.Name = entry.Name.Deleted();
                 _dirStream.Position = id;
                 copy.WriteTo(_dirStream);
@@ -466,7 +462,7 @@ namespace DiscUtils.Fat
             while (_dirStream.Position < _dirStream.Length)
             {
                 long streamPos = _dirStream.Position;
-                DirectoryEntry entry = new DirectoryEntry(_fileSystem.FatOptions, _dirStream, _fileSystem.FatVariant);
+                DirectoryEntry entry = new(_fileSystem.FatOptions, _dirStream, _fileSystem.FatVariant);
 
                 if (entry.Attributes == (FatAttributes.ReadOnly | FatAttributes.Hidden | FatAttributes.System | FatAttributes.VolumeId))
                 {
@@ -542,20 +538,18 @@ namespace DiscUtils.Fat
         private void PopulateNewChildDirectory(DirectoryEntry newEntry)
         {
             // Populate new directory with initial (special) entries.  First one is easy, just change the name!
-            using (ClusterStream stream = new ClusterStream(_fileSystem, FileAccess.Write, newEntry.FirstCluster, uint.MaxValue))
-            {
-                // First is the self-referencing entry...
-                DirectoryEntry selfEntry = new DirectoryEntry(newEntry);
-                selfEntry.Name = FileName.SelfEntryName;
-                selfEntry.WriteTo(stream);
+            using ClusterStream stream = new(_fileSystem, FileAccess.Write, newEntry.FirstCluster, uint.MaxValue);
+            // First is the self-referencing entry...
+            DirectoryEntry selfEntry = new(newEntry);
+            selfEntry.Name = FileName.SelfEntryName;
+            selfEntry.WriteTo(stream);
 
-                // Second is a clone of our self entry (i.e. parent) - though dates are odd...
-                DirectoryEntry parentEntry = new DirectoryEntry(SelfEntry);
-                parentEntry.Name = FileName.ParentEntryName;
-                parentEntry.CreationTime = newEntry.CreationTime;
-                parentEntry.LastWriteTime = newEntry.LastWriteTime;
-                parentEntry.WriteTo(stream);
-            }
+            // Second is a clone of our self entry (i.e. parent) - though dates are odd...
+            DirectoryEntry parentEntry = new(SelfEntry);
+            parentEntry.Name = FileName.ParentEntryName;
+            parentEntry.CreationTime = newEntry.CreationTime;
+            parentEntry.LastWriteTime = newEntry.LastWriteTime;
+            parentEntry.WriteTo(stream);
         }
 
         private void Dispose(bool disposing)

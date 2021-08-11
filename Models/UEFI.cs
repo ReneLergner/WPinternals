@@ -237,7 +237,7 @@ namespace WPinternals
                     Type = ByteOperations.ReadUInt8(DecompressedImage, DecompressedFileHeaderOffset + 0x12)
                 };
                 byte[] FileGuidBytes = new byte[0x10];
-                System.Buffer.BlockCopy(DecompressedImage, (int)DecompressedFileHeaderOffset + 0x00, FileGuidBytes, 0, 0x10);
+                Buffer.BlockCopy(DecompressedImage, (int)DecompressedFileHeaderOffset + 0x00, FileGuidBytes, 0, 0x10);
                 CurrentEFI.Guid = new Guid(FileGuidBytes);
 
                 // Parse sections of the EFI
@@ -286,7 +286,7 @@ namespace WPinternals
 
         internal byte[] GetFile(string Name)
         {
-            EFI File = EFIs.Find(f => (string.Compare(Name, f.Name, true) == 0) || (string.Compare(Name, f.Guid.ToString(), true) == 0));
+            EFI File = EFIs.Find(f => string.Equals(Name, f.Name, StringComparison.CurrentCultureIgnoreCase) || string.Equals(Name, f.Guid.ToString(), StringComparison.CurrentCultureIgnoreCase));
             if (File == null)
             {
                 return null;
@@ -300,7 +300,7 @@ namespace WPinternals
 
         internal byte[] GetFile(Guid Guid)
         {
-            EFI File = EFIs.Find(f => (Guid == f.Guid));
+            EFI File = EFIs.Find(f => Guid == f.Guid);
             if (File == null)
             {
                 return null;
@@ -314,7 +314,7 @@ namespace WPinternals
 
         internal void ReplaceFile(string Name, byte[] Binary)
         {
-            EFI File = EFIs.Find(f => (string.Compare(Name, f.Name, true) == 0) || (string.Compare(Name, f.Guid.ToString(), true) == 0));
+            EFI File = EFIs.Find(f => string.Equals(Name, f.Name, StringComparison.CurrentCultureIgnoreCase) || string.Equals(Name, f.Guid.ToString(), StringComparison.CurrentCultureIgnoreCase));
             if (File == null)
             {
                 throw new ArgumentOutOfRangeException();
@@ -515,7 +515,7 @@ namespace WPinternals
         {
             UInt16 VolumeHeaderSize = ByteOperations.ReadUInt16(Image, Offset + 0x30);
             byte[] Header = new byte[VolumeHeaderSize];
-            System.Buffer.BlockCopy(Image, (int)Offset, Header, 0, VolumeHeaderSize);
+            Buffer.BlockCopy(Image, (int)Offset, Header, 0, VolumeHeaderSize);
             ByteOperations.WriteUInt16(Header, 0x32, 0); // Clear checksum
             UInt16 CurrentChecksum = ByteOperations.ReadUInt16(Image, Offset + 0x32);
             UInt16 NewChecksum = ByteOperations.CalculateChecksum16(Header, 0, VolumeHeaderSize);
@@ -553,7 +553,7 @@ namespace WPinternals
             UInt32 FileSize = ByteOperations.ReadUInt24(Image, Offset + 0x14);
 
             byte[] Header = new byte[FileHeaderSize - 1];
-            System.Buffer.BlockCopy(Image, (int)Offset, Header, 0, FileHeaderSize - 1);
+            Buffer.BlockCopy(Image, (int)Offset, Header, 0, FileHeaderSize - 1);
             ByteOperations.WriteUInt16(Header, 0x10, 0); // Clear checksum
             byte CurrentHeaderChecksum = ByteOperations.ReadUInt8(Image, Offset + 0x10);
             byte CalculatedHeaderChecksum = ByteOperations.CalculateChecksum8(Header, 0, (UInt32)FileHeaderSize - 1);

@@ -140,7 +140,7 @@ namespace WPinternals
                             UefiSecurityStatusResponse SecurityStatus = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadSecurityStatus();
                             if (SecurityStatus != null)
                             {
-                                IsBootLoaderUnlocked = (SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus);
+                                IsBootLoaderUnlocked = SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus;
                             }
 
                             TestPos = 2;
@@ -210,16 +210,16 @@ namespace WPinternals
                             }
                             else
                             {
-                                const bool AlreadyUnlocked = false;
+                                bool AlreadyUnlocked = false;
                                 if (DoUnlock)
                                 {
                                     NokiaFlashModel FlashModel = (NokiaFlashModel)PhoneNotifier.CurrentModel;
                                     GPT GPT = FlashModel.ReadGPT();
                                     if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
                                     {
-                                        ExitMessage("Phone is already unlocked", null);
-                                        return;
-                                        //AlreadyUnlocked = true;
+                                        //ExitMessage("Phone is already unlocked", null);
+                                        //return;
+                                        AlreadyUnlocked = true;
                                     }
                                 }
 
@@ -281,7 +281,7 @@ namespace WPinternals
                                         {
                                             FFU ProfileFFU = null;
 
-                                            List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => (Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
+                                            List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
                                             ProfileFFU = FFUs.Count > 0
                                                 ? new FFU(FFUs[0].Path)
                                                 : throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
@@ -608,7 +608,7 @@ namespace WPinternals
             this.SwitchToDownload = SwitchToDownload;
             this.IsBootLoaderUnlocked = IsBootLoaderUnlocked;
             OkCommand = new DelegateCommand(() => Result(FFUPath, LoadersPath, SBL3Path, ProfileFFUPath, EDEPath, IsSupportedFfuNeeded ? SupportedFFUPath : null, false),
-                () => ((!TargetHasNewFlashProtocol && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null)))) || ((ProfileFFUPath != null) && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null))))));
+                () => (!TargetHasNewFlashProtocol && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null)))) || ((ProfileFFUPath != null) && (!IsSupportedFfuNeeded || (IsSupportedFfuValid && (SupportedFFUPath != null)))));
             FixCommand = new DelegateCommand(() => Result(null, null, null, null, null, null, true));
             CancelCommand = new DelegateCommand(Abort);
             this.TargetHasNewFlashProtocol = TargetHasNewFlashProtocol;
@@ -660,7 +660,7 @@ namespace WPinternals
             }
             catch { }
 
-            List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => (PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
+            List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
             if (FFUs.Count > 0)
             {
                 IsProfileFfuValid = true;
@@ -859,7 +859,7 @@ namespace WPinternals
                     {
                         if (!TargetHasNewFlashProtocol)
                         {
-                            if (App.Config.FFURepository.Any(e => ((e.Path == SupportedFFUPath) && (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))))
+                            if (App.Config.FFURepository.Any(e => (e.Path == SupportedFFUPath) && App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
                             {
                                 IsSupportedFfuValid = true;
                             }
@@ -871,7 +871,7 @@ namespace WPinternals
                         }
                         else
                         {
-                            if (App.Config.FFURepository.Any(e => ((e.Path == SupportedFFUPath) && (App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))))
+                            if (App.Config.FFURepository.Any(e => (e.Path == SupportedFFUPath) && App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
                             {
                                 IsSupportedFfuValid = true;
                             }

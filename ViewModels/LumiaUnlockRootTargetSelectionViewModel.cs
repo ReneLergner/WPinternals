@@ -159,7 +159,7 @@ namespace WPinternals
         {
             get
             {
-                return _UnlockImageCommand ??= new DelegateCommand(() => UnlockImageCallback(EFIESPMountPoint, MainOSMountPoint), () => ((EFIESPMountPoint != null) || (MainOSMountPoint != null)));
+                return _UnlockImageCommand ??= new DelegateCommand(() => UnlockImageCallback(EFIESPMountPoint, MainOSMountPoint), () => (EFIESPMountPoint != null) || (MainOSMountPoint != null));
             }
         }
 
@@ -182,7 +182,7 @@ namespace WPinternals
         {
             IsPhoneDisconnected = PhoneNotifier.CurrentInterface == null;
             IsPhoneInMassStorage = PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_MassStorage;
-            IsPhoneInOtherMode = (!IsPhoneDisconnected && !IsPhoneInMassStorage);
+            IsPhoneInOtherMode = !IsPhoneDisconnected && !IsPhoneInMassStorage;
             UnlockPhoneCommand.RaiseCanExecuteChanged();
             UnlockImageCommand.RaiseCanExecuteChanged();
         }

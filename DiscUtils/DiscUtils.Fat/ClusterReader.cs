@@ -62,7 +62,7 @@ namespace DiscUtils.Fat
                     "buffer is too small - cluster would overflow buffer");
             }
 
-            uint firstSector = (uint)((cluster - 2) * _sectorsPerCluster + _firstDataSector);
+            uint firstSector = (uint)(((cluster - 2) * _sectorsPerCluster) + _firstDataSector);
 
             _stream.Position = firstSector * _bytesPerSector;
             StreamUtilities.ReadExact(_stream, buffer, offset, _clusterSize);
@@ -76,7 +76,7 @@ namespace DiscUtils.Fat
                     "buffer is too small - cluster would overflow buffer");
             }
 
-            uint firstSector = (uint)((cluster - 2) * _sectorsPerCluster + _firstDataSector);
+            uint firstSector = (uint)(((cluster - 2) * _sectorsPerCluster) + _firstDataSector);
 
             _stream.Position = firstSector * _bytesPerSector;
 
@@ -85,7 +85,7 @@ namespace DiscUtils.Fat
 
         internal void WipeCluster(uint cluster)
         {
-            uint firstSector = (uint)((cluster - 2) * _sectorsPerCluster + _firstDataSector);
+            uint firstSector = (uint)(((cluster - 2) * _sectorsPerCluster) + _firstDataSector);
 
             _stream.Position = firstSector * _bytesPerSector;
 

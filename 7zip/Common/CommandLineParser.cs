@@ -134,7 +134,7 @@ namespace SevenZip.CommandLineParser
                             }
                             else
                             {
-                                matchedSwitch.WithMinus = (srcString[pos] == kSwitchMinus);
+                                matchedSwitch.WithMinus = srcString[pos] == kSwitchMinus;
                                 if (matchedSwitch.WithMinus)
                                 {
                                     pos++;

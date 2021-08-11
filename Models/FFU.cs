@@ -110,12 +110,9 @@ namespace WPinternals
                         DiskAccessMethod = ByteOperations.ReadInt32(StoreHeader, (UInt32)(WriteDescriptorEntryOffset + 0x08 + (j * 0x08)));
                         ChunkIndex = ByteOperations.ReadInt32(StoreHeader, (UInt32)(WriteDescriptorEntryOffset + 0x0C + (j * 0x08)));
 
-                        if (DiskAccessMethod == 0) // 0 = From begin, 2 = From end. We ignore chunks at end of disk. These contain secondairy GPT.
+                        if (DiskAccessMethod == 0 && (ChunkIndex + ChunkCount - 1) > HighestChunkIndex) // 0 = From begin, 2 = From end. We ignore chunks at end of disk. These contain secondairy GPT.
                         {
-                            if ((ChunkIndex + ChunkCount - 1) > HighestChunkIndex)
-                            {
-                                HighestChunkIndex = ChunkIndex + ChunkCount - 1;
-                            }
+                            HighestChunkIndex = ChunkIndex + ChunkCount - 1;
                         }
                     }
                     WriteDescriptorEntryOffset += 8 + (LocationCount * 0x08);
@@ -183,7 +180,7 @@ namespace WPinternals
             byte[] Signature = new byte[0x10];
             FFUFile.Read(Signature, 0, 0x10);
 
-            Result = (ByteOperations.ReadAsciiString(Signature, 0x04, 0x0C) == "SignedImage ");
+            Result = ByteOperations.ReadAsciiString(Signature, 0x04, 0x0C) == "SignedImage ";
 
             FFUFile.Close();
 
@@ -214,12 +211,9 @@ namespace WPinternals
         {
             // https://social.msdn.microsoft.com/Forums/vstudio/en-US/2e67ca57-3556-4275-accd-58b7df30d424/unnecessary-filestreamseek-and-setting-filestreamposition-has-huge-effect-on-performance?forum=csharpgeneral
 
-            if (FFUFile != null)
+            if (FFUFile != null && FFUFile.Position != Position)
             {
-                if (FFUFile.Position != Position)
-                {
-                    FFUFile.Seek(Position, SeekOrigin.Begin);
-                }
+                FFUFile.Seek(Position, SeekOrigin.Begin);
             }
         }
 
@@ -239,7 +233,7 @@ namespace WPinternals
         {
             if ((Size % ChunkSize) > 0)
             {
-                return (UInt32)((Size / ChunkSize) * ChunkSize);
+                return (UInt32)(Size / ChunkSize * ChunkSize);
             }
             else
             {
@@ -292,7 +286,7 @@ namespace WPinternals
 
         internal byte[] GetPartition(string Name)
         {
-            Partition Target = GPT.Partitions.Find(p => (string.Compare(p.Name, Name, true) == 0));
+            Partition Target = GPT.Partitions.Find(p => string.Equals(p.Name, Name, StringComparison.CurrentCultureIgnoreCase));
             if (Target == null)
             {
                 throw new ArgumentOutOfRangeException();
@@ -318,7 +312,7 @@ namespace WPinternals
 
         private void WritePartition(string Name, string FilePath, Action<int, TimeSpan?> ProgressUpdateCallback, ProgressUpdater UpdaterPerSector, bool Compress = false)
         {
-            Partition Target = GPT.Partitions.Find(p => (string.Compare(p.Name, Name, true) == 0));
+            Partition Target = GPT.Partitions.Find(p => string.Equals(p.Name, Name, StringComparison.CurrentCultureIgnoreCase));
             if (Target == null)
             {
                 throw new ArgumentOutOfRangeException();

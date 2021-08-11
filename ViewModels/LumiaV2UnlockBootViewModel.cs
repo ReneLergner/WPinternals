@@ -57,7 +57,7 @@ namespace WPinternals
             {
                 LogFile.Log("Find Flashing Profile", LogType.FileAndConsole);
 
-                NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
+                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 PhoneInfo Info;
                 if (DoResetFirst)
@@ -125,7 +125,7 @@ namespace WPinternals
                 LogFile.Log("Command: Enable testsigning", LogType.FileAndConsole);
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
-                NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
+                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 List<FlashPart> Parts = new();
                 FlashPart Part;
@@ -197,7 +197,7 @@ namespace WPinternals
                 });
                 Parts.Add(Part);
 
-                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, FFUPath, false, false, Parts, DoResetFirst, ClearFlashingStatusAtEnd: false);
+                await LumiaV2CustomFlash(Notifier, FFUPath, false, false, Parts, DoResetFirst, ClearFlashingStatusAtEnd: false);
 
                 Notifier.Stop();
             }
@@ -228,7 +228,7 @@ namespace WPinternals
                 return ((MassStorage)Notifier.CurrentModel).Drive;
             }
 
-            NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
+            NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
             if (DoResetFirst)
             {
                 // The phone will be reset before flashing, so we have the opportunity to get some more info from the phone
@@ -262,7 +262,7 @@ namespace WPinternals
                 LogFile.Log("Command: Clear NV", LogType.FileAndConsole);
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
-                NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
+                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                 List<FlashPart> Parts = new();
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
@@ -338,7 +338,7 @@ namespace WPinternals
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
 
-                NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
+                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 PhoneInfo Info = FlashModel.ReadPhoneInfo();
 
@@ -359,10 +359,10 @@ namespace WPinternals
                 bool GPTChanged = false;
                 List<FlashPart> Parts = new();
                 FlashPart Part;
-                if (string.Compare(PartitionName, "EFIESP", true) == 0)
+                if (string.Equals(PartitionName, "EFIESP", StringComparison.CurrentCultureIgnoreCase))
                 {
                     byte[] EfiespBinary = File.ReadAllBytes(PartitionPath);
-                    IsUnlocked = ((ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && (ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8)) == "MSDOS5.0");
+                    IsUnlocked = (ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8) == "MSDOS5.0";
 
                     if (IsUnlocked)
                     {
@@ -417,7 +417,7 @@ namespace WPinternals
                         Stream = Stream
                     };
                     Parts.Add(Part);
-                    await LumiaV2CustomFlash(Notifier, FFUPath, false, false, Parts, DoResetFirst, string.Compare(PartitionName, "UEFI_BS_NV", true) != 0);
+                    await LumiaV2CustomFlash(Notifier, FFUPath, false, false, Parts, DoResetFirst, !string.Equals(PartitionName, "UEFI_BS_NV", StringComparison.CurrentCultureIgnoreCase));
                 }
                 Notifier.Stop();
             }
@@ -447,11 +447,11 @@ namespace WPinternals
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
 
-                NokiaFlashModel FlashModel = (NokiaFlashModel)(await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash));
+                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 PhoneInfo Info = FlashModel.ReadPhoneInfo();
 
-                byte[] Data = System.IO.File.ReadAllBytes(DataPath);
+                byte[] Data = File.ReadAllBytes(DataPath);
 
                 await LumiaV2CustomFlash(Notifier, FFUPath, false, false, (UInt32)StartSector, Data, DoResetFirst);
                 Notifier.Stop();
@@ -573,7 +573,7 @@ namespace WPinternals
             if (FFUPath == null)
             {
                 // Try to find an FFU from the repository for which there is also a known flashing profile
-                FFUs = App.Config.FFURepository.Where(e => (Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists())).ToList();
+                FFUs = App.Config.FFURepository.Where(e => Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
                 foreach (FFUEntry CurrentEntry in FFUs)
                 {
                     Profile = App.Config.GetProfile(Info.PlatformID, Info.Firmware, CurrentEntry.FirmwareVersion);
@@ -620,17 +620,14 @@ namespace WPinternals
                         throw new ArgumentException("Streams must be seekable");
                     }
 
-                    if (((Part.StartSector * 0x200) % FFU.ChunkSize) != 0)
+                    if ((Part.StartSector * 0x200 % FFU.ChunkSize) != 0)
                     {
                         throw new ArgumentException("Invalid StartSector alignment");
                     }
 
-                    if (CheckSectorAlignment)
+                    if (CheckSectorAlignment && (Part.Stream.Length % FFU.ChunkSize) != 0)
                     {
-                        if ((Part.Stream.Length % FFU.ChunkSize) != 0)
-                        {
-                            throw new ArgumentException("Invalid Data length");
-                        }
+                        throw new ArgumentException("Invalid Data length");
                     }
                 }
             }
@@ -646,7 +643,7 @@ namespace WPinternals
             }
 
             UEFI UEFI = new(FFU.GetPartition("UEFI"));
-            string BootMgrName = UEFI.EFIs.First(efi => (efi.Name?.Contains("BootMgrApp") == true)).Name;
+            string BootMgrName = UEFI.EFIs.First(efi => efi.Name?.Contains("BootMgrApp") == true).Name;
             UInt32 EstimatedSizeOfMemGap = (UInt32)UEFI.GetFile(BootMgrName).Length;
             byte Options = 0;
             if (SkipWrite)
@@ -995,7 +992,7 @@ namespace WPinternals
                         Model.SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap -> This will fail on phones with Flash Protocol v1.x !! On Lumia 640 this will hang on receiving the response when EndAsyncFlash was not called.
                     }
 
-                    using (FileStream FfuFile = new(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                    using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
                     {
                         // On every flashing phase we need to send the full header again to reset all the counters.
                         FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
@@ -1059,7 +1056,7 @@ namespace WPinternals
                     else
                     {
                         // From start of hash-table skip the first hashes for Image- and StoreHeaders.
-                        HashTableSize = (UInt32)(((FFU.ImageHeader.Length + FFU.StoreHeader.Length) / FFU.ChunkSize) * 0x20);
+                        HashTableSize = (UInt32)((FFU.ImageHeader.Length + FFU.StoreHeader.Length) / FFU.ChunkSize * 0x20);
                         NewHashOffset += HashTableSize;
                     }
 
@@ -1615,7 +1612,7 @@ namespace WPinternals
                     PartialHeader = new byte[UefiMemorySim.PageSize];
                     Model.SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap
                 }
-                using (FileStream FfuFile = new(FFU.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
                 {
                     // On every flashing phase we need to send the full header again, because this triggers ffu_import_invalidate(), which is necessary to reset all the counters.
                     FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
@@ -1920,7 +1917,7 @@ namespace WPinternals
 
         internal static string GetProgrammerPath(byte[] RKH, string Type)
         {
-            IEnumerable<EmergencyFileEntry> RKHEntries = App.Config.EmergencyRepository.Where(e => (StructuralComparisons.StructuralEqualityComparer.Equals(e.RKH, RKH) && e.ProgrammerExists()));
+            IEnumerable<EmergencyFileEntry> RKHEntries = App.Config.EmergencyRepository.Where(e => StructuralComparisons.StructuralEqualityComparer.Equals(e.RKH, RKH) && e.ProgrammerExists());
             if (RKHEntries.Any())
             {
                 if (RKHEntries.Count() == 1)
@@ -1929,7 +1926,7 @@ namespace WPinternals
                 }
                 else
                 {
-                    EmergencyFileEntry RKHEntry = RKHEntries.FirstOrDefault(e => string.Compare(e.Type, Type, false) == 0);
+                    EmergencyFileEntry RKHEntry = RKHEntries.FirstOrDefault(e => string.Equals(e.Type, Type, StringComparison.CurrentCulture));
                     if (RKHEntry != null)
                     {
                         return RKHEntry.ProgrammerPath;
@@ -1942,7 +1939,7 @@ namespace WPinternals
             }
             else
             {
-                EmergencyFileEntry TypeEntry = App.Config.EmergencyRepository.Find(e => ((string.Compare(e.Type, Type, false) == 0) && e.ProgrammerExists()));
+                EmergencyFileEntry TypeEntry = App.Config.EmergencyRepository.Find(e => string.Equals(e.Type, Type, StringComparison.CurrentCulture) && e.ProgrammerExists());
                 if (TypeEntry != null)
                 {
                     return TypeEntry.ProgrammerPath;
@@ -2036,7 +2033,7 @@ namespace WPinternals
                             PartitionName = PartitionName.Substring(0, Pos);
                         }
 
-                        Partition Partition = GPT.Partitions.Find(p => string.Compare(p.Name, PartitionName, true) == 0);
+                        Partition Partition = GPT.Partitions.Find(p => string.Equals(p.Name, PartitionName, StringComparison.CurrentCultureIgnoreCase));
                         if (Partition != null)
                         {
                             using DecompressedStream DecompressedStream = new(Entry.Open());
@@ -2050,13 +2047,13 @@ namespace WPinternals
                             TotalSizeSectors += StreamLengthInSectors;
                             PartitionCount++;
 
-                            if (string.Compare(PartitionName, "MainOS", true) == 0)
+                            if (string.Equals(PartitionName, "MainOS", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 MainOSOldSectorCount = Partition.SizeInSectors;
                                 MainOSNewSectorCount = StreamLengthInSectors;
                                 FirstMainOSSector = Partition.FirstSector;
                             }
-                            else if (string.Compare(PartitionName, "Data", true) == 0)
+                            else if (string.Equals(PartitionName, "Data", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 DataOldSectorCount = Partition.SizeInSectors;
                                 DataNewSectorCount = StreamLengthInSectors;
@@ -2067,12 +2064,12 @@ namespace WPinternals
                                 ExitFailure("Flash failed!", "Size of partition '" + PartitionName + "' is too big.");
                                 return;
                             }
-                            else if (string.Compare(PartitionName, "EFIESP", true) == 0)
+                            else if (string.Equals(PartitionName, "EFIESP", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 ulong EfiespLength = StreamLengthInSectors * 0x200;
                                 byte[] EfiespBinary = new byte[EfiespLength];
                                 DecompressedStream.Read(EfiespBinary, 0, (int)EfiespLength);
-                                IsUnlocked = ((ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && (ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8)) == "MSDOS5.0");
+                                IsUnlocked = (ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8) == "MSDOS5.0";
                                 if (IsUnlocked)
                                 {
                                     Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
@@ -2115,8 +2112,8 @@ namespace WPinternals
                         if ((MainOSNewSectorCount + DataNewSectorCount) <= OSSpace)
                         {
                             // MainOS and Data partitions need to be re-aligned!
-                            Partition MainOSPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "MainOS", true) == 0);
-                            Partition DataPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "Data", true) == 0);
+                            Partition MainOSPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "MainOS", StringComparison.CurrentCultureIgnoreCase));
+                            Partition DataPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "Data", StringComparison.CurrentCultureIgnoreCase));
                             MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
                             DataPartition.FirstSector = MainOSPartition.LastSector + 1;
                             if ((DataPartition.FirstSector % 0x100) > 0)
@@ -2252,7 +2249,7 @@ namespace WPinternals
                                 PartitionName = PartitionName.Substring(0, Pos);
                             }
 
-                            Target = GPT.Partitions.Find(p => string.Compare(p.Name, PartitionName, true) == 0);
+                            Target = GPT.Partitions.Find(p => string.Equals(p.Name, PartitionName, StringComparison.CurrentCultureIgnoreCase));
                             if (Target != null)
                             {
                                 Part = new FlashPart
@@ -2269,7 +2266,7 @@ namespace WPinternals
 
                     Parts = Parts.OrderBy(p => p.StartSector).ToList();
                     int Count = 1;
-                    Parts.Where(p => (p.ProgressText?.StartsWith("Flashing partition ") == true)).ToList().ForEach((p) =>
+                    Parts.Where(p => p.ProgressText?.StartsWith("Flashing partition ") == true).ToList().ForEach((p) =>
                     {
                         p.ProgressText += " (" + Count.ToString() + "/" + PartitionCount.ToString() + ")";
                         Count++;
@@ -2411,7 +2408,7 @@ namespace WPinternals
                     PartitionCount++;
 
                     byte[] EfiespBinary = File.ReadAllBytes(EFIESPPath);
-                    IsUnlocked = ((ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && (ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8)) == "MSDOS5.0");
+                    IsUnlocked = (ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8) == "MSDOS5.0";
                     if (IsUnlocked)
                     {
                         Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
@@ -2474,8 +2471,8 @@ namespace WPinternals
                             if ((MainOSNewSectorCount + DataNewSectorCount) <= OSSpace)
                             {
                                 // MainOS and Data partitions need to be re-aligned!
-                                Partition MainOSPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "MainOS", true) == 0);
-                                Partition DataPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "Data", true) == 0);
+                                Partition MainOSPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "MainOS", StringComparison.CurrentCultureIgnoreCase));
+                                Partition DataPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "Data", StringComparison.CurrentCultureIgnoreCase));
                                 MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
                                 DataPartition.FirstSector = MainOSPartition.LastSector + 1;
                                 if ((DataPartition.FirstSector % 0x100) > 0)
@@ -2598,7 +2595,7 @@ namespace WPinternals
 
                     int Count = 0;
 
-                    Target = GPT.Partitions.Find(p => string.Compare(p.Name, "EFIESP", true) == 0);
+                    Target = GPT.Partitions.Find(p => string.Equals(p.Name, "EFIESP", StringComparison.CurrentCultureIgnoreCase));
                     if ((EFIESPPath != null) && (Target != null))
                     {
                         Count++;
@@ -2612,7 +2609,7 @@ namespace WPinternals
                         LogFile.Log("Partition name=EFIESP, startsector=0x" + Target.FirstSector.ToString("X8") + ", sectorcount = 0x" + (Part.Stream.Length / 0x200).ToString("X8"), LogType.FileOnly);
                     }
 
-                    Target = GPT.Partitions.Find(p => string.Compare(p.Name, "MainOS", true) == 0);
+                    Target = GPT.Partitions.Find(p => string.Equals(p.Name, "MainOS", StringComparison.CurrentCultureIgnoreCase));
                     if ((MainOSPath != null) && (Target != null))
                     {
                         Count++;
@@ -2626,7 +2623,7 @@ namespace WPinternals
                         LogFile.Log("Partition name=MainOS, startsector=0x" + Target.FirstSector.ToString("X8") + ", sectorcount = 0x" + (Part.Stream.Length / 0x200).ToString("X8"), LogType.FileOnly);
                     }
 
-                    Target = GPT.Partitions.Find(p => string.Compare(p.Name, "Data", true) == 0);
+                    Target = GPT.Partitions.Find(p => string.Equals(p.Name, "Data", StringComparison.CurrentCultureIgnoreCase));
                     if ((DataPath != null) && (Target != null))
                     {
                         Count++;

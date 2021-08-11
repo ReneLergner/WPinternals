@@ -34,5 +34,9 @@ namespace MadWizard.WinUSBNet
             : base(message, innerException)
         {
         }
+
+        public USBException() : base()
+        {
+        }
     }
 }

@@ -159,7 +159,7 @@ namespace DiscUtils.Fat
             int day = date & 0x001F;
             int hour = (time & 0xF800) >> 11;
             int minute = (time & 0x07E0) >> 5;
-            int second = (time & 0x001F) * 2 + tenths / 100;
+            int second = ((time & 0x001F) * 2) + (tenths / 100);
             int millis = tenths % 100 * 10;
 
             return new DateTime(year, month, day, hour, minute, second, millis);
@@ -167,15 +167,12 @@ namespace DiscUtils.Fat
 
         private static void DateTimeToFileTime(DateTime value, out ushort date)
         {
-            byte tenths;
-            ushort time;
-            DateTimeToFileTime(value, out date, out time, out tenths);
+            DateTimeToFileTime(value, out date, out ushort time, out byte tenths);
         }
 
         private static void DateTimeToFileTime(DateTime value, out ushort date, out ushort time)
         {
-            byte tenths;
-            DateTimeToFileTime(value, out date, out time, out tenths);
+            DateTimeToFileTime(value, out date, out time, out byte tenths);
         }
 
         private static void DateTimeToFileTime(DateTime value, out ushort date, out ushort time, out byte tenths)
@@ -189,7 +186,7 @@ namespace DiscUtils.Fat
                 (ushort)((((value.Year - 1980) << 9) & 0xFE00) | ((value.Month << 5) & 0x01E0) | (value.Day & 0x001F));
             time =
                 (ushort)(((value.Hour << 11) & 0xF800) | ((value.Minute << 5) & 0x07E0) | ((value.Second / 2) & 0x001F));
-            tenths = (byte)(value.Second % 2 * 100 + value.Millisecond / 10);
+            tenths = (byte)((value.Second % 2 * 100) + (value.Millisecond / 10));
         }
 
         private void Load(byte[] data, int offset)

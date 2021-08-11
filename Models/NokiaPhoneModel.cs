@@ -76,7 +76,7 @@ namespace WPinternals
                 Length = Device.InputPipe.Read(Buffer);
             }
 
-            JsonDocument ResultMessage = JsonDocument.Parse(System.Text.ASCIIEncoding.ASCII.GetString(Buffer, 0, Length));
+            JsonDocument ResultMessage = JsonDocument.Parse(System.Text.Encoding.ASCII.GetString(Buffer, 0, Length));
 
             try
             {
@@ -298,7 +298,7 @@ namespace WPinternals
                             {
                                 Length = Device.InputPipe.EndRead(AsyncResultRead);
 
-                                JsonDocument ResultMessage = JsonDocument.Parse(System.Text.ASCIIEncoding.ASCII.GetString(Buffer, 0, Length));
+                                JsonDocument ResultMessage = JsonDocument.Parse(System.Text.Encoding.ASCII.GetString(Buffer, 0, Length));
 
                                 JsonElement? ResultToken = ResultMessage.RootElement.GetProperty("result");
                                 if ((ResultToken == null) || (ResultElement == null))

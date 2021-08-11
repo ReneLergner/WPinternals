@@ -212,12 +212,12 @@ namespace WPinternals
         internal const uint FILE_SHARE_DELETE = 0x00000004;
         internal const uint OPEN_EXISTING = 3;
 
-        internal const uint GENERIC_READ = (0x80000000);
-        internal const uint GENERIC_WRITE = (0x40000000);
+        internal const uint GENERIC_READ = 0x80000000;
+        internal const uint GENERIC_WRITE = 0x40000000;
 
         internal const uint FILE_FLAG_WRITE_THROUGH = 0x80000000;
         internal const uint FILE_FLAG_NO_BUFFERING = 0x20000000;
-        internal const uint FILE_READ_ATTRIBUTES = (0x0080);
+        internal const uint FILE_READ_ATTRIBUTES = 0x0080;
         internal const uint FILE_WRITE_ATTRIBUTES = 0x0100;
         internal const uint ERROR_INSUFFICIENT_BUFFER = 122;
         internal const uint FILE_BEGIN = 0;

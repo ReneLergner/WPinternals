@@ -45,7 +45,7 @@ namespace MadWizard.WinUSBNet.API
                 // in the strucutre that are not part of dbch_name and dividing by 2 because there are 
                 // 2 bytes per character.
 
-                stringSize = System.Convert.ToInt32((devBroadcastHeader.dbch_size - 32) / 2);
+                stringSize = Convert.ToInt32((devBroadcastHeader.dbch_size - 32) / 2);
 
                 // The dbcc_name parameter of devBroadcastDeviceInterface contains the device name. 
                 // Trim dbcc_name to match the size of the String.         
@@ -87,12 +87,9 @@ namespace MadWizard.WinUSBNet.API
 
         private static byte[] GetProperty(IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData, SPDRP property, out int regType)
         {
-            if (!SetupDiGetDeviceRegistryProperty(deviceInfoSet, ref deviceInfoData, property, IntPtr.Zero, IntPtr.Zero, 0, out uint requiredSize))
+            if (!SetupDiGetDeviceRegistryProperty(deviceInfoSet, ref deviceInfoData, property, IntPtr.Zero, IntPtr.Zero, 0, out uint requiredSize) && Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
             {
-                if (Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
-                {
-                    throw APIException.Win32("Failed to get buffer size for device registry property.");
-                }
+                throw APIException.Win32("Failed to get buffer size for device registry property.");
             }
 
             byte[] buffer = new byte[requiredSize];
@@ -116,12 +113,9 @@ namespace MadWizard.WinUSBNet.API
         // Heathcliff74
         private static byte[] GetProperty(IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData, DEVPROPKEY property, out uint propertyType)
         {
-            if (!SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref property, out propertyType, null, 0, out int requiredSize, 0))
+            if (!SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref property, out propertyType, null, 0, out int requiredSize, 0) && Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
             {
-                if (Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
-                {
-                    throw APIException.Win32("Failed to get buffer size for device registry property.");
-                }
+                throw APIException.Win32("Failed to get buffer size for device registry property.");
             }
 
             byte[] buffer = new byte[requiredSize];
@@ -261,12 +255,9 @@ namespace MadWizard.WinUSBNet.API
                         ref bufferSize,
                         IntPtr.Zero);
 
-                    if (!success)
+                    if (!success && Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
                     {
-                        if (Marshal.GetLastWin32Error() != ERROR_INSUFFICIENT_BUFFER)
-                        {
-                            throw APIException.Win32("Failed to get interface details buffer size.");
-                        }
+                        throw APIException.Win32("Failed to get interface details buffer size.");
                     }
 
                     IntPtr detailDataBuffer = IntPtr.Zero;
@@ -372,7 +363,7 @@ namespace MadWizard.WinUSBNet.API
 
         public static void StopDeviceDeviceNotifications(IntPtr deviceNotificationHandle)
         {
-            if (!DeviceManagement.UnregisterDeviceNotification(deviceNotificationHandle))
+            if (!UnregisterDeviceNotification(deviceNotificationHandle))
             {
                 throw APIException.Win32("Failed to unregister device notification");
             }

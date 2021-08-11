@@ -177,7 +177,7 @@ namespace MadWizard.WinUSBNet
 
                     if (Application.Current != null)
                     {
-                        if (Application.Current.Dispatcher.Thread.ManagedThreadId == System.Threading.Thread.CurrentThread.ManagedThreadId)
+                        if (Application.Current.Dispatcher.Thread.ManagedThreadId == Environment.CurrentManagedThreadId)
                         {
                             RemoveHookAction();
                         }

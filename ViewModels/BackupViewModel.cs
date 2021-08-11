@@ -434,35 +434,32 @@ namespace WPinternals
 
                     foreach (string PartitionName in ProvisioningPartitions)
                     {
-                        if (GPT.Partitions.Any(p => p.Name == PartitionName))
+                        if (GPT.Partitions.Any(p => p.Name == PartitionName) && Result)
                         {
-                            if (Result)
+                            try
                             {
-                                try
+                                Entry = Archive.CreateEntry(PartitionName + ".bin", CompressionLevel.Optimal);
+                                EntryStream = Entry.Open();
+                                i++;
+                                Busy.Message = "Create backup of partition " + PartitionName + " (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
+                                if (PartitionName == "UEFI_BS_NV" && GPT.Partitions.Any(p => p.Name == "BACKUP_BS_NV"))
                                 {
-                                    Entry = Archive.CreateEntry(PartitionName + ".bin", CompressionLevel.Optimal);
-                                    EntryStream = Entry.Open();
-                                    i++;
-                                    Busy.Message = "Create backup of partition " + PartitionName + " (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
-                                    if (PartitionName == "UEFI_BS_NV" && GPT.Partitions.Any(p => p.Name == "BACKUP_BS_NV"))
-                                    {
-                                        Phone.BackupPartition("BACKUP_BS_NV", EntryStream, Updater);
-                                    }
-                                    else
-                                    {
-                                        Phone.BackupPartition(PartitionName, EntryStream, Updater);
-                                    }
+                                    Phone.BackupPartition("BACKUP_BS_NV", EntryStream, Updater);
                                 }
-                                catch (Exception Ex)
+                                else
                                 {
-                                    LogFile.LogException(Ex);
-                                    Result = false;
+                                    Phone.BackupPartition(PartitionName, EntryStream, Updater);
                                 }
-                                finally
-                                {
-                                    EntryStream?.Close();
-                                    EntryStream = null;
-                                }
+                            }
+                            catch (Exception Ex)
+                            {
+                                LogFile.LogException(Ex);
+                                Result = false;
+                            }
+                            finally
+                            {
+                                EntryStream?.Close();
+                                EntryStream = null;
                             }
                         }
                     }

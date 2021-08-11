@@ -39,7 +39,7 @@ namespace DiscUtils.Fat
             _firstFatSector = firstFatSector;
             _numFats = numFats;
 
-            _stream.Position = (firstFatSector + fatSize * activeFat) * Sizes.Sector;
+            _stream.Position = (firstFatSector + (fatSize * activeFat)) * Sizes.Sector;
             _buffer = new FatBuffer(type, StreamUtilities.ReadExact(_stream, (int)(fatSize * Sizes.Sector)));
         }
 
@@ -82,7 +82,7 @@ namespace DiscUtils.Fat
         {
             for (int i = 0; i < _numFats; ++i)
             {
-                _buffer.WriteDirtyRegions(_stream, _firstFatSector * Sizes.Sector + _buffer.Size * i);
+                _buffer.WriteDirtyRegions(_stream, (_firstFatSector * Sizes.Sector) + (_buffer.Size * i));
             }
 
             _buffer.ClearDirtyRegions();

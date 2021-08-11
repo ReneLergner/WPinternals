@@ -186,16 +186,13 @@ namespace WPinternals
                 {
                     lock (syncRoot)
                     {
-                        if (processHandle.IsInvalid)
-                        {
-                            if (!NativeMethods.OpenProcessToken(
+                        if (processHandle.IsInvalid && !NativeMethods.OpenProcessToken(
                                             NativeMethods.GetCurrentProcess(),
                                             TokenAccessLevels.Duplicate,
                                             ref processHandle))
-                            {
-                                cachingError = Marshal.GetLastWin32Error();
-                                success = false;
-                            }
+                        {
+                            cachingError = Marshal.GetLastWin32Error();
+                            success = false;
                         }
                     }
                 }
@@ -237,15 +234,12 @@ namespace WPinternals
                                 }
                             }
 
-                            if (success)
-                            {
-                                if (!NativeMethods.SetThreadToken(
+                            if (success && !NativeMethods.SetThreadToken(
                                     IntPtr.Zero,
                                     this.threadHandle))
-                                {
-                                    error = Marshal.GetLastWin32Error();
-                                    success = false;
-                                }
+                            {
+                                error = Marshal.GetLastWin32Error();
+                                success = false;
                             }
 
                             if (success)
@@ -424,7 +418,7 @@ namespace WPinternals
                         NativeMethods.TOKEN_PRIVILEGE newState = new();
                         newState.PrivilegeCount = 1;
                         newState.Privilege.Luid = this.luid;
-                        newState.Privilege.Attributes = (this.initialState ? NativeMethods.SE_PRIVILEGE_ENABLED : NativeMethods.SE_PRIVILEGE_DISABLED);
+                        newState.Privilege.Attributes = this.initialState ? NativeMethods.SE_PRIVILEGE_ENABLED : NativeMethods.SE_PRIVILEGE_DISABLED;
 
                         NativeMethods.TOKEN_PRIVILEGE previousState = new();
                         uint previousSize = 0;
@@ -578,11 +572,11 @@ namespace WPinternals
                     {
                         // This is the initial state that revert will have to go back to
 
-                        this.initialState = ((previousState.Privilege.Attributes & NativeMethods.SE_PRIVILEGE_ENABLED) != 0);
+                        this.initialState = (previousState.Privilege.Attributes & NativeMethods.SE_PRIVILEGE_ENABLED) != 0;
 
                         // Remember whether state has changed at all
 
-                        this.stateWasChanged = (this.initialState != enable);
+                        this.stateWasChanged = this.initialState != enable;
 
                         // If we had to impersonate, or if the privilege state changed we'll need to revert
 
@@ -630,13 +624,10 @@ namespace WPinternals
                 this.initialState = false;
                 this.needToRevert = false;
 
-                if (this.tlsContents != null)
+                if (this.tlsContents?.DecrementReferenceCount() == 0)
                 {
-                    if (this.tlsContents.DecrementReferenceCount() == 0)
-                    {
-                        this.tlsContents = null;
-                        Thread.SetData(tlsSlot, null);
-                    }
+                    this.tlsContents = null;
+                    Thread.SetData(tlsSlot, null);
                 }
             }
         }

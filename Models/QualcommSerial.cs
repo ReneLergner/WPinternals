@@ -39,7 +39,7 @@ namespace WPinternals
             CRC16 = new CRC16(0x1189, 0xFFFF, 0xFFFF);
 
             string[] DevicePathElements = DevicePath.Split(new char[] { '#' });
-            if (string.Compare(DevicePathElements[3], "{86E0D1E0-8089-11D0-9CE4-08003E301F73}", true) == 0)
+            if (string.Equals(DevicePathElements[3], "{86E0D1E0-8089-11D0-9CE4-08003E301F73}", StringComparison.CurrentCultureIgnoreCase))
             {
                 string PortName = (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB\" + DevicePathElements[1] + @"\" + DevicePathElements[2] + @"\Device Parameters", "PortName", null);
                 if (PortName != null)
@@ -316,9 +316,9 @@ namespace WPinternals
         }
     }
 
-    public class IncompleteMessageException : Exception { };
-    public class BadMessageException : Exception { };
-    public class BadConnectionException : Exception { };
+    public class IncompleteMessageException : Exception { public IncompleteMessageException() { } public IncompleteMessageException(string message) : base(message) { } public IncompleteMessageException(string message, Exception innerException) : base(message, innerException) { } }
+    public class BadMessageException : Exception { public BadMessageException() { } public BadMessageException(string message) : base(message) { } public BadMessageException(string message, Exception innerException) : base(message, innerException) { } }
+    public class BadConnectionException : Exception { public BadConnectionException() { } public BadConnectionException(string message) : base(message) { } public BadConnectionException(string message, Exception innerException) : base(message, innerException) { } }
 
     public class CRC16
     {

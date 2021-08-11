@@ -60,7 +60,7 @@ namespace WPinternals
 
                 CurrentLength = Remaining >= 0x100 ? 0x100 : (UInt32)Remaining;
 
-                CurrentLength = (UInt32)(Data.Read(Buffer, 7, (int)CurrentLength));
+                CurrentLength = (UInt32)Data.Read(Buffer, 7, (int)CurrentLength);
                 Serial.SendCommand(Buffer, new byte[] { 0x02 });
 
                 CurrentAddress += CurrentLength;

@@ -61,7 +61,7 @@ namespace DiscUtils.Internal
         /// <returns>The resultant array.</returns>
         public static U[] Map<T, U>(IEnumerable<T> source, Func<T, U> func)
         {
-            List<U> result = new List<U>();
+            List<U> result = new();
 
             foreach (T sVal in source)
             {
@@ -81,7 +81,7 @@ namespace DiscUtils.Internal
         /// <returns>The new collection, containing all entries where the predicate returns <c>true</c>.</returns>
         public static C Filter<C, T>(ICollection<T> source, Func<T, bool> predicate) where C : ICollection<T>, new()
         {
-            C result = new C();
+            C result = new();
             foreach (T val in source)
             {
                 if (predicate(val))
@@ -268,7 +268,7 @@ namespace DiscUtils.Internal
         /// <param name="relativePath">The relative path.</param>
         /// <returns>The absolute path. If no <paramref name="basePath"/> is specified
         /// then relativePath is returned as-is. If <paramref name="relativePath"/>
-        /// contains more '..' characters than the base path contains levels of 
+        /// contains more '..' characters than the base path contains levels of
         /// directory, the resultant string be the root drive followed by the file name.
         /// If no the basePath starts with '\' (no drive specified) then the returned
         /// path will also start with '\'.
@@ -306,9 +306,9 @@ namespace DiscUtils.Internal
         public static string MakeRelativePath(string path, string basePath)
         {
             List<string> pathElements =
-                new List<string>(path.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries));
+                new(path.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries));
             List<string> basePathElements =
-                new List<string>(basePath.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries));
+                new(basePath.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries));
 
             if (!basePath.EndsWith("\\", StringComparison.Ordinal) && basePathElements.Count > 0)
             {
@@ -319,7 +319,7 @@ namespace DiscUtils.Internal
             int i = 0;
             while (i < Math.Min(pathElements.Count - 1, basePathElements.Count))
             {
-                if (pathElements[i].ToUpperInvariant() != basePathElements[i].ToUpperInvariant())
+                if (!string.Equals(pathElements[i], basePathElements[i], StringComparison.InvariantCultureIgnoreCase))
                 {
                     break;
                 }
@@ -328,7 +328,7 @@ namespace DiscUtils.Internal
             }
 
             // For each remaining part of the base path, insert '..'
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new();
             if (i == basePathElements.Count)
             {
                 result.Append(@".\");
@@ -348,7 +348,7 @@ namespace DiscUtils.Internal
                 result.Append(@"\");
             }
 
-            result.Append(pathElements[pathElements.Count - 1]);
+            result.Append(pathElements[^1]);
 
             // If the target was a directory, put the terminator back
             if (path.EndsWith(@"\", StringComparison.Ordinal))
@@ -441,25 +441,17 @@ namespace DiscUtils.Internal
 
         public static FileAttributes FileAttributesFromUnixFileType(UnixFileType fileType)
         {
-            switch (fileType)
+            return fileType switch
             {
-                case UnixFileType.Fifo:
-                    return FileAttributes.Device | FileAttributes.System;
-                case UnixFileType.Character:
-                    return FileAttributes.Device | FileAttributes.System;
-                case UnixFileType.Directory:
-                    return FileAttributes.Directory;
-                case UnixFileType.Block:
-                    return FileAttributes.Device | FileAttributes.System;
-                case UnixFileType.Regular:
-                    return FileAttributes.Normal;
-                case UnixFileType.Link:
-                    return FileAttributes.ReparsePoint;
-                case UnixFileType.Socket:
-                    return FileAttributes.Device | FileAttributes.System;
-                default:
-                    return 0;
-            }
+                UnixFileType.Fifo => FileAttributes.Device | FileAttributes.System,
+                UnixFileType.Character => FileAttributes.Device | FileAttributes.System,
+                UnixFileType.Directory => FileAttributes.Directory,
+                UnixFileType.Block => FileAttributes.Device | FileAttributes.System,
+                UnixFileType.Regular => FileAttributes.Normal,
+                UnixFileType.Link => FileAttributes.ReparsePoint,
+                UnixFileType.Socket => FileAttributes.Device | FileAttributes.System,
+                _ => 0,
+            };
         }
 
         #endregion

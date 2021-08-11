@@ -71,15 +71,13 @@ namespace DiscUtils.Fat
         {
             get
             {
-                switch (_type)
+                return _type switch
                 {
-                    case FatType.Fat12:
-                        return _buffer.Length / 3 * 2;
-                    case FatType.Fat16:
-                        return _buffer.Length / 2;
-                    default: // FAT32
-                        return _buffer.Length / 4;
-                }
+                    FatType.Fat12 => _buffer.Length / 3 * 2,
+                    FatType.Fat16 => _buffer.Length / 2,
+                    // FAT32
+                    _ => _buffer.Length / 4,
+                };
             }
         }
 
@@ -95,32 +93,24 @@ namespace DiscUtils.Fat
 
         internal bool IsEndOfChain(uint val)
         {
-            switch (_type)
+            return _type switch
             {
-                case FatType.Fat12:
-                    return (val & 0x0FFF) >= 0x0FF8;
-                case FatType.Fat16:
-                    return (val & 0xFFFF) >= 0xFFF8;
-                case FatType.Fat32:
-                    return (val & 0x0FFFFFF8) >= 0x0FFFFFF8;
-                default:
-                    throw new ArgumentException("Unknown FAT type");
-            }
+                FatType.Fat12 => (val & 0x0FFF) >= 0x0FF8,
+                FatType.Fat16 => (val & 0xFFFF) >= 0xFFF8,
+                FatType.Fat32 => (val & 0x0FFFFFF8) >= 0x0FFFFFF8,
+                _ => throw new ArgumentException("Unknown FAT type"),
+            };
         }
 
         internal bool IsBadCluster(uint val)
         {
-            switch (_type)
+            return _type switch
             {
-                case FatType.Fat12:
-                    return (val & 0x0FFF) == 0x0FF7;
-                case FatType.Fat16:
-                    return (val & 0xFFFF) == 0xFFF7;
-                case FatType.Fat32:
-                    return (val & 0x0FFFFFF8) == 0x0FFFFFF7;
-                default:
-                    throw new ArgumentException("Unknown FAT type");
-            }
+                FatType.Fat12 => (val & 0x0FFF) == 0x0FF7,
+                FatType.Fat16 => (val & 0xFFFF) == 0xFFF7,
+                FatType.Fat32 => (val & 0x0FFFFFF8) == 0x0FFFFFF7,
+                _ => throw new ArgumentException("Unknown FAT type"),
+            };
         }
 
         internal uint GetNext(uint cluster)
@@ -138,9 +128,9 @@ namespace DiscUtils.Fat
             if ((cluster & 1) != 0)
             {
                 return
-                    (uint)((EndianUtilities.ToUInt16LittleEndian(_buffer, (int)(cluster + cluster / 2)) >> 4) & 0x0FFF);
+                    (uint)((EndianUtilities.ToUInt16LittleEndian(_buffer, (int)(cluster + (cluster / 2))) >> 4) & 0x0FFF);
             }
-            return (uint)(EndianUtilities.ToUInt16LittleEndian(_buffer, (int)(cluster + cluster / 2)) & 0x0FFF);
+            return (uint)(EndianUtilities.ToUInt16LittleEndian(_buffer, (int)(cluster + (cluster / 2))) & 0x0FFF);
         }
 
         internal void SetEndOfChain(uint cluster)
@@ -179,19 +169,19 @@ namespace DiscUtils.Fat
             }
             else
             {
-                uint offset = cluster + cluster / 2;
+                uint offset = cluster + (cluster / 2);
                 MarkDirty(offset);
                 MarkDirty(offset + 1); // On alternate sector boundaries, cluster info crosses two sectors
 
                 ushort maskedOldVal;
                 if ((cluster & 1) != 0)
                 {
-                    next = next << 4;
+                    next <<= 4;
                     maskedOldVal = (ushort)(EndianUtilities.ToUInt16LittleEndian(_buffer, (int)offset) & 0x000F);
                 }
                 else
                 {
-                    next = next & 0x0FFF;
+                    next &= 0x0FFF;
                     maskedOldVal = (ushort)(EndianUtilities.ToUInt16LittleEndian(_buffer, (int)offset) & 0xF000);
                 }
 
@@ -230,7 +220,7 @@ namespace DiscUtils.Fat
 
         internal List<uint> GetChain(uint head)
         {
-            List<uint> result = new List<uint>();
+            List<uint> result = new();
 
             if (head != 0)
             {
@@ -254,7 +244,7 @@ namespace DiscUtils.Fat
         {
             foreach (uint val in _dirtySectors.Values)
             {
-                stream.Position = position + val * DirtyRegionSize;
+                stream.Position = position + (val * DirtyRegionSize);
                 stream.Write(_buffer, (int)(val * DirtyRegionSize), (int)DirtyRegionSize);
             }
         }

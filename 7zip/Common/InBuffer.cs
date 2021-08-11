@@ -38,7 +38,7 @@ namespace SevenZip.Buffer
             int aNumProcessedBytes = m_Stream.Read(m_Buffer, 0, (int)m_BufferSize);
             m_Pos = 0;
             m_Limit = (uint)aNumProcessedBytes;
-            m_StreamWasExhausted = (aNumProcessedBytes == 0);
+            m_StreamWasExhausted = aNumProcessedBytes == 0;
             return !m_StreamWasExhausted;
         }
 
@@ -50,12 +50,9 @@ namespace SevenZip.Buffer
 
         public bool ReadByte(byte b) // check it
         {
-            if (m_Pos >= m_Limit)
+            if (m_Pos >= m_Limit && !ReadBlock())
             {
-                if (!ReadBlock())
-                {
-                    return false;
-                }
+                return false;
             }
 
             b = m_Buffer[m_Pos++];
@@ -65,12 +62,9 @@ namespace SevenZip.Buffer
         public byte ReadByte()
         {
             // return (byte)m_Stream.ReadByte();
-            if (m_Pos >= m_Limit)
+            if (m_Pos >= m_Limit && !ReadBlock())
             {
-                if (!ReadBlock())
-                {
-                    return 0xFF;
-                }
+                return 0xFF;
             }
 
             return m_Buffer[m_Pos++];

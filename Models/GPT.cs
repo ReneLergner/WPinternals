@@ -96,16 +96,16 @@ namespace WPinternals
 
         internal Partition GetPartition(string Name)
         {
-            return Partitions.Find(p => (string.Compare(p.Name, Name, true) == 0));
+            return Partitions.Find(p => string.Equals(p.Name, Name, StringComparison.CurrentCultureIgnoreCase));
         }
 
         // Magic!
         // SecureBoot hack for Bootloader Spec A starts here
         internal byte[] InsertHack()
         {
-            Partition HackPartition = Partitions.Find(p => (p.Name == "HACK"));
-            Partition SBL1 = Partitions.Find(p => (p.Name == "SBL1"));
-            Partition SBL2 = Partitions.Find(p => (p.Name == "SBL2"));
+            Partition HackPartition = Partitions.Find(p => p.Name == "HACK");
+            Partition SBL1 = Partitions.Find(p => p.Name == "SBL1");
+            Partition SBL2 = Partitions.Find(p => p.Name == "SBL2");
 
             if ((SBL1 == null) || (SBL2 == null))
             {
@@ -140,9 +140,9 @@ namespace WPinternals
 
         internal byte[] RemoveHack()
         {
-            Partition HackPartition = Partitions.Find(p => (p.Name == "HACK"));
-            Partition SBL1 = Partitions.Find(p => (p.Name == "SBL1"));
-            Partition SBL2 = Partitions.Find(p => (p.Name == "SBL2"));
+            Partition HackPartition = Partitions.Find(p => p.Name == "HACK");
+            Partition SBL1 = Partitions.Find(p => p.Name == "SBL1");
+            Partition SBL2 = Partitions.Find(p => p.Name == "SBL2");
 
             if ((SBL1 == null) || (SBL2 == null))
             {
@@ -227,7 +227,7 @@ namespace WPinternals
             {
                 foreach (Partition NewPartition in GptToMerge.Partitions)
                 {
-                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => ((string.Compare(e.Name, NewPartition.Name, true) == 0) || (e.Name.StartsWith(NewPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")))));
+                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => string.Equals(e.Name, NewPartition.Name, StringComparison.CurrentCultureIgnoreCase) || e.Name.StartsWith(NewPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")));
                     if (Entry == null)
                     {
                         // There is a partition entry in the xml, but this partition is not present in the archive.
@@ -342,7 +342,7 @@ namespace WPinternals
                     Partition OldPartition = SortedPartitions.ElementAt(i);
 
                     // Present in archive?
-                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => ((string.Compare(e.Name, OldPartition.Name, true) == 0) || (e.Name.StartsWith(OldPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")))));
+                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => string.Equals(e.Name, OldPartition.Name, StringComparison.CurrentCultureIgnoreCase) || e.Name.StartsWith(OldPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")));
                     if (Entry != null)
                     {
                         // Not present in new GPT or present in GPT without FirstSector?
@@ -378,7 +378,7 @@ namespace WPinternals
             foreach (Partition NewPartition in GptToMerge.Partitions)
             {
                 // If the new partition is a dynamic partition, then skip it here. It will be added later.
-                if (DynamicPartitions.Select(p => p.Name).Any(n => string.Compare(n, NewPartition.Name, true) == 0))
+                if (DynamicPartitions.Select(p => p.Name).Any(n => string.Equals(n, NewPartition.Name, StringComparison.CurrentCultureIgnoreCase)))
                 {
                     continue;
                 }
@@ -448,13 +448,10 @@ namespace WPinternals
 
                 for (int i = this.Partitions.Count - 1; i >= 0; i--)
                 {
-                    if (this.Partitions[i] != CurrentPartition)
+                    if (this.Partitions[i] != CurrentPartition && (CurrentPartition.FirstSector <= this.Partitions[i].LastSector) && (CurrentPartition.LastSector >= this.Partitions[i].FirstSector))
                     {
-                        if ((CurrentPartition.FirstSector <= this.Partitions[i].LastSector) && (CurrentPartition.LastSector >= this.Partitions[i].FirstSector))
-                        {
-                            this.Partitions.RemoveAt(i);
-                            HasChanged = true;
-                        }
+                        this.Partitions.RemoveAt(i);
+                        HasChanged = true;
                     }
                 }
             }
@@ -465,7 +462,7 @@ namespace WPinternals
                 // Check if the sizes of the partitions in the archive do not exceed the size of the partition, as listed in the GPT.
                 foreach (Partition OldPartition in this.Partitions)
                 {
-                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => ((string.Compare(e.Name, OldPartition.Name, true) == 0) || (e.Name.StartsWith(OldPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")))));
+                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => string.Equals(e.Name, OldPartition.Name, StringComparison.CurrentCultureIgnoreCase) || e.Name.StartsWith(OldPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")));
                     if (Entry != null)
                     {
                         DecompressedStream DecompressedStream = new(Entry.Open());
@@ -517,7 +514,7 @@ namespace WPinternals
                         NewPartition.FirstSector = FirstFreeSector;
                         HasChanged = true;
                     }
-                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => ((string.Compare(e.Name, NewPartition.Name, true) == 0) || (e.Name.StartsWith(NewPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")))));
+                    ZipArchiveEntry Entry = Archive.Entries.FirstOrDefault(e => string.Equals(e.Name, NewPartition.Name, StringComparison.CurrentCultureIgnoreCase) || e.Name.StartsWith(NewPartition.Name + ".", true, System.Globalization.CultureInfo.GetCultureInfo("en-US")));
                     DecompressedStream DecompressedStream = new(Entry.Open());
                     ulong StreamLengthInSectors = (ulong)Entry.Length / 0x200;
                     try

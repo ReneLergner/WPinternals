@@ -37,7 +37,7 @@ namespace WPinternals
 
         protected override async void OnSourceInitialized(EventArgs e)
         {
-            Visibility = System.Windows.Visibility.Hidden;
+            Visibility = Visibility.Hidden;
 
             bool NeedLicenseAgrement = false;
             if (Registry.CurrentUser.OpenSubKey("Software\\WPInternals") == null)
@@ -45,7 +45,7 @@ namespace WPinternals
                 Registry.CurrentUser.OpenSubKey("Software", true).CreateSubKey("WPInternals");
             }
 
-            if ((Registration.IsPrerelease) && (Registry.CurrentUser.OpenSubKey("Software\\WPInternals").GetValue("NdaAccepted") == null))
+            if (Registration.IsPrerelease && (Registry.CurrentUser.OpenSubKey("Software\\WPInternals").GetValue("NdaAccepted") == null))
             {
                 NeedLicenseAgrement = true;
             }

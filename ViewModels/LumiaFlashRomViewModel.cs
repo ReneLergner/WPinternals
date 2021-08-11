@@ -116,7 +116,7 @@ namespace WPinternals
                             ulong StreamLengthInSectors = (ulong)Stream.Length / 0x200;
                             TotalSizeSectors += StreamLengthInSectors;
                             PartitionCount++;
-                            Partition Partition = GPT.Partitions.Find(p => string.Compare(p.Name, "EFIESP", true) == 0);
+                            Partition Partition = GPT.Partitions.Find(p => string.Equals(p.Name, "EFIESP", StringComparison.CurrentCultureIgnoreCase));
                             if (StreamLengthInSectors > Partition.SizeInSectors)
                             {
                                 LogFile.Log("Flash failed! Size of partition 'EFIESP' is too big.");
@@ -131,7 +131,7 @@ namespace WPinternals
                             ulong StreamLengthInSectors = (ulong)Stream.Length / 0x200;
                             TotalSizeSectors += StreamLengthInSectors;
                             PartitionCount++;
-                            Partition Partition = GPT.Partitions.Find(p => string.Compare(p.Name, "MainOS", true) == 0);
+                            Partition Partition = GPT.Partitions.Find(p => string.Equals(p.Name, "MainOS", StringComparison.CurrentCultureIgnoreCase));
                             MainOSOldSectorCount = Partition.SizeInSectors;
                             MainOSNewSectorCount = StreamLengthInSectors;
                             FirstMainOSSector = Partition.FirstSector;
@@ -143,7 +143,7 @@ namespace WPinternals
                             ulong StreamLengthInSectors = (ulong)Stream.Length / 0x200;
                             TotalSizeSectors += StreamLengthInSectors;
                             PartitionCount++;
-                            Partition Partition = GPT.Partitions.Find(p => string.Compare(p.Name, "Data", true) == 0);
+                            Partition Partition = GPT.Partitions.Find(p => string.Equals(p.Name, "Data", StringComparison.CurrentCultureIgnoreCase));
                             DataOldSectorCount = Partition.SizeInSectors;
                             DataNewSectorCount = StreamLengthInSectors;
                         }
@@ -162,8 +162,8 @@ namespace WPinternals
                             if ((MainOSNewSectorCount + DataNewSectorCount) <= OSSpace)
                             {
                                 // MainOS and Data partitions need to be re-aligned!
-                                Partition MainOSPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "MainOS", true) == 0);
-                                Partition DataPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "Data", true) == 0);
+                                Partition MainOSPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "MainOS", StringComparison.CurrentCultureIgnoreCase));
+                                Partition DataPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "Data", StringComparison.CurrentCultureIgnoreCase));
                                 MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
                                 DataPartition.FirstSector = MainOSPartition.LastSector + 1;
                                 DataPartition.LastSector = DataPartition.FirstSector + DataNewSectorCount - 1;
@@ -327,14 +327,14 @@ namespace WPinternals
                         // First determine if we need a new GPT!
                         if (!Entry.FullName.Contains("/")) // No subfolders
                         {
-                            string PartitionName = System.IO.Path.GetFileNameWithoutExtension(Entry.Name);
+                            string PartitionName = Path.GetFileNameWithoutExtension(Entry.Name);
                             int P = PartitionName.IndexOf('.');
                             if (P >= 0)
                             {
                                 PartitionName = PartitionName.Substring(0, P); // Example: Data.bin.gz -> Data
                             }
 
-                            Partition Partition = GPT.Partitions.Find(p => string.Compare(p.Name, PartitionName, true) == 0);
+                            Partition Partition = GPT.Partitions.Find(p => string.Equals(p.Name, PartitionName, StringComparison.CurrentCultureIgnoreCase));
                             if (Partition != null)
                             {
                                 DecompressedStream DecompressedStream = new(Entry.Open());
@@ -348,13 +348,13 @@ namespace WPinternals
                                 TotalSizeSectors += StreamLengthInSectors;
                                 PartitionCount++;
 
-                                if (string.Compare(PartitionName, "MainOS", true) == 0)
+                                if (string.Equals(PartitionName, "MainOS", StringComparison.CurrentCultureIgnoreCase))
                                 {
                                     MainOSOldSectorCount = Partition.SizeInSectors;
                                     MainOSNewSectorCount = StreamLengthInSectors;
                                     FirstMainOSSector = Partition.FirstSector;
                                 }
-                                else if (string.Compare(PartitionName, "Data", true) == 0)
+                                else if (string.Equals(PartitionName, "Data", StringComparison.CurrentCultureIgnoreCase))
                                 {
                                     DataOldSectorCount = Partition.SizeInSectors;
                                     DataNewSectorCount = StreamLengthInSectors;
@@ -377,8 +377,8 @@ namespace WPinternals
                             if ((MainOSNewSectorCount + DataNewSectorCount) <= OSSpace)
                             {
                                 // MainOS and Data partitions need to be re-aligned!
-                                Partition MainOSPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "MainOS", true) == 0);
-                                Partition DataPartition = GPT.Partitions.Single(p => string.Compare(p.Name, "Data", true) == 0);
+                                Partition MainOSPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "MainOS", StringComparison.CurrentCultureIgnoreCase));
+                                Partition DataPartition = GPT.Partitions.Single(p => string.Equals(p.Name, "Data", StringComparison.CurrentCultureIgnoreCase));
                                 MainOSPartition.LastSector = MainOSPartition.FirstSector + MainOSNewSectorCount - 1;
                                 DataPartition.FirstSector = MainOSPartition.LastSector + 1;
                                 DataPartition.LastSector = DataPartition.FirstSector + DataNewSectorCount - 1;
@@ -429,7 +429,7 @@ namespace WPinternals
                                 PartitionName = PartitionName.Substring(0, Pos);
                             }
 
-                            Partition Partition = GPT.Partitions.Find(p => string.Compare(p.Name, PartitionName, true) == 0);
+                            Partition Partition = GPT.Partitions.Find(p => string.Equals(p.Name, PartitionName, StringComparison.CurrentCultureIgnoreCase));
                             if (Partition != null)
                             {
                                 Stream DecompressedStream = new DecompressedStream(Entry.Open());

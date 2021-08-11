@@ -90,10 +90,12 @@ namespace MadWizard.WinUSBNet
             get;
         }
 
+        /// <summary>
         /// Zero based interface index in WinUSB.
         /// Note that this is not necessarily the same as the interface *number*
         /// from the interface descriptor. There might be interfaces within the
         /// USB device that do not use WinUSB, these are not counted for index.
+        /// </summary>
         internal int InterfaceIndex
         {
             get;
