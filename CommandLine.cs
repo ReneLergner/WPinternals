@@ -909,7 +909,7 @@ namespace WPinternals
 
                                 // Save supported mobilestartup.efi
                                 LogFile.Log("Taking mobilestartup.efi from donor-FFU");
-                                Stream MobileStartupStream = UnlockedEFIESPFileSystem.OpenFile(@"Windows\System32\Boot\mobilestartup.efi", FileMode.Create, FileAccess.Write);
+                                Stream MobileStartupStream = UnlockedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Create, FileAccess.Write);
                                 MobileStartupStream.Write(SupportedMobileStartup, 0, SupportedMobileStartup.Length);
                                 MobileStartupStream.Close();
                             }
@@ -923,7 +923,7 @@ namespace WPinternals
 
                             // Edit BCD
                             LogFile.Log("Edit BCD");
-                            using Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite);
+                            using Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"\efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite);
                             using DiscUtils.Registry.RegistryHive BCDHive = new(BCDFileStream);
                             DiscUtils.BootConfig.Store BCDStore = new(BCDHive.Root);
                             DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));
@@ -997,7 +997,7 @@ namespace WPinternals
 
                                 // Save supported mobilestartup.efi
                                 LogFile.Log("Taking mobilestartup.efi from donor-FFU");
-                                Stream MobileStartupStream = UnlockedEFIESPFileSystem.OpenFile(@"Windows\System32\Boot\mobilestartup.efi", FileMode.Create, FileAccess.Write);
+                                Stream MobileStartupStream = UnlockedEFIESPFileSystem.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Create, FileAccess.Write);
                                 MobileStartupStream.Write(SupportedMobileStartup, 0, SupportedMobileStartup.Length);
                                 MobileStartupStream.Close();
                             }
@@ -1011,7 +1011,7 @@ namespace WPinternals
 
                             // Edit BCD
                             LogFile.Log("Edit BCD");
-                            using Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite);
+                            using Stream BCDFileStream = UnlockedEFIESPFileSystem.OpenFile(@"\efi\Microsoft\Boot\BCD", FileMode.Open, FileAccess.ReadWrite);
                             using DiscUtils.Registry.RegistryHive BCDHive = new(BCDFileStream);
                             DiscUtils.BootConfig.Store BCDStore = new(BCDHive.Root);
                             DiscUtils.BootConfig.BcdObject MobileStartupObject = BCDStore.GetObject(new Guid("{01de5a27-8705-40db-bad6-96fa5187d4a6}"));

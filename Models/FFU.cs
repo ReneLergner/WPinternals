@@ -480,7 +480,7 @@ namespace WPinternals
             byte[] efiesp = GetPartition("EFIESP");
             MemoryStream s = new(efiesp);
             DiscUtils.Fat.FatFileSystem fs = new(s);
-            Stream mss = fs.OpenFile(@"Windows\System32\Boot\mobilestartup.efi", FileMode.Open, FileAccess.Read);
+            Stream mss = fs.OpenFile(@"\Windows\System32\Boot\mobilestartup.efi", FileMode.Open, FileAccess.Read);
             MemoryStream msms = new();
             mss.CopyTo(msms);
             byte[] mobilestartup = msms.ToArray();

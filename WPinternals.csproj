@@ -354,7 +354,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DiscUtils.BootConfig" Version="0.16.4" />
-    <PackageReference Include="DiscUtils.Fat" Version="0.16.4" />
     <PackageReference Include="DiscUtils.Ntfs" Version="0.16.4" />
     <PackageReference Include="DiscUtils.Streams" Version="0.16.4" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -363,6 +362,10 @@
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />
     <PackageReference Include="System.Management" Version="5.0.0" />
     <PackageReference Include="System.Text.Json" Version="5.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DiscUtils\DiscUtils.Core\CoreCompat\" />
+    <Folder Include="DiscUtils\DiscUtils.Core\Internal\" />
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>
