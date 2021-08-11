@@ -20,20 +20,20 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using DiscUtils.Streams;
+
 namespace DiscUtils.Fat
 {
-    using DiscUtils.Streams;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-
     internal class FatFileStream : SparseStream
     {
-        private Directory _dir;
-        private long _dirId;
-        private ClusterStream _stream;
+        private readonly Directory _dir;
+        private readonly long _dirId;
+        private readonly ClusterStream _stream;
 
-        private bool didWrite = false;
+        private bool didWrite;
 
         public FatFileStream(FatFileSystem fileSystem, Directory dir, long fileId, FileAccess access)
         {
@@ -41,14 +41,8 @@ namespace DiscUtils.Fat
             _dirId = fileId;
 
             DirectoryEntry dirEntry = _dir.GetEntry(_dirId);
-            _stream = new ClusterStream(fileSystem, access, (uint)dirEntry.FirstCluster, (uint)dirEntry.FileSize);
+            _stream = new ClusterStream(fileSystem, access, dirEntry.FirstCluster, (uint)dirEntry.FileSize);
             _stream.FirstClusterChanged += FirstClusterAllocatedHandler;
-        }
-
-        public override long Position
-        {
-            get { return _stream.Position; }
-            set { _stream.Position = value; }
         }
 
         public override bool CanRead
@@ -66,20 +60,23 @@ namespace DiscUtils.Fat
             get { return _stream.CanWrite; }
         }
 
+        public override IEnumerable<StreamExtent> Extents
+        {
+            get { return new[] { new StreamExtent(0, Length) }; }
+        }
+
         public override long Length
         {
             get { return _stream.Length; }
         }
 
-        public override IEnumerable<StreamExtent> Extents
+        public override long Position
         {
-            get
-            {
-                return new StreamExtent[] { new StreamExtent(0, Length) };
-            }
+            get { return _stream.Position; }
+            set { _stream.Position = value; }
         }
 
-        public override void Close()
+        protected override void Dispose(bool disposing)
         {
             if (_dir.FileSystem.CanWrite)
             {
@@ -99,7 +96,7 @@ namespace DiscUtils.Fat
                 }
                 finally
                 {
-                    base.Close();
+                    base.Dispose(disposing);
                 }
             }
         }
