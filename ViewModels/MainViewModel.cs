@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+﻿// Copyright (c) 2018, Rene Lergner - @Heathcliff74xda
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -432,21 +432,6 @@ namespace WPinternals
             get
             {
                 return _AboutCommand ??= new DelegateCommand(() => ContextViewModel = new AboutViewModel());
-            }
-        }
-
-        private ICommand _OpenWebSiteCommand = null;
-        public ICommand OpenWebSiteCommand
-        {
-            get
-            {
-                return _OpenWebSiteCommand ??= new DelegateCommand(() =>
-                {
-                    Process process = new();
-                    process.StartInfo.UseShellExecute = true;
-                    process.StartInfo.FileName = "www.wpinternals.net";
-                    process.Start();
-                });
             }
         }
 

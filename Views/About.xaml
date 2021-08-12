@@ -1,5 +1,5 @@
 ﻿<!--
-Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+Copyright (c) 2018, Rene Lergner - @Heathcliff74xda
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -53,22 +53,16 @@ DEALINGS IN THE SOFTWARE.
                             </Run.Text>
                         </Run>
                         <LineBreak />
-                        <Run Text="Copyright © 2014 - 2019 by Heathcliff74" />
-                        <LineBreak />
-                        <Hyperlink NavigateUri="http://www.wpinternals.net">www.wpinternals.net</Hyperlink>
+                        <Run Text="Copyright © 2014 - 2021 by Heathcliff74" />
                         <LineBreak />
                         <LineBreak />
-                        <Run Text="Many thanks to the " />
-                        <Hyperlink NavigateUri="http://www.advance-box.com/">ATF Team</Hyperlink>
-                        <Run Text=" and the " />
-                        <Hyperlink NavigateUri="http://smart-gsm.net/">Smart GSM Team</Hyperlink>
-                        <Run Text=" for supplying JTAG and test equipment." />
+                        <Run Text="Many thanks to the ATF Team and the Smart GSM Team for supplying JTAG and test equipment." />
                         <LineBreak />
                         <LineBreak />
                         <Run Text="Many thanks to X-Shadow, Justin Angel, Joseph Manzy, Jeremy Sinclair, Vlad Slavskiy and Hikari Calyx for supplying test-phones." />
                         <LineBreak />
                         <LineBreak />
-                        <Run Text="Many thanks to X-Shadow, Cotulla, Rafael Rivera, Ultrashot and Gustave M. for having enlighting discussions about Windows Mobile." />
+                        <Run Text="Many thanks to X-Shadow, Cotulla, Rafael Rivera, Ultrashot and Gustave Monce for having enlighting discussions about Windows Mobile." />
                         <LineBreak />
                         <LineBreak />
                         <Run Text="This software uses the following libraries:" />

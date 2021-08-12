@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+﻿// Copyright (c) 2018, Rene Lergner - @Heathcliff74xda
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -658,7 +658,7 @@ namespace WPinternals
                 Assembly.GetExecutingAssembly().GetName().Version.Minor.ToString() + "." +
                 Assembly.GetExecutingAssembly().GetName().Version.Build.ToString() + "." +
                 Assembly.GetExecutingAssembly().GetName().Version.Revision.ToString(), LogType.FileAndConsole);
-            Log("Copyright Heathcliff74 / wpinternals.net", LogType.FileAndConsole);
+            Log("Copyright Heathcliff74", LogType.FileAndConsole);
         }
 
         internal static void BeginAction(string Action)
@@ -673,7 +673,7 @@ namespace WPinternals
                 Assembly.GetExecutingAssembly().GetName().Version.Minor.ToString() + "." +
                 Assembly.GetExecutingAssembly().GetName().Version.Build.ToString() + "." +
                 Assembly.GetExecutingAssembly().GetName().Version.Revision.ToString());
-                LogBuilder.AppendLine("Copyright Heathcliff74 / wpinternals.net");
+                LogBuilder.AppendLine("Copyright Heathcliff74");
                 LogBuilder.AppendLine("Action: " + Action);
                 if (App.Config.RegistrationName != null)
                     LogBuilder.AppendLine("Name: " + App.Config.RegistrationName);

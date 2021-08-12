@@ -1,5 +1,5 @@
 ﻿<!--
-Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+Copyright (c) 2018, Rene Lergner - @Heathcliff74xda
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -231,7 +231,6 @@ DEALINGS IN THE SOFTWARE.
             <Border BorderBrush="#FFA0A0E2" BorderThickness="1" HorizontalAlignment="Left" Height="2" Margin="0,-6,0,6" VerticalAlignment="Top" Width="219"/>
             <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="About" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding AboutCommand}" Style="{DynamicResource MenuButtonStyle}"/>
             <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="Donate" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding DonateCommand}" Style="{DynamicResource MenuButtonStyle}"/>
-            <Button FontSize="16" Height="24" Margin="21,0,0,0" Content="www.wpinternals.net" HorizontalAlignment="Left" VerticalAlignment="Top" Width="198" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" VerticalContentAlignment="Top" Command="{Binding OpenWebSiteCommand}" Style="{DynamicResource MenuButtonStyle}"/>
         </StackPanel>
     </Grid>
 </Window>

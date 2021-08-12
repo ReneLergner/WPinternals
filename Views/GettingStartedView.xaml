@@ -1,5 +1,5 @@
 ﻿<!--
-Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+Copyright (c) 2018, Rene Lergner - @Heathcliff74xda
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -44,9 +44,6 @@ DEALINGS IN THE SOFTWARE.
                             <LineBreak />
                             <Run Text="If you appreciate the countless hours of hacking, research and development I put into creating this tool then consider " />
                             <Hyperlink NavigateUri="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=VY8N7BCBT9CS4">buying me a beer</Hyperlink>
-                            <Run Text=". If you wish to leave me a comment or ask a question visit my blog at " />
-                            <LineBreak />
-                            <Hyperlink NavigateUri="http://www.wpinternals.net/">www.wpinternals.net</Hyperlink>
                             <Run Text="." />
                             <LineBreak />
                             <LineBreak />
