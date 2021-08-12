@@ -57,7 +57,10 @@ namespace WPinternals
                 }
                 else
                 {
-                    Process.Start(link.NavigateUri.ToString());
+                    Process process = new();
+                    process.StartInfo.UseShellExecute = true;
+                    process.StartInfo.FileName = link.NavigateUri.AbsoluteUri;
+                    process.Start();
                 }
             }
         }

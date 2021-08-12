@@ -18,6 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -54,7 +55,10 @@ namespace WPinternals
                 }
                 else
                 {
-                    System.Diagnostics.Process.Start(link.NavigateUri.ToString());
+                    Process process = new();
+                    process.StartInfo.UseShellExecute = true;
+                    process.StartInfo.FileName = link.NavigateUri.AbsoluteUri;
+                    process.Start();
                 }
             }
         }

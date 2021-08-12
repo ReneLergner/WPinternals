@@ -39,7 +39,10 @@ namespace WPinternals
         {
             if (args.Source is Hyperlink link)
             {
-                Process.Start(link.NavigateUri.ToString());
+                Process process = new();
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.FileName = link.NavigateUri.AbsoluteUri;
+                process.Start();
             }
         }
 

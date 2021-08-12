@@ -440,7 +440,13 @@ namespace WPinternals
         {
             get
             {
-                return _OpenWebSiteCommand ??= new DelegateCommand(() => Process.Start("www.wpinternals.net"));
+                return _OpenWebSiteCommand ??= new DelegateCommand(() =>
+                {
+                    Process process = new();
+                    process.StartInfo.UseShellExecute = true;
+                    process.StartInfo.FileName = "www.wpinternals.net";
+                    process.Start();
+                });
             }
         }
 
@@ -449,7 +455,13 @@ namespace WPinternals
         {
             get
             {
-                return _DonateCommand ??= new DelegateCommand(() => Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VY8N7BCBT9CS4"));
+                return _DonateCommand ??= new DelegateCommand(() =>
+                {
+                    Process process = new();
+                    process.StartInfo.UseShellExecute = true;
+                    process.StartInfo.FileName = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VY8N7BCBT9CS4";
+                    process.Start();
+                });
             }
         }
 
