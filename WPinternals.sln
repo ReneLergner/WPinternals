@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29123.89
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31606.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPinternals", "WPinternals.csproj", "{AED6DEB8-F54C-4B41-9655-793E7096AE6E}"
 EndProject
@@ -335,8 +335,8 @@ Global
 		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-ShowPhoneInfo|x86.Build.0 = Debug|x86
 		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|Any CPU.ActiveCfg = Debug-Test|Any CPU
 		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|Any CPU.Build.0 = Debug-Test|Any CPU
-		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|x64.ActiveCfg = Debug-Test|Any CPU
-		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|x64.Build.0 = Debug-Test|Any CPU
+		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|x64.ActiveCfg = Debug|Any CPU
+		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|x64.Build.0 = Debug|Any CPU
 		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|x86.ActiveCfg = Debug-Test|Any CPU
 		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-Test|x86.Build.0 = Debug-Test|Any CPU
 		{AED6DEB8-F54C-4B41-9655-793E7096AE6E}.Debug-TestProgrammer-550|Any CPU.ActiveCfg = Debug|Any CPU

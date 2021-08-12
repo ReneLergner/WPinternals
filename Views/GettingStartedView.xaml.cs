@@ -63,7 +63,10 @@ namespace WPinternals
                         (this.DataContext as GettingStartedViewModel)?.SwitchToDownload();
                         break;
                     default:
-                        Process.Start(link.NavigateUri.AbsoluteUri);
+                        Process process = new();
+                        process.StartInfo.UseShellExecute = true;
+                        process.StartInfo.FileName = link.NavigateUri.AbsoluteUri;
+                        process.Start();
                         break;
                 }
             }
