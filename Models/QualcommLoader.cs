@@ -33,8 +33,7 @@ namespace WPinternals
 
             try
             {
-                IEnumerable<string> FilePaths = Directory.EnumerateFiles(Path);
-                foreach (string FilePath in FilePaths)
+                foreach (string FilePath in Directory.EnumerateFiles(Path))
                 {
                     try
                     {

@@ -275,8 +275,7 @@ namespace WPinternals
 
         private void DownloadSelected()
         {
-            IEnumerable<SearchResult> Selection = SearchResultList.Where(r => r.IsSelected);
-            foreach (SearchResult Result in Selection)
+            foreach (SearchResult Result in SearchResultList.Where(r => r.IsSelected))
             {
                 App.DownloadManager.Download(Result.URLs, Result.Category, Result.Callback, Result.State);
             }

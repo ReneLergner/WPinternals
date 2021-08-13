@@ -249,9 +249,7 @@ namespace WPinternals
                 throw new WPinternalsException("Failed to switch to Mass Storage Mode");
             }
 
-            string Drive = Storage.Drive;
-
-            return Drive;
+            return Storage.Drive;
         }
 
         internal static async Task LumiaV2ClearNV(System.Threading.SynchronizationContext UIContext, string FFUPath, bool DoResetFirst = true)

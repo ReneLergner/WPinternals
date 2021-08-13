@@ -206,8 +206,7 @@ namespace WPinternals
             if ((TerminalResponse?.Length > 0x20) && (BigEndian.ToUInt32(TerminalResponse, 0x14) == (TerminalResponse.Length - 0x18)) && (BitConverter.ToUInt32(TerminalResponse, 0x1C) == (TerminalResponse.Length - 0x20)))
             {
                 // Parse Terminal Response from offset 0x18
-                TerminalResponse ParsedResponse = Terminal.Parse(TerminalResponse, 0x18);
-                return ParsedResponse;
+                return Terminal.Parse(TerminalResponse, 0x18);
             }
             else
             {
@@ -1216,8 +1215,7 @@ namespace WPinternals
             ByteOperations.WriteAsciiString(Request, 0, "NOKXPH" + VariableName + "\0"); // BTR or CTR, CTR is public ProductCode
             byte[] Response = ExecuteRawMethod(Request);
             UInt16 Length = BigEndian.ToUInt16(Response, 6);
-            string Result = ByteOperations.ReadAsciiString(Response, 8, Length).Trim(new char[] { ' ', '\0' });
-            return Result;
+            return ByteOperations.ReadAsciiString(Response, 8, Length).Trim(new char[] { ' ', '\0' });
         }
 
         internal string ReadProductCode()
@@ -1373,7 +1371,7 @@ namespace WPinternals
                     break;
             }
 
-            LogFile.Log("SecureBoot: " + ((!PlatformSecureBootEnabled || !UefiSecureBootEnabled) ? "Disabled" : "Enabled") + " (Platform Secure Boot: " + (PlatformSecureBootEnabled ? "Enabled" : "Disabled") + ", UEFI Secure Boot: " + (PlatformSecureBootEnabled ? "Enabled" : "Disabled") + ")", Type);
+            LogFile.Log("SecureBoot: " + ((!PlatformSecureBootEnabled || !UefiSecureBootEnabled) ? "Disabled" : "Enabled") + " (Platform Secure Boot: " + (PlatformSecureBootEnabled ? "Enabled" : "Disabled") + ", UEFI Secure Boot: " + (UefiSecureBootEnabled ? "Enabled" : "Disabled") + ")", Type);
 
             if ((Type == LogType.ConsoleOnly) || (Type == LogType.FileAndConsole))
             {

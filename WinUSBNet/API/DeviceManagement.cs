@@ -64,9 +64,7 @@ namespace MadWizard.WinUSBNet.API
                 }
 
                 // Store the device name in a String.
-                string deviceNameString = new(devBroadcastDeviceInterface.dbcc_name, 0, stringSize);
-
-                return deviceNameString;
+                return (string)(new(devBroadcastDeviceInterface.dbcc_name, 0, stringSize));
             }
             else if (devBroadcastHeader.dbch_devicetype == DBT_DEVTYP_VOLUME)
             {

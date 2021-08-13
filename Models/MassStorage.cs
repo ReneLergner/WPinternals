@@ -41,8 +41,7 @@ namespace WPinternals
         {
             try
             {
-                ManagementObjectCollection coll = new ManagementObjectSearcher("select * from Win32_LogicalDisk").Get();
-                foreach (ManagementObject logical in coll)
+                foreach (ManagementObject logical in new ManagementObjectSearcher("select * from Win32_LogicalDisk").Get())
                 {
                     System.Diagnostics.Debug.Print(logical["Name"].ToString());
 

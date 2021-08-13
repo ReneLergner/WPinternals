@@ -81,8 +81,7 @@ namespace MadWizard.WinUSBNet
             {
                 _Arrival -= value;
                 _Arrival += value;
-                USBDeviceInfo[] Devices = USBDevice.GetDevices(Guid);
-                foreach (USBDeviceInfo Device in Devices)
+                foreach (USBDeviceInfo Device in USBDevice.GetDevices(Guid))
                 {
                     _Arrival(this, new USBEvent(USBEventType.DeviceArrival, Guid, Device.DevicePath));
                 }

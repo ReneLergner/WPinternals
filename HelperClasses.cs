@@ -2221,8 +2221,7 @@ namespace WPinternals
                 }
                 else
                 {
-                    double width = Math.Max(allowedSpace * (Percentage / totalPercentage), 0);
-                    _element.Width = width;
+                    _element.Width = (double)Math.Max(allowedSpace * (Percentage / totalPercentage), 0);
                 }
             }
         }

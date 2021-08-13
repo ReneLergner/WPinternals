@@ -1915,9 +1915,7 @@ namespace DiscUtils.Fat
                 throw new DirectoryNotFoundException(string.Format(CultureInfo.InvariantCulture, "The directory '{0}' was not found", path));
             }
 
-            DirectoryEntry[] entries = dir.Entries;
-
-            foreach (DirectoryEntry de in entries)
+            foreach (DirectoryEntry de in dir.Entries)
             {
                 bool isDir = (de.Attributes & FatAttributes.Directory) != 0;
 

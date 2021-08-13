@@ -570,8 +570,7 @@ namespace WPinternals
         {
             // This is necessary, because the partitions and backup-partitions can exchange.
             // This may cause the startsector to be higher than the maximum allowed sector for flashing with a Lumia V1 programmer (hardcoded in programmer)
-            List<string> RevisePartitions = new(new string[] { "SBL1", "SBL2", "SBL3", "UEFI", "TZ", "RPM", "WINSECAPP" });
-            foreach (string RevisePartitionName in RevisePartitions)
+            foreach (string RevisePartitionName in (List<string>)(new(new string[] { "SBL1", "SBL2", "SBL3", "UEFI", "TZ", "RPM", "WINSECAPP" })))
             {
                 Partition RevisePartition = GetPartition(RevisePartitionName);
                 Partition ReviseBackupPartition = GetPartition("BACKUP_" + RevisePartitionName);
