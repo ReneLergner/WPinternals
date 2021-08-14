@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>d29275f2-bb58-44a2-81e1-96d68c4c48db</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>WPinternalsSDK</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CreationDisposition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Environment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)File.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileAccess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileAttributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileStream.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileStreamMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileSystem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileSystemEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileSystemType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FILETIME.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Folder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GET_FILEEX_INFO_LEVELS.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)KeyedList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MoveFileFlags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MoveMethod.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PROCESS_INFORMATION.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QUOTA_LIMITS.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegCreateKeyOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Registry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegistryHive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegistryItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegistryKey.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegistryValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegistryValueType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegOpenKeyOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegSAM.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SECURITY_ATTRIBUTES.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShareMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)STARTUPINFO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Win32Exception.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIN32_FILE_ATTRIBUTE_DATA.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WIN32_FIND_DATA.cs" />
+  </ItemGroup>
+</Project>
