@@ -2067,7 +2067,7 @@ namespace WPinternals
                                 ulong EfiespLength = StreamLengthInSectors * 0x200;
                                 byte[] EfiespBinary = new byte[EfiespLength];
                                 DecompressedStream.Read(EfiespBinary, 0, (int)EfiespLength);
-                                IsUnlocked = (ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) && ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8) == "MSDOS5.0";
+                                IsUnlocked = (ByteOperations.ReadUInt32(EfiespBinary, 0x20) == (EfiespBinary.Length / 0x200 / 2)) || ByteOperations.ReadAsciiString(EfiespBinary, (UInt32)(EfiespBinary.Length / 2) + 3, 8) == "MSDOS5.0";
                                 if (IsUnlocked)
                                 {
                                     Partition IsUnlockedFlag = GPT.GetPartition("IS_UNLOCKED");
