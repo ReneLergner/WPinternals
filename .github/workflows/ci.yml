@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        architecture: [x86, x64]
+        architecture: [x86, x64, arm64]
         platform: [win]
     steps:
       - name: Checkout
@@ -20,7 +20,7 @@ jobs:
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "5.0.x"
+          dotnet-version: "6.0.x"
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2

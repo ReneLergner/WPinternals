@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
@@ -21,7 +21,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <Deterministic>false</Deterministic>
-    <Platforms>AnyCPU;x86;x64</Platforms>
+    <Platforms>AnyCPU;x86;x64;arm64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -353,15 +353,15 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DiscUtils.BootConfig" Version="0.16.4" />
-    <PackageReference Include="DiscUtils.Ntfs" Version="0.16.4" />
-    <PackageReference Include="DiscUtils.Streams" Version="0.16.4" />
+    <PackageReference Include="DiscUtils.BootConfig" Version="0.16.13" />
+    <PackageReference Include="DiscUtils.Ntfs" Version="0.16.13" />
+    <PackageReference Include="DiscUtils.Streams" Version="0.16.13" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.6.0-preview3.19128.7" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
-    <PackageReference Include="System.IO.Ports" Version="5.0.1" />
-    <PackageReference Include="System.Management" Version="5.0.0" />
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.IO.Ports" Version="6.0.0" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
+    <PackageReference Include="System.Text.Json" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DiscUtils\DiscUtils.Core\CoreCompat\" />
