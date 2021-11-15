@@ -39,5 +39,21 @@ namespace WPinternals
                 return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.Minor;
             }
         }
+
+        public int BuildVersion
+        {
+            get
+            {
+                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.Build;
+            }
+        }
+
+        public int RevisionVersion
+        {
+            get
+            {
+                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.Revision;
+            }
+        }
     }
 }

@@ -46,9 +46,11 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <Run>
                             <Run.Text>
-                                <MultiBinding StringFormat="Version {0}.{1}">
+                                <MultiBinding StringFormat="Version {0}.{1}.{2}.{3}">
                                     <Binding Path="MajorVersion" Mode="OneWay" />
                                     <Binding Path="MinorVersion" Mode="OneWay" />
+                                    <Binding Path="BuildVersion" Mode="OneWay" />
+                                    <Binding Path="RevisionVersion" Mode="OneWay" />
                                 </MultiBinding>
                             </Run.Text>
                         </Run>
