@@ -14,11 +14,6 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WPinternalsSDK", "WPinternalsSDK\WPinternalsSDK.shproj", "{D29275F2-BB58-44A2-81E1-96D68C4C48DB}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		WPinternalsSDK\WPinternalsSDK.projitems*{25d167ab-d58a-4195-8ef7-e736f330822c}*SharedItemsImports = 4
-		WPinternalsSDK\WPinternalsSDK.projitems*{53edf96d-d4f7-476c-9030-c29ad132719d}*SharedItemsImports = 4
-		WPinternalsSDK\WPinternalsSDK.projitems*{d29275f2-bb58-44a2-81e1-96d68c4c48db}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -2224,5 +2219,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B3E377C3-CCA7-4662-9251-2432B6E44C82}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		WPinternalsSDK\WPinternalsSDK.projitems*{25d167ab-d58a-4195-8ef7-e736f330822c}*SharedItemsImports = 4
+		WPinternalsSDK\WPinternalsSDK.projitems*{d29275f2-bb58-44a2-81e1-96d68c4c48db}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
