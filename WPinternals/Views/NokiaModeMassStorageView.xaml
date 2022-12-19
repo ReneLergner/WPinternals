@@ -110,7 +110,7 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="Warning 4: " Foreground="Red" FontWeight="Bold"/>
-                        <Run Text="Never format or delete the boot-partitions! Take special care with the DPP partition. Do not format or delete this partition, bacause there is no known method to recover the phone after that (except with special equipment to access eMMC directly)." />
+                        <Run Text="Never format or delete the boot-partitions! Take special care with the DPP partition. Do not format or delete this partition, because there is no known method to recover the phone after that (except with special equipment to access eMMC directly)." />
                     </local:Paragraph>
                 </FlowDocument>
             </local:FlowDocumentScrollViewerNoMouseWheel>
