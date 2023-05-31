@@ -306,8 +306,23 @@ namespace MadWizard.WinUSBNet.API
                 fixed (byte* pBuffer = buffer)
                 {
                     //WPinternals.LogFile.Log("Start WinUSB_ReadPipe");
-                    success = WinUsb_ReadPipe(InterfaceHandle(ifaceIndex), pipeID, pBuffer + offset, (uint)bytesToRead,
-                                    out bytesRead, IntPtr.Zero);
+
+                    uint timeoutValue = 1000;
+
+                    WinUsb_SetPipePolicy(
+                        InterfaceHandle(ifaceIndex), 
+                        pipeID, 
+                        (uint)POLICY_TYPE.PIPE_TRANSFER_TIMEOUT, 
+                        sizeof(uint),
+                        ref timeoutValue);
+
+                    success = WinUsb_ReadPipe(
+                        InterfaceHandle(ifaceIndex), 
+                        pipeID, 
+                        pBuffer + offset, 
+                        (uint)bytesToRead,
+                        out bytesRead, 
+                        IntPtr.Zero);
                     //WPinternals.LogFile.Log("End WinUSB_ReadPipe: " + (success ? "True" : "False"));
                 }
             }
