@@ -34,44 +34,48 @@ namespace WPinternals
 
         private readonly static string[] KnownOSPartitions =
         [
-            "EFIESP",
-            "HACK_EFIESP",
-            "VIRT_EFIESP",
-            "EFIESP_MUNGED",
-            "HACK_EFIESP_MUNGED",
-            "TEST-UI-MARKER",
+            "BDP",
             "BOOT_EFI",
-            "MainOS",
-            "OSData",
-            "Data",
             "BSP",
-            "PreInstalled",
-            "OSPool",
-            "WSP",
+            "CrashDump",
+            "Data",
+            "EFIESP_MUNGED",
+            "EFIESP", // Can bring issues when partition is meant for test devices, breaking end user fash app, need code to ensure this won't happen or user can recover if possible
+            "HACK_EFIESP_MUNGED",
+            "HACK_EFIESP",
             "IU_RESERVE",
-            "SERVICING_METADATA"
+            "MainOS",
+            "MMOS",
+            "OSData",
+            "OSPool",
+            "PLAT", // Can bring issues when PLATID differs, need code to ensure it matches or user can recover if different
+            "PreInstalled",
+            "SERVICING_METADATA",
+            "TEST-UI-MARKER",
+            "VIRT_EFIESP",
+            "WSP"
         ];
 
         private readonly static string[] ProvisioningPartitions =
         [
+            "APDP",
+            "BOOTMODE",
+            "DBI",
+            "DDR",
+            "DPO",
             "DPP",
-            "MODEM_FSG",
+            "LIMITS",
             "MODEM_FS1",
             "MODEM_FS2",
             "MODEM_FSC",
-            "DDR",
-            "SEC",
-            "APDP",
+            "MODEM_FSG",
             "MSADP",
-            "DPO",
+            "SEC",
             "SSD",
-            "DBI",
             "UEFI_BS_NV",
             "UEFI_NV",
-            "UEFI_RT_NV",
             "UEFI_RT_NV_RPMB",
-            "BOOTMODE",
-            "LIMITS"
+            "UEFI_RT_NV"
         ];
 
         internal BackupViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToUnlockBoot, Action Callback)
