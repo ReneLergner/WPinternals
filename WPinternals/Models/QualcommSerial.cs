@@ -84,10 +84,10 @@ namespace WPinternals
             return GetResponse(ResponsePattern);
         }
 
-        internal byte[] GetResponse(byte[] ResponsePattern)
+        internal byte[] GetResponse(byte[] ResponsePattern, int Length = 0x2000)
         {
-            byte[] ResponseBuffer = new byte[0x2000];
-            int Length = 0;
+            byte[] ResponseBuffer = new byte[Length];
+            Length = 0;
             bool IsIncomplete = false;
 
             do

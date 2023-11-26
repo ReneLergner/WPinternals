@@ -36,6 +36,29 @@ namespace WPinternals
         Command = 0x03
     }
 
+    internal enum SaharaCommand : uint
+    {
+        HelloRequest = 0x01,
+        HelloResponse = 0x02,
+        ReadData = 0x03,
+        EndTransfer = 0x04,
+        DoneRequest = 0x05,
+        DoneResponse = 0x06,
+        ResetRequest = 0x07,
+        ResetResponse = 0x08,
+        MemoryDebug = 0x09,
+        MemoryRead = 0x0A,
+        CommandReady = 0x0B,
+        SwitchMode = 0x0C,
+        ExecuteRequest = 0x0D,
+        ExecuteResponse = 0x0E,
+        ExecuteData = 0x0F,
+        MemoryDebug64 = 0x10,
+        MemoryRead64 = 0x11,
+        MemoryReadData64 = 0x12,
+        ResetStateMachineIdentifier = 0x13
+    }
+
     internal delegate void ReadyHandler();
 
     internal class QualcommSahara
@@ -47,6 +70,105 @@ namespace WPinternals
             Serial.EncodeCommands = false;
             Serial.DecodeResponses = false;
             this.Serial = Serial;
+        }
+
+        public byte[] GetRKH()
+        {
+            int Step = 0;
+            UInt32 Offset = 0;
+            UInt32 Length = 0;
+
+            try
+            {
+                Step = 1;
+                byte[] Hello = Serial.GetResponse([0x01, 0x00, 0x00, 0x00]);
+
+                // Incoming Hello packet:
+                // 00000001 = Hello command id
+                // xxxxxxxx = Length
+                // xxxxxxxx = Protocol version
+                // xxxxxxxx = Supported version
+                // xxxxxxxx = Max packet length
+                // xxxxxxxx = Expected mode
+                // 6 dwords reserved space
+                LogFile.Log("Protocol: 0x" + ByteOperations.ReadUInt32(Hello, 0x08).ToString("X8"), LogType.FileOnly);
+                LogFile.Log("Supported: 0x" + ByteOperations.ReadUInt32(Hello, 0x0C).ToString("X8"), LogType.FileOnly);
+                LogFile.Log("MaxLength: 0x" + ByteOperations.ReadUInt32(Hello, 0x10).ToString("X8"), LogType.FileOnly);
+                LogFile.Log("Mode: 0x" + ByteOperations.ReadUInt32(Hello, 0x14).ToString("X8"), LogType.FileOnly);
+
+                // Packet:
+                // 00000002 = Hello response command id
+                // 00000030 = Length
+                // 00000002 = Protocol version
+                // 00000001 = Supported version
+                // 00000000 = Status OK
+                // 00000003 = Mode
+                // rest is reserved space
+                Step = 2;
+                byte[] HelloResponse = [
+                    0x02, 0x00, 0x00, 0x00,
+                    0x30, 0x00, 0x00, 0x00,
+                    0x02, 0x00, 0x00, 0x00,
+                    0x01, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x03, 0x00, 0x00, 0x00,
+
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00
+                ];
+                Serial.SendData(HelloResponse);
+
+                Step = 3;
+                byte[] ReadDataRequest = Serial.GetResponse(null);
+                UInt32 ResponseID = ByteOperations.ReadUInt32(ReadDataRequest, 0);
+
+                if (ResponseID != 0xB)
+                {
+                    throw new BadConnectionException();
+                }
+
+                Step = 4;
+                Serial.SendData([
+                    0x0D, 0x00, 0x00, 0x00,
+                    0x0C, 0x00, 0x00, 0x00,
+                    0x03, 0x00, 0x00, 0x00
+                ]);
+
+                Step = 5;
+                ReadDataRequest = Serial.GetResponse(null);
+                ResponseID = ByteOperations.ReadUInt32(ReadDataRequest, 0);
+
+                if (ResponseID != 0xE)
+                {
+                    throw new BadConnectionException();
+                }
+
+                uint RKHLength = ByteOperations.ReadUInt32(ReadDataRequest, 0x0C);
+
+                Step = 6;
+                Serial.SendData([
+                    0x0F, 0x00, 0x00, 0x00,
+                    0x0C, 0x00, 0x00, 0x00,
+                    0x03, 0x00, 0x00, 0x00
+                ]);
+
+                Step = 7;
+                byte[] Response = Serial.GetResponse(null, Length: (int)RKHLength);
+
+                byte[] Result = new byte[0x20];
+                Buffer.BlockCopy(Response, 3, Result, 0, 0x20);
+                return Result;
+            }
+            catch (Exception Ex)
+            {
+                LogFile.LogException(Ex, LogType.FileAndConsole, Step.ToString() + " 0x" + Offset.ToString("X8") + " 0x" + Length.ToString("X8"));
+            }
+
+            return null;
         }
 
         public bool SendImage(string Path)
@@ -88,9 +210,19 @@ namespace WPinternals
                 // rest is reserved space
                 Step = 2;
                 byte[] HelloResponse = [
-                    0x02, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                    0x02, 0x00, 0x00, 0x00,
+                    0x30, 0x00, 0x00, 0x00,
+                    0x02, 0x00, 0x00, 0x00,
+                    0x01, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00
                 ];
                 Serial.SendData(HelloResponse);
 
@@ -166,10 +298,28 @@ namespace WPinternals
                 LogFile.Log("MaxLength: 0x" + ByteOperations.ReadUInt32(Hello, 0x10).ToString("X8"), LogType.FileOnly);
                 LogFile.Log("Mode: 0x" + ByteOperations.ReadUInt32(Hello, 0x14).ToString("X8"), LogType.FileOnly);
 
+                // Packet:
+                // 00000002 = Hello response command id
+                // 00000030 = Length
+                // 00000002 = Protocol version
+                // 00000001 = Supported version
+                // 00000000 = Status OK
+                // 00000000 = Mode
+                // rest is reserved space
                 byte[] HelloResponse = [
-                    0x02, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                    0x02, 0x00, 0x00, 0x00,
+                    0x30, 0x00, 0x00, 0x00,
+                    0x02, 0x00, 0x00, 0x00,
+                    0x01, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00
                 ];
 
                 byte[] Ready = Serial.SendCommand(HelloResponse, [0x03, 0x00, 0x00, 0x00]);
