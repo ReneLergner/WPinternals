@@ -22,6 +22,7 @@
     <UseWPF>true</UseWPF>
     <Deterministic>false</Deterministic>
     <Platforms>AnyCPU;x86;x64;arm64</Platforms>
+    <DefineConstants>TRACE;PREVIEW</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

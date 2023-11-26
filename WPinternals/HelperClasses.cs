@@ -28,6 +28,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -1940,7 +1941,8 @@ namespace WPinternals
 
         internal static void Upload(string FileName, Stream FileStream)
         {
-            Upload(new Uri(@"https://www.wpinternals.net/upload.php", UriKind.Absolute), "uploadedfile", FileName, FileStream);
+            //TODO: Fix
+            //Upload(new Uri(@"https://www.wpinternals.net/upload.php", UriKind.Absolute), "uploadedfile", FileName, FileStream);
         }
 
         private static void Upload(Uri Address, string InputName, string FileName, Stream FileStream)
