@@ -545,7 +545,7 @@ namespace WPinternals
         internal void WritePartitions(string Path)
         {
             string DirPath = System.IO.Path.GetDirectoryName(Path);
-            if (!Directory.Exists(DirPath))
+            if (!string.IsNullOrEmpty(DirPath) && !Directory.Exists(DirPath))
             {
                 Directory.CreateDirectory(DirPath);
             }

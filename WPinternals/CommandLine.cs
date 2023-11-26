@@ -223,7 +223,11 @@ namespace WPinternals
                             UIContext.Send(s => Notifier.Start(), null);
                             FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                             GPT GPT = FlashModel.ReadGPT(); // May throw NotSupportedException
-                            Directory.CreateDirectory(Path.GetDirectoryName(args[2]));
+                            string DirPath = Path.GetDirectoryName(args[2]);
+                            if (!string.IsNullOrEmpty(DirPath) && !Directory.Exists(DirPath))
+                            {
+                                Directory.CreateDirectory(DirPath);
+                            }
                             GPT.WritePartitions(args[2]);
                             FlashModel.SwitchToFlashAppContext();
                             Notifier.Stop();
@@ -235,6 +239,35 @@ namespace WPinternals
                         finally
                         {
                             LogFile.EndAction("BackupGPT");
+                        }
+                        break;
+                    case "convertgpt":
+                        if (args.Length < 4)
+                        {
+                            throw new ArgumentException("Wrong number of arguments. Usage: WPinternals.exe -ConvertGPT <Path to GPT-file> <Path to xml-file>");
+                        }
+
+                        LogFile.BeginAction("ConvertGPT");
+                        try
+                        {
+                            using var stream = File.OpenRead(args[2]);
+                            byte[] GPTBuffer = new byte[34 * 0x200];
+                            stream.Read(GPTBuffer, 0, 34 * 0x200);
+                            GPT GPT = new(GPTBuffer);// May throw NotSupportedException
+                            string DirPath = Path.GetDirectoryName(args[3]);
+                            if (!string.IsNullOrEmpty(DirPath) && !Directory.Exists(DirPath))
+                            {
+                                Directory.CreateDirectory(DirPath);
+                            }
+                            GPT.WritePartitions(args[3]);
+                        }
+                        catch (Exception Ex)
+                        {
+                            LogFile.LogException(Ex);
+                        }
+                        finally
+                        {
+                            LogFile.EndAction("ConvertGPT");
                         }
                         break;
                     case "restoregpt":
@@ -393,7 +426,11 @@ namespace WPinternals
                                 };
                             }
                             string EfiPath = Path.Combine(args[3], Name);
-                            Directory.CreateDirectory(Path.GetDirectoryName(EfiPath));
+                            string DirPath = Path.GetDirectoryName(EfiPath);
+                            if (!string.IsNullOrEmpty(DirPath) && !Directory.Exists(DirPath))
+                            {
+                                Directory.CreateDirectory(DirPath);
+                            }
                             File.WriteAllBytes(EfiPath, EfiBinary);
                         }
                         break;
@@ -1968,6 +2005,7 @@ namespace WPinternals
                         LogFile.Log("WPinternals -ClearNV", LogType.ConsoleOnly);
                         LogFile.Log("WPinternals -ReadGPT", LogType.ConsoleOnly);
                         LogFile.Log("WPinternals -BackupGPT <Path to xml-file>", LogType.ConsoleOnly);
+                        LogFile.Log("WPinternals -ConvertGPT <Path to GPT-file> <Path to xml-file>", LogType.ConsoleOnly);
                         LogFile.Log("WPinternals -RestoreGPT <Path to xml-file>", LogType.ConsoleOnly);
                         LogFile.Log("WPinternals -MergeGPT <Path to input-xml-file> <Path to input-xml-file>", LogType.ConsoleOnly);
                         LogFile.Log("                <Optional: Path to output-xml-file>", LogType.ConsoleOnly);
