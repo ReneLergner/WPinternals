@@ -924,7 +924,7 @@ namespace WPinternals
             {
                 if (proxy?.CheckAccess() == false)
                 {
-                    proxy.BeginInvoke(new Action<object, EventHandler>(CallHandler), new object[] { sender, eventHandler });
+                    proxy.BeginInvoke(new Action<object, EventHandler>(CallHandler), [sender, eventHandler]);
                 }
                 else
                 {
@@ -1890,7 +1890,7 @@ namespace WPinternals
 
         internal static Version GetFileVersion(byte[] PEfile)
         {
-            byte[] version = GetResource(PEfile, new int[] { (int)ResourceType.RT_VERSION, 1, 1033 });
+            byte[] version = GetResource(PEfile, [(int)ResourceType.RT_VERSION, 1, 1033]);
 
             // RT_VERSION format:
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647001(v=vs.85).aspx
@@ -1906,7 +1906,7 @@ namespace WPinternals
 
         internal static Version GetProductVersion(byte[] PEfile)
         {
-            byte[] version = GetResource(PEfile, new int[] { (int)ResourceType.RT_VERSION, 1, 1033 });
+            byte[] version = GetResource(PEfile, [(int)ResourceType.RT_VERSION, 1, 1033]);
 
             // RT_VERSION format:
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647001(v=vs.85).aspx

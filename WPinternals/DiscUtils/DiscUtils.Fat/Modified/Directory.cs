@@ -80,22 +80,22 @@ namespace DiscUtils.Fat
         {
             // see http://home.teleport.com/~brainy/lfn.htm
             // NOTE: we assume ordinals are ok here.
-            char[] chars = new char[13];
-            chars[0] = (char)((256 * buffer[2]) + buffer[1]);
-            chars[1] = (char)((256 * buffer[4]) + buffer[3]);
-            chars[2] = (char)((256 * buffer[6]) + buffer[5]);
-            chars[3] = (char)((256 * buffer[8]) + buffer[7]);
-            chars[4] = (char)((256 * buffer[10]) + buffer[9]);
-
-            chars[5] = (char)((256 * buffer[15]) + buffer[14]);
-            chars[6] = (char)((256 * buffer[17]) + buffer[16]);
-            chars[7] = (char)((256 * buffer[19]) + buffer[18]);
-            chars[8] = (char)((256 * buffer[21]) + buffer[20]);
-            chars[9] = (char)((256 * buffer[23]) + buffer[22]);
-            chars[10] = (char)((256 * buffer[25]) + buffer[24]);
-
-            chars[11] = (char)((256 * buffer[29]) + buffer[28]);
-            chars[12] = (char)((256 * buffer[31]) + buffer[30]);
+            char[] chars =
+            [
+                (char)((256 * buffer[2]) + buffer[1]),
+                (char)((256 * buffer[4]) + buffer[3]),
+                (char)((256 * buffer[6]) + buffer[5]),
+                (char)((256 * buffer[8]) + buffer[7]),
+                (char)((256 * buffer[10]) + buffer[9]),
+                (char)((256 * buffer[15]) + buffer[14]),
+                (char)((256 * buffer[17]) + buffer[16]),
+                (char)((256 * buffer[19]) + buffer[18]),
+                (char)((256 * buffer[21]) + buffer[20]),
+                (char)((256 * buffer[23]) + buffer[22]),
+                (char)((256 * buffer[25]) + buffer[24]),
+                (char)((256 * buffer[29]) + buffer[28]),
+                (char)((256 * buffer[31]) + buffer[30]),
+            ];
             string chunk = new(chars);
             int zero = chunk.IndexOf('\0');
             return zero >= 0 ? chunk.Substring(0, zero) : chunk;

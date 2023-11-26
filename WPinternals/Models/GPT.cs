@@ -74,7 +74,7 @@ namespace WPinternals
 
             while (PartitionOffset < (TableOffset + TableSize))
             {
-                string Name = ByteOperations.ReadUnicodeString(GPTBuffer, PartitionOffset + 0x38, 0x48).TrimEnd(new char[] { (char)0, ' ' });
+                string Name = ByteOperations.ReadUnicodeString(GPTBuffer, PartitionOffset + 0x38, 0x48).TrimEnd([(char)0, ' ']);
                 if (Name.Length == 0)
                 {
                     break;

@@ -1518,10 +1518,10 @@ namespace SevenZip.Compression.LZMA
         }
 
         private static readonly string[] kMatchFinderIDs =
-        {
+        [
             "BT2",
             "BT4",
-        };
+        ];
 
         private static int FindMatchFinder(string s)
         {

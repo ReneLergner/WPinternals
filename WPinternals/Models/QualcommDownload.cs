@@ -37,7 +37,7 @@ namespace WPinternals
         {
             try
             {
-                Serial.SendCommand(new byte[] { 0x06 }, new byte[] { 0x02 });
+                Serial.SendCommand([0x06], [0x02]);
                 return true;
             }
             catch
@@ -61,7 +61,7 @@ namespace WPinternals
                 CurrentLength = Remaining >= 0x100 ? 0x100 : (UInt32)Remaining;
 
                 CurrentLength = (UInt32)Data.Read(Buffer, 7, (int)CurrentLength);
-                Serial.SendCommand(Buffer, new byte[] { 0x02 });
+                Serial.SendCommand(Buffer, [0x02]);
 
                 CurrentAddress += CurrentLength;
                 Remaining -= CurrentLength;
@@ -100,7 +100,7 @@ namespace WPinternals
                 System.Buffer.BlockCopy(BitConverter.GetBytes((UInt16)CurrentLength).Reverse().ToArray(), 0, CurrentBytes, 5, 2); // Length is in Big Endian
                 System.Buffer.BlockCopy(Data, (int)CurrentOffset, CurrentBytes, 7, (int)CurrentLength);
 
-                Serial.SendCommand(CurrentBytes, new byte[] { 0x02 });
+                Serial.SendCommand(CurrentBytes, [0x02]);
 
                 CurrentAddress += CurrentLength;
                 CurrentOffset += CurrentLength;
@@ -113,25 +113,25 @@ namespace WPinternals
             byte[] Buffer = new byte[5];
             Buffer[0] = 0x05;
             System.Buffer.BlockCopy(BitConverter.GetBytes(Address).Reverse().ToArray(), 0, Buffer, 1, 4); // Address is in Big Endian
-            Serial.SendCommand(Buffer, new byte[] { 0x02 });
+            Serial.SendCommand(Buffer, [0x02]);
         }
 
         // Reset interface. Interface becomes unresponsive.
         public void Reset()
         {
-            Serial.SendCommand(new byte[] { 0x0A }, new byte[] { 0x02 });
+            Serial.SendCommand([0x0A], [0x02]);
         }
 
         // This also resets interface. This does not actually reboot the phone. The interface becomes unresponsive.
         public void Shutdown()
         {
-            Serial.SendCommand(new byte[] { 0x0E }, new byte[] { 0x02 });
+            Serial.SendCommand([0x0E], [0x02]);
         }
 
         // This command only works on 9008 interface.
         public byte[] GetRKH()
         {
-            byte[] Response = Serial.SendCommand(new byte[] { 0x18 }, new byte[] { 0x18, 0x01, 0x00 });
+            byte[] Response = Serial.SendCommand([0x18], [0x18, 0x01, 0x00]);
             byte[] Result = new byte[0x20];
             Buffer.BlockCopy(Response, 3, Result, 0, 0x20);
             return Result;

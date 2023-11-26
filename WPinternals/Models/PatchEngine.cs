@@ -94,7 +94,7 @@ namespace WPinternals
             }
             set
             {
-                _TargetPath = value.TrimEnd(new char[] { '\\' });
+                _TargetPath = value.TrimEnd(['\\']);
             }
         }
 
@@ -365,7 +365,7 @@ namespace WPinternals
             }
             set
             {
-                _RelativePath = value.TrimStart(new char[] { '\\' }).TrimEnd(new char[] { '\\' });
+                _RelativePath = value.TrimStart(['\\']).TrimEnd(['\\']);
             }
         }
 
@@ -377,7 +377,7 @@ namespace WPinternals
             }
             set
             {
-                _TargetPath = value.TrimEnd(new char[] { '\\' });
+                _TargetPath = value.TrimEnd(['\\']);
             }
         }
     }
@@ -515,7 +515,7 @@ namespace WPinternals
             }
             set
             {
-                _Path = value.TrimStart(new char[] { '\\' });
+                _Path = value.TrimStart(['\\']);
             }
         }
 

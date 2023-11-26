@@ -80,7 +80,7 @@ namespace WPinternals
                 return null;
             }
 
-            return System.Text.Encoding.ASCII.GetString(Bytes).Trim(new char[] { '\0' });
+            return System.Text.Encoding.ASCII.GetString(Bytes).Trim(['\0']);
         }
 
         [Flags]
@@ -193,7 +193,7 @@ namespace WPinternals
 
         public TerminalResponse GetTerminalResponse()
         {
-            byte[] AsskMask = new byte[0x10] { 1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64 };
+            byte[] AsskMask = [1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64];
             byte[] Request = new byte[0xAC];
             const string Header = "NOKXFT";
             Buffer.BlockCopy(System.Text.Encoding.ASCII.GetBytes(Header), 0, Request, 0, Header.Length);
@@ -972,7 +972,7 @@ namespace WPinternals
                                 Result.EmmcSizeInSectors = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 break;
                             case 0x05:
-                                Result.PlatformID = ByteOperations.ReadAsciiString(Response, (uint)SubblockPayloadOffset, SubblockLength).Trim(new char[] { ' ', '\0' });
+                                Result.PlatformID = ByteOperations.ReadAsciiString(Response, (uint)SubblockPayloadOffset, SubblockLength).Trim([' ', '\0']);
                                 break;
                             case 0x0D:
                                 Result.AsyncSupport = Response[SubblockPayloadOffset + 1] == 1;
@@ -1215,7 +1215,7 @@ namespace WPinternals
             ByteOperations.WriteAsciiString(Request, 0, "NOKXPH" + VariableName + "\0"); // BTR or CTR, CTR is public ProductCode
             byte[] Response = ExecuteRawMethod(Request);
             UInt16 Length = BigEndian.ToUInt16(Response, 6);
-            return ByteOperations.ReadAsciiString(Response, 8, Length).Trim(new char[] { ' ', '\0' });
+            return ByteOperations.ReadAsciiString(Response, 8, Length).Trim([' ', '\0']);
         }
 
         internal string ReadProductCode()

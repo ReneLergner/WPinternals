@@ -111,10 +111,10 @@ namespace WPinternals
                 SerialDevice.EncodeCommands = false;
 
                 // This will succeed on new models
-                SerialDevice.SendData(new byte[] { 0x7, 0x0, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0 });
+                SerialDevice.SendData([0x7, 0x0, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0]);
 
                 // This will succeed on old models
-                SerialDevice.SendData(new byte[] { 0x7E, 0xA, 0x0, 0x0, 0xB6, 0xB5, 0x7E });
+                SerialDevice.SendData([0x7E, 0xA, 0x0, 0x0, 0xB6, 0xB5, 0x7E]);
 
                 SerialDevice.Close();
                 SerialDevice.Dispose();

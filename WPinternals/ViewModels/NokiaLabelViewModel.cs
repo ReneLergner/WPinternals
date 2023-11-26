@@ -72,7 +72,7 @@ namespace WPinternals
             //byte[] Meid = CurrentModel.ExecuteJsonMethodAsBytes("ReadMeid", "Meid"); // error
             //string Test = CurrentModel.ExecuteJsonMethodAsString("ReadManufacturingData", ""); -> This method is only possible in Label-mode.
 
-            byte[] AsskMask = new byte[0x10] { 1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64 };
+            byte[] AsskMask = [1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64];
             byte[] Challenge = new byte[0x88];
             Dictionary<string, object> Params = new();
             Params.Add("AsskMask", AsskMask);

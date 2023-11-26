@@ -63,7 +63,7 @@ namespace WPinternals
             try
             {
                 Step = 1;
-                byte[] Hello = Serial.GetResponse(new byte[] { 0x01, 0x00, 0x00, 0x00 });
+                byte[] Hello = Serial.GetResponse([0x01, 0x00, 0x00, 0x00]);
 
                 // Incoming Hello packet:
                 // 00000001 = Hello command id
@@ -87,11 +87,11 @@ namespace WPinternals
                 // 00000000 = Mode
                 // rest is reserved space
                 Step = 2;
-                byte[] HelloResponse = new byte[] {
+                byte[] HelloResponse = [
                     0x02, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                };
+                ];
                 Serial.SendData(HelloResponse);
 
                 Step = 3;
@@ -151,7 +151,7 @@ namespace WPinternals
 
             try
             {
-                byte[] Hello = Serial.GetResponse(new byte[] { 0x01, 0x00, 0x00, 0x00 });
+                byte[] Hello = Serial.GetResponse([0x01, 0x00, 0x00, 0x00]);
 
                 // Incoming Hello packet:
                 // 00000001 = Hello command id
@@ -166,13 +166,13 @@ namespace WPinternals
                 LogFile.Log("MaxLength: 0x" + ByteOperations.ReadUInt32(Hello, 0x10).ToString("X8"), LogType.FileOnly);
                 LogFile.Log("Mode: 0x" + ByteOperations.ReadUInt32(Hello, 0x14).ToString("X8"), LogType.FileOnly);
 
-                byte[] HelloResponse = new byte[] {
+                byte[] HelloResponse = [
                     0x02, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                };
+                ];
 
-                byte[] Ready = Serial.SendCommand(HelloResponse, new byte[] { 0x03, 0x00, 0x00, 0x00 });
+                byte[] Ready = Serial.SendCommand(HelloResponse, [0x03, 0x00, 0x00, 0x00]);
             }
             catch
             {
@@ -184,7 +184,7 @@ namespace WPinternals
 
         public void ResetSahara()
         {
-            Serial.SendCommand(new byte[] { 0x07, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00 }, new byte[] { 0x08, 0x00, 0x00, 0x00 });
+            Serial.SendCommand([0x07, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00], [0x08, 0x00, 0x00, 0x00]);
         }
 
         public bool ConnectToProgrammer(byte[] PacketFromPcToProgrammer)
@@ -319,19 +319,19 @@ namespace WPinternals
 
         public void SwitchMode(SaharaMode Mode)
         {
-            byte[] SwitchModeCommand = new byte[] { 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            byte[] SwitchModeCommand = [0x0C, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
             ByteOperations.WriteUInt32(SwitchModeCommand, 8, (UInt32)Mode);
             byte[] ResponsePattern = null;
             switch (Mode)
             {
                 case SaharaMode.ImageTransferPending:
-                    ResponsePattern = new byte[] { 0x04, 0x00, 0x00, 0x00 };
+                    ResponsePattern = [0x04, 0x00, 0x00, 0x00];
                     break;
                 case SaharaMode.MemoryDebug:
-                    ResponsePattern = new byte[] { 0x09, 0x00, 0x00, 0x00 };
+                    ResponsePattern = [0x09, 0x00, 0x00, 0x00];
                     break;
                 case SaharaMode.Command:
-                    ResponsePattern = new byte[] { 0x0B, 0x00, 0x00, 0x00 };
+                    ResponsePattern = [0x0B, 0x00, 0x00, 0x00];
                     break;
             }
             Serial.SendCommand(SwitchModeCommand, ResponsePattern);
@@ -340,7 +340,7 @@ namespace WPinternals
         public void StartProgrammer()
         {
             LogFile.Log("Starting programmer", LogType.FileAndConsole);
-            byte[] DoneCommand = new byte[] { 0x05, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00 };
+            byte[] DoneCommand = [0x05, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00];
             bool Started = false;
             int count = 0;
             do
@@ -348,7 +348,7 @@ namespace WPinternals
                 count++;
                 try
                 {
-                    byte[] DoneResponse = Serial.SendCommand(DoneCommand, new byte[] { 0x06, 0x00, 0x00, 0x00 });
+                    byte[] DoneResponse = Serial.SendCommand(DoneCommand, [0x06, 0x00, 0x00, 0x00]);
                     Started = true;
                 }
                 catch (BadConnectionException)
@@ -369,7 +369,7 @@ namespace WPinternals
             // First, let's read the Emergency Download payload header and verify its validity
             FileStream PayloadStream = File.OpenRead(PayloadPath);
 
-            byte[] ValidReferencePayloadHeader = new byte[] { 0x45, 0x6D, 0x65, 0x72, 0x67, 0x65, 0x6E, 0x63, 0x79, 0x20, 0x50, 0x61, 0x79, 0x6C, 0x6F, 0x61, 0x64 };
+            byte[] ValidReferencePayloadHeader = [0x45, 0x6D, 0x65, 0x72, 0x67, 0x65, 0x6E, 0x63, 0x79, 0x20, 0x50, 0x61, 0x79, 0x6C, 0x6F, 0x61, 0x64];
 
             byte[] PayloadHeader = new byte[17];
             PayloadStream.Read(PayloadHeader, 0, 17);

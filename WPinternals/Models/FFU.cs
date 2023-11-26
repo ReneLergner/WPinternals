@@ -84,7 +84,7 @@ namespace WPinternals
                 // Read Store Header
                 byte[] ShortStoreHeader = new byte[248];
                 FFUFile.Read(ShortStoreHeader, 0, 248);
-                PlatformID = ByteOperations.ReadAsciiString(ShortStoreHeader, 0x0C, 192).TrimEnd(new char[] { (char)0, ' ' });
+                PlatformID = ByteOperations.ReadAsciiString(ShortStoreHeader, 0x0C, 192).TrimEnd([(char)0, ' ']);
                 int WriteDescriptorCount = ByteOperations.ReadInt32(ShortStoreHeader, 208);
                 UInt32 WriteDescriptorLength = ByteOperations.ReadUInt32(ShortStoreHeader, 212);
                 UInt32 ValidateDescriptorLength = ByteOperations.ReadUInt32(ShortStoreHeader, 220);
@@ -455,8 +455,8 @@ namespace WPinternals
                 if (Offset != null)
                 {
                     uint Start = (uint)Offset + 10;
-                    uint Length = (uint)ByteOperations.FindPattern(Data, Start, 0x100, new byte[] { 0x00 }, null, null) - Start;
-                    uint? Offset0D = ByteOperations.FindPattern(Data, Start, 0x100, new byte[] { 0x0D }, null, null);
+                    uint Length = (uint)ByteOperations.FindPattern(Data, Start, 0x100, [0x00], null, null) - Start;
+                    uint? Offset0D = ByteOperations.FindPattern(Data, Start, 0x100, [0x0D], null, null);
                     if ((Offset0D != null) && (Offset0D < (Start + Length)))
                     {
                         Length = (uint)Offset0D - Start;

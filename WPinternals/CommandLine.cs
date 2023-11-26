@@ -114,7 +114,7 @@ namespace WPinternals
                     return;
                 }
 
-                switch (args[1].ToLower().TrimStart(new char[] { '-', '/' }))
+                switch (args[1].ToLower().TrimStart(['-', '/']))
                 {
 #if DEBUG
                     case "test":

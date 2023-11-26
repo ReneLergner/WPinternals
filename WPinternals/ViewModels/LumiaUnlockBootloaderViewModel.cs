@@ -51,7 +51,7 @@ namespace WPinternals
             FlashModel.SendFfuPayloadV1(EmptyChunk);
 
             // Reboot to Qualcomm Emergency mode
-            byte[] RebootCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x52 }; // NOKR
+            byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
             FlashModel.ExecuteRawVoidMethod(RebootCommand);
         }
 

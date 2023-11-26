@@ -33,7 +33,7 @@ namespace DiscUtils.Fat
         {
             if (FatFileSystem.Detect(stream))
             {
-                return new FileSystemInfo[] { new VfsFileSystemInfo("FAT", "Microsoft FAT", Open) };
+                return [new VfsFileSystemInfo("FAT", "Microsoft FAT", Open)];
             }
 
             return System.Array.Empty<FileSystemInfo>();

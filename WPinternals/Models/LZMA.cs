@@ -110,9 +110,9 @@ namespace WPinternals
                 if (DictionarySize != 0)
                 {
                     Encoder.SetCoderProperties(
-                      new CoderPropID[8] {CoderPropID.DictionarySize, CoderPropID.PosStateBits, CoderPropID.LitContextBits,
-                        CoderPropID.LitPosBits, CoderPropID.Algorithm, CoderPropID.NumFastBytes, CoderPropID.MatchFinder, CoderPropID.EndMarker},
-                      new object[8] { DictionarySize, PosStateBits, LitContextBits, LitPosBits, Algorithm, NumFastBytes, MatchFinder, EndMarker });
+                      [CoderPropID.DictionarySize, CoderPropID.PosStateBits, CoderPropID.LitContextBits,
+                        CoderPropID.LitPosBits, CoderPropID.Algorithm, CoderPropID.NumFastBytes, CoderPropID.MatchFinder, CoderPropID.EndMarker],
+                      [DictionarySize, PosStateBits, LitContextBits, LitPosBits, Algorithm, NumFastBytes, MatchFinder, EndMarker]);
                 }
 
                 Encoder.WriteCoderProperties(stream);

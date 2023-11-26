@@ -1848,7 +1848,7 @@ namespace WPinternals
                     byte[] buffer = new byte[chunkSize];
                     Int64 position = flashPart.Stream.Position;
                     flashPart.Stream.Read(buffer, 0, chunkSize);
-                    flashingPayloads.Add(new FlashingPayload(1, new byte[][] { crypto.ComputeHash(buffer) }, new UInt32[] { (flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i }, new UInt32[] { j }, new Int64[] { position }));
+                    flashingPayloads.Add(new FlashingPayload(1, [crypto.ComputeHash(buffer)], [(flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i], [j], [position]));
                     CurrentProcess1++;
                 }
             }
@@ -1902,7 +1902,7 @@ namespace WPinternals
                         }
                         else
                         {
-                            flashingPayloads.Add(new FlashingPayload(1, new byte[][] { hash }, new UInt32[] { (flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i }, new UInt32[] { j }, new Int64[] { position }));
+                            flashingPayloads.Add(new FlashingPayload(1, [hash], [(flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i], [j], [position]));
                         }
 
                         CurrentProcess1++;

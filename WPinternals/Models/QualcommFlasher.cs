@@ -45,41 +45,37 @@ namespace WPinternals
 
         public void Hello()
         {
-            byte[] Command = new byte[]
-            {
+            byte[] Command =
+            [
                 0x01, // Hello command
                 0x51, 0x43, 0x4F, 0x4D, 0x20, 0x66, 0x61, 0x73, 0x74, 0x20, 0x64, 0x6F, 0x77, 0x6E, 0x6C, 0x6F, // "QCOM fast download protocol host"
                 0x61, 0x64, 0x20, 0x70, 0x72, 0x6F, 0x74, 0x6F, 0x63, 0x6F, 0x6C, 0x20, 0x68, 0x6F, 0x73, 0x74,
                 0x02,
                 0x02, // Protocol version - Must be at least 0x02
                 0x01
-            };
+            ];
 
-            Serial.SendCommand(Command, new byte[] { 0x02 });
+            Serial.SendCommand(Command, [0x02]);
         }
 
         public void SetSecurityMode(byte Mode)
         {
-            byte[] Command = new byte[2];
-            Command[0] = 0x17;
-            Command[1] = Mode;
+            byte[] Command = [0x17, Mode];
 
-            Serial.SendCommand(Command, new byte[] { 0x18 });
+            Serial.SendCommand(Command, [0x18]);
         }
 
         // Use PartitionID 0x21
         public void OpenPartition(byte PartitionID)
         {
-            byte[] Command = new byte[2];
-            Command[0] = 0x1B;
-            Command[1] = PartitionID;
+            byte[] Command = [0x1B, PartitionID];
 
-            Serial.SendCommand(Command, new byte[] { 0x1C });
+            Serial.SendCommand(Command, [0x1C]);
         }
 
         public void ClosePartition()
         {
-            Serial.SendCommand(new byte[] { 0x15 }, new byte[] { 0x16 });
+            Serial.SendCommand([0x15], [0x16]);
         }
 
         public void Flash(UInt32 StartInBytes, Stream Data, UInt32 LengthInBytes = UInt32.MaxValue)
@@ -222,7 +218,7 @@ namespace WPinternals
 
         public void Reboot()
         {
-            Serial.SendCommand(new byte[] { 0x0B }, new byte[] { 0x0C });
+            Serial.SendCommand([0x0B], [0x0C]);
         }
     }
 }

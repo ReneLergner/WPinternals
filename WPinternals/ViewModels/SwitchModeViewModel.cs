@@ -296,8 +296,8 @@ namespace WPinternals
                     break;
                 case PhoneInterfaces.Lumia_Flash:
                 case PhoneInterfaces.Lumia_Bootloader:
-                    byte[] BootModeFlagCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00 }; // NOKFW UBF
-                    byte[] RebootCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x52 }; // NOKR
+                    byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
+                    byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
                     byte[] RebootCommandResult;
                     IsSwitchingInterface = true;
                     switch (TargetMode)
@@ -328,7 +328,7 @@ namespace WPinternals
                             SwitchFromFlashToLabelMode();
                             break;
                         case PhoneInterfaces.Lumia_Flash: // attempt to boot from limited flash to full flash
-                            byte[] RebootToFlashCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x53 }; // NOKS
+                            byte[] RebootToFlashCommand = [0x4E, 0x4F, 0x4B, 0x53]; // NOKS
                             ((NokiaPhoneModel)CurrentModel).ExecuteRawVoidMethod(RebootToFlashCommand);
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                             ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
@@ -338,7 +338,7 @@ namespace WPinternals
                             SwitchFromFlashToMassStorageMode();
                             break;
                         case PhoneInterfaces.Qualcomm_Download:
-                            byte[] RebootToQualcommDownloadCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45 }; // NOKXCBE
+                            byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE
                             RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
                             if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
                             {
@@ -504,8 +504,8 @@ namespace WPinternals
             }
             else if ((CurrentMode == PhoneInterfaces.Lumia_Flash) && (TargetMode == PhoneInterfaces.Qualcomm_Download))
             {
-                byte[] RebootCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x52 };
-                byte[] RebootToQualcommDownloadCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45 }; // NOKXCBE
+                byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52];
+                byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE
                 IsSwitchingInterface = true;
                 LogFile.Log("Sending command for rebooting to Emergency Download mode");
                 byte[] RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
@@ -619,8 +619,8 @@ namespace WPinternals
             }
             else
             {
-                byte[] BootModeFlagCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00 }; // NOKFW UBF
-                byte[] RebootCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x52 }; // NOKR
+                byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
+                byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
 
                 BootModeFlagCommand[0x0F] = 0x59;
                 ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
@@ -671,9 +671,9 @@ namespace WPinternals
 
             if (IsOldLumia || IsOriginalEngineeringLumia)
             {
-                byte[] BootModeFlagCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00 }; // NOKFW UBF
-                byte[] RebootCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x52 };
-                byte[] RebootToMassStorageCommand = new byte[] { 0x4E, 0x4F, 0x4B, 0x4D }; // NOKM
+                byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
+                byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52];
+                byte[] RebootToMassStorageCommand = [0x4E, 0x4F, 0x4B, 0x4D]; // NOKM
                 IsSwitchingInterface = true;
                 byte[] RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToMassStorageCommand);
                 if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknown command)
