@@ -2222,6 +2222,7 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		WPinternalsSDK\WPinternalsSDK.projitems*{25d167ab-d58a-4195-8ef7-e736f330822c}*SharedItemsImports = 4
+		WPinternalsSDK\WPinternalsSDK.projitems*{53edf96d-d4f7-476c-9030-c29ad132719d}*SharedItemsImports = 4
 		WPinternalsSDK\WPinternalsSDK.projitems*{d29275f2-bb58-44a2-81e1-96d68c4c48db}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
