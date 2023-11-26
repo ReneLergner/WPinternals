@@ -559,6 +559,15 @@ namespace WPinternals
             FileWriter.Close();
         }
 
+        internal void WritePartitions(Stream Stream)
+        {
+            XmlSerializer x = new(typeof(GPT), "");
+
+            XmlSerializerNamespaces ns = new();
+            ns.Add("", "");
+            x.Serialize(Stream, this, ns);
+        }
+
         internal static GPT ReadPartitions(string Path)
         {
             XmlSerializer x = new(typeof(GPT), "");
