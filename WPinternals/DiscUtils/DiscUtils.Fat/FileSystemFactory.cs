@@ -36,7 +36,7 @@ namespace DiscUtils.Fat
                 return [new VfsFileSystemInfo("FAT", "Microsoft FAT", Open)];
             }
 
-            return System.Array.Empty<FileSystemInfo>();
+            return [];
         }
 
         private DiscFileSystem Open(Stream stream, VolumeInfo volumeInfo, FileSystemParameters parameters)

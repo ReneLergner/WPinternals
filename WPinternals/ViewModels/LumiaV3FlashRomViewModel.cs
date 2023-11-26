@@ -218,10 +218,13 @@ namespace WPinternals
                 //
                 // If you do not order payloads like this, you will get an error, most likely hash mismatch
                 //
-                LumiaV2UnlockBootViewModel.FlashingPayload[] payloads = Array.Empty<LumiaV2UnlockBootViewModel.FlashingPayload>();
+                LumiaV2UnlockBootViewModel.FlashingPayload[] payloads = [];
                 if (FlashParts != null)
                 {
-                    payloads = LumiaV2UnlockBootViewModel.GetNonOptimizedPayloads(FlashParts, chunkSizes, Info.WriteBufferSize / chunkSize, SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length).ToArray();
+                    payloads =
+                    [
+                        .. LumiaV2UnlockBootViewModel.GetNonOptimizedPayloads(FlashParts, chunkSizes, Info.WriteBufferSize / chunkSize, SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length),
+                    ];
                 }
 
                 MemoryStream Headerstream1 = new();

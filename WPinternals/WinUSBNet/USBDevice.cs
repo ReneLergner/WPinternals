@@ -178,7 +178,7 @@ namespace MadWizard.WinUSBNet
                 USBPipeCollection pipeCollection = new(interfacePipes);
                 interfaces[i] = new USBInterface(this, i, descriptor, pipeCollection);
             }
-            Pipes = new USBPipeCollection(allPipes.ToArray());
+            Pipes = new USBPipeCollection([.. allPipes]);
             Interfaces = new USBInterfaceCollection(interfaces);
         }
 
@@ -424,7 +424,7 @@ namespace MadWizard.WinUSBNet
         public void ControlTransfer(byte requestType, byte request, int value, int index)
         {
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            ControlTransfer(requestType, request, value, index, Array.Empty<byte>(), 0);
+            ControlTransfer(requestType, request, value, index, [], 0);
         }
 
         private void CheckIn(byte requestType)
@@ -518,7 +518,7 @@ namespace MadWizard.WinUSBNet
         {
             CheckIn(requestType);
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            ControlTransfer(requestType, request, value, index, Array.Empty<byte>());
+            ControlTransfer(requestType, request, value, index, []);
         }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace MadWizard.WinUSBNet
         {
             CheckOut(requestType);
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            ControlTransfer(requestType, request, value, index, Array.Empty<byte>());
+            ControlTransfer(requestType, request, value, index, []);
         }
 
         /// <summary>
@@ -591,7 +591,7 @@ namespace MadWizard.WinUSBNet
         public IAsyncResult BeginControlTransfer(byte requestType, byte request, int value, int index, AsyncCallback userCallback, object stateObject)
         {
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            return BeginControlTransfer(requestType, request, value, index, Array.Empty<byte>(), 0, userCallback, stateObject);
+            return BeginControlTransfer(requestType, request, value, index, [], 0, userCallback, stateObject);
         }
 
         /// <summary>
@@ -732,7 +732,7 @@ namespace MadWizard.WinUSBNet
         {
             CheckOut(requestType);
             // TODO: null instead of empty buffer. But overlapped code would have to be fixed for this (no buffer to pin)
-            return BeginControlTransfer(requestType, request, value, index, Array.Empty<byte>(), userCallback, stateObject);
+            return BeginControlTransfer(requestType, request, value, index, [], userCallback, stateObject);
         }
 
         private void CheckNotDisposed()

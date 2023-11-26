@@ -386,7 +386,7 @@ namespace WPinternals
                 Result.Add(Src);
             }
 
-            return Result.ToArray();
+            return [.. Result];
         }
     }
 

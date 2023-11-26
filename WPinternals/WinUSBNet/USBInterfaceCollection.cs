@@ -116,7 +116,7 @@ namespace MadWizard.WinUSBNet
                     matchingInterfaces.Add(iface);
                 }
             }
-            return matchingInterfaces.ToArray();
+            return [.. matchingInterfaces];
         }
 
         /// <summary>

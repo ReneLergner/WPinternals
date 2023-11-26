@@ -1258,7 +1258,7 @@ namespace DiscUtils.Fat
                 dirs.Add(Utilities.CombinePaths(path, dirEntry.Name.GetDisplayName(FatOptions.FileNameEncoding)));
             }
 
-            return dirs.ToArray();
+            return [.. dirs];
         }
 
         /// <summary>
@@ -1275,7 +1275,7 @@ namespace DiscUtils.Fat
 
             List<string> dirs = new();
             DoSearch(dirs, path, re, searchOption == SearchOption.AllDirectories, true, false);
-            return dirs.ToArray();
+            return [.. dirs];
         }
 
         /// <summary>
@@ -1294,7 +1294,7 @@ namespace DiscUtils.Fat
                 files.Add(Utilities.CombinePaths(path, dirEntry.Name.GetDisplayName(FatOptions.FileNameEncoding)));
             }
 
-            return files.ToArray();
+            return [.. files];
         }
 
         /// <summary>
@@ -1311,7 +1311,7 @@ namespace DiscUtils.Fat
 
             List<string> results = new();
             DoSearch(results, path, re, searchOption == SearchOption.AllDirectories, false, true);
-            return results.ToArray();
+            return [.. results];
         }
 
         /// <summary>
@@ -1330,7 +1330,7 @@ namespace DiscUtils.Fat
                 result.Add(Utilities.CombinePaths(path, dirEntry.Name.GetDisplayName(FatOptions.FileNameEncoding)));
             }
 
-            return result.ToArray();
+            return [.. result];
         }
 
         /// <summary>
@@ -1356,7 +1356,7 @@ namespace DiscUtils.Fat
                 }
             }
 
-            return result.ToArray();
+            return [.. result];
         }
 
         /// <summary>

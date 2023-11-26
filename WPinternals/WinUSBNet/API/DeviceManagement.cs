@@ -318,7 +318,7 @@ namespace MadWizard.WinUSBNet.API
                     SetupDiDestroyDeviceInfoList(deviceInfoSet);
                 }
             }
-            return deviceList.ToArray();
+            return [.. deviceList];
         }
 
         public static void RegisterForDeviceNotifications(IntPtr controlHandle, Guid classGuid, ref IntPtr deviceNotificationHandle)

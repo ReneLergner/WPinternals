@@ -20,11 +20,13 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace WPinternals
 {
@@ -72,6 +74,94 @@ namespace WPinternals
             this.Serial = Serial;
         }
 
+        private static byte[] BuildCommandPacket(SaharaCommand SaharaCommand, byte[] CommandBuffer = null)
+        {
+            UInt32 CommandID = (uint)SaharaCommand;
+            UInt32 CommandBufferLength = 0;
+            if (CommandBuffer != null)
+            {
+                CommandBufferLength = (UInt32)CommandBuffer.Length;
+            }
+            UInt32 Length = 0x8u + CommandBufferLength;
+
+            byte[] Packet = new byte[Length];
+            ByteOperations.WriteUInt32(Packet, 0x00, CommandID);
+            ByteOperations.WriteUInt32(Packet, 0x04, Length);
+
+            if (CommandBuffer != null && CommandBufferLength != 0)
+            {
+                Buffer.BlockCopy(CommandBuffer, 0, Packet, 0x08, CommandBuffer.Length);
+            }
+
+            return Packet;
+        }
+
+        private static byte[] BuildHelloResponsePacket(SaharaMode SaharaMode, UInt32 ProtocolVersion = 2, UInt32 SupportedVersion = 1, UInt32 MaxPacketLength = 0 /* 0: Status OK */)
+        {
+            UInt32 Mode = (uint)SaharaMode;
+
+            // Hello packet:
+            // xxxxxxxx = Protocol version
+            // xxxxxxxx = Supported version
+            // xxxxxxxx = Max packet length
+            // xxxxxxxx = Expected mode
+            // 6 dwords reserved space
+            byte[] Hello = new byte[0x28];
+            ByteOperations.WriteUInt32(Hello, 0x00, ProtocolVersion);
+            ByteOperations.WriteUInt32(Hello, 0x04, SupportedVersion);
+            ByteOperations.WriteUInt32(Hello, 0x08, MaxPacketLength);
+            ByteOperations.WriteUInt32(Hello, 0x0C, Mode);
+            ByteOperations.WriteUInt32(Hello, 0x10, 0);
+            ByteOperations.WriteUInt32(Hello, 0x14, 0);
+            ByteOperations.WriteUInt32(Hello, 0x18, 0);
+            ByteOperations.WriteUInt32(Hello, 0x1C, 0);
+            ByteOperations.WriteUInt32(Hello, 0x20, 0);
+            ByteOperations.WriteUInt32(Hello, 0x24, 0);
+
+            return BuildCommandPacket(SaharaCommand.HelloResponse, Hello);
+        }
+
+        private static byte[] BuildExecuteRequestPacket(UInt32 RequestID)
+        {
+            byte[] Execute = new byte[0x04];
+            ByteOperations.WriteUInt32(Execute, 0x00, RequestID);
+            return BuildCommandPacket(SaharaCommand.ExecuteRequest, Execute);
+        }
+
+        private static byte[] BuildExecuteDataPacket(UInt32 RequestID)
+        {
+            byte[] Execute = new byte[0x04];
+            ByteOperations.WriteUInt32(Execute, 0x00, RequestID);
+            return BuildCommandPacket(SaharaCommand.ExecuteData, Execute);
+        }
+
+        private byte[][] GetRootKeyHashes()
+        {
+            Serial.SendData(BuildExecuteRequestPacket(0x3));
+
+            byte[] ReadDataRequest = Serial.GetResponse(null);
+            UInt32 ResponseID = ByteOperations.ReadUInt32(ReadDataRequest, 0);
+
+            if (ResponseID != 0xE)
+            {
+                throw new BadConnectionException();
+            }
+
+            uint RKHLength = ByteOperations.ReadUInt32(ReadDataRequest, 0x0C);
+
+            Serial.SendData(BuildExecuteDataPacket(0x3));
+
+            byte[] Response = Serial.GetResponse(null, Length: (int)RKHLength);
+            
+            List<byte[]> RootKeyHashes = new();
+            for (int i = 0; i < RKHLength / 0x20; i++)
+            {
+                RootKeyHashes.Add(Response[(i * 0x20)..((i + 1) * 0x20)]);
+            }
+
+            return [.. RootKeyHashes];
+        }
+
         public byte[] GetRKH()
         {
             int Step = 0;
@@ -96,30 +186,8 @@ namespace WPinternals
                 LogFile.Log("MaxLength: 0x" + ByteOperations.ReadUInt32(Hello, 0x10).ToString("X8"), LogType.FileOnly);
                 LogFile.Log("Mode: 0x" + ByteOperations.ReadUInt32(Hello, 0x14).ToString("X8"), LogType.FileOnly);
 
-                // Packet:
-                // 00000002 = Hello response command id
-                // 00000030 = Length
-                // 00000002 = Protocol version
-                // 00000001 = Supported version
-                // 00000000 = Status OK
-                // 00000003 = Mode
-                // rest is reserved space
                 Step = 2;
-                byte[] HelloResponse = [
-                    0x02, 0x00, 0x00, 0x00,
-                    0x30, 0x00, 0x00, 0x00,
-                    0x02, 0x00, 0x00, 0x00,
-                    0x01, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x03, 0x00, 0x00, 0x00,
-
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00
-                ];
+                byte[] HelloResponse = BuildHelloResponsePacket(SaharaMode.Command);
                 Serial.SendData(HelloResponse);
 
                 Step = 3;
@@ -132,36 +200,8 @@ namespace WPinternals
                 }
 
                 Step = 4;
-                Serial.SendData([
-                    0x0D, 0x00, 0x00, 0x00,
-                    0x0C, 0x00, 0x00, 0x00,
-                    0x03, 0x00, 0x00, 0x00
-                ]);
-
-                Step = 5;
-                ReadDataRequest = Serial.GetResponse(null);
-                ResponseID = ByteOperations.ReadUInt32(ReadDataRequest, 0);
-
-                if (ResponseID != 0xE)
-                {
-                    throw new BadConnectionException();
-                }
-
-                uint RKHLength = ByteOperations.ReadUInt32(ReadDataRequest, 0x0C);
-
-                Step = 6;
-                Serial.SendData([
-                    0x0F, 0x00, 0x00, 0x00,
-                    0x0C, 0x00, 0x00, 0x00,
-                    0x03, 0x00, 0x00, 0x00
-                ]);
-
-                Step = 7;
-                byte[] Response = Serial.GetResponse(null, Length: (int)RKHLength);
-
-                byte[] Result = new byte[0x20];
-                Buffer.BlockCopy(Response, 3, Result, 0, 0x20);
-                return Result;
+                byte[][] RKHs = GetRootKeyHashes();
+                return RKHs[0];
             }
             catch (Exception Ex)
             {
@@ -200,30 +240,8 @@ namespace WPinternals
                 LogFile.Log("MaxLength: 0x" + ByteOperations.ReadUInt32(Hello, 0x10).ToString("X8"), LogType.FileOnly);
                 LogFile.Log("Mode: 0x" + ByteOperations.ReadUInt32(Hello, 0x14).ToString("X8"), LogType.FileOnly);
 
-                // Packet:
-                // 00000002 = Hello response command id
-                // 00000030 = Length
-                // 00000002 = Protocol version
-                // 00000001 = Supported version
-                // 00000000 = Status OK
-                // 00000000 = Mode
-                // rest is reserved space
                 Step = 2;
-                byte[] HelloResponse = [
-                    0x02, 0x00, 0x00, 0x00,
-                    0x30, 0x00, 0x00, 0x00,
-                    0x02, 0x00, 0x00, 0x00,
-                    0x01, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00
-                ];
+                byte[] HelloResponse = BuildHelloResponsePacket(SaharaMode.ImageTransferPending);
                 Serial.SendData(HelloResponse);
 
                 Step = 3;
@@ -298,29 +316,7 @@ namespace WPinternals
                 LogFile.Log("MaxLength: 0x" + ByteOperations.ReadUInt32(Hello, 0x10).ToString("X8"), LogType.FileOnly);
                 LogFile.Log("Mode: 0x" + ByteOperations.ReadUInt32(Hello, 0x14).ToString("X8"), LogType.FileOnly);
 
-                // Packet:
-                // 00000002 = Hello response command id
-                // 00000030 = Length
-                // 00000002 = Protocol version
-                // 00000001 = Supported version
-                // 00000000 = Status OK
-                // 00000000 = Mode
-                // rest is reserved space
-                byte[] HelloResponse = [
-                    0x02, 0x00, 0x00, 0x00,
-                    0x30, 0x00, 0x00, 0x00,
-                    0x02, 0x00, 0x00, 0x00,
-                    0x01, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00
-                ];
+                byte[] HelloResponse = BuildHelloResponsePacket(SaharaMode.ImageTransferPending);
 
                 byte[] Ready = Serial.SendCommand(HelloResponse, [0x03, 0x00, 0x00, 0x00]);
             }
@@ -334,7 +330,7 @@ namespace WPinternals
 
         public void ResetSahara()
         {
-            Serial.SendCommand([0x07, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00], [0x08, 0x00, 0x00, 0x00]);
+            Serial.SendCommand(BuildCommandPacket(SaharaCommand.ResetRequest), [0x08, 0x00, 0x00, 0x00]);
         }
 
         public bool ConnectToProgrammer(byte[] PacketFromPcToProgrammer)
@@ -469,8 +465,10 @@ namespace WPinternals
 
         public void SwitchMode(SaharaMode Mode)
         {
-            byte[] SwitchModeCommand = [0x0C, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-            ByteOperations.WriteUInt32(SwitchModeCommand, 8, (UInt32)Mode);
+            byte[] SwitchMode = new byte[0x04];
+            ByteOperations.WriteUInt32(SwitchMode, 0x00, (UInt32)Mode);
+            byte[] SwitchModeCommand = BuildCommandPacket(SaharaCommand.SwitchMode, SwitchMode);
+
             byte[] ResponsePattern = null;
             switch (Mode)
             {
@@ -490,7 +488,7 @@ namespace WPinternals
         public void StartProgrammer()
         {
             LogFile.Log("Starting programmer", LogType.FileAndConsole);
-            byte[] DoneCommand = [0x05, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00];
+            byte[] DoneCommand = BuildCommandPacket(SaharaCommand.DoneRequest);
             bool Started = false;
             int count = 0;
             do
@@ -584,7 +582,7 @@ namespace WPinternals
 
                 LogFile.Log(ProgrammerCommand, LogType.FileAndConsole);
 
-                byte[] PacketFromPcToProgrammer = Array.Empty<byte>();
+                byte[] PacketFromPcToProgrammer = [];
                 byte[] temp = new byte[0x200];
 
                 while (true)
@@ -603,7 +601,7 @@ namespace WPinternals
                         break;
                     }
 
-                    PacketFromPcToProgrammer = PacketFromPcToProgrammer.Concat(temp).ToArray();
+                    PacketFromPcToProgrammer = [.. PacketFromPcToProgrammer, .. temp];
                 }
 
                 bool ExpectingReplyFromProgrammer = false;

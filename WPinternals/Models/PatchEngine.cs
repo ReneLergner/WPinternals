@@ -40,14 +40,14 @@ namespace WPinternals
 
         internal PatchEngine(string PatchDefinitionsXmlString)
         {
-            XmlSerializer x = new(PatchDefinitions.GetType(), null, Array.Empty<Type>(), new XmlRootAttribute("PatchDefinitions"), "");
+            XmlSerializer x = new(PatchDefinitions.GetType(), null, [], new XmlRootAttribute("PatchDefinitions"), "");
             MemoryStream s = new(System.Text.Encoding.ASCII.GetBytes(PatchDefinitionsXmlString));
             PatchDefinitions = (List<PatchDefinition>)x.Deserialize(s);
         }
 
         internal void WriteDefinitions(string FilePath)
         {
-            XmlSerializer x = new(PatchDefinitions.GetType(), null, Array.Empty<Type>(), new XmlRootAttribute("PatchDefinitions"), "");
+            XmlSerializer x = new(PatchDefinitions.GetType(), null, [], new XmlRootAttribute("PatchDefinitions"), "");
 
             XmlSerializerNamespaces ns = new();
             ns.Add("", "");

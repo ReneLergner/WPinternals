@@ -249,7 +249,7 @@ namespace MadWizard.WinUSBNet.API
                     throw APIException.Win32("Failed to get WinUSB device pipe information.");
                 }
             }
-            pipes = pipeList.ToArray();
+            pipes = [.. pipeList];
         }
         private void InitializeDevice()
         {
@@ -290,7 +290,7 @@ namespace MadWizard.WinUSBNet.API
                 // also in case of exception (which is why it is in finally block),
                 // because some handles might have already been opened and need
                 // to be disposed.
-                _addInterfaces = interfaces.ToArray();
+                _addInterfaces = [.. interfaces];
             }
 
             // Bind handle (needed for overlapped I/O thread pool)

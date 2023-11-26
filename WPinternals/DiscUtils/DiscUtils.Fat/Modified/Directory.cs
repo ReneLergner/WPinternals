@@ -201,7 +201,7 @@ namespace DiscUtils.Fat
                 }
             }
 
-            return dirs.ToArray();
+            return [.. dirs];
         }
 
         public DirectoryEntry[] GetFiles()
@@ -215,7 +215,7 @@ namespace DiscUtils.Fat
                 }
             }
 
-            return files.ToArray();
+            return [.. files];
         }
 
         public DirectoryEntry GetEntry(long id)

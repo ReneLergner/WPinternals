@@ -68,7 +68,7 @@ namespace DiscUtils.Internal
                 result.Add(func(sVal));
             }
 
-            return result.ToArray();
+            return [.. result];
         }
 
         /// <summary>

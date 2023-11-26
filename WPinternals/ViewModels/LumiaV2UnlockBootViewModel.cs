@@ -842,10 +842,13 @@ namespace WPinternals
             //
             // If you do not order payloads like this, you will get an error, most likely hash mismatch
             //
-            FlashingPayload[] payloads = Array.Empty<FlashingPayload>();
+            FlashingPayload[] payloads = [];
             if (FlashParts != null)
             {
-                payloads = GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length).ToArray();
+                payloads =
+                [
+                    .. GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length),
+                ];
             }
 
             bool AssumeImageHeaderFallsInGap = true;
@@ -1834,7 +1837,7 @@ namespace WPinternals
             List<FlashingPayload> flashingPayloads = new();
             if (flashParts == null)
             {
-                return flashingPayloads.ToArray();
+                return [.. flashingPayloads];
             }
 
             for (UInt32 j = 0; j < flashParts.Count; j++)
@@ -1853,7 +1856,7 @@ namespace WPinternals
                 }
             }
 
-            return flashingPayloads.ToArray();
+            return [.. flashingPayloads];
         }
 
         //
@@ -1865,7 +1868,7 @@ namespace WPinternals
             List<FlashingPayload> flashingPayloads = new();
             if (flashParts == null)
             {
-                return flashingPayloads.ToArray();
+                return [.. flashingPayloads];
             }
 
             long TotalProcess1 = 0;
@@ -1898,7 +1901,7 @@ namespace WPinternals
                             var payloadIndex = flashingPayloads.FindIndex(x => ByteOperations.Compare(x.ChunkHashes[0], hash));
                             var locationList = flashingPayloads[payloadIndex].TargetLocations.ToList();
                             locationList.Add((flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i);
-                            flashingPayloads[payloadIndex].TargetLocations = locationList.ToArray();
+                            flashingPayloads[payloadIndex].TargetLocations = [.. locationList];
                         }
                         else
                         {
@@ -1910,7 +1913,7 @@ namespace WPinternals
                 }
             }
 
-            return flashingPayloads.ToArray();
+            return [.. flashingPayloads];
         }
 
         internal static string GetProgrammerPath(byte[] RKH, string Type)
@@ -2262,7 +2265,7 @@ namespace WPinternals
                         }
                     }
 
-                    Parts = Parts.OrderBy(p => p.StartSector).ToList();
+                    Parts = [.. Parts.OrderBy(p => p.StartSector)];
                     int Count = 1;
                     Parts.Where(p => p.ProgressText?.StartsWith("Flashing partition ") == true).ToList().ForEach((p) =>
                     {
