@@ -272,8 +272,9 @@ namespace WPinternals
                 // Send and start programmer
                 QualcommSerial Serial = (QualcommSerial)Notifier.CurrentModel;
                 QualcommSahara Sahara = new(Serial);
+                QualcommFirehose Firehose = new(Serial);
 
-                if (await Sahara.Reset(ProgrammerPath))
+                if (await Sahara.LoadProgrammer(ProgrammerPath) && await Firehose.Reset())
                 {
                     LogFile.Log("Emergency programmer test succeeded", LogType.FileAndConsole);
                 }

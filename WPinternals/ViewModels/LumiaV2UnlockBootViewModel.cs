@@ -724,9 +724,11 @@ namespace WPinternals
                     if (ProgrammerPath != null)
                     {
                         QualcommSahara Sahara = new((QualcommSerial)Notifier.CurrentModel);
+                        QualcommFirehose Firehose = new((QualcommSerial)Notifier.CurrentModel);
                         try
                         {
-                            await Sahara.Reset(ProgrammerPath);
+                            await Sahara.LoadProgrammer(ProgrammerPath);
+                            await Firehose.Reset();
                             await Notifier.WaitForArrival();
                         }
                         catch (BadConnectionException)
@@ -1425,9 +1427,11 @@ namespace WPinternals
                             if (ProgrammerPath != null)
                             {
                                 QualcommSahara Sahara = new((QualcommSerial)Notifier.CurrentModel);
+                                QualcommFirehose Firehose = new((QualcommSerial)Notifier.CurrentModel);
                                 try
                                 {
-                                    await Sahara.Reset(ProgrammerPath);
+                                    await Sahara.LoadProgrammer(ProgrammerPath);
+                                    await Firehose.Reset();
                                     await Notifier.WaitForArrival();
                                 }
                                 catch (BadConnectionException)
@@ -1691,9 +1695,11 @@ namespace WPinternals
                     if (ProgrammerPath != null)
                     {
                         QualcommSahara Sahara = new((QualcommSerial)Notifier.CurrentModel);
+                        QualcommFirehose Firehose = new((QualcommSerial)Notifier.CurrentModel);
                         try
                         {
-                            await Sahara.Reset(ProgrammerPath);
+                            await Sahara.LoadProgrammer(ProgrammerPath);
+                            await Firehose.Reset();
                             await Notifier.WaitForArrival();
                         }
                         catch (BadConnectionException)

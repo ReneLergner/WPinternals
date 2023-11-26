@@ -52,7 +52,7 @@ namespace WPinternals
         internal QualcommPartition(byte[] Binary, uint Offset = 0)
         {
 #if DEBUG
-            System.Diagnostics.Debug.Print("Loader: " + Converter.ConvertHexToString(new SHA256Managed().ComputeHash(Binary, 0, Binary.Length), ""));
+            System.Diagnostics.Debug.Print("Loader: " + Converter.ConvertHexToString(SHA256.HashData(Binary.AsSpan(0, Binary.Length)), ""));
 #endif
 
             this.Binary = Binary;
@@ -162,7 +162,7 @@ namespace WPinternals
                     if ((CurrentCertificateOffset + CertificateSize) == (CertificatesOffset + CertificatesSize))
                     {
                         // This is the last certificate. So this is the root key.
-                        RootKeyHash = new SHA256Managed().ComputeHash(Binary, (int)CurrentCertificateOffset, (int)CertificateSize);
+                        RootKeyHash = SHA256.HashData(Binary.AsSpan((int)CurrentCertificateOffset, (int)CertificateSize));
 
 #if DEBUG
                         System.Diagnostics.Debug.Print("RKH: " + Converter.ConvertHexToString(RootKeyHash, ""));
@@ -171,7 +171,7 @@ namespace WPinternals
 #if DEBUG
                     else
                     {
-                        System.Diagnostics.Debug.Print("Cert: " + Converter.ConvertHexToString(new SHA256Managed().ComputeHash(Binary, (int)CurrentCertificateOffset, (int)CertificateSize), ""));
+                        System.Diagnostics.Debug.Print("Cert: " + Converter.ConvertHexToString(SHA256.HashData(Binary.AsSpan((int)CurrentCertificateOffset, (int)CertificateSize)), ""));
                     }
 #endif
                     CurrentCertificateOffset += CertificateSize;
@@ -183,7 +183,7 @@ namespace WPinternals
                         CurrentCertificateOffset -= CertificateSize;
 
                         // This is the last certificate. So this is the root key.
-                        RootKeyHash = new SHA256Managed().ComputeHash(Binary, (int)CurrentCertificateOffset, (int)CertificateSize);
+                        RootKeyHash = SHA256.HashData(Binary.AsSpan((int)CurrentCertificateOffset, (int)CertificateSize));
 
 #if DEBUG
                         System.Diagnostics.Debug.Print("RKH: " + Converter.ConvertHexToString(RootKeyHash, ""));
