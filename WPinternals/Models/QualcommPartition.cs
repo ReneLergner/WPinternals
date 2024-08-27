@@ -19,6 +19,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -128,45 +129,55 @@ namespace WPinternals
             CertificatesSize = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X1C);
             CertificatesOffset = CertificatesAddress - ImageAddress + ImageOffset;
 
-            uint CurrentCertificateOffset = CertificatesOffset;
-            uint CertificateSize = 0;
-            while (CurrentCertificateOffset < (CertificatesOffset + CertificatesSize))
+            using MemoryStream fileStream = new(Binary);
+            using BinaryReader reader = new(fileStream);
+
+            List<byte[]> Signatures = [];
+            uint LastOffset = 0;
+
+            for (uint i = 0; i < fileStream.Length - 6; i++)
             {
-                if ((Binary[CurrentCertificateOffset] == 0x30) && (Binary[CurrentCertificateOffset + 1] == 0x82))
+                fileStream.Seek(i, SeekOrigin.Begin);
+
+                ushort offset0 = reader.ReadUInt16();
+                short offset1 = (short)((reader.ReadByte() << 8) | reader.ReadByte());
+                ushort offset2 = reader.ReadUInt16();
+
+                if (offset0 == 0x8230 && offset1 >= 0 && offset2 == 0x8230)
                 {
-                    CertificateSize = (uint)(Binary[CurrentCertificateOffset + 2] * 0x100) + Binary[CurrentCertificateOffset + 3] + 4; // Big endian!
+                    uint CertificateSize = (uint)offset1 + 4; // Header Size is 4
 
-                    if ((CurrentCertificateOffset + CertificateSize) == (CertificatesOffset + CertificatesSize))
+                    bool IsCertificatePartOfExistingChain = LastOffset == 0 || LastOffset == i;
+                    if (!IsCertificatePartOfExistingChain)
                     {
-                        // This is the last certificate. So this is the root key.
-                        RootKeyHash = SHA256.HashData(Binary.AsSpan((int)CurrentCertificateOffset, (int)CertificateSize));
+                        break;
+                    }
 
+                    LastOffset = i + CertificateSize;
+
+                    fileStream.Seek(i, SeekOrigin.Begin);
+                    Signatures.Add(reader.ReadBytes((int)CertificateSize));
+                }
+            }
+
+            byte[] RootCertificate = Signatures[^1];
+
+            for (int i = 0; i < Signatures.Count; i++)
+            {
+                if (i + 1 != Signatures.Count)
+                {
 #if DEBUG
-                        System.Diagnostics.Debug.Print("RKH: " + Converter.ConvertHexToString(RootKeyHash, ""));
+                    System.Diagnostics.Debug.Print("Cert: " + Converter.ConvertHexToString(SHA256.HashData(Signatures[i]), ""));
 #endif
-                    }
-#if DEBUG
-                    else
-                    {
-                        System.Diagnostics.Debug.Print("Cert: " + Converter.ConvertHexToString(SHA256.HashData(Binary.AsSpan((int)CurrentCertificateOffset, (int)CertificateSize)), ""));
-                    }
-#endif
-                    CurrentCertificateOffset += CertificateSize;
                 }
                 else
                 {
-                    if ((RootKeyHash == null) && (CurrentCertificateOffset > CertificatesOffset))
-                    {
-                        CurrentCertificateOffset -= CertificateSize;
-
-                        // This is the last certificate. So this is the root key.
-                        RootKeyHash = SHA256.HashData(Binary.AsSpan((int)CurrentCertificateOffset, (int)CertificateSize));
+                    // This is the last certificate. So this is the root key.
+                    RootKeyHash = SHA256.HashData(Signatures[i]);
 
 #if DEBUG
-                        System.Diagnostics.Debug.Print("RKH: " + Converter.ConvertHexToString(RootKeyHash, ""));
+                    System.Diagnostics.Debug.Print("RKH: " + Converter.ConvertHexToString(RootKeyHash, ""));
 #endif
-                    }
-                    break;
                 }
             }
         }
