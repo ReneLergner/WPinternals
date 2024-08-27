@@ -105,8 +105,6 @@ namespace WPinternals
                 HeaderOffset = ImageOffset + (uint)LongHeaderPattern.Length;
             }
 
-            uint Version = ByteOperations.ReadUInt32(Binary, ImageOffset + 0X04);
-
             if (ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X00) != 0)
             {
                 ImageOffset = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X00);
@@ -125,31 +123,10 @@ namespace WPinternals
             CodeSize = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X0C);
             SignatureAddress = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X10);
             SignatureSize = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X14);
+            SignatureOffset = SignatureAddress - ImageAddress + ImageOffset;
             CertificatesAddress = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X18);
             CertificatesSize = ByteOperations.ReadUInt32(Binary, HeaderOffset + 0X1C);
-
-            if (SignatureAddress == 0xFFFFFFFF)
-            {
-                SignatureAddress = ImageAddress + CodeSize;
-            }
-
-            if (CertificatesAddress == 0xFFFFFFFF)
-            {
-                CertificatesAddress = SignatureAddress + SignatureSize;
-            }
-
-            // Headers newer than version 5 need more padding here
-            if (Version > 5)
-            {
-                ImageOffset += 0x80;
-            }
-
-            SignatureOffset = ImageOffset + CodeSize;
-            CertificatesOffset = ImageOffset + CodeSize + SignatureSize;
-
-            // Keeping just in case
-            // SignatureOffset = SignatureAddress - ImageAddress + ImageOffset;
-            // CertificatesOffset = ImageSize - CertificatesSize + ImageOffset;
+            CertificatesOffset = CertificatesAddress - ImageAddress + ImageOffset;
 
             uint CurrentCertificateOffset = CertificatesOffset;
             uint CertificateSize = 0;
