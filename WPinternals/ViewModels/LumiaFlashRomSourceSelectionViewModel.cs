@@ -256,7 +256,10 @@ namespace WPinternals
                     {
                         EvaluateViewState();
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
                 }).Start();
         }
 

@@ -45,7 +45,10 @@ namespace WPinternals
                     Binary = FFUFile.GetPartition("SBL3");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
 
             // If not succeeded, then try to parse it as raw image
             if (Binary == null)

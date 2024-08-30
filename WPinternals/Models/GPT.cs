@@ -275,7 +275,10 @@ namespace WPinternals
                             {
                                 StreamLengthInSectors = (ulong)DecompressedStream.Length / 0x200;
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                LogFile.LogException(ex, LogType.FileOnly);
+                            }
                         }
 
                         if (NewPartition.LastSector == 0)
@@ -471,7 +474,10 @@ namespace WPinternals
                         {
                             StreamLengthInSectors = (ulong)DecompressedStream.Length / 0x200;
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            LogFile.LogException(ex, LogType.FileOnly);
+                        }
                         DecompressedStream.Close();
 
                         UInt64 MaxPartitionSizeInSectors = OldPartition.SizeInSectors;
@@ -521,7 +527,10 @@ namespace WPinternals
                     {
                         StreamLengthInSectors = (ulong)DecompressedStream.Length / 0x200;
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
                     DecompressedStream.Close();
                     if (NewPartition.SizeInSectors != StreamLengthInSectors)
                     {

@@ -194,7 +194,10 @@ namespace WPinternals
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
 
                 UIContext.Post(s =>
                 {
@@ -256,7 +259,10 @@ namespace WPinternals
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
 
                 UIContext.Post(s =>
                 {
@@ -369,7 +375,10 @@ namespace WPinternals
                     {
                         Directory.CreateDirectory(_DownloadFolder);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
                     if (!Directory.Exists(_DownloadFolder))
                     {
                         _DownloadFolder = @"C:\ProgramData\WPinternals\Repository";

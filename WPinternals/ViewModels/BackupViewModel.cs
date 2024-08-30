@@ -360,7 +360,10 @@ namespace WPinternals
                         }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
                 finally
                 {
                     Phone.CloseVolume();
@@ -463,7 +466,10 @@ namespace WPinternals
                         }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
                 finally
                 {
                     Phone.CloseVolume();

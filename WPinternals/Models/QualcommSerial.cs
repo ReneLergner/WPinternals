@@ -58,7 +58,10 @@ namespace WPinternals
                 {
                     this.USBDevice = new USBDevice(DevicePath);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
             }
         }
 
@@ -146,7 +149,10 @@ namespace WPinternals
                 {
                     IsIncomplete = true;
                 }
-                catch { } // Will be rethrown as BadConnectionException
+                catch (Exception ex) // Will be rethrown as BadConnectionException
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
             }
             while (IsIncomplete);
 

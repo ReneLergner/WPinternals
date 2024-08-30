@@ -343,7 +343,10 @@ namespace WPinternals
                                 {
                                     StreamLengthInSectors = (ulong)DecompressedStream.Length / 0x200;
                                 }
-                                catch { }
+                                catch (Exception ex)
+                                {
+                                    LogFile.LogException(ex, LogType.FileOnly);
+                                }
 
                                 TotalSizeSectors += StreamLengthInSectors;
                                 PartitionCount++;
@@ -438,7 +441,10 @@ namespace WPinternals
                                 {
                                     StreamLengthInSectors = (ulong)DecompressedStream.Length / 0x200;
                                 }
-                                catch { }
+                                catch (Exception ex)
+                                {
+                                    LogFile.LogException(ex, LogType.FileOnly);
+                                }
 
                                 if (StreamLengthInSectors <= Partition.SizeInSectors)
                                 {

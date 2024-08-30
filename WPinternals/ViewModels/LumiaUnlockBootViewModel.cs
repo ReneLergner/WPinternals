@@ -642,7 +642,10 @@ namespace WPinternals
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
 
             try
             {
@@ -658,7 +661,10 @@ namespace WPinternals
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
 
             List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
             if (FFUs.Count > 0)
@@ -688,7 +694,10 @@ namespace WPinternals
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
 
             try
             {
@@ -703,7 +712,10 @@ namespace WPinternals
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
 
             TempEDEPath = LumiaV2UnlockBootViewModel.GetProgrammerPath(RootKeyHash, ProductType);
             if (TempEDEPath != null)
@@ -753,7 +765,10 @@ namespace WPinternals
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
 
                     try
                     {
@@ -770,7 +785,10 @@ namespace WPinternals
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
 
                     List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
                     if (FFUs.Count > 0)
@@ -815,7 +833,10 @@ namespace WPinternals
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
 
                     try
                     {
@@ -832,7 +853,10 @@ namespace WPinternals
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
 
                     List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)).ToList();
                     if (FFUs.Count > 0)

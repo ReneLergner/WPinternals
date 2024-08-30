@@ -115,7 +115,10 @@ namespace WPinternals
                 LogWatcher.Enabled = true;
                 App.IsPnPEventLogMissing = false;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
         }
 
         private void PnPEventWritten(Object obj, EventRecordWrittenEventArgs arg)

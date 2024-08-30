@@ -40,7 +40,10 @@ namespace WPinternals
             {
                 Device = new USBDevice(DevicePath);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
         }
 
         private JsonElement? ExecuteJsonMethodAsJsonToken(string JsonMethod, Dictionary<string, object> Params, string ResultElement)
@@ -335,7 +338,10 @@ namespace WPinternals
                     Result = new byte[OutputLength];
                     System.Buffer.BlockCopy(Buffer, 0, Result, 0, OutputLength);
                 }
-                catch { } // Reboot command looses connection
+                catch (Exception ex) // Reboot command looses connection
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
             }
             return Result;
         }
@@ -363,7 +369,10 @@ namespace WPinternals
                     pipe.Reset();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
         }
 
         /// <summary>

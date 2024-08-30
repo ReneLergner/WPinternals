@@ -316,13 +316,19 @@ namespace WPinternals
                 {
                     filename = System.IO.Path.GetFileName(Text);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
                 string directory = "";
                 try
                 {
                     directory = System.IO.Path.GetDirectoryName(Text);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
                 FormattedText formatted;
                 bool widthOK = false;
                 bool changedWidth = false;

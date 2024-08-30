@@ -105,7 +105,10 @@ namespace WPinternals
                 this.Pk = Pk;
                 LogFile.Log("PK: " + Pk);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
         }
 
         private string _ProductCode = null;

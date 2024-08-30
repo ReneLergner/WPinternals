@@ -808,7 +808,10 @@ namespace WPinternals
                     {
                         InputStreamLength = (UInt64)InputStream.Length;
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
 
                     if ((InputStreamLength != null) && ((UInt64)InputStream.Length > PartitionSize))
                     {
@@ -1008,16 +1011,34 @@ namespace WPinternals
 
                 try
                 {
-                    SwitchToPhoneInfoAppContext(); // May throw NotSupportedException
+                    if (Result.BootManagerProtocolVersionMajor >= 2)
+                    {
+                        SwitchToPhoneInfoAppContext(); // May throw NotSupportedException
 
-                    Result.Type = ReadPhoneInfoVariable("TYPE");
-                    Result.ProductCode = ReadPhoneInfoVariable("CTR");
-                    Result.Imei = ReadPhoneInfoVariable("IMEI");
+                        Result.Type = ReadPhoneInfoVariable("TYPE");
+                        Result.ProductCode = ReadPhoneInfoVariable("CTR");
+                        Result.Imei = ReadPhoneInfoVariable("IMEI");
 
-                    SwitchToFlashAppContext();
-                    DisableRebootTimeOut();
+                        SwitchToFlashAppContext();
+                        DisableRebootTimeOut();
+                    }
+                    else if (OriginalType == FlashAppType.PhoneInfoApp)
+                    {
+                        Result.Type = ReadPhoneInfoVariable("TYPE");
+                        Result.ProductCode = ReadPhoneInfoVariable("CTR");
+                        Result.Imei = ReadPhoneInfoVariable("IMEI");
+                    }
+                    else
+                    {
+                        //SwitchToPhoneInfoAppContextLegacy();
+
+                        //SwitchAwayToPhoneInfoAppContextLegacy();
+                    }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
 
                 if (Result.App == FlashAppType.FlashApp)
                 {
@@ -1032,7 +1053,10 @@ namespace WPinternals
                         SwitchToBootManagerContext();
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
 
                 Result.State = PhoneInfoState.Extended;
             }
@@ -1120,6 +1144,28 @@ namespace WPinternals
             DisableRebootTimeOut();
             Info.App = FlashAppType.PhoneInfoApp;
             InterfaceChanged(PhoneInterfaces.Lumia_Flash);
+        }
+
+        internal void SwitchToPhoneInfoAppContextLegacy()
+        {
+            byte[] Request = new byte[4];
+            ByteOperations.WriteAsciiString(Request, 0, "NOKP");
+            ExecuteRawVoidMethod(Request);
+
+            //DisableRebootTimeOut();
+            Info.App = FlashAppType.PhoneInfoApp;
+            InterfaceChanged(PhoneInterfaces.Lumia_Bootloader);
+        }
+
+        internal void SwitchAwayToPhoneInfoAppContextLegacy()
+        {
+            byte[] Request = new byte[4];
+            ByteOperations.WriteAsciiString(Request, 0, "NOKA");
+            ExecuteRawVoidMethod(Request);
+
+            //DisableRebootTimeOut();
+            //Info.App = FlashAppType.FlashApp;
+            //InterfaceChanged(PhoneInterfaces.Lumia_Flash);
         }
 
         internal void SwitchToFlashAppContext()

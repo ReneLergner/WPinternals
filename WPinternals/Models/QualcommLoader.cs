@@ -69,10 +69,16 @@ namespace WPinternals
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
 
             return Result;
         }
@@ -121,7 +127,10 @@ namespace WPinternals
                 Result = new byte[BufferSize];
                 System.Buffer.BlockCopy(Buffer, 0, Result, 0, BufferSize);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
 
             return Result;
         }

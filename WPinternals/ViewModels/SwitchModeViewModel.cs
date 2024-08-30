@@ -101,7 +101,10 @@ namespace WPinternals
                         PhoneNotifier.CurrentInterface = PhoneInterfaces.Lumia_Flash;
                         PhoneNotifier.NotifyArrival();
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
                 }
             }
 
@@ -472,7 +475,10 @@ namespace WPinternals
                     CurrentMode = PhoneInterfaces.Lumia_Flash;
                     PhoneNotifier.NotifyArrival();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
             }
 
             if (CurrentMode == TargetMode)
@@ -556,7 +562,10 @@ namespace WPinternals
                 {
                     FlashModel.SwitchToFlashAppContext();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
             }
             PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: true);
 
@@ -641,7 +650,10 @@ namespace WPinternals
                 {
                     FlashModel.SwitchToFlashAppContext();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
             }
             PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
 

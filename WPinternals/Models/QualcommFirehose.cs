@@ -18,6 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -100,7 +101,10 @@ namespace WPinternals
                         LogFile.Log("Programmer failed to authenticate Digital Signature", LogType.FileOnly);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogFile.LogException(ex, LogType.FileOnly);
+                }
             }
             while (!HandshakeCompleted && (HelloSendCount < 6));
 

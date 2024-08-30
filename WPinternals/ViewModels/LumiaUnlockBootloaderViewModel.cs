@@ -82,7 +82,10 @@ namespace WPinternals
                         Result = true;
                         LogFile.Log("Loader sent successfully");
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                    }
 
                     if (Result)
                     {

@@ -318,7 +318,10 @@ namespace WPinternals
                                 s = new FileStream(args[3], FileMode.Open, FileAccess.Read);
                                 Archive = new ZipArchive(s);
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                LogFile.LogException(ex, LogType.FileOnly);
+                            }
 
                             if (Archive == null)
                             {

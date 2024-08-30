@@ -73,7 +73,10 @@ namespace WPinternals
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
         }
 
         internal void AttachQualcommSerial(string DevicePath)
@@ -119,7 +122,10 @@ namespace WPinternals
                 SerialDevice.Close();
                 SerialDevice.Dispose();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogFile.LogException(ex, LogType.FileOnly);
+            }
         }
 
         protected override void Dispose(bool disposing)
