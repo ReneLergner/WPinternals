@@ -89,6 +89,11 @@ namespace WPinternals
 
                 foreach (string Line in Lines)
                 {
+                    if (string.IsNullOrEmpty(Line))
+                    {
+                        continue;
+                    }
+
                     if (Line[0] != ':')
                     {
                         throw new BadImageFormatException();
