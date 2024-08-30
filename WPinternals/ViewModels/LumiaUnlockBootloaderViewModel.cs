@@ -2657,50 +2657,53 @@ namespace WPinternals
             UInt64 totalwritten = 0;
             int ProgressPercentage = 0;
 
-            foreach (FlashPart Part in FlashParts)
+            if (FlashParts != null)
             {
-                InputStreamLength += (ulong)Part.Stream.Length;
-            }
-
-            foreach (FlashPart Part in FlashParts)
-            {
-                Stream InputStream = new DecompressedStream(Part.Stream);
-
-                if (InputStream != null)
+                foreach (FlashPart Part in FlashParts)
                 {
-                    using (InputStream)
+                    InputStreamLength += (ulong)Part.Stream.Length;
+                }
+
+                foreach (FlashPart Part in FlashParts)
+                {
+                    Stream InputStream = new DecompressedStream(Part.Stream);
+
+                    if (InputStream != null)
                     {
-                        const int FlashBufferSize = 0x200000; // Flash 8 GB phone -> buffersize 0x200000 = 11:45 min, buffersize 0x20000 = 12:30 min
-                        byte[] FlashBuffer = new byte[FlashBufferSize];
-                        int BytesRead;
-                        UInt64 i = 0;
-                        do
+                        using (InputStream)
                         {
-                            BytesRead = InputStream.Read(FlashBuffer, 0, FlashBufferSize);
-
-                            byte[] FlashBufferFinalSize;
-                            if (BytesRead > 0)
+                            const int FlashBufferSize = 0x200000; // Flash 8 GB phone -> buffersize 0x200000 = 11:45 min, buffersize 0x20000 = 12:30 min
+                            byte[] FlashBuffer = new byte[FlashBufferSize];
+                            int BytesRead;
+                            UInt64 i = 0;
+                            do
                             {
-                                if (BytesRead == FlashBufferSize)
+                                BytesRead = InputStream.Read(FlashBuffer, 0, FlashBufferSize);
+
+                                byte[] FlashBufferFinalSize;
+                                if (BytesRead > 0)
                                 {
-                                    FlashBufferFinalSize = FlashBuffer;
-                                }
-                                else
-                                {
-                                    FlashBufferFinalSize = new byte[BytesRead];
-                                    Buffer.BlockCopy(FlashBuffer, 0, FlashBufferFinalSize, 0, BytesRead);
+                                    if (BytesRead == FlashBufferSize)
+                                    {
+                                        FlashBufferFinalSize = FlashBuffer;
+                                    }
+                                    else
+                                    {
+                                        FlashBufferFinalSize = new byte[BytesRead];
+                                        Buffer.BlockCopy(FlashBuffer, 0, FlashBufferFinalSize, 0, BytesRead);
+                                    }
+
+                                    FlashModel.FlashSectors((UInt32)(Part.StartSector + (i / 0x200)), FlashBufferFinalSize, ProgressPercentage);
                                 }
 
-                                FlashModel.FlashSectors((UInt32)(Part.StartSector + (i / 0x200)), FlashBufferFinalSize, ProgressPercentage);
+                                UpdateWorkingStatus(Part.ProgressText, null, (uint)ProgressPercentage, WPinternalsStatus.Flashing);
+                                totalwritten += (UInt64)FlashBuffer.Length / 0x200;
+                                ProgressPercentage = (int)((double)totalwritten / (InputStreamLength / 0x200) * 100);
+
+                                i += FlashBufferSize;
                             }
-
-                            UpdateWorkingStatus(Part.ProgressText, null, (uint)ProgressPercentage, WPinternalsStatus.Flashing);
-                            totalwritten += (UInt64)FlashBuffer.Length / 0x200;
-                            ProgressPercentage = (int)((double)totalwritten / (InputStreamLength / 0x200) * 100);
-
-                            i += FlashBufferSize;
+                            while (BytesRead == FlashBufferSize);
                         }
-                        while (BytesRead == FlashBufferSize);
                     }
                 }
             }
