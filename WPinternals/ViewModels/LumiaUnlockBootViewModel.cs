@@ -1025,6 +1025,8 @@ namespace WPinternals
                     {
                         ValidateSupportedFfuPath();
                     }
+
+                    OkCommand.RaiseCanExecuteChanged();
                 }
             }
         }
