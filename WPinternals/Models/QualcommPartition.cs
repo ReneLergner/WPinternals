@@ -160,24 +160,27 @@ namespace WPinternals
                 }
             }
 
-            byte[] RootCertificate = Signatures[^1];
-
-            for (int i = 0; i < Signatures.Count; i++)
+            if (Signatures.Count > 0)
             {
-                if (i + 1 != Signatures.Count)
+                byte[] RootCertificate = Signatures[^1];
+
+                for (int i = 0; i < Signatures.Count; i++)
                 {
+                    if (i + 1 != Signatures.Count)
+                    {
 #if DEBUG
-                    System.Diagnostics.Debug.Print("Cert: " + Converter.ConvertHexToString(SHA256.HashData(Signatures[i]), ""));
+                        System.Diagnostics.Debug.Print("Cert: " + Converter.ConvertHexToString(SHA256.HashData(Signatures[i]), ""));
 #endif
-                }
-                else
-                {
-                    // This is the last certificate. So this is the root key.
-                    RootKeyHash = SHA256.HashData(Signatures[i]);
+                    }
+                    else
+                    {
+                        // This is the last certificate. So this is the root key.
+                        RootKeyHash = SHA256.HashData(Signatures[i]);
 
 #if DEBUG
-                    System.Diagnostics.Debug.Print("RKH: " + Converter.ConvertHexToString(RootKeyHash, ""));
+                        System.Diagnostics.Debug.Print("RKH: " + Converter.ConvertHexToString(RootKeyHash, ""));
 #endif
+                    }
                 }
             }
         }
