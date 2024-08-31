@@ -67,9 +67,9 @@ namespace WPinternals
                 {
                     try
                     {
-                        PhoneInfo Info = CurrentModel.ReadPhoneInfo();
+                        LumiaPhoneInfoAppPhoneInfo Info = CurrentModel.ReadPhoneInfo();
 
-                        EffectivePhoneInfoSecurityStatus = Info.UefiSecureBootEnabled;
+                        //EffectivePhoneInfoSecurityStatus = Info.UefiSecureBootEnabled; // FIXME
 
                         LogFile.Log("Effective Bootloader Security Status: " + EffectivePhoneInfoSecurityStatus.ToString());
                     }

@@ -506,7 +506,7 @@ namespace WPinternals
                 bool Result = true;
 
                 LumiaFlashAppModel Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                PhoneInfo Info = Phone.ReadPhoneInfo(false);
+                LumiaFlashAppPhoneInfo Info = Phone.ReadPhoneInfo(false);
 
                 #region Remove bootloader changes
 

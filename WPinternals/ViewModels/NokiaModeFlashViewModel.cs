@@ -67,7 +67,7 @@ namespace WPinternals
                 {
                     try
                     {
-                        PhoneInfo Info = CurrentModel.ReadPhoneInfo();
+                        LumiaFlashAppPhoneInfo Info = CurrentModel.ReadPhoneInfo();
 
                         if (Info.FlashAppProtocolVersionMajor < 2)
                         {

@@ -222,15 +222,15 @@ namespace WPinternals
                             LogFile.Log("Charging status: " + ChargingStatus);
                         }
 
-                        PhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
+                        LumiaFlashAppPhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
                         BootloaderDescription = Info.FlashAppProtocolVersionMajor < 2 ? "Lumia Bootloader Spec A" : "Lumia Bootloader Spec B";
 
                         LogFile.Log("Bootloader: " + BootloaderDescription);
 
-                        ProductCode = Info.ProductCode;
+                        ProductCode = "";//TODO: FIXME: Info.ProductCode;
                         LogFile.Log("ProductCode: " + ProductCode);
 
-                        ProductType = Info.Type;
+                        ProductType = "";//TODO: FIXME: Info.Type;
                         LogFile.Log("ProductType: " + ProductType);
 
                         if (RootKeyHash == null)

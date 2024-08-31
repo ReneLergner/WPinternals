@@ -59,7 +59,7 @@ namespace WPinternals
 
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
-                PhoneInfo Info;
+                LumiaFlashAppPhoneInfo Info;
                 if (DoResetFirst)
                 {
                     // The phone will be reset before flashing, so we have the opportunity to get some more info from the phone
@@ -232,7 +232,7 @@ namespace WPinternals
             if (DoResetFirst)
             {
                 // The phone will be reset before flashing, so we have the opportunity to get some more info from the phone
-                PhoneInfo Info = FlashModel.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo();
                 Info.Log(LogType.ConsoleOnly);
             }
 
@@ -338,7 +338,7 @@ namespace WPinternals
 
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
-                PhoneInfo Info = FlashModel.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo();
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
@@ -447,7 +447,7 @@ namespace WPinternals
 
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
-                PhoneInfo Info = FlashModel.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo();
 
                 byte[] Data = File.ReadAllBytes(DataPath);
 
@@ -484,7 +484,7 @@ namespace WPinternals
         internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null)
         {
             LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
-            PhoneInfo Info = Model.ReadPhoneInfo();
+            LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
 
             byte[] GPTChunk = Model.GetGptChunk(131072u);
 
@@ -555,9 +555,9 @@ namespace WPinternals
             }
 
             LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
-            PhoneInfo Info = Model.ReadPhoneInfo();
+            LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
 
-            string Type = Info.Type;
+            string Type = /*TODO: FIXME: Info.Type*/"";
             if (ProgrammerPath == null)
             {
                 ProgrammerPath = GetProgrammerPath(Info.RKH, Type);
@@ -1293,7 +1293,7 @@ namespace WPinternals
                         if (!HeadersFull)
                         {
                             Step = 12;
-                            App.Config.SetProfile(Info.Type, Info.PlatformID, Info.ProductCode, Info.Firmware, FFU.GetFirmwareVersion(), CurrentGapFill, ExploitHeaderAllocationSize, AssumeImageHeaderFallsInGap, AllocateAsyncBuffersOnPhone);
+                            App.Config.SetProfile(/*TODO: FIXME: Info.Type*/"", Info.PlatformID, /*TODO: FIXME: Info.ProductCode*/"", Info.Firmware, FFU.GetFirmwareVersion(), CurrentGapFill, ExploitHeaderAllocationSize, AssumeImageHeaderFallsInGap, AllocateAsyncBuffersOnPhone);
                             if (ShowProgress)
                             {
                                 LogFile.Log("Custom flash succeeded!", LogType.FileAndConsole);
@@ -2161,7 +2161,7 @@ namespace WPinternals
                             GPTChanged = true;
                         }
 
-                        PhoneInfo Info = FlashModel.ReadPhoneInfo(false);
+                        LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(false);
 
                         // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
                         if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)
@@ -2520,7 +2520,7 @@ namespace WPinternals
                                 GPTChanged = true;
                             }
 
-                            PhoneInfo Info = FlashModel.ReadPhoneInfo(false);
+                            LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(false);
 
                             // We should only clear NV if there was no backup NV to be restored and the current NV contains the SB unlock.
                             if ((NvBackupPartition == null) && !Info.UefiSecureBootEnabled)

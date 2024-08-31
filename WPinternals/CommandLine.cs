@@ -85,8 +85,11 @@ namespace WPinternals
             PhoneNotifierViewModel Notifier;
             LumiaFlashAppModel FlashModel;
             LumiaBootManagerAppModel BootMgrModel;
+            LumiaPhoneInfoAppModel PhoneInfoModel;
             NokiaPhoneModel NormalModel;
-            PhoneInfo Info;
+            LumiaFlashAppPhoneInfo FlashInfo;
+            LumiaPhoneInfoAppPhoneInfo PhoneInfo;
+            LumiaBootManagerPhoneInfo BootManagerInfo;
             string ProductType;
             string ProductCode;
             string OperatorCode;
@@ -543,8 +546,8 @@ namespace WPinternals
                         {
                             UIContext.Send(s => Notifier.Start(), null);
                             FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                            Info = FlashModel.ReadPhoneInfo();
-                            Info.Log(LogType.ConsoleOnly);
+                            FlashInfo = FlashModel.ReadPhoneInfo();
+                            FlashInfo.Log(LogType.ConsoleOnly);
 
                             FFU ProfileFFU = null;
                             FFU CurrentFFU;
@@ -557,7 +560,7 @@ namespace WPinternals
                                     string PlatformID = CurrentFFU.PlatformID;
 
                                     // Check if the current FFU matches the connected phone, so that the FFU can be used for profiling.
-                                    if (Info.PlatformID.StartsWith(PlatformID, StringComparison.OrdinalIgnoreCase))
+                                    if (FlashInfo.PlatformID.StartsWith(PlatformID, StringComparison.OrdinalIgnoreCase))
                                     {
                                         ProfileFFU = CurrentFFU;
                                     }
@@ -566,7 +569,7 @@ namespace WPinternals
 
                             if (ProfileFFU == null)
                             {
-                                List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
+                                List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => FlashInfo.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
                                 ProfileFFU = FFUs.Count > 0
                                     ? new FFU(FFUs[0].Path)
                                     : throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
@@ -692,8 +695,8 @@ namespace WPinternals
                         Notifier = new PhoneNotifierViewModel();
                         UIContext.Send(s => Notifier.Start(), null);
                         FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                        Info = FlashModel.ReadPhoneInfo();
-                        Info.Log(LogType.ConsoleOnly);
+                        FlashInfo = FlashModel.ReadPhoneInfo();
+                        FlashInfo.Log(LogType.ConsoleOnly);
                         Notifier.Stop();
                         break;
                     case "unlockbootloader":
@@ -704,8 +707,8 @@ namespace WPinternals
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
                             FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                            Info = FlashModel.ReadPhoneInfo();
-                            Info.Log(LogType.ConsoleOnly);
+                            FlashInfo = FlashModel.ReadPhoneInfo();
+                            FlashInfo.Log(LogType.ConsoleOnly);
 
                             FFU ProfileFFU = null;
                             FFU SupportedFFU = null;
@@ -719,7 +722,7 @@ namespace WPinternals
                                     string PlatformID = CurrentFFU.PlatformID;
 
                                     // Check if the current FFU matches the connected phone, so that the FFU can be used for profiling.
-                                    if (Info.PlatformID.StartsWith(PlatformID, StringComparison.OrdinalIgnoreCase))
+                                    if (FlashInfo.PlatformID.StartsWith(PlatformID, StringComparison.OrdinalIgnoreCase))
                                     {
                                         ProfileFFU = CurrentFFU;
                                     }
@@ -734,7 +737,7 @@ namespace WPinternals
 
                             if (ProfileFFU == null)
                             {
-                                List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
+                                List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => FlashInfo.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
                                 ProfileFFU = FFUs.Count > 0
                                     ? new FFU(FFUs[0].Path)
                                     : throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
@@ -777,8 +780,8 @@ namespace WPinternals
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
                             FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                            Info = FlashModel.ReadPhoneInfo();
-                            Info.Log(LogType.ConsoleOnly);
+                            FlashInfo = FlashModel.ReadPhoneInfo();
+                            FlashInfo.Log(LogType.ConsoleOnly);
                             LogFile.Log("Preparing to flash Custom ROM", LogType.FileAndConsole);
                             await LumiaV2UnlockBootViewModel.LumiaV2FlashArchive(Notifier, CustomRomPath);
                             LogFile.Log("Custom ROM flashed successfully", LogType.FileAndConsole);
@@ -808,10 +811,10 @@ namespace WPinternals
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
                             FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                            Info = FlashModel.ReadPhoneInfo();
-                            Info.Log(LogType.ConsoleOnly);
+                            FlashInfo = FlashModel.ReadPhoneInfo();
+                            FlashInfo.Log(LogType.ConsoleOnly);
                             LogFile.Log("Flashing FFU...", LogType.FileAndConsole);
-                            await Task.Run(() => FlashModel.FlashFFU(new FFU(FFUPath), true, (byte)(!Info.IsBootloaderSecure ? FlashOptions.SkipSignatureCheck : 0)));
+                            await Task.Run(() => FlashModel.FlashFFU(new FFU(FFUPath), true, (byte)(!FlashInfo.IsBootloaderSecure ? FlashOptions.SkipSignatureCheck : 0)));
                             LogFile.Log("FFU flashed successfully", LogType.FileAndConsole);
                             Notifier.Stop();
                         }
@@ -1275,15 +1278,53 @@ namespace WPinternals
                         }
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
-                            BootMgrModel = (LumiaBootManagerAppModel)Notifier.CurrentModel;
-                            Info = BootMgrModel.ReadPhoneInfo();
-                            ProductCode = Info.ProductCode;
+                            (Notifier.CurrentModel as LumiaBootManagerAppModel).SwitchToPhoneInfoAppContext();
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                            {
+                                await Notifier.WaitForArrival();
+                            }
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                            {
+                                throw new WPinternalsException("Unexpected Mode");
+                            }
+
+                            PhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
+                            PhoneInfo = PhoneInfoModel.ReadPhoneInfo();
+                            ProductCode = PhoneInfo.ProductCode;
+                        }
+                        else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_PhoneInfo)
+                        {
+                            PhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
+                            PhoneInfo = PhoneInfoModel.ReadPhoneInfo();
+                            ProductCode = PhoneInfo.ProductCode;
                         }
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
                         {
-                            FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
-                            Info = FlashModel.ReadPhoneInfo();
-                            ProductCode = Info.ProductCode;
+                            bool ModernFlashApp = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+                            if (ModernFlashApp)
+                            {
+                                ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContext();
+                            }
+                            else
+                            {
+                                ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+                            }
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                            {
+                                await Notifier.WaitForArrival();
+                            }
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                            {
+                                throw new WPinternalsException("Unexpected Mode");
+                            }
+
+                            PhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
+                            PhoneInfo = PhoneInfoModel.ReadPhoneInfo();
+                            ProductCode = PhoneInfo.ProductCode;
                         }
                         else
                         {
@@ -1447,14 +1488,16 @@ namespace WPinternals
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
                             BootMgrModel = (LumiaBootManagerAppModel)Notifier.CurrentModel;
-                            Info = BootMgrModel.ReadPhoneInfo();
-                            ProductType = Info.Type;
+                            BootManagerInfo = BootMgrModel.ReadPhoneInfo();
+                            //ProductType = BootManagerInfo.Type; // TODO: FIXME
+                            ProductType = "";
                         }
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
                         {
                             FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
-                            Info = FlashModel.ReadPhoneInfo();
-                            ProductType = Info.Type;
+                            FlashInfo = FlashModel.ReadPhoneInfo();
+                            //ProductType = FlashInfo.Type; // TODO: FIXME
+                            ProductType = "";
                         }
                         else
                         {
@@ -1564,14 +1607,16 @@ namespace WPinternals
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
                             BootMgrModel = (LumiaBootManagerAppModel)Notifier.CurrentModel;
-                            Info = BootMgrModel.ReadPhoneInfo();
-                            ProductCode = Info.ProductCode;
+                            BootManagerInfo = BootMgrModel.ReadPhoneInfo();
+                            //ProductCode = BootManagerInfo.ProductCode; // TODO: FIXME
+                            ProductCode = "";
                         }
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
                         {
                             FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
-                            Info = FlashModel.ReadPhoneInfo();
-                            ProductCode = Info.ProductCode;
+                            FlashInfo = FlashModel.ReadPhoneInfo();
+                            //ProductCode = FlashInfo.ProductCode; // TODO: FIXME
+                            ProductCode = "";
                         }
                         else
                         {

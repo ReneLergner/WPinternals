@@ -92,8 +92,8 @@ namespace WPinternals
                             LogFile.Log("HWID: " + HWID);
                         }
 
-                        PhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
-                        BootloaderDescription = Info.FlashAppProtocolVersionMajor < 2 ? "Lumia Bootloader Spec A" : "Lumia Bootloader Spec B";
+                        LumiaPhoneInfoAppPhoneInfo Info = CurrentModel.ReadPhoneInfo(true);
+                        BootloaderDescription = Info.PhoneInfoAppVersionMajor < 2 ? "Lumia Bootloader Spec A" : "Lumia Bootloader Spec B";
 
                         LogFile.Log("Bootloader: " + BootloaderDescription);
 

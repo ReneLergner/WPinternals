@@ -1510,7 +1510,7 @@ namespace WPinternals
 
                 byte[] EFIESPBackup = null;
 
-                PhoneInfo Info = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo();
                 bool IsSpecB = Info.FlashAppProtocolVersionMajor >= 2;
                 bool UndoEFIESPPadding = false;
 
@@ -1862,7 +1862,7 @@ namespace WPinternals
 
             try
             {
-                PhoneInfo Info = FlashModel.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo();
                 bool IsSpecB = Info.FlashAppProtocolVersionMajor >= 2;
 
                 if (ProfileFFUPath == null)
@@ -2589,7 +2589,7 @@ namespace WPinternals
 
         private static async Task LumiaFlashParts(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> Parts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string EDEPath = null)
         {
-            PhoneInfo Info = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo();
+            LumiaFlashAppPhoneInfo Info = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo();
             bool IsSpecA = Info.FlashAppProtocolVersionMajor < 2;
 
             if (IsSpecA)

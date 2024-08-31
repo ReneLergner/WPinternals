@@ -193,7 +193,7 @@ namespace WPinternals
             try
             {
                 LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
-                PhoneInfo Info = Model.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
 
                 if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
                 {

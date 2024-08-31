@@ -19,6 +19,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -26,6 +27,8 @@ namespace WPinternals
 {
     internal class LumiaPhoneInfoAppModel : NokiaFlashModel
     {
+        internal readonly LumiaPhoneInfoAppPhoneInfo PhoneInfoAppInfo = new();
+
         //
         // Not valid commands
         //
@@ -73,7 +76,7 @@ namespace WPinternals
             // NOKH = Get Phone Info (IMEI and info from Product.dat) - Not available on some phones, like Lumia 640.
             // NOKV = Info Query
 
-            if (Info.FlashAppProtocolVersionMajor >= 2)
+            if (PhoneInfoAppInfo.PhoneInfoAppVersionMajor >= 2)
             {
                 return null;
             }
@@ -93,23 +96,58 @@ namespace WPinternals
             return PhoneInfoData;
         }
 
-        internal PhoneInfo ReadPhoneInfo(bool ExtendedInfo = true)
+        internal LumiaPhoneInfoAppPhoneInfo ReadPhoneInfo(bool ExtendedInfo = true)
         {
             // NOKH = Get Phone Info (IMEI and info from Product.dat) - Not available on some phones, like Lumia 640.
             // NOKV = Info Query
 
-            bool PhoneInfoLogged = Info.State != PhoneInfoState.Empty;
-            ReadPhoneInfoCommon();
+            bool PhoneInfoLogged = PhoneInfoAppInfo.State != PhoneInfoState.Empty;
+            ReadPhoneInfoPhoneInfoApp();
 
-            PhoneInfo Result = Info;
+            LumiaPhoneInfoAppPhoneInfo Result = PhoneInfoAppInfo;
 
             if (ExtendedInfo && (Result.State == PhoneInfoState.Basic))
             {
                 try
                 {
-                    Result.Type = ReadPhoneInfoVariable("TYPE");
-                    Result.ProductCode = ReadPhoneInfoVariable("CTR");
-                    Result.Imei = ReadPhoneInfoVariable("IMEI");
+                    if (Result.PhoneInfoAppProtocolVersionMajor >= 2)
+                    {
+                        Result.Type = ReadPhoneInfoVariable("TYPE");
+                        Result.ProductCode = ReadPhoneInfoVariable("CTR");
+                        Result.Imei = ReadPhoneInfoVariable("IMEI");
+                    }
+                    else
+                    {
+                        /*
+                         * Version: 1.1.1.3
+                         * TYPE: RM-885
+                         * BTR: 059R0M0
+                         * LPSN: ...
+                         * HWID: 1000
+                         * CTR: 059S4B1
+                         * MC: 0205354
+                         * IMEI: ...
+                         */
+                        string PhoneInfoData = GetPhoneInfo();
+                        if (!string.IsNullOrEmpty(PhoneInfoData))
+                        {
+                            string[] Variables = PhoneInfoData.Split("\n");
+                            Dictionary<string, string> FormattedVariables = [];
+                            foreach (string Variable in Variables)
+                            {
+                                if (!Variable.Contains(":"))
+                                {
+                                    continue;
+                                }
+
+                                FormattedVariables.Add(Variable.Split(":")[0].Trim(), Variable.Split(":")[1].Trim());
+                            }
+
+                            Result.Type = FormattedVariables["TYPE"];
+                            Result.ProductCode = FormattedVariables["CTR"];
+                            Result.Imei = FormattedVariables["IMEI"];
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -122,6 +160,55 @@ namespace WPinternals
             if (!PhoneInfoLogged)
             {
                 Result.Log(LogType.FileOnly);
+            }
+
+            return Result;
+        }
+
+        internal LumiaPhoneInfoAppPhoneInfo ReadPhoneInfoPhoneInfoApp()
+        {
+            // NOKH = Get Phone Info (IMEI and info from Product.dat) - Not available on some phones, like Lumia 640.
+            // NOKV = Info Query
+
+            LumiaPhoneInfoAppPhoneInfo Result = PhoneInfoAppInfo;
+
+            byte[] Request = new byte[4];
+            ByteOperations.WriteAsciiString(Request, 0, InfoQuerySignature);
+            byte[] Response = ExecuteRawMethod(Request);
+            if ((Response != null) && (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU"))
+            {
+                Result.App = (FlashAppType)Response[5];
+
+                switch (Result.App)
+                {
+                    case FlashAppType.PhoneInfoApp:
+                        Result.PhoneInfoAppProtocolVersionMajor = Response[6];
+                        Result.PhoneInfoAppProtocolVersionMinor = Response[7];
+                        Result.PhoneInfoAppVersionMajor = Response[8];
+                        Result.PhoneInfoAppVersionMinor = Response[9];
+                        break;
+                }
+
+                byte SubblockCount = Response[10];
+                int SubblockOffset = 11;
+
+                for (int i = 0; i < SubblockCount; i++)
+                {
+                    byte SubblockID = Response[SubblockOffset + 0x00];
+
+                    LogFile.Log($"{Result.App} SubblockID: 0x{SubblockID:X}");
+
+                    UInt16 SubblockLength = BigEndian.ToUInt16(Response, SubblockOffset + 0x01);
+                    int SubblockPayloadOffset = SubblockOffset + 3;
+                    byte SubblockVersion;
+                    switch (SubblockID)
+                    {
+                        case 0x20:
+                            // CRC header info
+                            break;
+                    }
+                    SubblockOffset += SubblockLength + 3;
+                }
             }
 
             return Result;
@@ -141,7 +228,6 @@ namespace WPinternals
         internal string ReadProductCode()
         {
             string Result = ReadPhoneInfoVariable("CTR");
-            SwitchToFlashAppContext();
             return Result;
         }
     }

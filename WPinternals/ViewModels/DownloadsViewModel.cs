@@ -531,39 +531,62 @@ namespace WPinternals
 
             if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
             {
-                PhoneInfo FlashAppInfo = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
+                LumiaFlashAppPhoneInfo FlashAppInfo = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
                 FirmwareVersion = FlashAppInfo.Firmware;
 
                 IsSwitchingInterface = true;
 
-                (Notifier.CurrentModel as LumiaFlashAppModel).SwitchToPhoneInfoAppContext();
-
-                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                try
                 {
-                    await Notifier.WaitForArrival();
+                    bool ModernFlashApp = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+                    if (ModernFlashApp)
+                    {
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContext();
+                    }
+                    else
+                    {
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+                    }
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                    {
+                        await Notifier.WaitForArrival();
+                    }
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
+
+                    LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
+                    LumiaPhoneInfoAppPhoneInfo Info = LumiaPhoneInfoModel.ReadPhoneInfo();
+                    ProductType = Info.Type;
+                    OperatorCode = "";
+                    ProductCode = Info.ProductCode;
+
+                    ModernFlashApp = Info.PhoneInfoAppVersionMajor >= 2;
+                    if (ModernFlashApp)
+                    {
+                        LumiaPhoneInfoModel.SwitchToFlashAppContext();
+                    }
+                    else
+                    {
+                        LumiaPhoneInfoModel.ContinueBoot();
+                    }
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        await Notifier.WaitForArrival();
+                    }
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
                 }
-
-                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                catch (Exception ex)
                 {
-                    throw new WPinternalsException("Unexpected Mode");
-                }
-
-                LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
-                PhoneInfo Info = LumiaPhoneInfoModel.ReadPhoneInfo();
-                ProductType = Info.Type;
-                OperatorCode = "";
-                ProductCode = Info.ProductCode;
-
-                ((LumiaPhoneInfoAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
-
-                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                {
-                    await Notifier.WaitForArrival();
-                }
-
-                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                {
-                    throw new WPinternalsException("Unexpected Mode");
+                    LogFile.LogException(ex);
                 }
 
                 IsSwitchingInterface = false;
@@ -571,14 +594,22 @@ namespace WPinternals
             else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_PhoneInfo)
             {
                 LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
-                PhoneInfo Info = LumiaPhoneInfoModel.ReadPhoneInfo();
+                LumiaPhoneInfoAppPhoneInfo Info = LumiaPhoneInfoModel.ReadPhoneInfo();
                 ProductType = Info.Type;
                 OperatorCode = "";
                 ProductCode = Info.ProductCode;
 
                 IsSwitchingInterface = true;
 
-                ((LumiaPhoneInfoAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                bool ModernFlashApp = Info.PhoneInfoAppVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    LumiaPhoneInfoModel.SwitchToFlashAppContext();
+                }
+                else
+                {
+                    LumiaPhoneInfoModel.ContinueBoot();
+                }
 
                 if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                 {
@@ -590,10 +621,18 @@ namespace WPinternals
                     throw new WPinternalsException("Unexpected Mode");
                 }
 
-                PhoneInfo FlashAppInfo = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
+                LumiaFlashAppPhoneInfo FlashAppInfo = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
                 FirmwareVersion = FlashAppInfo.Firmware;
 
-                (Notifier.CurrentModel as LumiaFlashAppModel).SwitchToPhoneInfoAppContext();
+                ModernFlashApp = FlashAppInfo.FlashAppProtocolVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContext();
+                }
+                else
+                {
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+                }
 
                 if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
                 {
@@ -619,6 +658,8 @@ namespace WPinternals
 
                 ProductType = TempProductType;
                 ProductCode = LumiaNormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode"); // 059Q9D7
+
+                FirmwareVersion = LumiaNormalModel.ExecuteJsonMethodAsString("ReadSwVersion", "SwVersion");
             }
         }
         public DelegateCommand AddFFUCommand { get; } = null;

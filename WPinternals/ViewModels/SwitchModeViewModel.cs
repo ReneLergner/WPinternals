@@ -82,7 +82,7 @@ namespace WPinternals
         {
             if ((PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) && (TargetMode == PhoneInterfaces.Lumia_Flash))
             {
-                PhoneInfo Info = ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(false);
+                LumiaBootManagerPhoneInfo Info = ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(false);
                 if (Info.BootManagerProtocolVersionMajor >= 2)
                 {
                     try
@@ -293,7 +293,7 @@ namespace WPinternals
                     Params.Add("ResetMethod", "HwReset");
                     try
                     {
-                        ((NokiaPhoneModel)CurrentModel).ExecuteJsonMethodAsync("SetDeviceMode", Params);
+                        ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteJsonMethodAsync("SetDeviceMode", Params);
                         PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                     }
                     catch (Exception Ex)
@@ -308,7 +308,7 @@ namespace WPinternals
                     switch (TargetMode)
                     {
                         case null:
-                            ((LumiaFlashAppModel)CurrentModel).Shutdown();
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).Shutdown();
                             ModeSwitchProgressWrapper("Please disconnect your device. Waiting...", null);
                             LogFile.Log("Please disconnect your device. Waiting...", LogType.FileAndConsole);
                             new Thread(() =>
@@ -319,26 +319,26 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Lumia_Normal:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaFlashAppModel)CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
                             ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
                             LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_Bootloader:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaFlashAppModel)CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
                             ModeSwitchProgressWrapper("Rebooting phone to Bootloader mode...", null);
                             LogFile.Log("Rebooting phone to Bootloader mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_PhoneInfo:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ModernFlashApp = ((LumiaFlashAppModel)CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+                            ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
                             if (ModernFlashApp)
                             {
-                                ((LumiaFlashAppModel)CurrentModel).SwitchToPhoneInfoAppContext();
+                                ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
                             }
                             else
                             {
-                                ((LumiaFlashAppModel)CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+                                ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
                             }
                             ModeSwitchProgressWrapper("Rebooting phone to Phone Info mode...", null);
                             LogFile.Log("Rebooting phone to Phone Info mode", LogType.FileAndConsole);
@@ -349,7 +349,7 @@ namespace WPinternals
                         case PhoneInterfaces.Lumia_Flash: // attempt to boot from limited flash to full flash
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                             byte[] RebootToFlashCommand = [0x4E, 0x4F, 0x4B, 0x53]; // NOKS
-                            ((LumiaFlashAppModel)CurrentModel).ExecuteRawVoidMethod(RebootToFlashCommand);
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootToFlashCommand);
                             ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
                             LogFile.Log("Rebooting phone to Flash mode", LogType.FileAndConsole);
                             break;
@@ -359,7 +359,7 @@ namespace WPinternals
                         case PhoneInterfaces.Qualcomm_Download:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                             byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
-                            RebootCommandResult = ((LumiaFlashAppModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
+                            RebootCommandResult = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
                             if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
                             {
                                 IsSwitchingInterface = false;
@@ -381,26 +381,26 @@ namespace WPinternals
                     {
                         case PhoneInterfaces.Lumia_Normal:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaPhoneInfoAppModel)CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
                             ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
                             LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_Bootloader:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ModernFlashApp = ((LumiaPhoneInfoAppModel)CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
+                            ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
                             if (ModernFlashApp)
                             {
-                                ((LumiaPhoneInfoAppModel)CurrentModel).SwitchToBootManagerContext();
+                                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToBootManagerContext();
                             }
                             ModeSwitchProgressWrapper("Rebooting phone to Bootloader mode...", null);
                             LogFile.Log("Rebooting phone to Bootloader mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_PhoneInfo: // attempt to boot from limited phone info to full phone info
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ModernFlashApp = ((LumiaPhoneInfoAppModel)CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
+                            ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
                             if (ModernFlashApp)
                             {
-                                ((LumiaPhoneInfoAppModel)CurrentModel).SwitchToPhoneInfoAppContext();
+                                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
                             }
                             ModeSwitchProgressWrapper("Rebooting phone to Phone Info mode...", null);
                             LogFile.Log("Rebooting phone to Phone Info mode", LogType.FileAndConsole);
@@ -410,14 +410,14 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Lumia_Flash:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ModernFlashApp = ((LumiaPhoneInfoAppModel)CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
+                            ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
                             if (ModernFlashApp)
                             {
-                                ((LumiaPhoneInfoAppModel)CurrentModel).SwitchToFlashAppContext();
+                                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
                             }
                             else
                             {
-                                ((LumiaPhoneInfoAppModel)CurrentModel).ContinueBoot();
+                                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
                             }
                             ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
                             LogFile.Log("Rebooting phone to Flash mode", LogType.FileAndConsole);
@@ -428,7 +428,7 @@ namespace WPinternals
                         case PhoneInterfaces.Qualcomm_Download:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                             byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
-                            RebootCommandResult = ((LumiaPhoneInfoAppModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
+                            RebootCommandResult = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
                             if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
                             {
                                 IsSwitchingInterface = false;
@@ -449,7 +449,7 @@ namespace WPinternals
                     switch (TargetMode)
                     {
                         case null:
-                            ((LumiaBootManagerAppModel)CurrentModel).Shutdown();
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).Shutdown();
                             ModeSwitchProgressWrapper("Please disconnect your device. Waiting...", null);
                             LogFile.Log("Please disconnect your device. Waiting...", LogType.FileAndConsole);
                             new Thread(() =>
@@ -460,13 +460,13 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Lumia_Normal:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaBootManagerAppModel)CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
                             ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
                             LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_Bootloader:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaBootManagerAppModel)CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
                             ModeSwitchProgressWrapper("Rebooting phone to Bootloader mode...", null);
                             LogFile.Log("Rebooting phone to Bootloader mode", LogType.FileAndConsole);
                             break;
@@ -476,7 +476,7 @@ namespace WPinternals
                         case PhoneInterfaces.Lumia_Flash: // attempt to boot from limited flash to full flash
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                             byte[] RebootToFlashCommand = [0x4E, 0x4F, 0x4B, 0x53]; // NOKS
-                            ((LumiaBootManagerAppModel)CurrentModel).ExecuteRawVoidMethod(RebootToFlashCommand);
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootToFlashCommand);
                             ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
                             LogFile.Log("Rebooting phone to Flash mode", LogType.FileAndConsole);
                             break;
@@ -486,7 +486,7 @@ namespace WPinternals
                         case PhoneInterfaces.Qualcomm_Download:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                             byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
-                            RebootCommandResult = ((LumiaBootManagerAppModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
+                            RebootCommandResult = ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
                             if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
                             {
                                 IsSwitchingInterface = false;
@@ -508,25 +508,25 @@ namespace WPinternals
                     {
                         case PhoneInterfaces.Lumia_Normal:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((MassStorage)CurrentModel).Reboot();
+                            ((MassStorage)PhoneNotifier.CurrentModel).Reboot();
                             ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
                             LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_Label:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrivedFromMassStorageMode;
-                            ((MassStorage)CurrentModel).Reboot();
+                            ((MassStorage)PhoneNotifier.CurrentModel).Reboot();
                             ModeSwitchProgressWrapper("Rebooting phone to Label mode...", null);
                             LogFile.Log("Rebooting phone to Label mode...", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_Flash:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrivedFromMassStorageMode;
-                            ((MassStorage)CurrentModel).Reboot();
+                            ((MassStorage)PhoneNotifier.CurrentModel).Reboot();
                             ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
                             LogFile.Log("Rebooting phone to Flash mode...", LogType.FileAndConsole);
                             break;
                         case null:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrivedFromMassStorageMode;
-                            ((MassStorage)CurrentModel).Reboot();
+                            ((MassStorage)PhoneNotifier.CurrentModel).Reboot();
                             ModeSwitchProgressWrapper("First rebooting phone to Flash mode...", null);
                             LogFile.Log("First rebooting phone to Bootloader mode...", LogType.FileAndConsole);
                             break;
@@ -626,7 +626,7 @@ namespace WPinternals
                     // SwitchToFlashAppContext() will only switch context. Phone will not charge.
                     // ResetPhoneToFlashMode() reboots to real flash app. Phone will charge. Works when in BootMgrApp, not when already in FlashApp.
 
-                    ((LumiaBootManagerAppModel)CurrentModel).ResetPhoneToFlashMode();
+                    ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ResetPhoneToFlashMode();
                     CurrentMode = PhoneInterfaces.Lumia_Flash;
                     PhoneNotifier.NotifyArrival();
                 }
@@ -640,7 +640,7 @@ namespace WPinternals
             {
                 if (TargetMode == PhoneInterfaces.Lumia_Bootloader)
                 {
-                    ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                    ((NokiaFlashModel)PhoneNotifier.CurrentModel).DisableRebootTimeOut();
                 }
 
                 ModeSwitchSuccessWrapper();
@@ -669,7 +669,7 @@ namespace WPinternals
                 byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
                 IsSwitchingInterface = true;
                 LogFile.Log("Sending command for rebooting to Emergency Download mode");
-                byte[] RebootCommandResult = ((NokiaPhoneModel)CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
+                byte[] RebootCommandResult = ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
                 if (RebootCommandResult?.Length >= 8)
                 {
                     int ResultCode = (RebootCommandResult[6] << 8) + RebootCommandResult[7];
@@ -722,11 +722,19 @@ namespace WPinternals
 
             string ProgressText = Continuation ? "And now preparing to boot the phone to Label mode..." : "Preparing to boot the phone to Label mode...";
 
-            PhoneInfo PhoneInfoAppInfo = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
+            LumiaPhoneInfoAppPhoneInfo PhoneInfoAppInfo = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
 
             new Thread(async () =>
             {
-                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+                bool ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+                }
+                else
+                {
+                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
+                }
 
                 if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                 {
@@ -739,7 +747,7 @@ namespace WPinternals
                 }
 
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: true);
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: true);
 
                 if (Info.MmosOverUsbSupported)
                 {
@@ -760,7 +768,7 @@ namespace WPinternals
 
                             (string ENOSWFileUrl, string DPLFileUrl) = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
 
-                            SetWorkingStatus($"Downloading {Info.Type} Test Mode package...", MaxProgressValue: 100);
+                            SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100);
 
                             DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, null, (string[] Files, object State) =>
                             {
@@ -829,11 +837,19 @@ namespace WPinternals
                 throw new WPinternalsException("Unexpected Mode");
             }
 
-            PhoneInfo Info = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
+            LumiaFlashAppPhoneInfo Info = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
 
             new Thread(async () =>
             {
-                ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
+                bool ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
+                }
+                else
+                {
+                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+                }
 
                 if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
                 {
@@ -845,9 +861,18 @@ namespace WPinternals
                     throw new WPinternalsException("Unexpected Mode");
                 }
 
-                PhoneInfo PhoneInfoAppInfo = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
+                LumiaPhoneInfoAppModel LumiaPhoneInfoAppModel = (LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel;
+                LumiaPhoneInfoAppPhoneInfo PhoneInfoAppInfo = LumiaPhoneInfoAppModel.ReadPhoneInfo(ExtendedInfo: true);
 
-                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+                ModernFlashApp = PhoneInfoAppInfo.PhoneInfoAppVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    LumiaPhoneInfoAppModel.SwitchToFlashAppContext();
+                }
+                else
+                {
+                    LumiaPhoneInfoAppModel.ContinueBoot();
+                }
 
                 if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                 {
@@ -946,11 +971,19 @@ namespace WPinternals
 
             new Thread(async () =>
             {
-                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+                bool ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+                }
+                else
+                {
+                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
+                }
                 await PhoneNotifier.WaitForArrival();
 
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
 
                 MassStorageWarning = null;
                 if (Info.FlashAppProtocolVersionMajor < 2)
@@ -1159,7 +1192,7 @@ namespace WPinternals
                 }
             }
             LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-            PhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+            LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
 
             MassStorageWarning = null;
             if (Info.FlashAppProtocolVersionMajor < 2)

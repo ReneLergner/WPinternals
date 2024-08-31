@@ -145,7 +145,7 @@ namespace WPinternals
 
                             TestPos = 2;
 
-                            PhoneInfo Info = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
+                            LumiaFlashAppPhoneInfo Info = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
                             if (SecurityStatus == null)
                             {
                                 IsBootLoaderUnlocked = !Info.IsBootloaderSecure;
@@ -297,11 +297,11 @@ namespace WPinternals
 
                                 if (DoUnlock)
                                 {
-                                    ActivateSubContext(new BootUnlockResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, Info.Type));
+                                    ActivateSubContext(new BootUnlockResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, /*TODO FIXME: Info.Type*/""));
                                 }
                                 else
                                 {
-                                    ActivateSubContext(new BootRestoreResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, Info.Type));
+                                    ActivateSubContext(new BootRestoreResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, /*TODO FIXME: Info.Type*/""));
                                 }
                             }
                         }
@@ -511,7 +511,7 @@ namespace WPinternals
             if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download && PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
             {
                 LumiaFlashAppModel Model = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                PhoneInfo Info = Model.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
 
                 if (EDEPath == null)
                 {
@@ -524,7 +524,7 @@ namespace WPinternals
                 {
                     Key.SetValue("EDEPath", EDEPath);
 
-                    App.Config.AddEmergencyToRepository(Info.Type, EDEPath, null);
+                    App.Config.AddEmergencyToRepository(/*TODO FIXME: Info.Type*/"", EDEPath, null);
                 }
             }
 
