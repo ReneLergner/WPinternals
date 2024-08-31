@@ -129,55 +129,60 @@ namespace WPinternals
 
             LumiaBootManagerPhoneInfo Result = BootManagerInfo;
 
-            byte[] Request = new byte[4];
-            ByteOperations.WriteAsciiString(Request, 0, InfoQuerySignature);
-            byte[] Response = ExecuteRawMethod(Request);
-            if ((Response != null) && (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU"))
+            if (Result.State == PhoneInfoState.Empty)
             {
-                Result.App = (FlashAppType)Response[5];
-
-                switch (Result.App)
+                byte[] Request = new byte[4];
+                ByteOperations.WriteAsciiString(Request, 0, InfoQuerySignature);
+                byte[] Response = ExecuteRawMethod(Request);
+                if ((Response != null) && (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU"))
                 {
-                    case FlashAppType.BootManager:
-                        Result.BootManagerProtocolVersionMajor = Response[6];
-                        Result.BootManagerProtocolVersionMinor = Response[7];
-                        Result.BootManagerVersionMajor = Response[8];
-                        Result.BootManagerVersionMinor = Response[9];
-                        break;
-                }
+                    Result.App = (FlashAppType)Response[5];
 
-                byte SubblockCount = Response[10];
-                int SubblockOffset = 11;
-
-                for (int i = 0; i < SubblockCount; i++)
-                {
-                    byte SubblockID = Response[SubblockOffset + 0x00];
-
-                    LogFile.Log($"{Result.App} SubblockID: 0x{SubblockID:X}");
-
-                    UInt16 SubblockLength = BigEndian.ToUInt16(Response, SubblockOffset + 0x01);
-                    int SubblockPayloadOffset = SubblockOffset + 3;
-                    byte SubblockVersion;
-                    switch (SubblockID)
+                    switch (Result.App)
                     {
-                        case 0x01:
-                            Result.TransferSize = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
-                            break;
-                        case 0x04:
-                            Result.FlashAppProtocolVersionMajor = Response[SubblockPayloadOffset + 0x00];
-                            Result.FlashAppProtocolVersionMinor = Response[SubblockPayloadOffset + 0x01];
-                            Result.FlashAppVersionMajor = Response[SubblockPayloadOffset + 0x02];
-                            Result.FlashAppVersionMinor = Response[SubblockPayloadOffset + 0x03];
-                            break;
-                        case 0x1F:
-                            Result.MmosOverUsbSupported = Response[SubblockPayloadOffset] == 1;
-                            break;
-                        case 0x20:
-                            // CRC header info
+                        case FlashAppType.BootManager:
+                            Result.BootManagerProtocolVersionMajor = Response[6];
+                            Result.BootManagerProtocolVersionMinor = Response[7];
+                            Result.BootManagerVersionMajor = Response[8];
+                            Result.BootManagerVersionMinor = Response[9];
                             break;
                     }
-                    SubblockOffset += SubblockLength + 3;
+
+                    byte SubblockCount = Response[10];
+                    int SubblockOffset = 11;
+
+                    for (int i = 0; i < SubblockCount; i++)
+                    {
+                        byte SubblockID = Response[SubblockOffset + 0x00];
+
+                        LogFile.Log($"{Result.App} SubblockID: 0x{SubblockID:X}");
+
+                        UInt16 SubblockLength = BigEndian.ToUInt16(Response, SubblockOffset + 0x01);
+                        int SubblockPayloadOffset = SubblockOffset + 3;
+                        byte SubblockVersion;
+                        switch (SubblockID)
+                        {
+                            case 0x01:
+                                Result.TransferSize = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
+                                break;
+                            case 0x04:
+                                Result.FlashAppProtocolVersionMajor = Response[SubblockPayloadOffset + 0x00];
+                                Result.FlashAppProtocolVersionMinor = Response[SubblockPayloadOffset + 0x01];
+                                Result.FlashAppVersionMajor = Response[SubblockPayloadOffset + 0x02];
+                                Result.FlashAppVersionMinor = Response[SubblockPayloadOffset + 0x03];
+                                break;
+                            case 0x1F:
+                                Result.MmosOverUsbSupported = Response[SubblockPayloadOffset] == 1;
+                                break;
+                            case 0x20:
+                                // CRC header info
+                                break;
+                        }
+                        SubblockOffset += SubblockLength + 3;
+                    }
                 }
+
+                Result.State = PhoneInfoState.Basic;
             }
 
             return Result;

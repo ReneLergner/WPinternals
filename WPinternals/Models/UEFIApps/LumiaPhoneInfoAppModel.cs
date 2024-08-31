@@ -172,43 +172,48 @@ namespace WPinternals
 
             LumiaPhoneInfoAppPhoneInfo Result = PhoneInfoAppInfo;
 
-            byte[] Request = new byte[4];
-            ByteOperations.WriteAsciiString(Request, 0, InfoQuerySignature);
-            byte[] Response = ExecuteRawMethod(Request);
-            if ((Response != null) && (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU"))
+            if (Result.State == PhoneInfoState.Empty)
             {
-                Result.App = (FlashAppType)Response[5];
-
-                switch (Result.App)
+                byte[] Request = new byte[4];
+                ByteOperations.WriteAsciiString(Request, 0, InfoQuerySignature);
+                byte[] Response = ExecuteRawMethod(Request);
+                if ((Response != null) && (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU"))
                 {
-                    case FlashAppType.PhoneInfoApp:
-                        Result.PhoneInfoAppProtocolVersionMajor = Response[6];
-                        Result.PhoneInfoAppProtocolVersionMinor = Response[7];
-                        Result.PhoneInfoAppVersionMajor = Response[8];
-                        Result.PhoneInfoAppVersionMinor = Response[9];
-                        break;
-                }
+                    Result.App = (FlashAppType)Response[5];
 
-                byte SubblockCount = Response[10];
-                int SubblockOffset = 11;
-
-                for (int i = 0; i < SubblockCount; i++)
-                {
-                    byte SubblockID = Response[SubblockOffset + 0x00];
-
-                    LogFile.Log($"{Result.App} SubblockID: 0x{SubblockID:X}");
-
-                    UInt16 SubblockLength = BigEndian.ToUInt16(Response, SubblockOffset + 0x01);
-                    int SubblockPayloadOffset = SubblockOffset + 3;
-                    byte SubblockVersion;
-                    switch (SubblockID)
+                    switch (Result.App)
                     {
-                        case 0x20:
-                            // CRC header info
+                        case FlashAppType.PhoneInfoApp:
+                            Result.PhoneInfoAppProtocolVersionMajor = Response[6];
+                            Result.PhoneInfoAppProtocolVersionMinor = Response[7];
+                            Result.PhoneInfoAppVersionMajor = Response[8];
+                            Result.PhoneInfoAppVersionMinor = Response[9];
                             break;
                     }
-                    SubblockOffset += SubblockLength + 3;
+
+                    byte SubblockCount = Response[10];
+                    int SubblockOffset = 11;
+
+                    for (int i = 0; i < SubblockCount; i++)
+                    {
+                        byte SubblockID = Response[SubblockOffset + 0x00];
+
+                        LogFile.Log($"{Result.App} SubblockID: 0x{SubblockID:X}");
+
+                        UInt16 SubblockLength = BigEndian.ToUInt16(Response, SubblockOffset + 0x01);
+                        int SubblockPayloadOffset = SubblockOffset + 3;
+                        byte SubblockVersion;
+                        switch (SubblockID)
+                        {
+                            case 0x20:
+                                // CRC header info
+                                break;
+                        }
+                        SubblockOffset += SubblockLength + 3;
+                    }
                 }
+
+                Result.State = PhoneInfoState.Basic;
             }
 
             return Result;
