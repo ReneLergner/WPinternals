@@ -71,7 +71,7 @@ namespace WPinternals
 
                         EffectivePhoneInfoSecurityStatus = Info.UefiSecureBootEnabled;
 
-                        LogFile.Log("Effective PhoneInfo Security Status: " + EffectivePhoneInfoSecurityStatus.ToString());
+                        LogFile.Log("Effective Bootloader Security Status: " + EffectivePhoneInfoSecurityStatus.ToString());
                     }
                     catch
                     {
