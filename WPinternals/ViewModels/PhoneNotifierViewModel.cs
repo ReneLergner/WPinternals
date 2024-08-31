@@ -426,8 +426,8 @@ namespace WPinternals
         private void InterfaceChanged(PhoneInterfaces NewInterface, string DevicePath)
         {
             LastInterface = CurrentInterface;
-            CurrentInterface = null;
 
+            CurrentInterface = null;
             if (CurrentModel != null)
             {
                 CurrentModel.Dispose();

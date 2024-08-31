@@ -170,7 +170,7 @@ namespace WPinternals
                 ProductType = ProductType.ToUpper();
                 if (ProductType.StartsWith("RM") && !ProductType.StartsWith("RM-"))
                 {
-                    ProductType = "RM-" + ProductType[2..];
+                    ProductType = $"RM-{ProductType[2..]}";
                 }
             }
 
@@ -212,10 +212,10 @@ namespace WPinternals
             }
 
             SoftwarePackage Package = null;
-            using (MemoryStream JsonStream2 = new(Encoding.UTF8.GetBytes(JsonResultString)))
+            using (MemoryStream JsonResultStream = new(Encoding.UTF8.GetBytes(JsonResultString)))
             {
-                DataContractJsonSerializer Serializer2 = new(typeof(SoftwarePackages));
-                SoftwarePackages SoftwarePackages = (SoftwarePackages)Serializer2.ReadObject(JsonStream2);
+                DataContractJsonSerializer SoftwarePackagesJsonSerializer = new(typeof(SoftwarePackages));
+                SoftwarePackages SoftwarePackages = (SoftwarePackages)SoftwarePackagesJsonSerializer.ReadObject(JsonResultStream);
                 if (SoftwarePackages != null)
                 {
                     foreach (SoftwarePackage pkg in SoftwarePackages.softwarePackages)

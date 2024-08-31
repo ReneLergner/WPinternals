@@ -21,6 +21,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace WPinternals
 {
@@ -30,7 +31,7 @@ namespace WPinternals
     {
         private string _devicePath;
 
-        private readonly PhoneInfo Info = new();
+        internal readonly PhoneInfo Info = new();
 
         internal event InterfaceChangedHandler InterfaceChanged = delegate { };
 
@@ -60,7 +61,20 @@ namespace WPinternals
         internal void SwitchToBootManagerContext(bool DisableTimeOut = true)
         {
             PhoneInfo info = ReadPhoneInfoCommon();
-            bool ModernFlashApp = info.FlashAppProtocolVersionMajor >= 2;
+
+            bool ModernFlashApp = false;
+            switch (info.App)
+            {
+                case FlashAppType.FlashApp:
+                    ModernFlashApp = info.FlashAppProtocolVersionMajor >= 2;
+                    break;
+                case FlashAppType.PhoneInfoApp:
+                    ModernFlashApp = info.PhoneInfoAppVersionMajor >= 2;
+                    break;
+                case FlashAppType.BootManager:
+                    ModernFlashApp = info.BootManagerVersionMajor >= 2;
+                    break;
+            }
 
             byte[] Request = new byte[7];
             ByteOperations.WriteAsciiString(Request, 0, SwitchModeSignature + "B");
@@ -95,7 +109,20 @@ namespace WPinternals
         internal void SwitchToPhoneInfoAppContext()
         {
             PhoneInfo info = ReadPhoneInfoCommon();
-            bool ModernFlashApp = info.FlashAppProtocolVersionMajor >= 2;
+
+            bool ModernFlashApp = false;
+            switch (info.App)
+            {
+                case FlashAppType.FlashApp:
+                    ModernFlashApp = info.FlashAppProtocolVersionMajor >= 2;
+                    break;
+                case FlashAppType.PhoneInfoApp:
+                    ModernFlashApp = info.PhoneInfoAppVersionMajor >= 2;
+                    break;
+                case FlashAppType.BootManager:
+                    ModernFlashApp = info.BootManagerVersionMajor >= 2;
+                    break;
+            }
 
             byte[] Request = new byte[7];
             ByteOperations.WriteAsciiString(Request, 0, SwitchModeSignature + "P");
@@ -141,7 +168,20 @@ namespace WPinternals
         internal void SwitchToFlashAppContext()
         {
             PhoneInfo info = ReadPhoneInfoCommon();
-            bool ModernFlashApp = info.FlashAppProtocolVersionMajor >= 2;
+
+            bool ModernFlashApp = false;
+            switch (info.App)
+            {
+                case FlashAppType.FlashApp:
+                    ModernFlashApp = info.FlashAppProtocolVersionMajor >= 2;
+                    break;
+                case FlashAppType.PhoneInfoApp:
+                    ModernFlashApp = info.PhoneInfoAppVersionMajor >= 2;
+                    break;
+                case FlashAppType.BootManager:
+                    ModernFlashApp = info.BootManagerVersionMajor >= 2;
+                    break;
+            }
 
             byte[] Request = new byte[7];
             ByteOperations.WriteAsciiString(Request, 0, SwitchModeSignature + "F"); // This will stop charging the phone
@@ -203,7 +243,6 @@ namespace WPinternals
             // NOKH = Get Phone Info (IMEI and info from Product.dat) - Not available on some phones, like Lumia 640.
             // NOKV = Info Query
 
-            bool PhoneInfoLogged = Info.State != PhoneInfoState.Empty;
             PhoneInfo Result = Info;
 
             if (Result.State == PhoneInfoState.Empty)
@@ -257,6 +296,19 @@ namespace WPinternals
                             case 0x03:
                                 Result.EmmcSizeInSectors = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 break;
+                            case 0x04:
+                                if (Result.App == FlashAppType.BootManager)
+                                {
+                                    Result.FlashAppProtocolVersionMajor = Response[SubblockPayloadOffset + 0x00];
+                                    Result.FlashAppProtocolVersionMinor = Response[SubblockPayloadOffset + 0x01];
+                                    Result.FlashAppVersionMajor = Response[SubblockPayloadOffset + 0x02];
+                                    Result.FlashAppVersionMinor = Response[SubblockPayloadOffset + 0x03];
+                                }
+                                else if (Result.App == FlashAppType.FlashApp)
+                                {
+                                    Result.SdCardSizeInSectors = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
+                                }
+                                break;
                             case 0x05:
                                 Result.PlatformID = ByteOperations.ReadAsciiString(Response, (uint)SubblockPayloadOffset, SubblockLength).Trim([' ', '\0']);
                                 break;
@@ -292,11 +344,6 @@ namespace WPinternals
             }
 
             Result.IsBootloaderSecure = !(Info.Authenticated || Info.RdcPresent || !Info.SecureFfuEnabled);
-
-            if (!PhoneInfoLogged)
-            {
-                Result.Log(LogType.FileOnly);
-            }
 
             return Result;
         }
