@@ -952,8 +952,11 @@ namespace WPinternals
                             case 0x01:
                                 Result.TransferSize = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 break;
-                            case 0x1F:
-                                Result.MmosOverUsbSupported = Response[SubblockPayloadOffset] == 1;
+                            case 0x02:
+                                Result.WriteBufferSize = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
+                                break;
+                            case 0x03:
+                                Result.EmmcSizeInSectors = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 break;
                             case 0x04:
                                 if (Result.App == FlashAppType.BootManager)
@@ -967,12 +970,6 @@ namespace WPinternals
                                 {
                                     Result.SdCardSizeInSectors = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 }
-                                break;
-                            case 0x02:
-                                Result.WriteBufferSize = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
-                                break;
-                            case 0x03:
-                                Result.EmmcSizeInSectors = BigEndian.ToUInt32(Response, SubblockPayloadOffset);
                                 break;
                             case 0x05:
                                 Result.PlatformID = ByteOperations.ReadAsciiString(Response, (uint)SubblockPayloadOffset, SubblockLength).Trim([' ', '\0']);
@@ -993,6 +990,9 @@ namespace WPinternals
                             case 0x10:
                                 SubblockVersion = Response[SubblockPayloadOffset]; // 0x01
                                 Result.SecureFfuSupportedProtocolMask = BigEndian.ToUInt16(Response, SubblockPayloadOffset + 0x01);
+                                break;
+                            case 0x1F:
+                                Result.MmosOverUsbSupported = Response[SubblockPayloadOffset] == 1;
                                 break;
                             case 0x20:
                                 // CRC header info
@@ -1154,7 +1154,7 @@ namespace WPinternals
 
             //DisableRebootTimeOut();
             Info.App = FlashAppType.PhoneInfoApp;
-            InterfaceChanged(PhoneInterfaces.Lumia_Bootloader);
+            InterfaceChanged(PhoneInterfaces.Lumia_PhoneInfo);
         }
 
         internal void SwitchAwayToPhoneInfoAppContextLegacy()
@@ -1164,8 +1164,33 @@ namespace WPinternals
             ExecuteRawVoidMethod(Request);
 
             //DisableRebootTimeOut();
-            //Info.App = FlashAppType.FlashApp;
-            //InterfaceChanged(PhoneInterfaces.Lumia_Flash);
+            Info.App = FlashAppType.FlashApp;
+            InterfaceChanged(PhoneInterfaces.Lumia_Flash);
+        }
+
+        internal string GetPhoneInfo()
+        {
+            // NOKH = Get Phone Info (IMEI and info from Product.dat) - Not available on some phones, like Lumia 640.
+            // NOKV = Info Query
+
+            if (Info.FlashAppProtocolVersionMajor >= 2)
+            {
+                return null;
+            }
+            
+            byte[] Request = new byte[4];
+            ByteOperations.WriteAsciiString(Request, 0, "NOKH");
+            byte[] Response = ExecuteRawMethod(Request);
+            if ((Response == null) || (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU"))
+            {
+                throw new NotSupportedException();
+            }
+
+            UInt16 Length = BigEndian.ToUInt16(Response, 0x04);
+
+            string PhoneInfoData = ByteOperations.ReadAsciiString(Response, 0x8, Length);
+
+            return PhoneInfoData;
         }
 
         internal void SwitchToFlashAppContext()

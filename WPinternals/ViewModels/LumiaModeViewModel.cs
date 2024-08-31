@@ -90,6 +90,9 @@ namespace WPinternals
                     ActivateSubContext(null);
                     //ActivateSubContext(new NokiaModeBootloaderViewModel((NokiaFlashModel)CurrentModel, OnModeSwitchRequested));
                     break;
+                case PhoneInterfaces.Lumia_PhoneInfo:
+                    ActivateSubContext(new NokiaModePhoneInfoViewModel((NokiaFlashModel)CurrentModel, OnModeSwitchRequested));
+                    break;
                 case PhoneInterfaces.Lumia_Normal:
                     ActivateSubContext(new NokiaModeNormalViewModel((NokiaPhoneModel)CurrentModel, OnModeSwitchRequested));
                     break;

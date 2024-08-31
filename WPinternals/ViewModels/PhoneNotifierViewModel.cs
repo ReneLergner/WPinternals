@@ -276,7 +276,8 @@ namespace WPinternals
                                 }
                             case FlashAppType.PhoneInfoApp:
                                 {
-                                    CurrentInterface = PhoneInterfaces.Lumia_Bootloader;
+                                    ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                                    CurrentInterface = PhoneInterfaces.Lumia_PhoneInfo;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                                     LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
                                     LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);

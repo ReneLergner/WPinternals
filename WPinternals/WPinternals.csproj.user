@@ -114,4 +114,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Preview-Test|AnyCPU'">
     <StartArguments>/Test</StartArguments>
   </PropertyGroup>
+  <ItemGroup>
+    <Page Update="Views\NokiaModePhoneInfoView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
 </Project>

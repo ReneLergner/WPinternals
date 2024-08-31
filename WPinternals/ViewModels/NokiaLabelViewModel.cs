@@ -101,11 +101,20 @@ namespace WPinternals
             IMEI = CurrentModel.ExecuteJsonMethodAsString("ReadSerialNumber", "SerialNumber"); // IMEI
             LogFile.Log("IMEI: " + IMEI);
             BluetoothMac = CurrentModel.ExecuteJsonMethodAsBytes("ReadBtId", "BtId"); // 6 bytes: bc c6 ...
-            LogFile.Log("Bluetooth MAC: " + Converter.ConvertHexToString(BluetoothMac, " "));
-            WlanMac = CurrentModel.ExecuteJsonMethodAsBytes("ReadWlanMacAddress", "WlanMacAddress1"); // 6 bytes
-            LogFile.Log("WLAN MAC: " + Converter.ConvertHexToString(WlanMac, " "));
 
-            IsBootloaderSecurityEnabled = (bool)CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone");
+            if (BluetoothMac != null)
+            {
+                LogFile.Log("Bluetooth MAC: " + Converter.ConvertHexToString(BluetoothMac, " "));
+            }
+
+            WlanMac = CurrentModel.ExecuteJsonMethodAsBytes("ReadWlanMacAddress", "WlanMacAddress1"); // 6 bytes
+
+            if (WlanMac != null)
+            {
+                LogFile.Log("WLAN MAC: " + Converter.ConvertHexToString(WlanMac, " "));
+            }
+
+            IsBootloaderSecurityEnabled = CurrentModel.ExecuteJsonMethodAsBoolean("ReadProductionDoneState", "ProductionDone") ?? false;
             LogFile.Log("Bootloader Security: " + ((bool)IsBootloaderSecurityEnabled ? "Enabled" : "Disabled"));
 
             Params = new Dictionary<string, object>

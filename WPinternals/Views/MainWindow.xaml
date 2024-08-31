@@ -37,6 +37,9 @@ DEALINGS IN THE SOFTWARE.
         <DataTemplate DataType="{x:Type local:NokiaBootloaderViewModel}">
             <local:NokiaBootloaderView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaPhoneInfoViewModel}">
+            <local:NokiaPhoneInfoView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type local:NokiaFlashViewModel}">
             <local:NokiaFlashView />
         </DataTemplate>
@@ -57,6 +60,9 @@ DEALINGS IN THE SOFTWARE.
         </DataTemplate>
         <DataTemplate DataType="{x:Type local:NokiaModeBootloaderViewModel}">
             <local:NokiaModeBootloaderView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NokiaModePhoneInfoViewModel}">
+            <local:NokiaModePhoneInfoView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type local:NokiaModeLabelViewModel}">
             <local:NokiaModeLabelView />
