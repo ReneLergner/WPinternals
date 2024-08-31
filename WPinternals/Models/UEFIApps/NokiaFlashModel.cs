@@ -226,5 +226,10 @@ namespace WPinternals
                 throw new WPinternalsException("Bad response from phone!", "The phone did not answer properly to the Hello message sent.");
             }
         }
+
+        internal void RaiseInterfaceChanged(PhoneInterfaces NewInterface)
+        {
+            InterfaceChanged(NewInterface, _devicePath);
+        }
     }
 }

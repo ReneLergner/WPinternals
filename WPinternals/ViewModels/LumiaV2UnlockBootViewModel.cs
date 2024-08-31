@@ -554,13 +554,55 @@ namespace WPinternals
                 ExitFailure = (m, s) => { };
             }
 
-            LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
-            LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
+            LumiaFlashAppPhoneInfo FlashInfo = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo();
 
-            string Type = /*TODO: FIXME: Info.Type*/"";
+            bool ModernFlashApp = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+            if (ModernFlashApp)
+            {
+                ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContext();
+            }
+            else
+            {
+                ((LumiaFlashAppModel)Notifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+            }
+
+            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+            {
+                await Notifier.WaitForArrival();
+            }
+
+            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+            {
+                throw new WPinternalsException("Unexpected Mode");
+            }
+
+            LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
+            LumiaPhoneInfoAppPhoneInfo PhoneInfo = LumiaPhoneInfoModel.ReadPhoneInfo();
+
+            ModernFlashApp = PhoneInfo.PhoneInfoAppVersionMajor >= 2;
+            if (ModernFlashApp)
+            {
+                LumiaPhoneInfoModel.SwitchToFlashAppContext();
+            }
+            else
+            {
+                LumiaPhoneInfoModel.ContinueBoot();
+            }
+
+            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+            {
+                await Notifier.WaitForArrival();
+            }
+
+            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+            {
+                throw new WPinternalsException("Unexpected Mode");
+            }
+
+            string Type = PhoneInfo.Type;
             if (ProgrammerPath == null)
             {
-                ProgrammerPath = GetProgrammerPath(Info.RKH, Type);
+                ProgrammerPath = GetProgrammerPath(FlashInfo.RKH, Type);
                 if (ProgrammerPath == null)
                 {
                     LogFile.Log("WARNING: No emergency programmer file found. Finding flash profile and rebooting phone may take a long time!", LogType.FileAndConsole);
@@ -571,10 +613,10 @@ namespace WPinternals
             if (FFUPath == null)
             {
                 // Try to find an FFU from the repository for which there is also a known flashing profile
-                FFUs = App.Config.FFURepository.Where(e => Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
+                FFUs = App.Config.FFURepository.Where(e => FlashInfo.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
                 foreach (FFUEntry CurrentEntry in FFUs)
                 {
-                    Profile = App.Config.GetProfile(Info.PlatformID, Info.Firmware, CurrentEntry.FirmwareVersion);
+                    Profile = App.Config.GetProfile(FlashInfo.PlatformID, FlashInfo.Firmware, CurrentEntry.FirmwareVersion);
                     if (Profile != null)
                     {
                         FFUPath = CurrentEntry.Path;
@@ -630,14 +672,14 @@ namespace WPinternals
                 }
             }
 
-            if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
+            if ((FlashInfo.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
             {
                 throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that it does not support the Protocol Sync V2.");
             }
 
-            if (Info.FlashAppProtocolVersionMajor < 2) // Old phones do not support the hack. These phones have Flash protocol 1.x.
+            if (FlashInfo.FlashAppProtocolVersionMajor < 2) // Old phones do not support the hack. These phones have Flash protocol 1.x.
             {
-                throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that Flash App communication protocol is lower than 2. Reported version by the phone: " + Info.FlashAppProtocolVersionMajor + ".");
+                throw new WPinternalsException("Flash failed!", "Protocols not supported. The phone reports that Flash App communication protocol is lower than 2. Reported version by the phone: " + FlashInfo.FlashAppProtocolVersionMajor + ".");
             }
 
             UEFI UEFI = new(FFU.GetPartition("UEFI"));
@@ -649,7 +691,7 @@ namespace WPinternals
                 Options = (byte)FlashOptions.SkipWrite;
             }
 
-            if (!Info.IsBootloaderSecure)
+            if (!FlashInfo.IsBootloaderSecure)
             {
                 Options = (byte)((FlashOptions)Options | FlashOptions.SkipSignatureCheck);
             }
@@ -673,7 +715,7 @@ namespace WPinternals
                 MaximumAttempts = (int)(((MaximumGapFill / FFU.ChunkSize) + 1) * 8);
             }
 
-            byte[] GPTChunk = Model.GetGptChunk((UInt32)FFU.ChunkSize);
+            byte[] GPTChunk = ((LumiaFlashAppModel)Notifier.CurrentModel).GetGptChunk((UInt32)FFU.ChunkSize);
 
             // Start with a reset
             if (DoResetFirst)
@@ -682,7 +724,7 @@ namespace WPinternals
 
                 // When in flash mode, it is not possible to reboot straight to flash.
                 // Reboot and catch the phone in bootloader mode and then switch to flash context
-                Model.ResetPhone();
+                ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
 
                 #region Properly recover from reset - many phones respond differently
 
@@ -821,9 +863,20 @@ namespace WPinternals
                 UpdateWorkingStatus("Initializing flash...", null, null);
             }
 
-            ((LumiaBootManagerAppModel)Notifier.CurrentModel).ResetPhoneToFlashMode();
-            await Notifier.WaitForArrival();
-            Model = (LumiaFlashAppModel)Notifier.CurrentModel;
+            if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+            {
+                ((LumiaBootManagerAppModel)Notifier.CurrentModel).ResetPhoneToFlashMode();
+            }
+
+            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+            {
+                await Notifier.WaitForArrival();
+            }
+
+            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+            {
+                throw new WPinternalsException("Unexpected Mode");
+            }
 
             // The payloads must be ordered by the number of locations
             //
@@ -838,7 +891,7 @@ namespace WPinternals
             {
                 payloads =
                 [
-                    .. GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(Info.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length),
+                    .. GetNonOptimizedPayloads(FlashParts, FFU.ChunkSize, (uint)(FlashInfo.WriteBufferSize / FFU.ChunkSize), SetWorkingStatus, UpdateWorkingStatus).OrderBy(x => x.TargetLocations.Length),
                 ];
             }
 
@@ -865,7 +918,7 @@ namespace WPinternals
             bool Scanning = false;
             bool ResetScanning = false;
 
-            Profile = App.Config.GetProfile(Info.PlatformID, Info.Firmware, FFU.GetFirmwareVersion());
+            Profile = App.Config.GetProfile(FlashInfo.PlatformID, FlashInfo.Firmware, FFU.GetFirmwareVersion());
             if (Profile == null)
             {
                 LogFile.Log("No flashing profile found", LogType.FileAndConsole);
@@ -915,17 +968,17 @@ namespace WPinternals
                 //
                 if (AllocateAsyncBuffersOnPhone)
                 {
-                    Model.StartAsyncFlash();
-                    Model.EndAsyncFlash(); // Ending Async flashing is not necessary for Lumia 950, but it is necessary for Lumia 640!
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).StartAsyncFlash();
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).EndAsyncFlash(); // Ending Async flashing is not necessary for Lumia 950, but it is necessary for Lumia 640!
                 }
 
                 if (AllocateBackupBuffersOnPhone)
                 {
-                    Model.BackupPartitionToRam("MODEM_FSG");
-                    Model.BackupPartitionToRam("MODEM_FS1");
-                    Model.BackupPartitionToRam("MODEM_FS2");
-                    Model.BackupPartitionToRam("SSD");
-                    Model.BackupPartitionToRam("DPP");
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FSG");
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FS1");
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FS2");
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("SSD");
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("DPP");
                 }
 
                 HeaderOffset = 0;
@@ -975,20 +1028,20 @@ namespace WPinternals
                             // Previous data + new data must fit in new headersize.
                             // We can send an extra byte, because last memory buffer was sent including the tail.
                             // And there is always extra space in the memoryspace after the tail.
-                            Model.SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
+                            ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
                         }
 
                         // CurrentGapFill is the amount of data we want to be allocated on the phone
                         // But we send less data, so the header won't be processed yet.
                         PartialHeader = new byte[UefiMemorySim.PageSize];
-                        Model.SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap -> This will fail on phones with Flash Protocol v1.x !! On Lumia 640 this will hang on receiving the response when EndAsyncFlash was not called.
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap -> This will fail on phones with Flash Protocol v1.x !! On Lumia 640 this will hang on receiving the response when EndAsyncFlash was not called.
                     }
 
                     using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
                     {
                         // On every flashing phase we need to send the full header again to reset all the counters.
                         FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
-                        Model.SendFfuHeaderV1(FfuHeader, Options);
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV1(FfuHeader, Options);
 
                         if (PerformFullFlashFirst && (FlashingPhase == 0))
                         {
@@ -1005,11 +1058,11 @@ namespace WPinternals
                             UInt32 TotalChunkCount = (UInt32)FFU.TotalChunkCount;
 
                             // Protocol v2
-                            FlashPayload = new byte[Info.WriteBufferSize];
+                            FlashPayload = new byte[FlashInfo.WriteBufferSize];
 
                             while (Position < (UInt64)FfuFile.Length)
                             {
-                                UInt32 CommonFlashPayloadSize = Info.WriteBufferSize;
+                                UInt32 CommonFlashPayloadSize = FlashInfo.WriteBufferSize;
                                 if (((UInt64)FfuFile.Length - Position) < CommonFlashPayloadSize)
                                 {
                                     CommonFlashPayloadSize = (UInt32)((UInt64)FfuFile.Length - Position);
@@ -1018,7 +1071,7 @@ namespace WPinternals
 
                                 FfuFile.Read(FlashPayload, 0, (int)CommonFlashPayloadSize);
                                 ChunkIndex += (int)(CommonFlashPayloadSize / FFU.ChunkSize);
-                                Model.SendFfuPayloadV2(FlashPayload, ShowProgress ? (int)((double)(ChunkIndex + 1) * 100 / TotalChunkCount) : 0, 0);
+                                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuPayloadV2(FlashPayload, ShowProgress ? (int)((double)(ChunkIndex + 1) * 100 / TotalChunkCount) : 0, 0);
                                 Position += CommonFlashPayloadSize;
                             }
                         }
@@ -1140,7 +1193,7 @@ namespace WPinternals
                         // This will allocate new memory at the bottom of the memory-pool, but it will not reset the previously imported ffu header.
                         Step = 1;
                         PartialHeader = new byte[UefiMemorySim.PageSize];
-                        Model.SendFfuHeaderV2(ExploitHeaderAllocationSize, 0, PartialHeader, Options); // SkipWrite = 1 (only works on engineering phones)
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(ExploitHeaderAllocationSize, 0, PartialHeader, Options); // SkipWrite = 1 (only works on engineering phones)
 
                         // Now we will send the rest of the exploit header, but we will increase the total size even higher, so that it still won't start processing the headers.
                         // We've send only a small first part of the header. The allocated header was bigger: ExploitHeaderAllocationSize.
@@ -1151,14 +1204,14 @@ namespace WPinternals
                         while (ExploitHeaderRemaining > 0)
                         {
                             UInt32 CurrentFill = ExploitHeaderRemaining;
-                            if (CurrentFill > Info.WriteBufferSize)
+                            if (CurrentFill > FlashInfo.WriteBufferSize)
                             {
-                                CurrentFill = Info.WriteBufferSize;
+                                CurrentFill = FlashInfo.WriteBufferSize;
                             }
 
                             PartialHeader = new byte[CurrentFill];
                             PartialHeaderAllocation.CopyFromThisAllocation(HeaderOffset, CurrentFill, PartialHeader, 0);
-                            Model.SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options); // Phone may crash here. USB write is done. USB read might fail due to crash. Happens on my own Lumia 650.
+                            ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options); // Phone may crash here. USB write is done. USB read might fail due to crash. Happens on my own Lumia 650.
                             LastHeaderV2Size = HeaderOffset + CurrentFill + 1;
                             ExploitHeaderRemaining -= CurrentFill;
                             HeaderOffset += CurrentFill;
@@ -1167,7 +1220,7 @@ namespace WPinternals
                         // Send custom payload
                         Step = 3;
                         Int32 payloadCount = 0;
-                        byte[] payloadBuffer = new byte[Info.WriteBufferSize];
+                        byte[] payloadBuffer = new byte[FlashInfo.WriteBufferSize];
                         bool sendPayload = false;
                         for (Int32 i = FlashInProgress ? 0 : -1; i < FlashingPhasePayloadCount; i++)
                         {
@@ -1181,7 +1234,7 @@ namespace WPinternals
                                 Step = 8;
                                 // This may fail. Normally with WPinternalsException for Invalid Hash or Data not aligned.
                                 // Or it may fail with a BadConnectionException when the phone crashes and drops the connection.
-                                Model.SendFfuPayloadV1(Buffer, 0);
+                                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuPayloadV1(Buffer, 0);
                                 if (!FlashInProgress)
                                 {
                                     Step = 9;
@@ -1201,7 +1254,7 @@ namespace WPinternals
 
                                 FlashingPayload payload = payloads[FlashingPhaseStartPayloadIndex + i];
 
-                                if (payloadCount == ((Info.WriteBufferSize / FFU.ChunkSize) - 1))
+                                if (payloadCount == ((FlashInfo.WriteBufferSize / FFU.ChunkSize) - 1))
                                 {
                                     sendPayload = true;
                                 }
@@ -1277,10 +1330,10 @@ namespace WPinternals
                             if (i != -1 && sendPayload)
                             {
                                 // This fails when sending multiple chunks per payload with 0x1003: Hash mismatch
-                                Model.SendFfuPayloadV2(payloadBuffer, ShowProgress ? (Int32)((FlashingPhaseStartPayloadIndex + i + 1) * 100 / payloads.Length) : 0);
+                                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuPayloadV2(payloadBuffer, ShowProgress ? (Int32)((FlashingPhaseStartPayloadIndex + i + 1) * 100 / payloads.Length) : 0);
                                 sendPayload = false;
                                 payloadCount = 0;
-                                payloadBuffer = new byte[Info.WriteBufferSize];
+                                payloadBuffer = new byte[FlashInfo.WriteBufferSize];
                             }
 
                             DestinationChunkIndex++;
@@ -1293,7 +1346,7 @@ namespace WPinternals
                         if (!HeadersFull)
                         {
                             Step = 12;
-                            App.Config.SetProfile(/*TODO: FIXME: Info.Type*/"", Info.PlatformID, /*TODO: FIXME: Info.ProductCode*/"", Info.Firmware, FFU.GetFirmwareVersion(), CurrentGapFill, ExploitHeaderAllocationSize, AssumeImageHeaderFallsInGap, AllocateAsyncBuffersOnPhone);
+                            App.Config.SetProfile(PhoneInfo.Type, FlashInfo.PlatformID, PhoneInfo.ProductCode, FlashInfo.Firmware, FFU.GetFirmwareVersion(), CurrentGapFill, ExploitHeaderAllocationSize, AssumeImageHeaderFallsInGap, AllocateAsyncBuffersOnPhone);
                             if (ShowProgress)
                             {
                                 LogFile.Log("Custom flash succeeded!", LogType.FileAndConsole);
@@ -1370,7 +1423,7 @@ namespace WPinternals
 
                     if (PhoneNeedsReset)
                     {
-                        Model.ResetPhone();
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
                         WaitForReset = true;
                     }
 
@@ -1507,8 +1560,7 @@ namespace WPinternals
 
                         // In case we are on an Engineering phone which isn't stuck in flashmode and booted to BootMgrApp
                         ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
-                        Model = (LumiaFlashAppModel)Notifier.CurrentModel;
-                        Model.DisableRebootTimeOut();
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).DisableRebootTimeOut();
                     }
 
                     PhoneNeedsReset = false;
@@ -1601,31 +1653,31 @@ namespace WPinternals
                 ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.HeadStart + 4, 0); // Set allocation size to 0 in allocationhead
                 if (CurrentGapFill > UefiMemorySim.PageSize)
                 {
-                    Model.SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
                     PartialHeader = new byte[UefiMemorySim.PageSize];
-                    Model.SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap
                 }
                 using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
                 {
                     // On every flashing phase we need to send the full header again, because this triggers ffu_import_invalidate(), which is necessary to reset all the counters.
                     FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
-                    Model.SendFfuHeaderV1(FfuHeader, Options);
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV1(FfuHeader, Options);
                 }
                 PartialHeader = new byte[UefiMemorySim.PageSize];
-                Model.SendFfuHeaderV2(ExploitHeaderAllocationSize, 0, PartialHeader, Options); // SkipWrite = 1 (only works on engineering phones)
+                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(ExploitHeaderAllocationSize, 0, PartialHeader, Options); // SkipWrite = 1 (only works on engineering phones)
                 UInt32 ExploitHeaderRemaining = SecurityHeaderAllocation.TailEnd + 1 - PartialHeaderAllocation.ContentStart - (UInt32)PartialHeader.Length;
                 HeaderOffset = (UInt32)PartialHeader.Length;
                 while (ExploitHeaderRemaining > 0)
                 {
                     UInt32 CurrentFill = ExploitHeaderRemaining;
-                    if (CurrentFill > Info.WriteBufferSize)
+                    if (CurrentFill > FlashInfo.WriteBufferSize)
                     {
-                        CurrentFill = Info.WriteBufferSize;
+                        CurrentFill = FlashInfo.WriteBufferSize;
                     }
 
                     PartialHeader = new byte[CurrentFill];
                     PartialHeaderAllocation.CopyFromThisAllocation(HeaderOffset, CurrentFill, PartialHeader, 0);
-                    Model.SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options);
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options);
                     LastHeaderV2Size = HeaderOffset + CurrentFill + 1;
                     ExploitHeaderRemaining -= CurrentFill;
                     HeaderOffset += CurrentFill;

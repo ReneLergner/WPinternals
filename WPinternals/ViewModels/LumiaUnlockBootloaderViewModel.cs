@@ -1514,9 +1514,14 @@ namespace WPinternals
                 bool IsSpecB = Info.FlashAppProtocolVersionMajor >= 2;
                 bool UndoEFIESPPadding = false;
 
+                byte[] GPTChunk;
+
                 if (!IsSpecB)
                 {
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
+                    }
 
                     if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
                     {
@@ -1527,9 +1532,14 @@ namespace WPinternals
                     {
                         throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                     }
+
+                    GPTChunk = ((LumiaBootManagerAppModel)Notifier.CurrentModel).GetGptChunk(0x20000);
+                }
+                else
+                {
+                    GPTChunk = ((LumiaFlashAppModel)Notifier.CurrentModel).GetGptChunk(0x20000);
                 }
 
-                byte[] GPTChunk = ((LumiaBootManagerAppModel)Notifier.CurrentModel).GetGptChunk(0x20000);
                 GPT = new GPT(GPTChunk);
                 bool GPTChanged = false;
                 Partition IsUnlockedPartitionSBL3 = GPT.GetPartition("IS_UNLOCKED_SBL3");

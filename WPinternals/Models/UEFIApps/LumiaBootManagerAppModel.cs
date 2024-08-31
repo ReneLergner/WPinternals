@@ -336,25 +336,64 @@ namespace WPinternals
 
         internal void ResetPhoneToFlashMode()
         {
+            LumiaBootManagerPhoneInfo info = ReadPhoneInfoBootManager();
+
+            bool ModernFlashApp = info.BootManagerVersionMajor >= 2;
+
             // This only works when the phone is in BootMgr mode. If it is already in FlashApp, it will not reboot. It only makes the phone unresponsive.
             LogFile.Log("Rebooting phone to Flash mode...");
             byte[] Request = new byte[4];
             ByteOperations.WriteAsciiString(Request, 0, RebootToFlashAppSignature);
             ExecuteRawVoidMethod(Request);
+
+            if (ModernFlashApp)
+            {
+                DisableRebootTimeOut();
+
+                info.App = FlashAppType.FlashApp;
+
+                RaiseInterfaceChanged(PhoneInterfaces.Lumia_Flash);
+            }
         }
 
         internal void SwitchToPhoneInfoAppContextLegacy()
         {
+            LumiaBootManagerPhoneInfo info = ReadPhoneInfoBootManager();
+
+            bool ModernFlashApp = info.BootManagerVersionMajor >= 2;
+
             byte[] Request = new byte[4];
             ByteOperations.WriteAsciiString(Request, 0, RebootToPhoneInfoAppSignature);
             ExecuteRawVoidMethod(Request);
+
+            if (ModernFlashApp)
+            {
+                DisableRebootTimeOut();
+
+                info.App = FlashAppType.PhoneInfoApp;
+
+                RaiseInterfaceChanged(PhoneInterfaces.Lumia_PhoneInfo);
+            }
         }
 
         internal void RebootToFlashApp()
         {
+            LumiaBootManagerPhoneInfo info = ReadPhoneInfoBootManager();
+
+            bool ModernFlashApp = info.BootManagerVersionMajor >= 2;
+
             byte[] Request = new byte[4];
-            ByteOperations.WriteAsciiString(Request, 0, "NOKS"); // This will let the phone charge
+            ByteOperations.WriteAsciiString(Request, 0, RebootToFlashAppSignature); // This will let the phone charge
             ExecuteRawVoidMethod(Request); // On phone with bootloader Spec A this triggers a reboot, so DisableRebootTimeOut() cannot be called immediately.
+
+            if (ModernFlashApp)
+            {
+                DisableRebootTimeOut();
+
+                info.App = FlashAppType.FlashApp;
+
+                RaiseInterfaceChanged(PhoneInterfaces.Lumia_Flash);
+            }
         }
     }
 }

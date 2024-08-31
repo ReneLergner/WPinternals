@@ -95,6 +95,11 @@ namespace WPinternals
                 return;
             }
 
+            if (IsSwitchingInterface)
+            {
+                return;
+            }
+
             lock (EvaluateViewStateLockObject)
             {
                 switch (PhoneNotifier.CurrentInterface)
@@ -145,20 +150,21 @@ namespace WPinternals
 
                             TestPos = 2;
 
-                            LumiaFlashAppPhoneInfo Info = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
+                            LumiaFlashAppPhoneInfo FlashInfo = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
+
                             if (SecurityStatus == null)
                             {
-                                IsBootLoaderUnlocked = !Info.IsBootloaderSecure;
+                                IsBootLoaderUnlocked = !FlashInfo.IsBootloaderSecure;
                             }
 
                             if (RootKeyHash == null)
                             {
-                                RootKeyHash = Info.RKH ?? (new byte[32]);
+                                RootKeyHash = FlashInfo.RKH ?? (new byte[32]);
                             }
 
                             TestPos = 3;
 
-                            if (Info.FlashAppProtocolVersionMajor < 2)
+                            if (FlashInfo.FlashAppProtocolVersionMajor < 2)
                             {
                                 // This action is executed after the resources are selected by the user.
                                 void ReturnFunction(string FFUPath, string LoadersPath, string SBL3Path, string ProfileFFUPath, string EDEPath, string SupportedFFUPath, bool DoFixBoot)
@@ -281,7 +287,7 @@ namespace WPinternals
                                         {
                                             FFU ProfileFFU = null;
 
-                                            List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => Info.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
+                                            List<FFUEntry> FFUs = App.Config.FFURepository.Where(e => FlashInfo.PlatformID.StartsWith(e.PlatformID, StringComparison.OrdinalIgnoreCase) && e.Exists()).ToList();
                                             ProfileFFU = FFUs.Count > 0
                                                 ? new FFU(FFUs[0].Path)
                                                 : throw new WPinternalsException("Profile FFU missing", "No profile FFU has been found in the repository for your device. You can add a profile FFU within the download section of the tool or by using the command line.");
@@ -295,14 +301,64 @@ namespace WPinternals
 
                                 TestPos = 5;
 
-                                if (DoUnlock)
+                                IsSwitchingInterface = true;
+
+                                Task.Run(async () =>
                                 {
-                                    ActivateSubContext(new BootUnlockResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, /*TODO FIXME: Info.Type*/""));
-                                }
-                                else
-                                {
-                                    ActivateSubContext(new BootRestoreResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, Info.PlatformID, /*TODO FIXME: Info.Type*/""));
-                                }
+                                    bool ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+                                    if (ModernFlashApp)
+                                    {
+                                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
+                                    }
+                                    else
+                                    {
+                                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+                                    }
+
+                                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                                    {
+                                        await PhoneNotifier.WaitForArrival();
+                                    }
+
+                                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                                    {
+                                        throw new WPinternalsException("Unexpected Mode");
+                                    }
+
+                                    LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel;
+                                    LumiaPhoneInfoAppPhoneInfo PhoneInfo = LumiaPhoneInfoModel.ReadPhoneInfo();
+
+                                    IsSwitchingInterface = true;
+
+                                    ModernFlashApp = PhoneInfo.PhoneInfoAppVersionMajor >= 2;
+                                    if (ModernFlashApp)
+                                    {
+                                        LumiaPhoneInfoModel.SwitchToFlashAppContext();
+                                    }
+                                    else
+                                    {
+                                        LumiaPhoneInfoModel.ContinueBoot();
+                                    }
+
+                                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                                    {
+                                        await PhoneNotifier.WaitForArrival();
+                                    }
+
+                                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                                    {
+                                        throw new WPinternalsException("Unexpected Mode");
+                                    }
+
+                                    if (DoUnlock)
+                                    {
+                                        ActivateSubContext(new BootUnlockResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, FlashInfo.PlatformID, PhoneInfo.Type));
+                                    }
+                                    else
+                                    {
+                                        ActivateSubContext(new BootRestoreResourcesViewModel("Lumia Flash mode", RootKeyHash, SwitchToFlashRom, SwitchToUndoRoot, SwitchToDownload, ReturnFunction, Abort, IsBootLoaderUnlocked, true, FlashInfo.PlatformID, PhoneInfo.Type));
+                                    }
+                                });
                             }
                         }
                         catch (Exception Ex)
@@ -451,7 +507,7 @@ namespace WPinternals
                 }, null);
         }
 
-        private void StorePaths()
+        private async void StorePaths()
         {
             RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software\WPInternals", true) ?? Registry.CurrentUser.CreateSubKey(@"Software\WPInternals");
 
@@ -511,7 +567,55 @@ namespace WPinternals
             if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download && PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
             {
                 LumiaFlashAppModel Model = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo FlashInfo = Model.ReadPhoneInfo();
+
+                bool OriginalIsSwitchingInterface = IsSwitchingInterface;
+                IsSwitchingInterface = true;
+
+                bool ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
+                }
+                else
+                {
+                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+                }
+
+                if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                {
+                    await PhoneNotifier.WaitForArrival();
+                }
+
+                if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
+                LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel;
+                LumiaPhoneInfoAppPhoneInfo PhoneInfo = LumiaPhoneInfoModel.ReadPhoneInfo();
+
+                ModernFlashApp = PhoneInfo.PhoneInfoAppVersionMajor >= 2;
+                if (ModernFlashApp)
+                {
+                    LumiaPhoneInfoModel.SwitchToFlashAppContext();
+                }
+                else
+                {
+                    LumiaPhoneInfoModel.ContinueBoot();
+                }
+
+                if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    await PhoneNotifier.WaitForArrival();
+                }
+
+                if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
+                IsSwitchingInterface = OriginalIsSwitchingInterface;
 
                 if (EDEPath == null)
                 {
@@ -524,7 +628,7 @@ namespace WPinternals
                 {
                     Key.SetValue("EDEPath", EDEPath);
 
-                    App.Config.AddEmergencyToRepository(/*TODO FIXME: Info.Type*/"", EDEPath, null);
+                    App.Config.AddEmergencyToRepository(PhoneInfo.Type, EDEPath, null);
                 }
             }
 
