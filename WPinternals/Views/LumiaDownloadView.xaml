@@ -159,13 +159,16 @@ DEALINGS IN THE SOFTWARE.
                             <RowDefinition />
                             <RowDefinition />
                             <RowDefinition />
+                            <RowDefinition />
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Column="0" Grid.Row="0">Producttype</TextBlock>
                         <TextBlock Grid.Column="0" Grid.Row="1">Productcode</TextBlock>
                         <TextBlock Grid.Column="0" Grid.Row="2">Operatorcode</TextBlock>
+                        <TextBlock Grid.Column="0" Grid.Row="3">Firmwareversion</TextBlock>
                         <TextBox Grid.Column="1" Grid.Row="0" Width="Auto" Margin="0,0,0,8" Text="{Binding ProductType, Mode=TwoWay}"/>
                         <TextBox Grid.Column="1" Grid.Row="1" Width="Auto" Margin="0,0,0,8" Text="{Binding ProductCode, Mode=TwoWay}"/>
-                        <TextBox Grid.Column="1" Grid.Row="2" Width="Auto" Text="{Binding OperatorCode, Mode=TwoWay}"/>
+                        <TextBox Grid.Column="1" Grid.Row="2" Width="Auto" Margin="0,0,0,8" Text="{Binding OperatorCode, Mode=TwoWay}"/>
+                        <TextBox Grid.Column="1" Grid.Row="3" Width="Auto" Text="{Binding FirmwareVersion, Mode=TwoWay}"/>
                     </Grid>
                     <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal">
                         <Button Content="Search" Padding="0,5" Width="120" Margin="0,0,20,0" Command="{Binding Path=SearchCommand, Mode=OneWay}" IsDefault="True"/>

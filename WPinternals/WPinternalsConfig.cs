@@ -220,6 +220,52 @@ namespace WPinternals
 
         public List<FFUEntry> FFURepository = new();
 
+        internal void AddSecWimToRepository(string SecWimPath, string FirmwareVersion)
+        {
+            SecWimEntry Entry = SecWimRepository.Find(e => (e.FirmwareVersion == FirmwareVersion) && string.Equals(e.Path, SecWimPath, StringComparison.CurrentCultureIgnoreCase));
+            if (Entry == null)
+            {
+                LogFile.Log("Adding Secure WIM to repository: " + SecWimPath, LogType.FileAndConsole);
+                if (FirmwareVersion != null)
+                {
+                    LogFile.Log("Firmware version: " + FirmwareVersion, LogType.FileAndConsole);
+                }
+
+                Entry = new SecWimEntry
+                {
+                    Path = SecWimPath,
+                    FirmwareVersion = FirmwareVersion
+                };
+                SecWimRepository.Add(Entry);
+                WriteConfig();
+            }
+            else
+            {
+                LogFile.Log("Secure WIM not added, because it was already present in the repository.", LogType.FileAndConsole);
+            }
+        }
+
+        internal void RemoveSecWimFromRepository(string SecWimPath)
+        {
+            int Count = 0;
+            SecWimRepository.Where(e => string.Equals(e.Path, SecWimPath, StringComparison.CurrentCultureIgnoreCase)).ToList().ForEach(e =>
+            {
+                Count++;
+                SecWimRepository.Remove(e);
+            });
+            if (Count == 0)
+            {
+                LogFile.Log("Secure WIM was not removed from repository because it was not present.", LogType.FileAndConsole);
+            }
+            else
+            {
+                LogFile.Log("Removed Secure WIM from repository: " + SecWimPath, LogType.FileAndConsole);
+                WriteConfig();
+            }
+        }
+
+        public List<SecWimEntry> SecWimRepository = new();
+
         public List<EmergencyFileEntry> EmergencyRepository = new();
 
         internal void AddEmergencyToRepository(string Type, string ProgrammerPath, string PayloadPath)
@@ -336,6 +382,17 @@ namespace WPinternals
         public string PlatformID;
         public string FirmwareVersion;
         public string OSVersion;
+        public string Path;
+
+        internal bool Exists()
+        {
+            return File.Exists(Path);
+        }
+    }
+
+    public class SecWimEntry
+    {
+        public string FirmwareVersion;
         public string Path;
 
         internal bool Exists()

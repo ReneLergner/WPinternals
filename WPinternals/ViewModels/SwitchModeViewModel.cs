@@ -751,18 +751,39 @@ namespace WPinternals
                         {
                             ModeSwitchProgressWrapper(ProgressText, null);
 
-                            string TempFolder = Environment.GetEnvironmentVariable("TEMP") + @"\WPInternals";
+                            string TempFolder = $@"{Environment.GetEnvironmentVariable("TEMP")}\WPInternals";
 
                             if (PhoneInfoAppInfo.Type == "RM-1152")
                             {
                                 PhoneInfoAppInfo.Type = "RM-1151";
                             }
 
-                            string ENOSWPackage = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
+                            (string ENOSWFileUrl, string DPLFileUrl) = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
 
                             SetWorkingStatus($"Downloading {Info.Type} Test Mode package...", MaxProgressValue: 100);
 
-                            DownloadEntry downloadEntry = new(ENOSWPackage, TempFolder, null, null, null);
+                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, null, (string[] Files, object State) =>
+                            {
+                                App.Config.AddSecWimToRepository(ENOSWFileUrl, Info.Firmware);
+
+                                ModeSwitchProgressWrapper("Initializing Flash...", null);
+
+                                string MMOSPath = $"{TempFolder}\\{DownloadsViewModel.GetFileNameFromURL(ENOSWFileUrl)}";
+
+                                PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                                FileInfo info = new(MMOSPath);
+                                uint length = uint.Parse(info.Length.ToString());
+                                const int maximumbuffersize = 0x00240000;
+                                uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
+
+                                SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100);
+
+                                ProgressUpdater progressUpdater = new(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
+                                FlashModel.FlashMMOS(MMOSPath, progressUpdater);
+
+                                SetWorkingStatus("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
+
+                            }, null);
 
                             downloadEntry.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) =>
                             {
@@ -771,26 +792,6 @@ namespace WPinternals
                                     int progress = (sender as DownloadEntry)?.Progress ?? 0;
                                     ulong.TryParse(progress.ToString(), out ulong progressret);
                                     UpdateWorkingStatus(null, CurrentProgressValue: progressret);
-
-                                    if (progress == 100)
-                                    {
-                                        ModeSwitchProgressWrapper("Initializing Flash...", null);
-
-                                        string MMOSPath = TempFolder + "\\" + (sender as DownloadEntry)?.Name;
-
-                                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                                        FileInfo info = new(MMOSPath);
-                                        uint length = uint.Parse(info.Length.ToString());
-                                        const int maximumbuffersize = 0x00240000;
-                                        uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
-
-                                        SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100);
-
-                                        ProgressUpdater progressUpdater = new(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
-                                        FlashModel.FlashMMOS(MMOSPath, progressUpdater);
-
-                                        SetWorkingStatus("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
-                                    }
                                 }
                             };
                         }
@@ -877,11 +878,32 @@ namespace WPinternals
                                 PhoneInfoAppInfo.Type = "RM-1151";
                             }
 
-                            string ENOSWPackage = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
+                            (string ENOSWFileUrl, string DPLFileUrl) = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
 
                             SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100);
 
-                            DownloadEntry downloadEntry = new(ENOSWPackage, TempFolder, null, null, null);
+                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, null, (string[] Files, object State) =>
+                            {
+                                App.Config.AddSecWimToRepository(ENOSWFileUrl, Info.Firmware);
+
+                                ModeSwitchProgressWrapper("Initializing Flash...", null);
+
+                                string MMOSPath = $"{TempFolder}\\{DownloadsViewModel.GetFileNameFromURL(ENOSWFileUrl)}";
+
+                                PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                                FileInfo info = new(MMOSPath);
+                                uint length = uint.Parse(info.Length.ToString());
+                                const int maximumbuffersize = 0x00240000;
+                                uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
+
+                                SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100);
+
+                                ProgressUpdater progressUpdater = new(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
+                                FlashModel.FlashMMOS(MMOSPath, progressUpdater);
+
+                                SetWorkingStatus("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
+
+                            }, null);
 
                             downloadEntry.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) =>
                             {
@@ -890,26 +912,6 @@ namespace WPinternals
                                     int progress = (sender as DownloadEntry)?.Progress ?? 0;
                                     ulong.TryParse(progress.ToString(), out ulong progressret);
                                     UpdateWorkingStatus(null, CurrentProgressValue: progressret);
-
-                                    if (progress == 100)
-                                    {
-                                        ModeSwitchProgressWrapper("Initializing Flash...", null);
-
-                                        string MMOSPath = TempFolder + "\\" + (sender as DownloadEntry)?.Name;
-
-                                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                                        FileInfo info = new(MMOSPath);
-                                        uint length = uint.Parse(info.Length.ToString());
-                                        const int maximumbuffersize = 0x00240000;
-                                        uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
-
-                                        SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100);
-
-                                        ProgressUpdater progressUpdater = new(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
-                                        FlashModel.FlashMMOS(MMOSPath, progressUpdater);
-
-                                        SetWorkingStatus("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
-                                    }
                                 }
                             };
                         }

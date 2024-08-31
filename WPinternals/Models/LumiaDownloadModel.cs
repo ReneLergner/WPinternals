@@ -158,7 +158,7 @@ namespace WPinternals
             return FfuUrl;
         }
 
-        internal static string SearchENOSW(string ProductType, string PhoneFirmwareRevision)
+        internal static (string SecureWIMUrl, string DPLUrl) SearchENOSW(string ProductType, string PhoneFirmwareRevision)
         {
             if (ProductType?.Length == 0)
             {
@@ -182,6 +182,7 @@ namespace WPinternals
                 packageClass = "Public",
                 manufacturerHardwareModel = ProductType
             };
+
             DiscoveryParameters DiscoveryParams = new()
             {
                 query = DiscoveryQueryParams
@@ -212,16 +213,15 @@ namespace WPinternals
             }
 
             SoftwarePackage Package = null;
-            using (MemoryStream JsonResultStream = new(Encoding.UTF8.GetBytes(JsonResultString)))
+            using MemoryStream JsonResultStream = new(Encoding.UTF8.GetBytes(JsonResultString));
+            DataContractJsonSerializer SoftwarePackagesJsonSerializer = new(typeof(SoftwarePackages));
+            SoftwarePackages SoftwarePackages = (SoftwarePackages)SoftwarePackagesJsonSerializer.ReadObject(JsonResultStream);
+
+            if (SoftwarePackages != null)
             {
-                DataContractJsonSerializer SoftwarePackagesJsonSerializer = new(typeof(SoftwarePackages));
-                SoftwarePackages SoftwarePackages = (SoftwarePackages)SoftwarePackagesJsonSerializer.ReadObject(JsonResultStream);
-                if (SoftwarePackages != null)
+                foreach (SoftwarePackage pkg in SoftwarePackages.softwarePackages)
                 {
-                    foreach (SoftwarePackage pkg in SoftwarePackages.softwarePackages)
-                    {
-                        Package = SoftwarePackages.softwarePackages.FirstOrDefault();
-                    }
+                    Package = SoftwarePackages.softwarePackages.FirstOrDefault();
                 }
             }
 
@@ -230,41 +230,40 @@ namespace WPinternals
                 throw new WPinternalsException("ENOSW package not found", "No ENOSW package has been found in the remote software repository for the requested model.");
             }
 
-            SoftwareFile FileInfo = Package.files.First(f => f.fileName.EndsWith(".secwim", StringComparison.OrdinalIgnoreCase));
+            SoftwareFile SecureWimSoftwareFile = Package.files.First(f => f.fileName.EndsWith(".secwim", StringComparison.OrdinalIgnoreCase));
+            SoftwareFile DPLSoftwareFile = Package.files.First(f => f.fileName.EndsWith(".dpl", StringComparison.OrdinalIgnoreCase));
 
-            SoftwareFile DPLF = Package.files.First(f => f.fileName.EndsWith(".dpl", StringComparison.OrdinalIgnoreCase));
-            Uri DPLUri = new("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + DPLF.fileName);
-            Task<string> GetDPLTask = HttpClient.GetStringAsync(DPLUri);
+            Uri DPLFileUrlUri = new($"https://api.swrepository.com/rest-api/discovery/fileurl/1/{Package.id}/{DPLSoftwareFile.fileName}");
+
+            Task<string> GetDPLTask = HttpClient.GetStringAsync(DPLFileUrlUri);
             GetDPLTask.Wait();
-            string DPLString = GetDPLTask.Result;
 
-            string DPLUrl = "";
-            FileUrlResult FileUrlDPL = null;
-            using (MemoryStream JsonStream3 = new(Encoding.UTF8.GetBytes(DPLString)))
+            string DPLFileUrlResultContent = GetDPLTask.Result;
+            FileUrlResult DPLFileUrlResult = null;
+            using MemoryStream DPLFileUrlResultStream = new(Encoding.UTF8.GetBytes(DPLFileUrlResultContent));
+            DataContractJsonSerializer DPLFileUrlResultSerializer = new(typeof(FileUrlResult));
+            DPLFileUrlResult = (FileUrlResult)DPLFileUrlResultSerializer.ReadObject(DPLFileUrlResultStream);
+
+            string DPLFileUrl = "";
+
+            if (DPLFileUrlResult != null)
             {
-                DataContractJsonSerializer Serializer3 = new(typeof(FileUrlResult));
-                FileUrlDPL = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
-                if (FileUrlDPL != null)
-                {
-                    DPLUrl = FileUrlDPL.url.Replace("sr.azureedge.net", "softwarerepo.blob.core.windows.net");
-                }
+                DPLFileUrl = DPLFileUrlResult.url.Replace("sr.azureedge.net", "softwarerepo.blob.core.windows.net");
             }
 
-            if (DPLUrl?.Length == 0)
+            if (DPLFileUrl?.Length == 0)
             {
                 throw new WPinternalsException("DPL not found", "No DPL has been found in the remote software repository for the requested model.");
             }
 
-            Task<string> GetDPLStrTask = HttpClient.GetStringAsync(DPLUrl);
+            Task<string> GetDPLStrTask = HttpClient.GetStringAsync(DPLFileUrl);
             GetDPLStrTask.Wait();
             string DPLStrString = GetDPLStrTask.Result;
 
             DPL.Package dpl;
             XmlSerializer serializer = new(typeof(DPL.Package));
-            using (StringReader reader = new(DPLStrString.Replace("ft:", "").Replace("dpl:", "").Replace("typedes:", "")))
-            {
-                dpl = (DPL.Package)serializer.Deserialize(reader);
-            }
+            using StringReader reader = new(DPLStrString.Replace("ft:", "").Replace("dpl:", "").Replace("typedes:", ""));
+            dpl = (DPL.Package)serializer.Deserialize(reader);
 
             foreach (DPL.File file in dpl.Content.Files.File)
             {
@@ -274,30 +273,30 @@ namespace WPinternals
 
                 if (IsFirmwareBetween(PhoneFirmwareRevision, range.From, range.To))
                 {
-                    FileInfo = Package.files.First(f => f.fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase));
+                    SecureWimSoftwareFile = Package.files.First(f => f.fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
-            Uri FileInfoUri = new("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + FileInfo.fileName);
+            Uri FileInfoUri = new("https://api.swrepository.com/rest-api/discovery/fileurl/1/" + Package.id + "/" + SecureWimSoftwareFile.fileName);
             Task<string> GetFileInfoTask = HttpClient.GetStringAsync(FileInfoUri);
             GetFileInfoTask.Wait();
             string FileInfoString = GetFileInfoTask.Result;
 
-            string ENOSWUrl = "";
+            string ENOSWFileUrl = "";
+
             FileUrlResult FileUrl = null;
-            using (MemoryStream JsonStream3 = new(Encoding.UTF8.GetBytes(FileInfoString)))
+
+            using MemoryStream JsonStream4 = new(Encoding.UTF8.GetBytes(FileInfoString));
+            DataContractJsonSerializer Serializer4 = new(typeof(FileUrlResult));
+            FileUrl = (FileUrlResult)Serializer4.ReadObject(JsonStream4);
+            if (FileUrl != null)
             {
-                DataContractJsonSerializer Serializer3 = new(typeof(FileUrlResult));
-                FileUrl = (FileUrlResult)Serializer3.ReadObject(JsonStream3);
-                if (FileUrl != null)
-                {
-                    ENOSWUrl = FileUrl.url.Replace("sr.azureedge.net", "softwarerepo.blob.core.windows.net");
-                }
+                ENOSWFileUrl = FileUrl.url.Replace("sr.azureedge.net", "softwarerepo.blob.core.windows.net");
             }
 
             HttpClient.Dispose();
 
-            return ENOSWUrl;
+            return (ENOSWFileUrl, DPLFileUrl);
         }
 
         private static bool IsFirmwareBetween(string PhoneFirmwareRevision, string Limit1, string Limit2)

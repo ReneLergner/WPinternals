@@ -73,15 +73,15 @@ namespace WPinternals
                     {
                         App.Config.AddFfuToRepository(FFUPath);
                         App.Config.WriteConfig();
-                        LastStatusText = "File \"" + FFUFile + "\" was added to the repository.";
+                        LastStatusText = $"File \"{FFUFile}\" was added to the repository.";
                     }
                     catch (WPinternalsException Ex)
                     {
-                        LastStatusText = "Error: " + Ex.Message + ". File \"" + FFUFile + "\" was not added.";
+                        LastStatusText = $"Error: {Ex.Message}. File \"{FFUFile}\" was not added.";
                     }
                     catch
                     {
-                        LastStatusText = "Error: File \"" + FFUFile + "\" was not added.";
+                        LastStatusText = $"Error: File \"{FFUFile}\" was not added.";
                     }
                 }
                 else
@@ -174,6 +174,8 @@ namespace WPinternals
             {
                 string FFUURL = null;
                 string[] EmergencyURLs = null;
+                string SecureWIMURL = null;
+
                 try
                 {
                     string TempProductType = ProductType.ToUpper();
@@ -183,7 +185,17 @@ namespace WPinternals
                     }
 
                     ProductType = TempProductType;
-                    FFUURL = LumiaDownloadModel.SearchFFU(ProductType, ProductCode, OperatorCode, out TempProductType);
+
+                    try
+                    {
+                        FFUURL = LumiaDownloadModel.SearchFFU(ProductType, ProductCode, OperatorCode, out TempProductType);
+                    }
+                    catch (WPinternalsException ex)
+                    {
+                        LogFile.LogException(ex, LogType.FileOnly);
+                        FFUURL = LumiaDownloadModel.SearchFFU(ProductType, null, OperatorCode, out TempProductType);
+                    }
+
                     if (TempProductType != null)
                     {
                         ProductType = TempProductType;
@@ -192,6 +204,11 @@ namespace WPinternals
                     if (ProductType != null)
                     {
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
+                    }
+
+                    if (ProductType != null && FirmwareVersion != null)
+                    {
+                        (SecureWIMURL, string _) = LumiaDownloadModel.SearchENOSW(ProductType, FirmwareVersion);
                     }
                 }
                 catch (Exception ex)
@@ -208,7 +225,12 @@ namespace WPinternals
 
                     if (EmergencyURLs != null)
                     {
-                        SearchResultList.Add(new SearchResult(ProductType + " emergency-files", EmergencyURLs, ProductType, EmergencyDownloaded, ProductType));
+                        SearchResultList.Add(new SearchResult($"{ProductType} emergency-files", EmergencyURLs, ProductType, EmergencyDownloaded, ProductType));
+                    }
+
+                    if (SecureWIMURL != null)
+                    {
+                        SearchResultList.Add(new SearchResult($"{ProductType} ENOSW-files", SecureWIMURL, ProductType, ENOSWDownloaded, FirmwareVersion));
                     }
                 }, null);
 
@@ -239,6 +261,7 @@ namespace WPinternals
             {
                 string FFUURL = null;
                 string[] EmergencyURLs = null;
+                string SecureWIMURL = null;
                 try
                 {
                     string TempProductType = ProductType.ToUpper();
@@ -258,6 +281,11 @@ namespace WPinternals
                     {
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
                     }
+
+                    if (ProductType != null && FirmwareVersion != null)
+                    {
+                        (SecureWIMURL, string _) = LumiaDownloadModel.SearchENOSW(ProductType, FirmwareVersion);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -274,6 +302,11 @@ namespace WPinternals
                     if (EmergencyURLs != null)
                     {
                         Download(EmergencyURLs, ProductType, EmergencyDownloaded, ProductType);
+                    }
+
+                    if (SecureWIMURL != null)
+                    {
+                        Download(SecureWIMURL, ProductType, ENOSWDownloaded, FirmwareVersion);
                     }
                 }, null);
             }).Start();
@@ -328,6 +361,12 @@ namespace WPinternals
                 App.Config.AddEmergencyToRepository(Type, ProgrammerPath, PayloadPath);
             }
         }
+
+        private void ENOSWDownloaded(string[] Files, object State)
+        {
+            App.Config.AddSecWimToRepository(Files[0], (string)State);
+        }
+
         public ObservableCollection<DownloadEntry> DownloadList { get; } = new();
         public ObservableCollection<SearchResult> SearchResultList { get; } = new();
 
@@ -442,6 +481,24 @@ namespace WPinternals
             }
         }
 
+        private string _FirmwareVersion = null;
+        public string FirmwareVersion
+        {
+            get
+            {
+                return _FirmwareVersion;
+            }
+            set
+            {
+                if (_FirmwareVersion != value)
+                {
+                    _FirmwareVersion = value;
+
+                    OnPropertyChanged(nameof(FirmwareVersion));
+                }
+            }
+        }
+
         private string _OperatorCode = null;
         public string OperatorCode
         {
@@ -460,8 +517,13 @@ namespace WPinternals
             }
         }
 
-        internal override void EvaluateViewState()
+        internal override async void EvaluateViewState()
         {
+            if (IsSwitchingInterface)
+            {
+                return;
+            }
+
             if (!IsActive)
             {
                 return;
@@ -469,11 +531,81 @@ namespace WPinternals
 
             if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
             {
-                LumiaFlashAppModel LumiaFlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
-                PhoneInfo Info = LumiaFlashModel.ReadPhoneInfo();
+                PhoneInfo FlashAppInfo = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
+                FirmwareVersion = FlashAppInfo.Firmware;
+
+                IsSwitchingInterface = true;
+
+                (Notifier.CurrentModel as LumiaFlashAppModel).SwitchToPhoneInfoAppContext();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                {
+                    await Notifier.WaitForArrival();
+                }
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
+                LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
+                PhoneInfo Info = LumiaPhoneInfoModel.ReadPhoneInfo();
                 ProductType = Info.Type;
                 OperatorCode = "";
                 ProductCode = Info.ProductCode;
+
+                ((LumiaPhoneInfoAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    await Notifier.WaitForArrival();
+                }
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
+                IsSwitchingInterface = false;
+            }
+            else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_PhoneInfo)
+            {
+                LumiaPhoneInfoAppModel LumiaPhoneInfoModel = (LumiaPhoneInfoAppModel)Notifier.CurrentModel;
+                PhoneInfo Info = LumiaPhoneInfoModel.ReadPhoneInfo();
+                ProductType = Info.Type;
+                OperatorCode = "";
+                ProductCode = Info.ProductCode;
+
+                IsSwitchingInterface = true;
+
+                ((LumiaPhoneInfoAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    await Notifier.WaitForArrival();
+                }
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
+                PhoneInfo FlashAppInfo = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
+                FirmwareVersion = FlashAppInfo.Firmware;
+
+                (Notifier.CurrentModel as LumiaFlashAppModel).SwitchToPhoneInfoAppContext();
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                {
+                    await Notifier.WaitForArrival();
+                }
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
+                IsSwitchingInterface = false;
             }
             else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Normal)
             {
@@ -717,6 +849,18 @@ namespace WPinternals
         {
             UIContext = SynchronizationContext.Current;
             this.URLs = URLs;
+            this.Name = Name;
+            this.Callback = Callback;
+            this.State = State;
+            this.Category = Category;
+            GetSize();
+        }
+
+        internal SearchResult(string Name, string URL, string Category, Action<string[], object> Callback, object State)
+        {
+            UIContext = SynchronizationContext.Current;
+            URLs = new string[1];
+            URLs[0] = URL;
             this.Name = Name;
             this.Callback = Callback;
             this.State = State;
