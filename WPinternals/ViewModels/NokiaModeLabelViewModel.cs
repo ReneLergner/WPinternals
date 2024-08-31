@@ -41,6 +41,12 @@ namespace WPinternals
                 case "Normal":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Normal);
                     break;
+                case "PhoneInfo":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_PhoneInfo);
+                    break;
+                case "BootMgr":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_Bootloader);
+                    break;
                 case "Flash":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Flash);
                     break;

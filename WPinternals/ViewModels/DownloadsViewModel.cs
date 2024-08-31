@@ -469,7 +469,7 @@ namespace WPinternals
 
             if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
             {
-                NokiaFlashModel LumiaFlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+                LumiaFlashAppModel LumiaFlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
                 PhoneInfo Info = LumiaFlashModel.ReadPhoneInfo();
                 ProductType = Info.Type;
                 OperatorCode = "";

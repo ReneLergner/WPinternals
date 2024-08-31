@@ -18,37 +18,17 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-
 namespace WPinternals
 {
-    /// <summary>
-    /// Interaction logic for NokiaPhoneInfoView.xaml
-    /// </summary>
-    public partial class NokiaPhoneInfoView : UserControl
+    internal class UefiSecurityStatusResponse
     {
-        public NokiaPhoneInfoView()
-        {
-            InitializeComponent();
-        }
-
-        private void HandleHyperlinkClick(object sender, RoutedEventArgs args)
-        {
-            Hyperlink link = args.Source as Hyperlink;
-            if (link?.NavigateUri != null)
-            {
-                if (link.NavigateUri.ToString() == "GettingStarted")
-                {
-                    (this.DataContext as NokiaPhoneInfoViewModel)?.SwitchToGettingStarted();
-                } (this.DataContext as NokiaPhoneInfoViewModel)?.RebootTo(link.NavigateUri.ToString());
-            }
-        }
-
-        private void Document_Loaded(object sender, RoutedEventArgs e)
-        {
-            (sender as FlowDocument)?.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(HandleHyperlinkClick));
-        }
+        public byte IsTestDevice;
+        public bool PlatformSecureBootStatus;
+        public bool SecureFfuEfuseStatus;
+        public bool DebugStatus;
+        public bool RdcStatus;
+        public bool AuthenticationStatus;
+        public bool UefiSecureBootStatus;
+        public bool CryptoHardwareKey;
     }
 }

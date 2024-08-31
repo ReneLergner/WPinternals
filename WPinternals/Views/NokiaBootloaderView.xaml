@@ -99,9 +99,38 @@ DEALINGS IN THE SOFTWARE.
             </StackPanel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                <local:GifImage x:Name="GifImage" Stretch="None"/>
-                <Label Content="Phone is booting..." FontSize="20" Margin="10,0,0,0" VerticalContentAlignment="Center"/>
+            <StackPanel>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                    <local:GifImage x:Name="GifImage" Stretch="None"/>
+                    <Label Content="Phone is booting..." FontSize="20" Margin="10,0,0,0" VerticalContentAlignment="Center"/>
+                </StackPanel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Margin="20,0,20,0" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded">
+                        <local:Paragraph TextAlignment="Center">
+                            <Run Text="When you connect the phone, it can take a moment before it is recognized. If it still isn't recognized after a while, you might need to install the necessary drivers first. For more information about the drivers, read the " />
+                            <Hyperlink NavigateUri="Getting started">Getting started</Hyperlink>
+                            <Run Text=" section. If the drivers are installed, but the phone is still not recognized, then try to perform a soft-reset, while the USB of the phone is connected. On Lumia phones you have to press-and-hold the power-button and volume-down-button at the same time for at least 10 seconds. If the tool detects the bootloader of the phone it will try to connect to the phone at this early boot-stage." />
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-20,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding InterruptBoot, RelativeSource={RelativeSource AncestorType={x:Type local:NokiaBootloaderView}}, Converter={StaticResource InverseVisibilityConverter}}">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded">
+                        <local:Paragraph TextAlignment="Center">
+                            <Run Text="You can "/>
+                            <Hyperlink NavigateUri="Interrupt boot">interrupt the boot-process</Hyperlink>
+                            <Run Text=" as soon as the bootloader is detected. This allows you to configure the phone or flash a ROM before it boots to the OS. You can also try this when the phone is not booting properly. When you unlocked the bootloader and the phone boots to a Blue Screen, you can still enter Mass Storage Mode if you want. To boot properly again, restore the bootloader. You can update to a supported OS version and try again after that."/>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
+                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-20,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding InterruptBoot, RelativeSource={RelativeSource AncestorType={x:Type local:NokiaBootloaderView}}, Converter={StaticResource VisibilityConverter}}">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded">
+                        <local:Paragraph TextAlignment="Center">
+                            <Run Text="Windows Phone Internals is set to interrupt the boot-process as soon as the bootloader is detected. You can also allow the phone to "/>
+                            <Hyperlink NavigateUri="Normal boot">boot normally</Hyperlink>
+                            <Run Text="."/>
+                        </local:Paragraph>
+                    </FlowDocument>
+                </local:FlowDocumentScrollViewerNoMouseWheel>
             </StackPanel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">

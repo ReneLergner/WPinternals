@@ -57,7 +57,7 @@ namespace WPinternals
             {
                 LogFile.Log("Find Flashing Profile", LogType.FileAndConsole);
 
-                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 PhoneInfo Info;
                 if (DoResetFirst)
@@ -125,14 +125,14 @@ namespace WPinternals
                 LogFile.Log("Command: Enable testsigning", LogType.FileAndConsole);
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
-                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 List<FlashPart> Parts = new();
                 FlashPart Part;
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
+                byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
                 GPT GPT = new(GPTChunk);
                 bool GPTChanged = false;
 
@@ -228,7 +228,7 @@ namespace WPinternals
                 return ((MassStorage)Notifier.CurrentModel).Drive;
             }
 
-            NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
             if (DoResetFirst)
             {
                 // The phone will be reset before flashing, so we have the opportunity to get some more info from the phone
@@ -260,12 +260,12 @@ namespace WPinternals
                 LogFile.Log("Command: Clear NV", LogType.FileAndConsole);
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
-                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                 List<FlashPart> Parts = new();
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
+                byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
                 GPT GPT = new(GPTChunk);
                 bool GPTChanged = false;
                 Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
@@ -336,13 +336,13 @@ namespace WPinternals
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
 
-                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 PhoneInfo Info = FlashModel.ReadPhoneInfo();
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
+                byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
                 GPT GPT = new(GPTChunk);
 
                 Partition TargetPartition = GPT.GetPartition(PartitionName);
@@ -445,7 +445,7 @@ namespace WPinternals
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
 
-                NokiaFlashModel FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
                 PhoneInfo Info = FlashModel.ReadPhoneInfo();
 
@@ -483,10 +483,10 @@ namespace WPinternals
 
         internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null)
         {
-            NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
+            LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
             PhoneInfo Info = Model.ReadPhoneInfo();
 
-            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, 131072u);
+            byte[] GPTChunk = Model.GetGptChunk(131072u);
 
             GPT GPT = new(GPTChunk);
 
@@ -554,7 +554,7 @@ namespace WPinternals
                 ExitFailure = (m, s) => { };
             }
 
-            NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
+            LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
             PhoneInfo Info = Model.ReadPhoneInfo();
 
             string Type = Info.Type;
@@ -673,7 +673,7 @@ namespace WPinternals
                 MaximumAttempts = (int)(((MaximumGapFill / FFU.ChunkSize) + 1) * 8);
             }
 
-            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, (UInt32)FFU.ChunkSize);
+            byte[] GPTChunk = Model.GetGptChunk((UInt32)FFU.ChunkSize);
 
             // Start with a reset
             if (DoResetFirst)
@@ -818,23 +818,12 @@ namespace WPinternals
                     throw new WPinternalsException("Phone is in wrong mode", "The phone should have been detected in bootloader or flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
 
-                Model = (NokiaFlashModel)Notifier.CurrentModel;
                 UpdateWorkingStatus("Initializing flash...", null, null);
             }
 
-            try
-            {
-                // This will succeed on new models
-                Model.SwitchToFlashAppContext();
-                Model.DisableRebootTimeOut();
-            }
-            catch
-            {
-                // This will succeed on old models
-                Model.ResetPhoneToFlashMode();
-                await Notifier.WaitForArrival();
-                Model = (NokiaFlashModel)Notifier.CurrentModel;
-            }
+            ((LumiaBootManagerAppModel)Notifier.CurrentModel).ResetPhoneToFlashMode();
+            await Notifier.WaitForArrival();
+            Model = (LumiaFlashAppModel)Notifier.CurrentModel;
 
             // The payloads must be ordered by the number of locations
             //
@@ -1516,10 +1505,9 @@ namespace WPinternals
                             break;
                         }
 
-                        Model = (NokiaFlashModel)Notifier.CurrentModel;
-
                         // In case we are on an Engineering phone which isn't stuck in flashmode and booted to BootMgrApp
-                        Model.SwitchToFlashAppContext();
+                        ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                        Model = (LumiaFlashAppModel)Notifier.CurrentModel;
                         Model.DisableRebootTimeOut();
                     }
 
@@ -1644,7 +1632,7 @@ namespace WPinternals
                 }
 
                 // Do the actual reset, which will result in a crash while cleaning up memory
-                ((NokiaFlashModel)Notifier.CurrentModel).ResetPhone();
+                ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
 
                 LogFile.Log("Phone performs hard exit", LogType.FileAndConsole);
 
@@ -1782,7 +1770,7 @@ namespace WPinternals
             else
             {
                 // If we didn't do a hard exit, we need to do a normal reboot
-                ((NokiaFlashModel)Notifier.CurrentModel).ResetPhone();
+                ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
             }
 
             if (Success)
@@ -1964,11 +1952,11 @@ namespace WPinternals
         {
             LogFile.BeginAction("FlashCustomROM");
 
-            NokiaFlashModel FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
 
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
-            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
+            byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
             GPT GPT = new(GPTChunk);
 
             Partition Target;
@@ -2357,11 +2345,11 @@ namespace WPinternals
         // Assumes phone is in flash mode
         internal async static Task LumiaV2FlashPartitions(PhoneNotifierViewModel Notifier, string EFIESPPath, string MainOSPath, string DataPath, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null)
         {
-            NokiaFlashModel FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
 
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
-            byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
+            byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
             GPT GPT = new(GPTChunk);
 
             Partition Target;

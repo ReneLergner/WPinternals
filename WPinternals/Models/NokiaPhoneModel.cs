@@ -176,6 +176,11 @@ namespace WPinternals
                 return null;
             }
 
+            if (Token.Value.ValueKind == JsonValueKind.String)
+            {
+                return Token.Value.GetString().Equals("true", StringComparison.InvariantCultureIgnoreCase);
+            }
+
             return Token.Value.GetBoolean();
         }
 

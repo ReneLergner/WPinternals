@@ -25,7 +25,7 @@ namespace WPinternals
 {
     internal class NokiaModePhoneInfoViewModel : ContextViewModel
     {
-        private readonly NokiaFlashModel CurrentModel;
+        private readonly LumiaPhoneInfoAppModel CurrentModel;
         private readonly Action<PhoneInterfaces?> RequestModeSwitch;
         private readonly object LockDeviceInfo = new();
         private bool DeviceInfoLoaded = false;
@@ -33,7 +33,7 @@ namespace WPinternals
         internal NokiaModePhoneInfoViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces?> RequestModeSwitch)
             : base()
         {
-            this.CurrentModel = (NokiaFlashModel)CurrentModel;
+            this.CurrentModel = (LumiaPhoneInfoAppModel)CurrentModel;
             this.RequestModeSwitch = RequestModeSwitch;
         }
 
@@ -69,19 +69,7 @@ namespace WPinternals
                     {
                         PhoneInfo Info = CurrentModel.ReadPhoneInfo();
 
-                        if (Info.FlashAppProtocolVersionMajor < 2)
-                        {
-                            UefiSecurityStatusResponse SecurityStatus = CurrentModel.ReadSecurityStatus();
-
-                            if (SecurityStatus != null)
-                            {
-                                EffectivePhoneInfoSecurityStatus = SecurityStatus.SecureFfuEfuseStatus && !SecurityStatus.AuthenticationStatus && !SecurityStatus.RdcStatus;
-                            }
-                        }
-                        else
-                        {
-                            EffectivePhoneInfoSecurityStatus = Info.UefiSecureBootEnabled;
-                        }
+                        EffectivePhoneInfoSecurityStatus = Info.UefiSecureBootEnabled;
 
                         LogFile.Log("Effective PhoneInfo Security Status: " + EffectivePhoneInfoSecurityStatus.ToString());
                     }
@@ -103,6 +91,9 @@ namespace WPinternals
                     break;
                 case "Flash":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Flash);
+                    break;
+                case "BootMgr":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_Bootloader);
                     break;
                 case "Label":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Label);

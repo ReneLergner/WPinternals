@@ -237,13 +237,12 @@ namespace WPinternals
                              e.DevicePath.Contains("&PID_0A02", StringComparison.OrdinalIgnoreCase) || // VID_045E&PID_0A02 is for Lumia 950
                              e.DevicePath.Contains("&PID_05EE", StringComparison.OrdinalIgnoreCase))   // VID_0421&PID_05EE is for early RX100
                     {
-                        CurrentModel = new NokiaFlashModel(e.DevicePath);
-                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
-
                         FlashAppType type = FlashAppType.FlashApp;
                         try
                         {
-                            type = ((NokiaFlashModel)CurrentModel).GetFlashAppType();
+                            NokiaFlashModel tmpModel = new NokiaFlashModel(e.DevicePath);
+                            type = tmpModel.GetFlashAppType();
+                            tmpModel.Dispose();
                             LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);
                         }
                         catch
@@ -255,6 +254,9 @@ namespace WPinternals
                         {
                             case FlashAppType.BootManager:
                                 {
+                                    CurrentModel = new LumiaBootManagerAppModel(e.DevicePath);
+                                    ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+
                                     CurrentInterface = PhoneInterfaces.Lumia_Bootloader;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                                     LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
@@ -265,6 +267,9 @@ namespace WPinternals
                                 }
                             case FlashAppType.FlashApp:
                                 {
+                                    CurrentModel = new LumiaFlashAppModel(e.DevicePath);
+                                    ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+
                                     ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
                                     CurrentInterface = PhoneInterfaces.Lumia_Flash;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
@@ -276,6 +281,9 @@ namespace WPinternals
                                 }
                             case FlashAppType.PhoneInfoApp:
                                 {
+                                    CurrentModel = new LumiaPhoneInfoAppModel(e.DevicePath);
+                                    ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+
                                     ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
                                     CurrentInterface = PhoneInterfaces.Lumia_PhoneInfo;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
@@ -415,9 +423,80 @@ namespace WPinternals
             }
         }
 
-        private void InterfaceChanged(PhoneInterfaces NewInterface)
+        private void InterfaceChanged(PhoneInterfaces NewInterface, string DevicePath)
         {
-            CurrentInterface = NewInterface;
+            LastInterface = CurrentInterface;
+            CurrentInterface = null;
+
+            if (CurrentModel != null)
+            {
+                CurrentModel.Dispose();
+                CurrentModel = null;
+                LogFile.Log("Lumia disconnected", LogType.FileAndConsole);
+            }
+
+            DeviceRemoved();
+
+            switch (NewInterface)
+            {
+                case PhoneInterfaces.Lumia_Bootloader:
+                    {
+                        CurrentModel = new LumiaBootManagerAppModel(DevicePath);
+                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+
+                        CurrentInterface = PhoneInterfaces.Lumia_Bootloader;
+                        LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
+                        LogFile.Log("Device path: " + DevicePath, LogType.FileOnly);
+                        LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                        LogFile.Log("Mode: Bootloader", LogType.FileAndConsole);
+                        NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+                        break;
+                    }
+                case PhoneInterfaces.Lumia_Flash:
+                    {
+                        CurrentModel = new LumiaFlashAppModel(DevicePath);
+                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+
+                        ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                        CurrentInterface = PhoneInterfaces.Lumia_Flash;
+                        LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
+                        LogFile.Log("Device path: " + DevicePath, LogType.FileOnly);
+                        LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                        LogFile.Log("Mode: Flash", LogType.FileAndConsole);
+                        NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+                        break;
+                    }
+                case PhoneInterfaces.Lumia_PhoneInfo:
+                    {
+                        CurrentModel = new LumiaPhoneInfoAppModel(DevicePath);
+                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+
+                        ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                        CurrentInterface = PhoneInterfaces.Lumia_PhoneInfo;
+                        LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
+                        LogFile.Log("Device path: " + DevicePath, LogType.FileOnly);
+                        LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                        LogFile.Log("Mode: Bootloader (Phone Info)", LogType.FileAndConsole);
+                        NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+                        break;
+                    }
+                default:
+                    {
+                        LogFile.Log("Flash App Type could not be determined, assuming FlashApp", LogType.FileOnly);
+
+                        CurrentModel = new LumiaFlashAppModel(DevicePath);
+                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+
+                        ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                        CurrentInterface = PhoneInterfaces.Lumia_Flash;
+                        LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
+                        LogFile.Log("Device path: " + DevicePath, LogType.FileOnly);
+                        LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                        LogFile.Log("Mode: Flash", LogType.FileAndConsole);
+                        NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+                        break;
+                    }
+            }
         }
 
         private void LumiaNotifier_Removal(object sender, USBEvent e)

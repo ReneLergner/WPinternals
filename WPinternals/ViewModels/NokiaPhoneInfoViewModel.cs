@@ -32,7 +32,7 @@ namespace WPinternals
 
     internal class NokiaPhoneInfoViewModel : ContextViewModel
     {
-        private readonly NokiaFlashModel CurrentModel;
+        private readonly LumiaPhoneInfoAppModel CurrentModel;
         private readonly Action<PhoneInterfaces> RequestModeSwitch;
         internal Action SwitchToGettingStarted;
         private readonly object LockDeviceInfo = new();
@@ -41,7 +41,7 @@ namespace WPinternals
         internal NokiaPhoneInfoViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch, Action SwitchToGettingStarted)
             : base()
         {
-            this.CurrentModel = (NokiaFlashModel)CurrentModel;
+            this.CurrentModel = (LumiaPhoneInfoAppModel)CurrentModel;
             this.RequestModeSwitch = RequestModeSwitch;
             this.SwitchToGettingStarted = SwitchToGettingStarted;
         }
@@ -191,6 +191,12 @@ namespace WPinternals
             {
                 case "Normal":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Normal);
+                    break;
+                case "Flash":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_Flash);
+                    break;
+                case "BootMgr":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_Bootloader);
                     break;
                 case "Label":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Label);

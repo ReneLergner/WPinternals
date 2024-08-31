@@ -292,6 +292,9 @@ namespace WPinternals
                 case "Flash":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Flash);
                     break;
+                case "PhoneInfo":
+                    RequestModeSwitch(PhoneInterfaces.Lumia_PhoneInfo);
+                    break;
                 case "Label":
                     RequestModeSwitch(PhoneInterfaces.Lumia_Label);
                     break;

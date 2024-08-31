@@ -113,7 +113,7 @@ namespace WPinternals
                         Result = false;
                     }
 
-                    NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+                    LumiaFlashAppModel Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
                     BusyViewModel Busy = new("Restoring...", MaxProgressValue: TotalSizeSectors, UIContext: UIContext);
                     ProgressUpdater Updater = Busy.ProgressUpdater;

@@ -66,18 +66,19 @@ namespace WPinternals
             switch (CurrentInterface)
             {
                 case null:
-                case PhoneInterfaces.Lumia_Bootloader:
                     ActivateSubContext(null);
-                    //ActivateSubContext(new NokiaBootloaderViewModel((NokiaFlashModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
+                    break;
+                case PhoneInterfaces.Lumia_Bootloader:
+                    ActivateSubContext(new NokiaBootloaderViewModel((LumiaBootManagerAppModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
                     break;
                 case PhoneInterfaces.Lumia_PhoneInfo:
-                    ActivateSubContext(new NokiaPhoneInfoViewModel((NokiaFlashModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
+                    ActivateSubContext(new NokiaPhoneInfoViewModel((LumiaPhoneInfoAppModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
                     break;
                 case PhoneInterfaces.Lumia_Normal:
                     ActivateSubContext(new NokiaNormalViewModel((NokiaPhoneModel)CurrentModel, ModeSwitchRequestCallback));
                     break;
                 case PhoneInterfaces.Lumia_Flash:
-                    ActivateSubContext(new NokiaFlashViewModel((NokiaFlashModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
+                    ActivateSubContext(new NokiaFlashViewModel((LumiaFlashAppModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
                     break;
                 case PhoneInterfaces.Lumia_Label:
                     ActivateSubContext(new NokiaLabelViewModel((NokiaPhoneModel)CurrentModel, ModeSwitchRequestCallback));

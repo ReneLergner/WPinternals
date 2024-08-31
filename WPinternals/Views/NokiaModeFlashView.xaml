@@ -58,6 +58,16 @@ DEALINGS IN THE SOFTWARE.
                     <Run Text="This will switch back to Windows Phone OS." />
                     <LineBreak />
                     <LineBreak />
+                    <Hyperlink NavigateUri="PhoneInfo">Switch to Phone-Info-mode</Hyperlink>
+                    <LineBreak />
+                    <Run Text="This will switch to Phone Info Mode." />
+                    <LineBreak />
+                    <LineBreak />
+                    <Hyperlink NavigateUri="BootMgr">Switch to Boot-Manager-mode</Hyperlink>
+                    <LineBreak />
+                    <Run Text="This will switch to Boot Manager Mode." />
+                    <LineBreak />
+                    <LineBreak />
                     <Hyperlink NavigateUri="Label">Switch to Label-mode</Hyperlink>
                     <LineBreak />
                     <Run Text="This interface is meant for querying and provisioning the phone. This is normally used for configuring the phone during manufacturing." />

@@ -73,7 +73,7 @@ namespace WPinternals
                 await SwitchModeViewModel.SwitchToWithProgress(PhoneNotifier, PhoneInterfaces.Lumia_Flash,
                     (msg, sub) =>
                         ActivateSubContext(new BusyViewModel(msg, sub)));
-                if (((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: false).FlashAppProtocolVersionMajor < 2)
+                if (((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: false).FlashAppProtocolVersionMajor < 2)
                 {
                     FlashPartitionsTask(EFIESPPath, MainOSPath, DataPath);
                 }
@@ -96,7 +96,7 @@ namespace WPinternals
 
                     ActivateSubContext(new BusyViewModel("Initializing flash..."));
 
-                    NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+                    LumiaFlashAppModel Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
                     GPT GPT = Phone.ReadGPT();
 
@@ -268,7 +268,7 @@ namespace WPinternals
                 await SwitchModeViewModel.SwitchToWithProgress(PhoneNotifier, PhoneInterfaces.Lumia_Flash,
                     (msg, sub) =>
                         ActivateSubContext(new BusyViewModel(msg, sub)));
-                if (((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: false).FlashAppProtocolVersionMajor < 2)
+                if (((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: false).FlashAppProtocolVersionMajor < 2)
                 {
                     FlashArchiveTask(ArchivePath);
                 }
@@ -289,7 +289,7 @@ namespace WPinternals
             {
                 ActivateSubContext(new BusyViewModel("Initializing flash..."));
 
-                NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+                LumiaFlashAppModel Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
                 ulong TotalSizeSectors = 0;
                 int PartitionCount = 0;
@@ -505,7 +505,7 @@ namespace WPinternals
             {
                 bool Result = true;
 
-                NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+                LumiaFlashAppModel Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
                 PhoneInfo Info = Phone.ReadPhoneInfo(false);
 
                 #region Remove bootloader changes
@@ -519,7 +519,7 @@ namespace WPinternals
 
                 if (Info.FlashAppProtocolVersionMajor >= 2)
                 {
-                    byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Phone, 0x20000); // TODO: Get proper profile FFU and get ChunkSizeInBytes
+                    byte[] GPTChunk = Phone.GetGptChunk(0x20000); // TODO: Get proper profile FFU and get ChunkSizeInBytes
                     GPT GPT = new(GPTChunk);
                     FlashPart Part;
                     List<FlashPart> FlashParts = new();
@@ -598,14 +598,14 @@ namespace WPinternals
 
                         if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
-                            ((NokiaFlashModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
                         }
                     }
                 }
 
                 #endregion
 
-                Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+                Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
                 ActivateSubContext(new BusyViewModel("Initializing flash..."));
 
@@ -664,11 +664,12 @@ namespace WPinternals
 
         internal void FlashMMOSTask(string MMOSPath)
         {
-            NokiaFlashModel Phone = (NokiaFlashModel)PhoneNotifier.CurrentModel;
             if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
             {
-                Phone.SwitchToFlashAppContext();
+                ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
             }
+
+            LumiaFlashAppModel Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
             new Thread(() =>
             {

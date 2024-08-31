@@ -82,12 +82,6 @@ DEALINGS IN THE SOFTWARE.
                 </local:FlowDocumentScrollViewerNoMouseWheel>
             </StackPanel>
         </Border>
-        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                <local:GifImage x:Name="GifImage" Stretch="None"/>
-                <Label Content="Phone is booting..." FontSize="20" Margin="10,0,0,0" VerticalContentAlignment="Center"/>
-            </StackPanel>
-        </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
             <Expander Header="Phone identity" HorizontalContentAlignment="Stretch" Template="{DynamicResource TopicExpanderTemplate}" Margin="20,0">
                 <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >

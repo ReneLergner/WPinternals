@@ -83,7 +83,8 @@ namespace WPinternals
         {
             FFU FFU = null;
             PhoneNotifierViewModel Notifier;
-            NokiaFlashModel FlashModel;
+            LumiaFlashAppModel FlashModel;
+            LumiaBootManagerAppModel BootMgrModel;
             NokiaPhoneModel NormalModel;
             PhoneInfo Info;
             string ProductType;
@@ -182,21 +183,12 @@ namespace WPinternals
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
 
-                            FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader); // This also works for Bootloader Spec A
+                            BootMgrModel = (LumiaBootManagerAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader); // This also works for Bootloader Spec A
 
-                            GPT GPT = FlashModel.ReadGPT(); // May throw NotSupportedException
+                            GPT GPT = BootMgrModel.ReadGPT(); // May throw NotSupportedException
                             foreach (Partition Partition in GPT.Partitions)
                             {
                                 LogFile.Log(Partition.Name.PadRight(20) + "0x" + Partition.FirstSector.ToString("X8") + " - 0x" + Partition.LastSector.ToString("X8") + "    " + Partition.Volume, LogType.ConsoleOnly);
-                            }
-
-                            if (FlashModel.ReadPhoneInfo(false).FlashAppProtocolVersionMajor >= 2)
-                            {
-                                FlashModel.SwitchToFlashAppContext();
-                            }
-                            else
-                            {
-                                await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                             }
 
                             Notifier.Stop();
@@ -221,15 +213,14 @@ namespace WPinternals
                         {
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-                            FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                            GPT GPT = FlashModel.ReadGPT(); // May throw NotSupportedException
+                            BootMgrModel = (LumiaBootManagerAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader);
+                            GPT GPT = BootMgrModel.ReadGPT(); // May throw NotSupportedException
                             string DirPath = Path.GetDirectoryName(args[2]);
                             if (!string.IsNullOrEmpty(DirPath) && !Directory.Exists(DirPath))
                             {
                                 Directory.CreateDirectory(DirPath);
                             }
                             GPT.WritePartitions(args[2]);
-                            FlashModel.SwitchToFlashAppContext();
                             Notifier.Stop();
                         }
                         catch (Exception Ex)
@@ -281,14 +272,13 @@ namespace WPinternals
                         {
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-                            FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                            byte[] GptChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(FlashModel, 0x20000);
+                            BootMgrModel = (LumiaBootManagerAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader);
+                            byte[] GptChunk = BootMgrModel.GetGptChunk(0x20000);
                             GPT GPT = new(GptChunk);
                             string Xml = File.ReadAllText(args[2]);
                             GPT.MergePartitions(Xml, false);
                             GPT.Rebuild();
                             await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(Notifier, null, false, false, 0, GptChunk, true, true);
-                            FlashModel.SwitchToFlashAppContext();
                             Notifier.Stop();
                         }
                         catch (Exception Ex)
@@ -552,7 +542,7 @@ namespace WPinternals
                         try
                         {
                             UIContext.Send(s => Notifier.Start(), null);
-                            FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                            FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                             Info = FlashModel.ReadPhoneInfo();
                             Info.Log(LogType.ConsoleOnly);
 
@@ -701,7 +691,7 @@ namespace WPinternals
                         LogFile.Log("Command: Show phone info", LogType.FileAndConsole);
                         Notifier = new PhoneNotifierViewModel();
                         UIContext.Send(s => Notifier.Start(), null);
-                        FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                        FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                         Info = FlashModel.ReadPhoneInfo();
                         Info.Log(LogType.ConsoleOnly);
                         Notifier.Stop();
@@ -713,7 +703,7 @@ namespace WPinternals
                             LogFile.Log("Command: Unlock Bootloader", LogType.FileAndConsole);
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-                            FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                            FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                             Info = FlashModel.ReadPhoneInfo();
                             Info.Log(LogType.ConsoleOnly);
 
@@ -786,7 +776,7 @@ namespace WPinternals
                             LogFile.Log("Custom ROM: " + CustomRomPath, LogType.FileAndConsole);
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-                            FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                            FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                             Info = FlashModel.ReadPhoneInfo();
                             Info.Log(LogType.ConsoleOnly);
                             LogFile.Log("Preparing to flash Custom ROM", LogType.FileAndConsole);
@@ -817,7 +807,7 @@ namespace WPinternals
                             LogFile.Log("FFU file: " + FFUPath, LogType.FileAndConsole);
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-                            FlashModel = (NokiaFlashModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+                            FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
                             Info = FlashModel.ReadPhoneInfo();
                             Info.Log(LogType.ConsoleOnly);
                             LogFile.Log("Flashing FFU...", LogType.FileAndConsole);
@@ -1283,9 +1273,15 @@ namespace WPinternals
                             NormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
-                        else if ((Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) || (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash))
+                        else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
-                            FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+                            BootMgrModel = (LumiaBootManagerAppModel)Notifier.CurrentModel;
+                            Info = BootMgrModel.ReadPhoneInfo();
+                            ProductCode = Info.ProductCode;
+                        }
+                        else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
+                        {
+                            FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
                             Info = FlashModel.ReadPhoneInfo();
                             ProductCode = Info.ProductCode;
                         }
@@ -1448,9 +1444,15 @@ namespace WPinternals
                                 ProductType = ProductType.Substring(0, ProductType.IndexOf('_'));
                             }
                         }
-                        else if ((Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) || (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash))
+                        else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
-                            FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+                            BootMgrModel = (LumiaBootManagerAppModel)Notifier.CurrentModel;
+                            Info = BootMgrModel.ReadPhoneInfo();
+                            ProductType = Info.Type;
+                        }
+                        else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
+                        {
+                            FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
                             Info = FlashModel.ReadPhoneInfo();
                             ProductType = Info.Type;
                         }
@@ -1559,9 +1561,15 @@ namespace WPinternals
                             NormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
-                        else if ((Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) || (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash))
+                        else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
-                            FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+                            BootMgrModel = (LumiaBootManagerAppModel)Notifier.CurrentModel;
+                            Info = BootMgrModel.ReadPhoneInfo();
+                            ProductCode = Info.ProductCode;
+                        }
+                        else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
+                        {
+                            FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
                             Info = FlashModel.ReadPhoneInfo();
                             ProductCode = Info.ProductCode;
                         }

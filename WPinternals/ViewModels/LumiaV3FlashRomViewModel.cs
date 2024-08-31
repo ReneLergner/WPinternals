@@ -192,7 +192,7 @@ namespace WPinternals
 
             try
             {
-                NokiaFlashModel Model = (NokiaFlashModel)Notifier.CurrentModel;
+                LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
                 PhoneInfo Info = Model.ReadPhoneInfo();
 
                 if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
@@ -282,7 +282,7 @@ namespace WPinternals
                     store.WriteDescriptorLength += payload.GetStoreHeaderSize();
                 }
 
-                byte[] GPTChunk = LumiaUnlockBootloaderViewModel.GetGptChunk(Model, 0x20000);
+                byte[] GPTChunk = Model.GetGptChunk(0x20000);
                 GPT GPT = new(GPTChunk);
                 UInt64 PlatEnd = 0;
                 if (GPT.Partitions.Any(x => x.Name == "PLAT"))

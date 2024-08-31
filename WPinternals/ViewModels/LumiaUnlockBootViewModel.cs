@@ -133,11 +133,11 @@ namespace WPinternals
                         {
                             // Some phones, like Lumia 928 verizon, do not support the Terminal interface!
                             // To read the RootKeyHash we use ReadParam("RRKH"), instead of GetTerminalResponse().RootKeyHash.
-                            RootKeyHash = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadParam("RRKH");
+                            RootKeyHash = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadParam("RRKH");
 
                             TestPos = 1;
 
-                            UefiSecurityStatusResponse SecurityStatus = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadSecurityStatus();
+                            UefiSecurityStatusResponse SecurityStatus = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadSecurityStatus();
                             if (SecurityStatus != null)
                             {
                                 IsBootLoaderUnlocked = SecurityStatus.AuthenticationStatus || SecurityStatus.RdcStatus || !SecurityStatus.SecureFfuEfuseStatus;
@@ -145,7 +145,7 @@ namespace WPinternals
 
                             TestPos = 2;
 
-                            PhoneInfo Info = ((NokiaFlashModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
+                            PhoneInfo Info = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo();
                             if (SecurityStatus == null)
                             {
                                 IsBootLoaderUnlocked = !Info.IsBootloaderSecure;
@@ -213,7 +213,7 @@ namespace WPinternals
                                 bool AlreadyUnlocked = false;
                                 if (DoUnlock)
                                 {
-                                    NokiaFlashModel FlashModel = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+                                    LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
                                     GPT GPT = FlashModel.ReadGPT();
                                     if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
                                     {
@@ -510,7 +510,7 @@ namespace WPinternals
 
             if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download && PhoneNotifier.CurrentInterface != PhoneInterfaces.Qualcomm_Flash)
             {
-                NokiaFlashModel Model = (NokiaFlashModel)PhoneNotifier.CurrentModel;
+                LumiaFlashAppModel Model = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
                 PhoneInfo Info = Model.ReadPhoneInfo();
 
                 if (EDEPath == null)

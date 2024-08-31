@@ -258,7 +258,7 @@ namespace WPinternals
                 {
                     LogFile.Log("Phone needs to be switched to emergency mode.", LogType.FileAndConsole);
                     await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                    PhoneInfo Info = ((NokiaFlashModel)Notifier.CurrentModel).ReadPhoneInfo();
+                    PhoneInfo Info = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo();
                     Info.Log(LogType.ConsoleOnly);
                     await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Qualcomm_Download);
                     if (Notifier.CurrentInterface != PhoneInterfaces.Qualcomm_Download)
