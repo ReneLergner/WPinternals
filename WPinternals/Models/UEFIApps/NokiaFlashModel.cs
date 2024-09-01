@@ -116,12 +116,18 @@ namespace WPinternals
         internal void SwitchToMmosContext()
         {
             byte[] Request = new byte[7];
-            ByteOperations.WriteAsciiString(Request, 0, SwitchModeSignature + "A");
-            ExecuteRawVoidMethod(Request);
+            ByteOperations.WriteAsciiString(Request, 0, $"{SwitchModeSignature}A");
+            byte[] Response = ExecuteRawMethod(Request);
+            if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
+            {
+                throw new NotSupportedException();
+            }
 
-            ResetDevice();
-
-            Dispose(true);
+            UInt16 Error = (UInt16)((Response[6] << 8) + Response[7]);
+            if (Error > 0)
+            {
+                throw new NotSupportedException("SwitchToPhoneInfoAppContext: Error 0x" + Error.ToString("X4"));
+            }
         }
 
         internal void SwitchToFlashAppContext()
@@ -131,7 +137,7 @@ namespace WPinternals
             bool ModernFlashApp = info.VersionMajor >= 2;
 
             byte[] Request = new byte[7];
-            ByteOperations.WriteAsciiString(Request, 0, SwitchModeSignature + "F"); // This will stop charging the phone
+            ByteOperations.WriteAsciiString(Request, 0, $"{SwitchModeSignature}F"); // This will stop charging the phone
             byte[] Response = ExecuteRawMethod(Request);
             if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
             {

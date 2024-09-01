@@ -275,12 +275,11 @@ namespace WPinternals
 
                     if (tmpFileInfo.Length == downloadFile.FileSize)
                     {
-                        /*//Decrypted file should match estimated bytes.
+                        //Decrypted file should match estimated bytes.
                         //Imagine if it crashed during hashing, the file may be valid.
                         //So... lets rename this file so it can be verified.
                         File.Move(tempFilePath, filePath);
-                        totalBytesRead = tmpFileInfo.Length;*/
-                        File.Delete(tempFilePath);
+                        totalBytesRead = tmpFileInfo.Length;
                     }
                     else if (tmpFileInfo.Length < downloadFile.FileSize)
                     {
@@ -384,8 +383,32 @@ namespace WPinternals
 
                     //just an assumption 
 
-                    _ = streamToWriteTo.Seek(0, SeekOrigin.Begin);
-                    return await HashWithProgress(streamToWriteTo);
+                    if (verifyFiles)
+                    {
+                        _ = streamToWriteTo.Seek(0, SeekOrigin.Begin);
+                        bool hashResult = await HashWithProgress(streamToWriteTo);
+
+                        if (hashResult)
+                        {
+                            streamToWriteTo.Close();
+                            File.Move(tempFilePath, filePath);
+                        }
+
+                        return hashResult;
+                    }
+                    else
+                    {
+                        streamToWriteTo.Close();
+                        File.Move(tempFilePath, filePath);
+
+                        downloadProgress?.Report(new FileDownloadStatus(downloadFile)
+                        {
+                            DownloadedBytes = totalBytesRead,
+                            FileStatus = FileStatus.Completed
+                        });
+
+                        return true;
+                    }
                 }
 
                 while (currRange < contentLength.Value)

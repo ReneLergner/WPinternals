@@ -723,7 +723,7 @@ namespace WPinternals
 
                 //_ = Client.DownloadFileAsync(Uri, Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(Uri.LocalPath)), Client_DownloadProgressChanged, Client_DownloadFileCompleted);
 
-                Client = new(Folder, 4);
+                Client = new(Folder, 4, false);
 
                 _ = Client.DownloadAsync([new FileDownloadInformation(URL, DownloadsViewModel.GetFileNameFromURL(Uri.LocalPath), Size, null, null)], this);
             }).Start();

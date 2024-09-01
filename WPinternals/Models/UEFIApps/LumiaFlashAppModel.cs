@@ -927,15 +927,16 @@ namespace WPinternals
             uint length = uint.Parse(info.Length.ToString());
 
             int offset = 0;
-            const int maximumBufferSize = 0x00240000;
+            int maximumBufferSize = (int)Info.WriteBufferSize;
 
             uint chunkCount = (uint)Math.Truncate((decimal)length / maximumBufferSize);
 
             using FileStream MMOSFile = new(MMOSPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            for (int i = 1; i <= (uint)Math.Truncate((decimal)length / maximumBufferSize); i++)
+            for (int i = 0; i < chunkCount; i++)
             {
                 Progress.IncreaseProgress(1);
+
                 byte[] data = new byte[maximumBufferSize];
                 MMOSFile.Read(data, 0, maximumBufferSize);
 
@@ -950,6 +951,7 @@ namespace WPinternals
 
                 byte[] data = new byte[length - offset];
                 MMOSFile.Read(data, 0, (int)(length - offset));
+
                 LoadMmosBinary(length, (uint)offset, false, data);
             }
 

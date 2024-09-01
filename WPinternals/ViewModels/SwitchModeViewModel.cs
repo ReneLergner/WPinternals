@@ -936,26 +936,33 @@ namespace WPinternals
             string TempFolder = $@"{Environment.GetEnvironmentVariable("TEMP")}\WPInternals";
             LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
-            ModeSwitchProgressWrapper("Initializing Flash...", null);
+            Task.Run(() =>
+            {
+                ModeSwitchProgressWrapper("Initializing Flash...", null);
 
-            string MMOSPath = Path.Combine(TempFolder, Name);
+                string MMOSPath = Path.Combine(TempFolder, Name);
 
-            App.Config.AddSecWimToRepository(MMOSPath, Firmware);
+                App.Config.AddSecWimToRepository(MMOSPath, Firmware);
 
-            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
 
-            FileInfo info = new(MMOSPath);
-            uint fileLength = uint.Parse(info.Length.ToString());
-            const int maximumBufferSize = 0x00240000;
-            uint chunkCount = (uint)Math.Truncate((decimal)fileLength / maximumBufferSize);
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo();
 
-            UIContext?.Post(d => SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100), null);
+                FileInfo info = new(MMOSPath);
+                uint length = uint.Parse(info.Length.ToString());
 
-            ProgressUpdater progressUpdater = new(chunkCount + 1, (int i, TimeSpan? time) => UIContext?.Post(d => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i), null));
+                int maximumBufferSize = (int)Info.WriteBufferSize;
 
-            FlashModel.FlashMMOS(MMOSPath, progressUpdater);
+                uint chunkCount = (uint)Math.Truncate((decimal)length / maximumBufferSize);
 
-            ModeSwitchProgressWrapper("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
+                UIContext?.Post(d => SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100), null);
+
+                ProgressUpdater progressUpdater = new(chunkCount + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
+
+                FlashModel.FlashMMOS(MMOSPath, progressUpdater);
+
+                ModeSwitchProgressWrapper("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
+            });
         }
 
         private void SwitchFromPhoneInfoToMassStorageMode(bool Continuation = false)
