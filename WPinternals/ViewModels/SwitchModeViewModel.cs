@@ -21,6 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -724,34 +725,34 @@ namespace WPinternals
 
             LumiaPhoneInfoAppPhoneInfo PhoneInfoAppInfo = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
 
-            new Thread(async () =>
+            bool ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
+            if (ModernFlashApp)
             {
-                bool ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
-                if (ModernFlashApp)
-                {
-                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
-                }
-                else
-                {
-                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
-                }
+                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+            }
+            else
+            {
+                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
+            }
 
+            Task.Run(async () =>
+            {
                 if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                 {
                     await PhoneNotifier.WaitForArrival();
                 }
 
-                if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                void Finish()
                 {
-                    throw new WPinternalsException("Unexpected Mode");
-                }
+                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
 
-                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: true);
+                    LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+                    LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: true);
 
-                if (Info.MmosOverUsbSupported)
-                {
-                    new Thread(() =>
+                    if (Info.MmosOverUsbSupported)
                     {
                         LogFile.BeginAction("SwitchToLabelMode");
 
@@ -768,30 +769,9 @@ namespace WPinternals
 
                             (string ENOSWFileUrl, string DPLFileUrl) = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
 
-                            SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100);
+                            UIContext?.Post(d => SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100), null);
 
-                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, null, (string[] Files, object State) =>
-                            {
-                                App.Config.AddSecWimToRepository(ENOSWFileUrl, Info.Firmware);
-
-                                ModeSwitchProgressWrapper("Initializing Flash...", null);
-
-                                string MMOSPath = $"{TempFolder}\\{DownloadsViewModel.GetFileNameFromURL(ENOSWFileUrl)}";
-
-                                PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                                FileInfo info = new(MMOSPath);
-                                uint length = uint.Parse(info.Length.ToString());
-                                const int maximumbuffersize = 0x00240000;
-                                uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
-
-                                SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100);
-
-                                ProgressUpdater progressUpdater = new(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
-                                FlashModel.FlashMMOS(MMOSPath, progressUpdater);
-
-                                SetWorkingStatus("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
-
-                            }, null);
+                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, [ENOSWFileUrl], ENOSWDownloadCompleted, Info.Firmware);
 
                             downloadEntry.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) =>
                             {
@@ -799,7 +779,7 @@ namespace WPinternals
                                 {
                                     int progress = (sender as DownloadEntry)?.Progress ?? 0;
                                     ulong.TryParse(progress.ToString(), out ulong progressret);
-                                    UpdateWorkingStatus(null, CurrentProgressValue: progressret);
+                                    UIContext?.Post(d => UpdateWorkingStatus(null, CurrentProgressValue: progressret), null);
                                 }
                             };
                         }
@@ -810,22 +790,24 @@ namespace WPinternals
                         }
 
                         LogFile.EndAction("SwitchToLabelMode");
-                    }).Start();
-                }
-                else
-                {
-                    PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                    }
+                    else
+                    {
+                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
 
-                    byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
-                    byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
+                        byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
+                        byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
 
-                    BootModeFlagCommand[0x0F] = 0x59;
-                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
-                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
-                    ModeSwitchProgressWrapper("Rebooting phone to Label mode", null);
-                    LogFile.Log("Rebooting phone to Label mode", LogType.FileAndConsole);
+                        BootModeFlagCommand[0x0F] = 0x59;
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                        ModeSwitchProgressWrapper("Rebooting phone to Label mode", null);
+                        LogFile.Log("Rebooting phone to Label mode", LogType.FileAndConsole);
+                    }
                 }
-            }).Start();
+
+                UIContext?.Post(d => Finish(), null);
+            });
         }
 
         private void SwitchFromFlashToLabelMode(bool Continuation = false)
@@ -839,18 +821,18 @@ namespace WPinternals
 
             LumiaFlashAppPhoneInfo Info = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(ExtendedInfo: true);
 
-            new Thread(async () =>
+            bool ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
+            if (ModernFlashApp)
             {
-                bool ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
-                if (ModernFlashApp)
-                {
-                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
-                }
-                else
-                {
-                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
-                }
+                ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContext();
+            }
+            else
+            {
+                ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToPhoneInfoAppContextLegacy();
+            }
 
+            Task.Run(async () =>
+            {
                 if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_PhoneInfo)
                 {
                     await PhoneNotifier.WaitForArrival();
@@ -879,16 +861,16 @@ namespace WPinternals
                     await PhoneNotifier.WaitForArrival();
                 }
 
-                if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                void Finish()
                 {
-                    throw new WPinternalsException("Unexpected Mode");
-                }
+                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
 
-                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+                    LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
-                if (Info.MmosOverUsbSupported)
-                {
-                    new Thread(() =>
+                    if (Info.MmosOverUsbSupported)
                     {
                         LogFile.BeginAction("SwitchToLabelMode");
 
@@ -896,7 +878,7 @@ namespace WPinternals
                         {
                             ModeSwitchProgressWrapper(ProgressText, null);
 
-                            string TempFolder = Environment.GetEnvironmentVariable("TEMP") + @"\WPInternals";
+                            string TempFolder = $@"{Environment.GetEnvironmentVariable("TEMP")}\WPInternals";
 
                             if (PhoneInfoAppInfo.Type == "RM-1152")
                             {
@@ -905,30 +887,9 @@ namespace WPinternals
 
                             (string ENOSWFileUrl, string DPLFileUrl) = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
 
-                            SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100);
+                            UIContext?.Post(d => SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100), null);
 
-                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, null, (string[] Files, object State) =>
-                            {
-                                App.Config.AddSecWimToRepository(ENOSWFileUrl, Info.Firmware);
-
-                                ModeSwitchProgressWrapper("Initializing Flash...", null);
-
-                                string MMOSPath = $"{TempFolder}\\{DownloadsViewModel.GetFileNameFromURL(ENOSWFileUrl)}";
-
-                                PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                                FileInfo info = new(MMOSPath);
-                                uint length = uint.Parse(info.Length.ToString());
-                                const int maximumbuffersize = 0x00240000;
-                                uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
-
-                                SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100);
-
-                                ProgressUpdater progressUpdater = new(totalcounts + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
-                                FlashModel.FlashMMOS(MMOSPath, progressUpdater);
-
-                                SetWorkingStatus("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
-
-                            }, null);
+                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, [ENOSWFileUrl], ENOSWDownloadCompleted, Info.Firmware);
 
                             downloadEntry.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) =>
                             {
@@ -936,7 +897,7 @@ namespace WPinternals
                                 {
                                     int progress = (sender as DownloadEntry)?.Progress ?? 0;
                                     ulong.TryParse(progress.ToString(), out ulong progressret);
-                                    UpdateWorkingStatus(null, CurrentProgressValue: progressret);
+                                    UIContext?.Post(d => UpdateWorkingStatus(null, CurrentProgressValue: progressret), null);
                                 }
                             };
                         }
@@ -947,22 +908,54 @@ namespace WPinternals
                         }
 
                         LogFile.EndAction("SwitchToLabelMode");
-                    }).Start();
-                }
-                else
-                {
-                    PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                    }
+                    else
+                    {
+                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
 
-                    byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
-                    byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
+                        byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
+                        byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
 
-                    BootModeFlagCommand[0x0F] = 0x59;
-                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
-                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
-                    ModeSwitchProgressWrapper("Rebooting phone to Label mode", null);
-                    LogFile.Log("Rebooting phone to Label mode", LogType.FileAndConsole);
+                        BootModeFlagCommand[0x0F] = 0x59;
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                        ModeSwitchProgressWrapper("Rebooting phone to Label mode", null);
+                        LogFile.Log("Rebooting phone to Label mode", LogType.FileAndConsole);
+                    }
                 }
-            }).Start();
+
+                UIContext?.Post(d => Finish(), null);
+            });
+        }
+
+        private void ENOSWDownloadCompleted(string[] URLs, object State)
+        {
+            string Firmware = (string)State;
+            string ENOSWFileUrl = URLs[0];
+            string Name = DownloadsViewModel.GetFileNameFromURL(ENOSWFileUrl);
+            string TempFolder = $@"{Environment.GetEnvironmentVariable("TEMP")}\WPInternals";
+            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+
+            ModeSwitchProgressWrapper("Initializing Flash...", null);
+
+            string MMOSPath = Path.Combine(TempFolder, Name);
+
+            App.Config.AddSecWimToRepository(MMOSPath, Firmware);
+
+            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+
+            FileInfo info = new(MMOSPath);
+            uint fileLength = uint.Parse(info.Length.ToString());
+            const int maximumBufferSize = 0x00240000;
+            uint chunkCount = (uint)Math.Truncate((decimal)fileLength / maximumBufferSize);
+
+            UIContext?.Post(d => SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100), null);
+
+            ProgressUpdater progressUpdater = new(chunkCount + 1, (int i, TimeSpan? time) => UIContext?.Post(d => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i), null));
+
+            FlashModel.FlashMMOS(MMOSPath, progressUpdater);
+
+            ModeSwitchProgressWrapper("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
         }
 
         private void SwitchFromPhoneInfoToMassStorageMode(bool Continuation = false)

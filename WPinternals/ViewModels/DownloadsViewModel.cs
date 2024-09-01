@@ -20,7 +20,6 @@
 
 using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -136,14 +135,30 @@ namespace WPinternals
         internal static long GetFileLengthFromURL(string URL)
         {
             long Length = 0;
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(URL);
-            req.Method = "HEAD";
-            req.ServicePoint.ConnectionLimit = 10;
-            using (WebResponse resp = req.GetResponse())
+
+            WebRequest webReq = WebRequest.Create(URL);
+
+            if (webReq is HttpWebRequest req)
             {
-                long.TryParse(resp.Headers.Get("Content-Length"), out Length);
+                req.Method = "HEAD";
+                req.ServicePoint.ConnectionLimit = 10;
+                using (WebResponse resp = req.GetResponse())
+                {
+                    long.TryParse(resp.Headers.Get("Content-Length"), out Length);
+                }
+                return Length;
             }
-            return Length;
+            else if (webReq is FileWebRequest filereq)
+            {
+                webReq.Method = "HEAD";
+                using (WebResponse resp = webReq.GetResponse())
+                {
+                    long.TryParse(resp.Headers.Get("Content-Length"), out Length);
+                }
+                return Length;
+            }
+
+            return 0;
         }
 
         internal static string GetFileNameFromURL(string URL)
@@ -672,7 +687,7 @@ namespace WPinternals
         Failed
     };
 
-    internal class DownloadEntry : INotifyPropertyChanged
+    internal class DownloadEntry : INotifyPropertyChanged, IProgress<GeneralDownloadProgress>
     {
         private readonly SynchronizationContext UIContext;
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
@@ -681,7 +696,8 @@ namespace WPinternals
         internal string URL;
         internal string[] URLCollection;
         internal string Folder;
-        internal HttpClient Client;
+        //internal HttpClient Client;
+        internal HttpDownloader Client;
         internal long SpeedIndex = -1;
         internal long[] Speeds = new long[10];
         internal long LastBytesReceived;
@@ -703,9 +719,40 @@ namespace WPinternals
             {
                 Size = DownloadsViewModel.GetFileLengthFromURL(URL);
 
-                Client = new HttpClient();
-                _ = Client.DownloadFileAsync(Uri, Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(Uri.LocalPath)), Client_DownloadProgressChanged, Client_DownloadFileCompleted);
+                //Client = new HttpClient();
+
+                //_ = Client.DownloadFileAsync(Uri, Path.Combine(Folder, DownloadsViewModel.GetFileNameFromURL(Uri.LocalPath)), Client_DownloadProgressChanged, Client_DownloadFileCompleted);
+
+                Client = new(Folder, 4);
+
+                _ = Client.DownloadAsync([new FileDownloadInformation(URL, DownloadsViewModel.GetFileNameFromURL(Uri.LocalPath), Size, null, null)], this);
             }).Start();
+        }
+
+        public void Report(GeneralDownloadProgress e)
+        {
+            foreach (FileDownloadStatus status in e.DownloadedStatus)
+            {
+                if (status == null)
+                {
+                    continue;
+                }
+
+                if (status.FileStatus == FileStatus.Failed || status.FileStatus == FileStatus.Failed)
+                {
+                    Client_DownloadFileCompleted(true);
+                }
+
+                if (status.FileStatus == FileStatus.Completed)
+                {
+                    Client_DownloadFileCompleted(false);
+                }
+
+                if (status.FileStatus == FileStatus.Downloading)
+                {
+                    Client_DownloadProgressChanged(new HttpClientDownloadProgress(status.DownloadedBytes, status.File.FileSize));
+                }
+            }
         }
 
         private void Client_DownloadFileCompleted(bool Error)
@@ -718,6 +765,9 @@ namespace WPinternals
                 {
                     if (URLCollection?.Any(c => App.DownloadManager.DownloadList.Any(d => d.URL == c)) != true) // if there are no files left to download from this collection, then call the callback-function.
                     {
+                        Client.Dispose();
+                        Client = null;
+
                         string[] Files;
                         if (URLCollection == null)
                         {
@@ -738,7 +788,14 @@ namespace WPinternals
                 }
             }
 
-            UIContext?.Post(d => Finish(), null);
+            if (UIContext == null)
+            {
+                Finish();
+            }
+            else
+            {
+                UIContext?.Post(d => Finish(), null);
+            }
         }
 
         private void Client_DownloadProgressChanged(HttpClientDownloadProgress e)

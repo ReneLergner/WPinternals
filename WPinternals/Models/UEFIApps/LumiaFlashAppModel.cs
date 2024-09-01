@@ -927,35 +927,34 @@ namespace WPinternals
             uint length = uint.Parse(info.Length.ToString());
 
             int offset = 0;
-            const int maximumbuffersize = 0x00240000;
+            const int maximumBufferSize = 0x00240000;
 
-            uint totalcounts = (uint)Math.Truncate((decimal)length / maximumbuffersize);
+            uint chunkCount = (uint)Math.Truncate((decimal)length / maximumBufferSize);
 
-            using (FileStream MMOSFile = new(MMOSPath, FileMode.Open, FileAccess.Read))
+            using FileStream MMOSFile = new(MMOSPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            for (int i = 1; i <= (uint)Math.Truncate((decimal)length / maximumBufferSize); i++)
             {
-                for (int i = 1; i <= (uint)Math.Truncate((decimal)length / maximumbuffersize); i++)
-                {
-                    Progress.IncreaseProgress(1);
-                    byte[] data = new byte[maximumbuffersize];
-                    MMOSFile.Read(data, 0, maximumbuffersize);
+                Progress.IncreaseProgress(1);
+                byte[] data = new byte[maximumBufferSize];
+                MMOSFile.Read(data, 0, maximumBufferSize);
 
-                    LoadMmosBinary(length, (uint)offset, false, data);
+                LoadMmosBinary(length, (uint)offset, false, data);
 
-                    offset += maximumbuffersize;
-                }
-
-                if (length - offset != 0)
-                {
-                    Progress.IncreaseProgress(1);
-
-                    byte[] data = new byte[length - offset];
-                    MMOSFile.Read(data, 0, (int)(length - offset));
-                    LoadMmosBinary(length, (uint)offset, false, data);
-                }
-
-                SwitchToMmosContext();
-                ResetPhone();
+                offset += maximumBufferSize;
             }
+
+            if (length - offset != 0)
+            {
+                Progress.IncreaseProgress(1);
+
+                byte[] data = new byte[length - offset];
+                MMOSFile.Read(data, 0, (int)(length - offset));
+                LoadMmosBinary(length, (uint)offset, false, data);
+            }
+
+            SwitchToMmosContext();
+            ResetPhone();
 
             LogFile.EndAction("FlashMMOS");
         }
