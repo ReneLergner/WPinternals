@@ -344,7 +344,8 @@ namespace WPinternals
             UInt16 Error = (UInt16)((Buffer[6] << 8) + Buffer[7]);
             if (Error > 0)
             {
-                throw new NotSupportedException("ReadGPT: Error 0x" + Error.ToString("X4"));
+                ThrowFlashError(Error);
+                //throw new NotSupportedException("ReadGPT: Error 0x" + Error.ToString("X4"));
             }
 
             System.Buffer.BlockCopy(Buffer, 8, GPTChunk, 0, 0x4400);

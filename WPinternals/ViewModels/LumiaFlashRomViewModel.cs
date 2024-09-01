@@ -501,7 +501,7 @@ namespace WPinternals
 
         internal void FlashFFUTask(string FFUPath)
         {
-            new Thread(() =>
+            new Thread(async () =>
             {
                 bool Result = true;
 
@@ -519,8 +519,35 @@ namespace WPinternals
 
                 if (Info.FlashAppProtocolVersionMajor >= 2)
                 {
-                    byte[] GPTChunk = Phone.GetGptChunk(0x20000); // TODO: Get proper profile FFU and get ChunkSizeInBytes
+                    Phone.SwitchToBootManagerContext();
+
+                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
+                    {
+                        await PhoneNotifier.WaitForArrival();
+                    }
+
+                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
+
+                    byte[] GPTChunk = ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).GetGptChunk(0x20000); // TODO: Get proper profile FFU and get ChunkSizeInBytes
                     GPT GPT = new(GPTChunk);
+
+                    ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+
+                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        await PhoneNotifier.WaitForArrival();
+                    }
+
+                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
+
+                    Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+
                     FlashPart Part;
                     List<FlashPart> FlashParts = new();
 

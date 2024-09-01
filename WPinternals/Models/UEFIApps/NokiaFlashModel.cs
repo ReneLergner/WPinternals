@@ -62,7 +62,7 @@ namespace WPinternals
             bool ModernFlashApp = info.VersionMajor >= 2;
 
             byte[] Request = new byte[7];
-            ByteOperations.WriteAsciiString(Request, 0, SwitchModeSignature + "B");
+            ByteOperations.WriteAsciiString(Request, 0, $"{SwitchModeSignature}B");
             byte[] Response = ExecuteRawMethod(Request);
             if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
             {
