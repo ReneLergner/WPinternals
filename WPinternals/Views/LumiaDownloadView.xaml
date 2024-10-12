@@ -221,7 +221,7 @@ DEALINGS IN THE SOFTWARE.
                         </helpers:Paragraph>
                     </FlowDocument>
                 </helpers:FlowDocumentScrollViewerNoMouseWheel>
-                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-15,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=LastStatusText, Converter={StaticResource ObjectToVisibilityConverter}}">
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-15,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=LastFFUStatusText, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -233,11 +233,28 @@ DEALINGS IN THE SOFTWARE.
                             </Style>
                         </FlowDocument.Resources>
                         <helpers:Paragraph>
-                            <Run Text="{Binding Path=LastStatusText}" />
+                            <Run Text="{Binding Path=LastFFUStatusText}" />
                         </helpers:Paragraph>
                     </FlowDocument>
                 </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <Button Height="30" Width="Auto" Content="Add existing FFU-file..." Padding="20,5,20,5" HorizontalAlignment="Right" Margin="0,0,36,20" Command="{Binding Path=AddFFUCommand}"/>
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-15,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=LastSecWIMStatusText, Converter={StaticResource ObjectToVisibilityConverter}}">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
+                        <FlowDocument.Resources>
+                            <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                            <Style TargetType="{x:Type Section}">
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </FlowDocument.Resources>
+                        <helpers:Paragraph>
+                            <Run Text="{Binding Path=LastSecWIMStatusText}" />
+                        </helpers:Paragraph>
+                    </FlowDocument>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+                <Button Height="30" Width="Auto" Content="Add existing Secure WIM-file..." Padding="20,5,20,5" HorizontalAlignment="Right" Margin="0,0,36,20" Command="{Binding Path=AddSecWIMCommand}"/>
             </StackPanel>
         </Border>
     </StackPanel>

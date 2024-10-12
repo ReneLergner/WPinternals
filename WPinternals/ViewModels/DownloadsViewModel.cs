@@ -41,7 +41,6 @@ namespace WPinternals
     internal class DownloadsViewModel : ContextViewModel
     {
         private readonly PhoneNotifierViewModel Notifier;
-        private readonly Timer SpeedTimer;
         private bool IsSearching = false;
 
         internal DownloadsViewModel(PhoneNotifierViewModel Notifier)
@@ -55,8 +54,6 @@ namespace WPinternals
 
             DownloadFolder = (string)Key.GetValue("DownloadFolder", @"C:\ProgramData\WPinternals\Repository");
             Key.Close();
-
-            SpeedTimer = new Timer(TimerCallback, this, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
 
             AddFFUCommand = new DelegateCommand(() =>
             {
@@ -77,20 +74,20 @@ namespace WPinternals
                     {
                         App.Config.AddFfuToRepository(FFUPath);
                         App.Config.WriteConfig();
-                        LastStatusText = $"File \"{FFUFile}\" was added to the repository.";
+                        LastFFUStatusText = $"File \"{FFUFile}\" was added to the repository.";
                     }
                     catch (WPinternalsException Ex)
                     {
-                        LastStatusText = $"Error: {Ex.Message}. File \"{FFUFile}\" was not added.";
+                        LastFFUStatusText = $"Error: {Ex.Message}. File \"{FFUFile}\" was not added.";
                     }
                     catch
                     {
-                        LastStatusText = $"Error: File \"{FFUFile}\" was not added.";
+                        LastFFUStatusText = $"Error: File \"{FFUFile}\" was not added.";
                     }
                 }
                 else
                 {
-                    LastStatusText = null;
+                    LastFFUStatusText = null;
                 }
             });
 
@@ -113,35 +110,49 @@ namespace WPinternals
                     {
                         App.Config.AddSecWimToRepository(SecWIMPath, FirmwareVersion);
                         App.Config.WriteConfig();
-                        LastStatusText = $"File \"{SecWIMFile}\" was added to the repository.";
+                        LastSecWIMStatusText = $"File \"{SecWIMFile}\" was added to the repository.";
                     }
                     catch (WPinternalsException Ex)
                     {
-                        LastStatusText = $"Error: {Ex.Message}. File \"{SecWIMFile}\" was not added.";
+                        LastSecWIMStatusText = $"Error: {Ex.Message}. File \"{SecWIMFile}\" was not added.";
                     }
                     catch
                     {
-                        LastStatusText = $"Error: File \"{SecWIMFile}\" was not added.";
+                        LastSecWIMStatusText = $"Error: File \"{SecWIMFile}\" was not added.";
                     }
                 }
                 else
                 {
-                    LastStatusText = null;
+                    LastSecWIMStatusText = null;
                 }
             });
         }
 
-        private string _LastStatusText = null;
-        public string LastStatusText
+        private string _LastFFUStatusText = null;
+        public string LastFFUStatusText
         {
             get
             {
-                return _LastStatusText;
+                return _LastFFUStatusText;
             }
             set
             {
-                _LastStatusText = value;
-                OnPropertyChanged(nameof(LastStatusText));
+                _LastFFUStatusText = value;
+                OnPropertyChanged(nameof(LastFFUStatusText));
+            }
+        }
+
+        private string _LastSecWIMStatusText = null;
+        public string LastSecWIMStatusText
+        {
+            get
+            {
+                return _LastSecWIMStatusText;
+            }
+            set
+            {
+                _LastSecWIMStatusText = value;
+                OnPropertyChanged(nameof(LastSecWIMStatusText));
             }
         }
 
