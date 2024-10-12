@@ -323,8 +323,10 @@ namespace WPinternals.Models.UEFIApps.BootMgr
                 0x0002 => "Flash read failed",
                 _ => "Unknown error",
             };
-            WPinternalsException Ex = new("Flash failed!");
-            Ex.SubMessage = "Error 0x" + ErrorCode.ToString("X4") + ": " + SubMessage;
+            WPinternalsException Ex = new("Flash failed!")
+            {
+                SubMessage = "Error 0x" + ErrorCode.ToString("X4") + ": " + SubMessage
+            };
 
             throw Ex;
         }

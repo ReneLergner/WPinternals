@@ -240,8 +240,6 @@ namespace WPinternals
         {
             IsSwitching = true;
 
-            byte[] RebootCommandResult;
-
             bool ModernFlashApp;
 
             // Make switch and set message or navigate to error
@@ -338,7 +336,7 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Lumia_Bootloader:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ResetPhone();
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
                             ModeSwitchProgressWrapper("Rebooting phone to Bootloader mode...", null);
                             LogFile.Log("Rebooting phone to Bootloader mode", LogType.FileAndConsole);
                             break;
@@ -664,7 +662,6 @@ namespace WPinternals
             }
             else if ((CurrentMode == PhoneInterfaces.Lumia_Flash) && (TargetMode == PhoneInterfaces.Qualcomm_Download))
             {
-                byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52];
                 IsSwitchingInterface = true;
                 LogFile.Log("Sending command for rebooting to Emergency Download mode");
                 try
@@ -884,65 +881,73 @@ namespace WPinternals
             });
         }
 
-        private void ENOSWDownloadCompleted(string[] URLs, object State)
+        public void BootMMOS(string MMOSPath)
         {
-            string Firmware = (string)State;
-            string ENOSWFileUrl = URLs[0];
-            string Name = DownloadsViewModel.GetFileNameFromURL(ENOSWFileUrl);
-            string TempFolder = $@"{Environment.GetEnvironmentVariable("TEMP")}\WPInternals";
+            ModeSwitchProgressWrapper("Initializing Flash...", null);
+
+            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+
             LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+            LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo();
 
-            Task.Run(() =>
-            {
-                ModeSwitchProgressWrapper("Initializing Flash...", null);
+            FileInfo info = new(MMOSPath);
+            uint length = uint.Parse(info.Length.ToString());
 
-                string MMOSPath = Path.Combine(TempFolder, Name);
+            int maximumBufferSize = (int)Info.WriteBufferSize;
 
-                App.Config.AddSecWimToRepository(MMOSPath, Firmware);
+            uint chunkCount = (uint)Math.Truncate((decimal)length / maximumBufferSize);
 
-                PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+            UIContext?.Post(d => SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100), null);
 
-                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo();
+            ProgressUpdater progressUpdater = new(chunkCount + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
 
-                FileInfo info = new(MMOSPath);
-                uint length = uint.Parse(info.Length.ToString());
+            FlashModel.FlashMMOS(MMOSPath, progressUpdater);
 
-                int maximumBufferSize = (int)Info.WriteBufferSize;
-
-                uint chunkCount = (uint)Math.Truncate((decimal)length / maximumBufferSize);
-
-                UIContext?.Post(d => SetWorkingStatus("Flashing Test Mode package...", MaxProgressValue: 100), null);
-
-                ProgressUpdater progressUpdater = new(chunkCount + 1, (int i, TimeSpan? time) => UpdateWorkingStatus(null, CurrentProgressValue: (ulong)i));
-
-                FlashModel.FlashMMOS(MMOSPath, progressUpdater);
-
-                ModeSwitchProgressWrapper("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
-            });
+            ModeSwitchProgressWrapper("And now booting phone to MMOS...", "If the phone stays on the lightning cog screen for a while, you may need to unplug and replug the phone to continue the boot process.");
         }
 
         private void SwitchFromPhoneInfoToMassStorageMode(bool Continuation = false)
         {
             string ProgressText = Continuation ? "And now rebooting phone to Mass Storage mode..." : "Rebooting phone to Mass Storage mode...";
 
+            bool ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
+            if (ModernFlashApp)
+            {
+                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+            }
+            else
+            {
+                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
+            }
+
             new Thread(async () =>
             {
-                bool ModernFlashApp = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().PhoneInfoAppVersionMajor >= 2;
-                if (ModernFlashApp)
-                {
-                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
-                }
-                else
-                {
-                    ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
-                }
                 await PhoneNotifier.WaitForArrival();
 
-                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+                bool IsModernFlashApp = false;
+
+                switch (CurrentMode)
+                {
+                    case PhoneInterfaces.Lumia_Flash:
+                        {
+                            LumiaFlashAppModel _FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+                            LumiaFlashAppPhoneInfo _Info = _FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+
+                            IsModernFlashApp = _Info.FlashAppProtocolVersionMajor >= 2;
+                            break;
+                        }
+                    case PhoneInterfaces.Lumia_Bootloader:
+                        {
+                            LumiaBootManagerAppModel _FlashModel = (LumiaBootManagerAppModel)PhoneNotifier.CurrentModel;
+                            LumiaBootManagerPhoneInfo _Info = _FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+
+                            IsModernFlashApp = _Info.BootManagerProtocolVersionMajor >= 2;
+                            break;
+                        }
+                }
 
                 MassStorageWarning = null;
-                if (Info.FlashAppProtocolVersionMajor < 2)
+                if (!IsModernFlashApp)
                 {
                     MassStorageWarning = "Switching to Mass Storage mode should take about 10 seconds. The phone should be unlocked using an Engineering SBL3 to enable Mass Storage mode. When you unlocked the bootloader, but you did not use an Engineering SBL3, an attempt to boot to Mass Storage mode may result in an unresponsive state. Installing drivers for this interface may also cause to hang the PC. So when this switch is taking too long, you should reboot both the PC and the phone. To reboot the phone, you have to perform a soft-reset. Press and hold the volume-down-button and the power-button at the same time for at least 10 seconds. This will trigger a power-cycle and the phone will reboot. Once fully booted, the phone may show strange behavior, like complaining about mail-accounts, showing old text-messages, inability to load https-websites, etc. This is expected behavior, because the time-settings of the phone are incorrect. Just wait a few seconds for the phone to get a data-connection and have the date/time synced. After that the strange behavior will stop automatically and normal operation is resumed.";
                 }
@@ -955,17 +960,36 @@ namespace WPinternals
                     }
                 }
 
-                bool IsOldLumia = Info.FlashAppProtocolVersionMajor < 2;
-                bool IsNewLumia = Info.FlashAppProtocolVersionMajor >= 2;
                 bool IsUnlockedNew = false;
-                if (IsNewLumia)
+                GPT GPT = null;
+
+                if (IsModernFlashApp)
                 {
-                    GPT GPT = FlashModel.ReadGPT();
+                    GPT = await ReadGPTFromFlashOrBootMgr();
                     IsUnlockedNew = (GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null) || (GPT.GetPartition("BACKUP_BS_NV") != null);
                 }
+
+                if (CurrentMode == PhoneInterfaces.Lumia_Bootloader)
+                {
+                    ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
+
+                    if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        await PhoneNotifier.WaitForArrival();
+                    }
+                }
+
+                if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
+                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+
                 bool IsOriginalEngineeringLumia = !Info.IsBootloaderSecure && !IsUnlockedNew;
 
-                if (IsOldLumia || IsOriginalEngineeringLumia)
+                if (!IsModernFlashApp || IsOriginalEngineeringLumia)
                 {
                     IsSwitchingInterface = true;
                     try
@@ -997,212 +1021,6 @@ namespace WPinternals
                 }
                 else if (IsUnlockedNew)
                 {
-                    new Thread(async () =>
-                    {
-                        LogFile.BeginAction("SwitchToMassStorageMode");
-
-                        try
-                        {
-                            // Implementation of writing a partition with SecureBoot variable to the phone
-                            ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
-                            LogFile.Log("Preparing phone for Mass Storage Mode", LogType.FileAndConsole);
-                            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
-                            // Magic!
-                            // The SBMSM resource is a compressed version of a raw NV-variable-partition.
-                            // In this partition the SecureBoot variable is disabled and an extra variable is added which triggers Mass Storage Mode on next reboot.
-                            // It overwrites the variable in a different NV-partition than where this variable is stored usually.
-                            // This normally leads to endless-loops when the NV-variables are enumerated.
-                            // But the partition contains an extra hack to break out the endless loops.
-                            using (Stream stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
-                            {
-                                using DecompressedStream dec = new(stream);
-                                using MemoryStream SB = new(); // Must be a seekable stream!
-                                dec.CopyTo(SB);
-
-                                // We don't need to check for the BACKUP_BS_NV partition here,
-                                // because the SecureBoot flag is disabled here.
-                                // So either the NV was already backupped or already overwritten.
-
-                                GPT GPT = FlashModel.ReadGPT();
-                                Partition Target = GPT.GetPartition("UEFI_BS_NV");
-
-                                // We've been reading the GPT, so we let the phone reset once more to be sure that memory maps are the same
-                                WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
-                                List<FlashPart> Parts = [];
-                                FlashPart Part = new();
-                                Part.StartSector = (uint)Target.FirstSector;
-                                Part.Stream = SB;
-                                Parts.Add(Part);
-                                await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, null, false, false, Parts, DoResetFirst: true, ClearFlashingStatusAtEnd: false, ShowProgress: false,
-                                    SetWorkingStatus: (m, s, v, a, st) =>
-                                    {
-                                        if (SetWorkingStatus != null)
-                                        {
-                                            if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
-                                            {
-                                                SetWorkingStatus(m, s, v, a, st);
-                                            }
-                                            else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
-                                            {
-                                                SetWorkingStatus(ProgressText, MassStorageWarning);
-                                            }
-
-                                            LastStatus = st;
-                                        }
-                                    },
-                                    UpdateWorkingStatus: (m, s, v, st) =>
-                                    {
-                                        if (UpdateWorkingStatus != null)
-                                        {
-                                            if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
-                                            {
-                                                UpdateWorkingStatus(m, s, v, st);
-                                            }
-                                            else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
-                                            {
-                                                SetWorkingStatus(ProgressText, MassStorageWarning);
-                                            }
-
-                                            LastStatus = st;
-                                        }
-                                    });
-                            }
-
-                            if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
-                            {
-                                throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
-                            }
-
-                            // Wait for bootloader
-                            if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
-                            {
-                                LogFile.Log("Waiting for Mass Storage Mode (1)...", LogType.FileOnly);
-                                await PhoneNotifier.WaitForArrival();
-                            }
-
-                            if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
-                            {
-                                throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
-                            }
-
-                            // Wait for mass storage mode
-                            if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
-                            {
-                                LogFile.Log("Waiting for Mass Storage Mode (2)...", LogType.FileOnly);
-                                await PhoneNotifier.WaitForArrival();
-                            }
-
-                            if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
-                            {
-                                throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
-                            }
-
-                            MassStorage Storage = null;
-                            if (PhoneNotifier.CurrentModel is MassStorage)
-                            {
-                                Storage = (MassStorage)PhoneNotifier.CurrentModel;
-                            }
-
-                            if (Storage == null)
-                            {
-                                ModeSwitchErrorWrapper("Failed to switch to Mass Storage Mode");
-                            }
-                            else
-                            {
-                                ModeSwitchSuccessWrapper();
-                            }
-                        }
-                        catch (Exception Ex)
-                        {
-                            LogFile.LogException(Ex);
-                            ModeSwitchErrorWrapper(Ex.Message);
-                        }
-
-                        LogFile.EndAction("SwitchToMassStorageMode");
-                    }).Start();
-                }
-                else
-                {
-                    ModeSwitchErrorWrapper("Bootloader was not unlocked. First unlock bootloader before you try to switch to Mass Storage Mode.");
-                }
-            }).Start();
-        }
-
-        private void SwitchFromFlashToMassStorageMode(bool Continuation = false)
-        {
-            string ProgressText = Continuation ? "And now rebooting phone to Mass Storage mode..." : "Rebooting phone to Mass Storage mode...";
-            if (CurrentMode == PhoneInterfaces.Lumia_Bootloader)
-            {
-                try
-                {
-                    ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
-                }
-                catch (Exception ex)
-                {
-                    LogFile.LogException(ex, LogType.FileOnly);
-                }
-            }
-            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-            LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
-
-            MassStorageWarning = null;
-            if (Info.FlashAppProtocolVersionMajor < 2)
-            {
-                MassStorageWarning = "Switching to Mass Storage mode should take about 10 seconds. The phone should be unlocked using an Engineering SBL3 to enable Mass Storage mode. When you unlocked the bootloader, but you did not use an Engineering SBL3, an attempt to boot to Mass Storage mode may result in an unresponsive state. Installing drivers for this interface may also cause to hang the PC. So when this switch is taking too long, you should reboot both the PC and the phone. To reboot the phone, you have to perform a soft-reset. Press and hold the volume-down-button and the power-button at the same time for at least 10 seconds. This will trigger a power-cycle and the phone will reboot. Once fully booted, the phone may show strange behavior, like complaining about mail-accounts, showing old text-messages, inability to load https-websites, etc. This is expected behavior, because the time-settings of the phone are incorrect. Just wait a few seconds for the phone to get a data-connection and have the date/time synced. After that the strange behavior will stop automatically and normal operation is resumed.";
-            }
-            else
-            {
-                MassStorageWarning = "When the screen of the phone is black for a while, it could be that the phone is already in Mass Storage Mode, but there is no drive-letter assigned. To resolve this issue, open Device Manager and manually assign a drive-letter to the MainOS partition of your phone, or open a command-prompt and type: diskpart automount enable.";
-                if (App.IsPnPEventLogMissing)
-                {
-                    MassStorageWarning += " It is also possible that the phone is in Mass Storage mode, but the Mass Storage driver on this PC failed. Your PC does not have an eventlog to detect this misbehaviour. But in this case you will see a device with an exclamation mark in Device Manager and then you need to manually reset the phone by pressing and holding the power-button for at least 10 seconds until it vibrates and reboots. After that Windows Phone Internals will revert the changes. After the phone has rebooted to the OS, you can retry to unlock the bootloader.";
-                }
-            }
-
-            bool IsOldLumia = Info.FlashAppProtocolVersionMajor < 2;
-            bool IsNewLumia = Info.FlashAppProtocolVersionMajor >= 2;
-            bool IsUnlockedNew = false;
-            if (IsNewLumia)
-            {
-                GPT GPT = FlashModel.ReadGPT();
-                IsUnlockedNew = (GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null) || (GPT.GetPartition("BACKUP_BS_NV") != null);
-            }
-            bool IsOriginalEngineeringLumia = !Info.IsBootloaderSecure && !IsUnlockedNew;
-
-            if (IsOldLumia || IsOriginalEngineeringLumia)
-            {
-                IsSwitchingInterface = true;
-                try
-                {
-                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetToMassStorageMode();
-                    PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-
-                    ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
-                    LogFile.Log("Rebooting phone to Mass Storage mode");
-                }
-                catch (NotSupportedException) // This means fail: NOKU (unknown command)
-                {
-                    try
-                    {
-                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).WriteParam("UBF", [(byte)'M']);
-                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-
-                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
-                        ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
-                        LogFile.Log("Rebooting phone to Mass Storage mode");
-                    }
-                    catch (NotSupportedException)
-                    {
-                        ModeSwitchErrorWrapper("Failed to switch to Mass Storage mode");
-                        IsSwitchingInterface = false;
-                    }
-                }
-            }
-            else if (IsUnlockedNew)
-            {
-                new Thread(async () =>
-                {
                     LogFile.BeginAction("SwitchToMassStorageMode");
 
                     try
@@ -1228,15 +1046,16 @@ namespace WPinternals
                             // because the SecureBoot flag is disabled here.
                             // So either the NV was already backupped or already overwritten.
 
-                            GPT GPT = FlashModel.ReadGPT();
                             Partition Target = GPT.GetPartition("UEFI_BS_NV");
 
                             // We've been reading the GPT, so we let the phone reset once more to be sure that memory maps are the same
                             WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
                             List<FlashPart> Parts = [];
-                            FlashPart Part = new();
-                            Part.StartSector = (uint)Target.FirstSector;
-                            Part.Stream = SB;
+                            FlashPart Part = new()
+                            {
+                                StartSector = (uint)Target.FirstSector,
+                                Stream = SB
+                            };
                             Parts.Add(Part);
                             await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, null, false, false, Parts, DoResetFirst: true, ClearFlashingStatusAtEnd: false, ShowProgress: false,
                                 SetWorkingStatus: (m, s, v, a, st) =>
@@ -1324,12 +1143,224 @@ namespace WPinternals
                     }
 
                     LogFile.EndAction("SwitchToMassStorageMode");
-                }).Start();
+                }
+                else
+                {
+                    ModeSwitchErrorWrapper("Bootloader was not unlocked. First unlock bootloader before you try to switch to Mass Storage Mode.");
+                }
+            }).Start();
+        }
+
+        /// <summary>
+        /// This function reads GPT from the device, while preserving the current application running.
+        /// This works whenever the device is unlocked or not, from Flash or Bootloader apps
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="WPinternalsException">The device entered an unexpected mode.</exception>
+        private async Task<GPT> ReadGPTFromFlashOrBootMgr()
+        {
+            return await LumiaUnlockBootloaderViewModel.ReadGPTFromFlashOrBootMgr(PhoneNotifier);
+        }
+
+        private void SwitchFromFlashToMassStorageMode(bool Continuation = false)
+        {
+            string ProgressText = Continuation ? "And now rebooting phone to Mass Storage mode..." : "Rebooting phone to Mass Storage mode...";
+
+            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+            LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+
+            bool IsModernFlashApp = Info.FlashAppProtocolVersionMajor >= 2;
+
+            MassStorageWarning = null;
+            if (!IsModernFlashApp)
+            {
+                MassStorageWarning = "Switching to Mass Storage mode should take about 10 seconds. The phone should be unlocked using an Engineering SBL3 to enable Mass Storage mode. When you unlocked the bootloader, but you did not use an Engineering SBL3, an attempt to boot to Mass Storage mode may result in an unresponsive state. Installing drivers for this interface may also cause to hang the PC. So when this switch is taking too long, you should reboot both the PC and the phone. To reboot the phone, you have to perform a soft-reset. Press and hold the volume-down-button and the power-button at the same time for at least 10 seconds. This will trigger a power-cycle and the phone will reboot. Once fully booted, the phone may show strange behavior, like complaining about mail-accounts, showing old text-messages, inability to load https-websites, etc. This is expected behavior, because the time-settings of the phone are incorrect. Just wait a few seconds for the phone to get a data-connection and have the date/time synced. After that the strange behavior will stop automatically and normal operation is resumed.";
             }
             else
             {
-                ModeSwitchErrorWrapper("Bootloader was not unlocked. First unlock bootloader before you try to switch to Mass Storage Mode.");
+                MassStorageWarning = "When the screen of the phone is black for a while, it could be that the phone is already in Mass Storage Mode, but there is no drive-letter assigned. To resolve this issue, open Device Manager and manually assign a drive-letter to the MainOS partition of your phone, or open a command-prompt and type: diskpart automount enable.";
+                if (App.IsPnPEventLogMissing)
+                {
+                    MassStorageWarning += " It is also possible that the phone is in Mass Storage mode, but the Mass Storage driver on this PC failed. Your PC does not have an eventlog to detect this misbehaviour. But in this case you will see a device with an exclamation mark in Device Manager and then you need to manually reset the phone by pressing and holding the power-button for at least 10 seconds until it vibrates and reboots. After that Windows Phone Internals will revert the changes. After the phone has rebooted to the OS, you can retry to unlock the bootloader.";
+                }
             }
+
+            new Thread(async () =>
+            {
+                bool IsUnlockedNew = false;
+
+                GPT GPT = null;
+
+                if (IsModernFlashApp)
+                {
+                    GPT = await ReadGPTFromFlashOrBootMgr();
+                    IsUnlockedNew = (GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null) || (GPT.GetPartition("BACKUP_BS_NV") != null);
+                }
+
+                LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+                LumiaFlashAppPhoneInfo Info = FlashModel.ReadPhoneInfo(ExtendedInfo: false);
+
+                bool IsOriginalEngineeringLumia = !Info.IsBootloaderSecure && !IsUnlockedNew;
+
+                if (!IsModernFlashApp || IsOriginalEngineeringLumia)
+                {
+                    IsSwitchingInterface = true;
+                    try
+                    {
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetToMassStorageMode();
+                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+
+                        ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
+                        LogFile.Log("Rebooting phone to Mass Storage mode");
+                    }
+                    catch (NotSupportedException) // This means fail: NOKU (unknown command)
+                    {
+                        try
+                        {
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).WriteParam("UBF", [(byte)'M']);
+                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
+                            ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
+                            LogFile.Log("Rebooting phone to Mass Storage mode");
+                        }
+                        catch (NotSupportedException)
+                        {
+                            ModeSwitchErrorWrapper("Failed to switch to Mass Storage mode");
+                            IsSwitchingInterface = false;
+                        }
+                    }
+                }
+                else if (IsUnlockedNew)
+                {
+                    LogFile.BeginAction("SwitchToMassStorageMode");
+
+                    try
+                    {
+                        // Implementation of writing a partition with SecureBoot variable to the phone
+                        ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
+                        LogFile.Log("Preparing phone for Mass Storage Mode", LogType.FileAndConsole);
+                        System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+                        // Magic!
+                        // The SBMSM resource is a compressed version of a raw NV-variable-partition.
+                        // In this partition the SecureBoot variable is disabled and an extra variable is added which triggers Mass Storage Mode on next reboot.
+                        // It overwrites the variable in a different NV-partition than where this variable is stored usually.
+                        // This normally leads to endless-loops when the NV-variables are enumerated.
+                        // But the partition contains an extra hack to break out the endless loops.
+                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
+                        {
+                            using DecompressedStream dec = new(stream);
+                            using MemoryStream SB = new(); // Must be a seekable stream!
+                            dec.CopyTo(SB);
+
+                            // We don't need to check for the BACKUP_BS_NV partition here,
+                            // because the SecureBoot flag is disabled here.
+                            // So either the NV was already backupped or already overwritten.
+
+                            Partition Target = GPT.GetPartition("UEFI_BS_NV");
+
+                            // We've been reading the GPT, so we let the phone reset once more to be sure that memory maps are the same
+                            WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
+                            List<FlashPart> Parts = [];
+                            FlashPart Part = new()
+                            {
+                                StartSector = (uint)Target.FirstSector,
+                                Stream = SB
+                            };
+                            Parts.Add(Part);
+                            await LumiaV2UnlockBootViewModel.LumiaV2CustomFlash(PhoneNotifier, null, false, false, Parts, DoResetFirst: true, ClearFlashingStatusAtEnd: false, ShowProgress: false,
+                                SetWorkingStatus: (m, s, v, a, st) =>
+                                {
+                                    if (SetWorkingStatus != null)
+                                    {
+                                        if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
+                                        {
+                                            SetWorkingStatus(m, s, v, a, st);
+                                        }
+                                        else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
+                                        {
+                                            SetWorkingStatus(ProgressText, MassStorageWarning);
+                                        }
+
+                                        LastStatus = st;
+                                    }
+                                },
+                                UpdateWorkingStatus: (m, s, v, st) =>
+                                {
+                                    if (UpdateWorkingStatus != null)
+                                    {
+                                        if ((st == WPinternalsStatus.Scanning) || (st == WPinternalsStatus.WaitingForManualReset))
+                                        {
+                                            UpdateWorkingStatus(m, s, v, st);
+                                        }
+                                        else if ((LastStatus == WPinternalsStatus.Scanning) || (LastStatus == WPinternalsStatus.WaitingForManualReset))
+                                        {
+                                            SetWorkingStatus(ProgressText, MassStorageWarning);
+                                        }
+
+                                        LastStatus = st;
+                                    }
+                                });
+                        }
+
+                        if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        {
+                            throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+                        }
+
+                        // Wait for bootloader
+                        if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
+                        {
+                            LogFile.Log("Waiting for Mass Storage Mode (1)...", LogType.FileOnly);
+                            await PhoneNotifier.WaitForArrival();
+                        }
+
+                        if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        {
+                            throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+                        }
+
+                        // Wait for mass storage mode
+                        if (PhoneNotifier.CurrentInterface != PhoneInterfaces.Lumia_MassStorage)
+                        {
+                            LogFile.Log("Waiting for Mass Storage Mode (2)...", LogType.FileOnly);
+                            await PhoneNotifier.WaitForArrival();
+                        }
+
+                        if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_BadMassStorage)
+                        {
+                            throw new WPinternalsException("Phone is in Mass Storage mode, but the driver on PC failed to start");
+                        }
+
+                        MassStorage Storage = null;
+                        if (PhoneNotifier.CurrentModel is MassStorage)
+                        {
+                            Storage = (MassStorage)PhoneNotifier.CurrentModel;
+                        }
+
+                        if (Storage == null)
+                        {
+                            ModeSwitchErrorWrapper("Failed to switch to Mass Storage Mode");
+                        }
+                        else
+                        {
+                            ModeSwitchSuccessWrapper();
+                        }
+                    }
+                    catch (Exception Ex)
+                    {
+                        LogFile.LogException(Ex);
+                        ModeSwitchErrorWrapper(Ex.Message);
+                    }
+
+                    LogFile.EndAction("SwitchToMassStorageMode");
+                }
+                else
+                {
+                    ModeSwitchErrorWrapper("Bootloader was not unlocked. First unlock bootloader before you try to switch to Mass Storage Mode.");
+                }
+            }).Start();
         }
 
         internal async static Task<IDisposable> SwitchTo(PhoneNotifierViewModel Notifier, PhoneInterfaces? TargetMode, string RequestedVolumeForMassStorage = "MainOS")

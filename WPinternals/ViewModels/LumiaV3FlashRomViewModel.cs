@@ -272,9 +272,10 @@ namespace WPinternals
                 // ==============================
                 // Header 2 start
 
-                StoreHeader store = new();
-
-                store.WriteDescriptorCount = (UInt32)payloads.Length;
+                StoreHeader store = new()
+                {
+                    WriteDescriptorCount = (UInt32)payloads.Length
+                };
                 store.FinalTableIndex = (UInt32)payloads.Length - store.FinalTableCount;
                 store.PlatformId = Info.PlatformID;
 
@@ -283,7 +284,7 @@ namespace WPinternals
                     store.WriteDescriptorLength += payload.GetStoreHeaderSize();
                 }
 
-                byte[] GPTChunk = Model.GetGptChunk(0x20000);
+                byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
                 GPT GPT = new(GPTChunk);
                 UInt64 PlatEnd = 0;
                 if (GPT.Partitions.Any(x => x.Name == "PLAT"))

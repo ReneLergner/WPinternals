@@ -138,7 +138,7 @@ namespace WPinternals
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
+                byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
                 GPT GPT = new(GPTChunk);
                 bool GPTChanged = false;
 
@@ -271,7 +271,7 @@ namespace WPinternals
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
+                byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
                 GPT GPT = new(GPTChunk);
                 bool GPTChanged = false;
                 Partition BACKUP_BS_NV = GPT.GetPartition("BACKUP_BS_NV");
@@ -299,9 +299,11 @@ namespace WPinternals
                 if (GPTChanged)
                 {
                     GPT.Rebuild();
-                    FlashPart Part = new();
-                    Part.StartSector = 0;
-                    Part.Stream = new MemoryStream(GPTChunk);
+                    FlashPart Part = new()
+                    {
+                        StartSector = 0,
+                        Stream = new MemoryStream(GPTChunk)
+                    };
                     Parts.Add(Part);
                 }
 
@@ -348,7 +350,7 @@ namespace WPinternals
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
-                byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
+                byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
                 GPT GPT = new(GPTChunk);
 
                 Partition TargetPartition = GPT.GetPartition(PartitionName);
@@ -487,10 +489,10 @@ namespace WPinternals
 
         internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, List<FlashPart> FlashParts, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null, ExitSuccess ExitSuccess = null, ExitFailure ExitFailure = null, string ProgrammerPath = null)
         {
+            byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 131072u);
+
             LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
             LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
-
-            byte[] GPTChunk = Model.GetGptChunk(131072u);
 
             GPT GPT = new(GPTChunk);
 
@@ -719,7 +721,7 @@ namespace WPinternals
                 MaximumAttempts = (int)(((MaximumGapFill / FFU.ChunkSize) + 1) * 8);
             }
 
-            byte[] GPTChunk = ((LumiaFlashAppModel)Notifier.CurrentModel).GetGptChunk((UInt32)FFU.ChunkSize);
+            byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, (UInt32)FFU.ChunkSize);
 
             // Start with a reset
             if (DoResetFirst)
@@ -2012,7 +2014,7 @@ namespace WPinternals
 
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
-            byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
+            byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
             GPT GPT = new(GPTChunk);
 
             Partition Target;
@@ -2405,7 +2407,7 @@ namespace WPinternals
 
             // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
             // We need the fist sector if we want to write back the GPT.
-            byte[] GPTChunk = FlashModel.GetGptChunk(0x20000);
+            byte[] GPTChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
             GPT GPT = new(GPTChunk);
 
             Partition Target;
@@ -2956,9 +2958,11 @@ namespace WPinternals
                 }
                 else
                 {
-                    FreeMemRange NewFreeRange = new();
-                    NewFreeRange.Start = Allocation.TotalStart;
-                    NewFreeRange.End = Allocation.TotalEnd;
+                    FreeMemRange NewFreeRange = new()
+                    {
+                        Start = Allocation.TotalStart,
+                        End = Allocation.TotalEnd
+                    };
 
                     bool Added = false;
                     int i;

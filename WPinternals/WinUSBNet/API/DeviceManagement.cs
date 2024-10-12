@@ -167,13 +167,15 @@ namespace MadWizard.WinUSBNet.API
         }
         private static DeviceDetails GetDeviceDetails(string devicePath, IntPtr deviceInfoSet, SP_DEVINFO_DATA deviceInfoData)
         {
-            DeviceDetails details = new();
-            details.DevicePath = devicePath;
-            details.DeviceDescription = GetStringProperty(deviceInfoSet, deviceInfoData, SPDRP.SPDRP_DEVICEDESC);
-            details.Manufacturer = GetStringProperty(deviceInfoSet, deviceInfoData, SPDRP.SPDRP_MFG);
+            DeviceDetails details = new()
+            {
+                DevicePath = devicePath,
+                DeviceDescription = GetStringProperty(deviceInfoSet, deviceInfoData, SPDRP.SPDRP_DEVICEDESC),
+                Manufacturer = GetStringProperty(deviceInfoSet, deviceInfoData, SPDRP.SPDRP_MFG),
 
-            // Heathcliff74
-            details.BusName = "";
+                // Heathcliff74
+                BusName = ""
+            };
             try
             {
                 details.BusName = GetStringProperty(deviceInfoSet, deviceInfoData, new DEVPROPKEY(new Guid(0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2), 4));

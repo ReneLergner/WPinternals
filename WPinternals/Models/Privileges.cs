@@ -415,8 +415,10 @@ namespace WPinternals
                         (this.tlsContents.ReferenceCountValue > 1 ||
                         !this.tlsContents.IsImpersonating))
                     {
-                        NativeMethods.TOKEN_PRIVILEGE newState = new();
-                        newState.PrivilegeCount = 1;
+                        NativeMethods.TOKEN_PRIVILEGE newState = new()
+                        {
+                            PrivilegeCount = 1
+                        };
                         newState.Privilege.Luid = this.luid;
                         newState.Privilege.Attributes = this.initialState ? NativeMethods.SE_PRIVILEGE_ENABLED : NativeMethods.SE_PRIVILEGE_DISABLED;
 
@@ -544,8 +546,10 @@ namespace WPinternals
                         this.tlsContents.IncrementReferenceCount();
                     }
 
-                    NativeMethods.TOKEN_PRIVILEGE newState = new();
-                    newState.PrivilegeCount = 1;
+                    NativeMethods.TOKEN_PRIVILEGE newState = new()
+                    {
+                        PrivilegeCount = 1
+                    };
                     newState.Privilege.Luid = this.luid;
                     newState.Privilege.Attributes = enable ? NativeMethods.SE_PRIVILEGE_ENABLED : NativeMethods.SE_PRIVILEGE_DISABLED;
 

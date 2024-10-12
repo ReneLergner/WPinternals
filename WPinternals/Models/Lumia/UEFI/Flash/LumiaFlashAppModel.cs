@@ -161,6 +161,12 @@ namespace WPinternals.Models.UEFIApps.Flash
 
             byte[] Response = ExecuteRawMethod(Request);
 
+            if (Response == null)
+            {
+                // Succeeded
+                return;
+            }
+
             if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
             {
                 throw new NotSupportedException();
@@ -186,11 +192,8 @@ namespace WPinternals.Models.UEFIApps.Flash
 
             if (ExtendedInfo && Result.State == PhoneInfoState.Basic)
             {
-                if (Result.App == FlashAppType.FlashApp)
-                {
-                    Result.Firmware = ReadStringParam("FVER");
-                    Result.RKH = ReadParam("RRKH");
-                }
+                Result.Firmware = ReadStringParam("FVER");
+                Result.RKH = ReadParam("RRKH");
 
                 Result.State = PhoneInfoState.Extended;
             }
@@ -294,6 +297,13 @@ namespace WPinternals.Models.UEFIApps.Flash
             return Result;
         }
 
+        internal bool CanReadGPT()
+        {
+            LumiaFlashAppPhoneInfo Info = ReadPhoneInfo(ExtendedInfo: false);
+            FlashAppType OriginalAppType = Info.App;
+            return Info.IsBootloaderSecure;
+        }
+
         internal GPT ReadGPT()
         {
             // If this function is used with a locked BootMgr v1, 
@@ -302,10 +312,7 @@ namespace WPinternals.Models.UEFIApps.Flash
 
             // Only works in BootLoader-mode or on unlocked bootloaders in Flash-mode!!
 
-            LumiaFlashAppPhoneInfo Info = ReadPhoneInfo(ExtendedInfo: false);
-            FlashAppType OriginalAppType = Info.App;
-            bool Switch = Info.IsBootloaderSecure;
-            if (Switch)
+            if (CanReadGPT())
             {
                 throw new InvalidOperationException("Bootloader is not unlocked!");
             }
@@ -324,7 +331,8 @@ namespace WPinternals.Models.UEFIApps.Flash
             ushort Error = (ushort)((Buffer[6] << 8) + Buffer[7]);
             if (Error > 0)
             {
-                throw new NotSupportedException("ReadGPT: Error 0x" + Error.ToString("X4"));
+                ThrowFlashError(Error);
+                //throw new NotSupportedException("ReadGPT: Error 0x" + Error.ToString("X4"));
             }
 
             byte[] GPTBuffer = new byte[Buffer.Length - 0x208];
@@ -333,19 +341,22 @@ namespace WPinternals.Models.UEFIApps.Flash
             return new GPT(GPTBuffer);  // NOKT message header and MBR are ignored
         }
 
-        internal byte[] GetGptChunk(uint Size) // TODO!
+        internal byte[] GetGptChunk(uint Size)
         {
-            // This function is also used to generate a dummy chunk to flash for testing.
-            // The dummy chunk will contain the GPT, so it can be flashed to the first sectors for testing.
-            byte[] GPTChunk = new byte[Size];
+            // If this function is used with a locked BootMgr v1, 
+            // then the mode-switching should be done outside this function, 
+            // because the context-switches that are used here are not supported on BootMgr v1.
 
-            LumiaFlashAppPhoneInfo Info = ReadPhoneInfo(ExtendedInfo: false);
-            FlashAppType OriginalAppType = Info.App;
-            bool Switch = Info.IsBootloaderSecure;
-            if (Switch)
+            // Only works in BootLoader-mode or on unlocked bootloaders in Flash-mode!!
+
+            if (CanReadGPT())
             {
                 throw new InvalidOperationException("Bootloader is not unlocked!");
             }
+
+            // This function is also used to generate a dummy chunk to flash for testing.
+            // The dummy chunk will contain the GPT, so it can be flashed to the first sectors for testing.
+            byte[] GPTChunk = new byte[Size];
 
             byte[] Request = new byte[0x04];
             const string Header = "NOKT";
@@ -449,16 +460,17 @@ namespace WPinternals.Models.UEFIApps.Flash
                 return null;
             }
 
-            UefiSecurityStatusResponse Result = new();
-
-            Result.IsTestDevice = Response[0];
-            Result.PlatformSecureBootStatus = Convert.ToBoolean(Response[1]);
-            Result.SecureFfuEfuseStatus = Convert.ToBoolean(Response[2]);
-            Result.DebugStatus = Convert.ToBoolean(Response[3]);
-            Result.RdcStatus = Convert.ToBoolean(Response[4]);
-            Result.AuthenticationStatus = Convert.ToBoolean(Response[5]);
-            Result.UefiSecureBootStatus = Convert.ToBoolean(Response[6]);
-            Result.CryptoHardwareKey = Convert.ToBoolean(Response[7]);
+            UefiSecurityStatusResponse Result = new()
+            {
+                IsTestDevice = Response[0],
+                PlatformSecureBootStatus = Convert.ToBoolean(Response[1]),
+                SecureFfuEfuseStatus = Convert.ToBoolean(Response[2]),
+                DebugStatus = Convert.ToBoolean(Response[3]),
+                RdcStatus = Convert.ToBoolean(Response[4]),
+                AuthenticationStatus = Convert.ToBoolean(Response[5]),
+                UefiSecureBootStatus = Convert.ToBoolean(Response[6]),
+                CryptoHardwareKey = Convert.ToBoolean(Response[7])
+            };
 
             _SecurityStatus = Result;
 
@@ -473,12 +485,13 @@ namespace WPinternals.Models.UEFIApps.Flash
                 return null;
             }
 
-            FlashVersion Result = new();
-
-            Result.ProtocolMajor = Response[1];
-            Result.ProtocolMinor = Response[2];
-            Result.ApplicationMajor = Response[3];
-            Result.ApplicationMinor = Response[4];
+            FlashVersion Result = new()
+            {
+                ProtocolMajor = Response[1],
+                ProtocolMinor = Response[2],
+                ApplicationMajor = Response[3],
+                ApplicationMinor = Response[4]
+            };
 
             return Result;
         }
@@ -830,8 +843,10 @@ namespace WPinternals.Models.UEFIApps.Flash
                 0x0002 => "Flash read failed",
                 _ => "Unknown error",
             };
-            WPinternalsException Ex = new("Flash failed!");
-            Ex.SubMessage = "Error 0x" + ErrorCode.ToString("X4") + ": " + SubMessage;
+            WPinternalsException Ex = new("Flash failed!")
+            {
+                SubMessage = "Error 0x" + ErrorCode.ToString("X4") + ": " + SubMessage
+            };
 
             throw Ex;
         }
@@ -1112,7 +1127,7 @@ namespace WPinternals.Models.UEFIApps.Flash
         private void FlashRawPartition(string Path, Stream Stream, string PartitionName, Action<int, TimeSpan?> ProgressUpdateCallback, ProgressUpdater UpdaterPerSector)
         {
             GPT GPT = ReadGPT();
-            FlashRawPartition(Path, Stream, PartitionName, ProgressUpdateCallback, UpdaterPerSector);
+            FlashRawPartition(GPT, Path, Stream, PartitionName, ProgressUpdateCallback, UpdaterPerSector);
         }
 
         private void FlashRawPartition(GPT GPT, string Path, Stream Stream, string PartitionName, Action<int, TimeSpan?> ProgressUpdateCallback, ProgressUpdater UpdaterPerSector)

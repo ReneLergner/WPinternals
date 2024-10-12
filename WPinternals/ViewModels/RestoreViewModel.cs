@@ -81,7 +81,7 @@ namespace WPinternals
 
         internal void RestoreTask(string EFIESPPath, string MainOSPath, string DataPath)
         {
-            new Thread(() =>
+            new Thread(async () =>
                 {
                     bool Result = true;
 
@@ -121,6 +121,8 @@ namespace WPinternals
                     ProgressUpdater Updater = Busy.ProgressUpdater;
                     ActivateSubContext(Busy);
 
+                    GPT GPT = await LumiaUnlockBootloaderViewModel.ReadGPTFromFlashOrBootMgr(PhoneNotifier);
+
                     int i = 0;
                     if (Result)
                     {
@@ -130,7 +132,7 @@ namespace WPinternals
                             {
                                 i++;
                                 Busy.Message = "Restoring partition EFIESP (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
-                                Phone.FlashRawPartition(EFIESPPath, "EFIESP", Updater);
+                                Phone.FlashRawPartition(GPT, EFIESPPath, "EFIESP", Updater);
                             }
                         }
                         catch (Exception Ex)
@@ -148,7 +150,7 @@ namespace WPinternals
                             {
                                 i++;
                                 Busy.Message = "Restoring partition MainOS (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
-                                Phone.FlashRawPartition(EFIESPPath, "MainOS", Updater);
+                                Phone.FlashRawPartition(GPT, EFIESPPath, "MainOS", Updater);
                             }
                         }
                         catch (Exception Ex)
@@ -166,7 +168,7 @@ namespace WPinternals
                             {
                                 i++;
                                 Busy.Message = "Restoring partition Data (" + i.ToString() + "/" + PartitionCount.ToString() + ")";
-                                Phone.FlashRawPartition(EFIESPPath, "Data", Updater);
+                                Phone.FlashRawPartition(GPT, EFIESPPath, "Data", Updater);
                             }
                         }
                         catch (Exception Ex)

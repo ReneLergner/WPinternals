@@ -111,9 +111,10 @@ namespace WPinternals
 
             try
             {
-                QualcommSerial SerialDevice = new(Serial);
-
-                SerialDevice.EncodeCommands = false;
+                QualcommSerial SerialDevice = new(Serial)
+                {
+                    EncodeCommands = false
+                };
 
                 // This will succeed on new models
                 SerialDevice.SendData([0x7, 0x0, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0]);

@@ -35,6 +35,126 @@ namespace WPinternals
 {
     internal static class LumiaUnlockBootloaderViewModel
     {
+        /// <summary>
+        /// This function reads GPT from the device, while preserving the current application running.
+        /// This works whenever the device is unlocked or not, from Flash or Bootloader apps
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="WPinternalsException">The device entered an unexpected mode.</exception>
+        public static async Task<GPT> ReadGPTFromFlashOrBootMgr(PhoneNotifierViewModel Notifier)
+        {
+            switch (Notifier.CurrentInterface)
+            {
+                case PhoneInterfaces.Lumia_Bootloader:
+                    {
+                        return ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadGPT();
+                    }
+                case PhoneInterfaces.Lumia_Flash:
+                    {
+                        LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
+
+                        if (FlashModel.CanReadGPT())
+                        {
+                            FlashModel.SwitchToBootManagerContext();
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
+                            {
+                                await Notifier.WaitForArrival();
+                            }
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
+                            {
+                                throw new WPinternalsException("Unexpected Mode");
+                            }
+
+                            GPT GPT = ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadGPT();
+
+                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                            {
+                                await Notifier.WaitForArrival();
+                            }
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                            {
+                                throw new WPinternalsException("Unexpected Mode");
+                            }
+
+                            return GPT;
+                        }
+                        else
+                        {
+                            return FlashModel.ReadGPT();
+                        }
+                    }
+                default:
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
+            }
+        }
+
+        /// <summary>
+        /// This function reads GPT from the device, while preserving the current application running.
+        /// This works whenever the device is unlocked or not, from Flash or Bootloader apps
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="WPinternalsException">The device entered an unexpected mode.</exception>
+        public static async Task<byte[]> GetGptChunkFromFlashOrBootMgr(PhoneNotifierViewModel Notifier, uint Size)
+        {
+            switch (Notifier.CurrentInterface)
+            {
+                case PhoneInterfaces.Lumia_Bootloader:
+                    {
+                        return ((LumiaBootManagerAppModel)Notifier.CurrentModel).GetGptChunk(Size);
+                    }
+                case PhoneInterfaces.Lumia_Flash:
+                    {
+                        LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
+
+                        if (FlashModel.CanReadGPT())
+                        {
+                            FlashModel.SwitchToBootManagerContext();
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
+                            {
+                                await Notifier.WaitForArrival();
+                            }
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
+                            {
+                                throw new WPinternalsException("Unexpected Mode");
+                            }
+
+                            byte[] GPT = ((LumiaBootManagerAppModel)Notifier.CurrentModel).GetGptChunk(Size);
+
+                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                            {
+                                await Notifier.WaitForArrival();
+                            }
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                            {
+                                throw new WPinternalsException("Unexpected Mode");
+                            }
+
+                            return GPT;
+                        }
+                        else
+                        {
+                            return FlashModel.GetGptChunk(Size);
+                        }
+                    }
+                default:
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
+            }
+        }
+
         // TODO: Add logging
         private static void PerformSoftBrick(PhoneNotifierViewModel Notifier, FFU FFU)
         {
@@ -353,33 +473,9 @@ namespace WPinternals
 #endif
 
                 GPT NewGPT = null;
-                if (Notifier.CurrentModel is LumiaFlashAppModel)
+                if (Notifier.CurrentModel is LumiaFlashAppModel or LumiaBootManagerAppModel)
                 {
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                    {
-                        await Notifier.WaitForArrival();
-                    }
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                    {
-                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
-                    }
-
-                    NewGPT = ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadGPT();
-
-                    await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                    {
-                        await Notifier.WaitForArrival();
-                    }
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                    {
-                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
-                    }
+                    NewGPT = await ReadGPTFromFlashOrBootMgr(Notifier);
                 }
                 else
                 {
@@ -592,11 +688,11 @@ namespace WPinternals
                     Progress.SetProgress(0x21);
 
                     LogFile.Log("Flash SBL2 at 0x" + ((UInt32)NewGPT.GetPartition("SBL2").FirstSector * 0x200).ToString("X8"));
-                    CurrentModel.FlashRawPartition(SBL2, "SBL2", Progress);
+                    CurrentModel.FlashRawPartition(NewGPT, SBL2, "SBL2", Progress);
                     LogFile.Log("Flash SBL3 at 0x" + ((UInt32)NewGPT.GetPartition("SBL3").FirstSector * 0x200).ToString("X8"));
-                    CurrentModel.FlashRawPartition(SBL3, "SBL3", Progress);
+                    CurrentModel.FlashRawPartition(NewGPT, SBL3, "SBL3", Progress);
                     LogFile.Log("Flash UEFI at 0x" + ((UInt32)NewGPT.GetPartition("UEFI").FirstSector * 0x200).ToString("X8"));
-                    CurrentModel.FlashRawPartition(UEFI, "UEFI", Progress);
+                    CurrentModel.FlashRawPartition(NewGPT, UEFI, "UEFI", Progress);
 
                     // phone is in flash mode, we can exit
                 }
@@ -907,33 +1003,9 @@ namespace WPinternals
 #endif
 
                 GPT NewGPT = null;
-                if (Notifier.CurrentModel is LumiaFlashAppModel)
+                if (Notifier.CurrentModel is LumiaFlashAppModel or LumiaBootManagerAppModel)
                 {
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                    {
-                        await Notifier.WaitForArrival();
-                    }
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                    {
-                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
-                    }
-
-                    NewGPT = ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadGPT();
-
-                    await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                    {
-                        await Notifier.WaitForArrival();
-                    }
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                    {
-                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
-                    }
+                    NewGPT = await ReadGPTFromFlashOrBootMgr(Notifier);
                 }
                 else
                 {
@@ -1273,15 +1345,15 @@ namespace WPinternals
                     if (ExtraSector != null)
                     {
                         LogFile.Log("Flash EXT at 0x" + ((UInt32)NewGPT.GetPartition("HACK").FirstSector * 0x200).ToString("X8"));
-                        CurrentModel.FlashRawPartition(ExtraSector, "HACK", Progress);
+                        CurrentModel.FlashRawPartition(NewGPT, ExtraSector, "HACK", Progress);
                     }
 
                     LogFile.Log("Flash SBL2 at 0x" + ((UInt32)NewGPT.GetPartition("SBL2").FirstSector * 0x200).ToString("X8"));
-                    CurrentModel.FlashRawPartition(SBL2, "SBL2", Progress);
+                    CurrentModel.FlashRawPartition(NewGPT, SBL2, "SBL2", Progress);
                     LogFile.Log("Flash SBL3 at 0x" + ((UInt32)NewGPT.GetPartition("SBL3").FirstSector * 0x200).ToString("X8"));
-                    CurrentModel.FlashRawPartition(SBL3, "SBL3", Progress);
+                    CurrentModel.FlashRawPartition(NewGPT, SBL3, "SBL3", Progress);
                     LogFile.Log("Flash UEFI at 0x" + ((UInt32)NewGPT.GetPartition("UEFI").FirstSector * 0x200).ToString("X8"));
-                    CurrentModel.FlashRawPartition(UEFI, "UEFI", Progress);
+                    CurrentModel.FlashRawPartition(NewGPT, UEFI, "UEFI", Progress);
 
                     // phone is in flash mode, we can exit
                 }
@@ -1517,31 +1589,7 @@ namespace WPinternals
                 bool IsSpecB = Info.FlashAppProtocolVersionMajor >= 2;
                 bool UndoEFIESPPadding = false;
 
-                byte[] GPTChunk;
-
-                if (!IsSpecB)
-                {
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
-                    {
-                        ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
-                    }
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                    {
-                        await Notifier.WaitForArrival();
-                    }
-
-                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
-                    {
-                        throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
-                    }
-
-                    GPTChunk = ((LumiaBootManagerAppModel)Notifier.CurrentModel).GetGptChunk(0x20000);
-                }
-                else
-                {
-                    GPTChunk = ((LumiaFlashAppModel)Notifier.CurrentModel).GetGptChunk(0x20000);
-                }
+                byte[] GPTChunk = await GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
 
                 GPT = new GPT(GPTChunk);
                 bool GPTChanged = false;
@@ -1579,7 +1627,7 @@ namespace WPinternals
                             await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_MassStorage, SetWorkingStatus, UpdateWorkingStatus);
                         }
 
-                        if (!(Notifier.CurrentModel is MassStorage))
+                        if (Notifier.CurrentModel is not MassStorage)
                         {
                             throw new WPinternalsException("Failed to switch to Mass Storage mode");
                         }
@@ -1922,7 +1970,7 @@ namespace WPinternals
 
                 LumiaPatchEFIESP(SupportedFFU, UnlockedEFIESP, IsSpecB);
 
-                byte[] GPTChunk = FlashModel.GetGptChunk((UInt32)ProfileFFU.ChunkSize);
+                byte[] GPTChunk = await GetGptChunkFromFlashOrBootMgr(Notifier, (UInt32)ProfileFFU.ChunkSize);
                 byte[] GPTChunkBackup = new byte[GPTChunk.Length];
                 Buffer.BlockCopy(GPTChunk, 0, GPTChunkBackup, 0, GPTChunk.Length);
                 GPT GPT = new(GPTChunk);
@@ -2533,9 +2581,11 @@ namespace WPinternals
 
             List<FlashPart> Parts = [];
 
-            FlashPart Part = new();
-            Part.StartSector = (uint)EFIESP.FirstSector;
-            Part.Stream = new MemoryStream(FirstSector);
+            FlashPart Part = new()
+            {
+                StartSector = (uint)EFIESP.FirstSector,
+                Stream = new MemoryStream(FirstSector)
+            };
             Parts.Add(Part);
 
             Part = new FlashPart
@@ -2564,9 +2614,11 @@ namespace WPinternals
 
             List<FlashPart> Parts = [];
 
-            FlashPart Part = new();
-            Part.StartSector = (uint)EFIESP.FirstSector;
-            Part.Stream = new MemoryStream(FirstSector);
+            FlashPart Part = new()
+            {
+                StartSector = (uint)EFIESP.FirstSector,
+                Stream = new MemoryStream(FirstSector)
+            };
             Parts.Add(Part);
 
             return Parts;

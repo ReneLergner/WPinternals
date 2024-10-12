@@ -51,7 +51,7 @@ namespace WPinternals.Models.Lumia.MSR
             string Config = null;
             try
             {
-                Config = Client.DownloadString("https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/emergency_flash_config.xml");
+                Config = Client.DownloadString($"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/{ProductType}/emergency_flash_config.xml");
             }
             catch
             {
@@ -68,7 +68,7 @@ namespace WPinternals.Models.Lumia.MSR
             if (Node != null)
             {
                 FileName = Node.Attributes["image_path"].InnerText;
-                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = $"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/{ProductType}/{FileName}";
                 LogFile.Log("Hex-file: " + Src);
                 Result.Add(Src);
             }
@@ -78,7 +78,7 @@ namespace WPinternals.Models.Lumia.MSR
             if (Node != null)
             {
                 FileName = Node.Attributes["image_path"].InnerText;
-                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = $"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/{ProductType}/{FileName}";
                 LogFile.Log("Mbn-file: " + Src);
                 Result.Add(Src);
             }
@@ -87,7 +87,7 @@ namespace WPinternals.Models.Lumia.MSR
             foreach (XmlNode SubNode in Doc.SelectNodes("//emergency_flash_config/first_boot_images/first_boot_image"))
             {
                 FileName = SubNode.Attributes["image_path"].InnerText;
-                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = $"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/{ProductType}/{FileName}";
                 LogFile.Log("Firehose-programmer-file: " + Src);
                 Result.Add(Src);
             }
@@ -96,7 +96,7 @@ namespace WPinternals.Models.Lumia.MSR
             foreach (XmlNode SubNode in Doc.SelectNodes("//emergency_flash_config/second_boot_firehose_single_image/firehose_image"))
             {
                 FileName = SubNode.Attributes["image_path"].InnerText;
-                Src = "https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/" + ProductType + "/" + FileName;
+                Src = $"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/{ProductType}/{FileName}";
                 LogFile.Log("Firehose-payload-file: " + Src);
                 Result.Add(Src);
             }

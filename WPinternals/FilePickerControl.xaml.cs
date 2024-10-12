@@ -430,9 +430,10 @@ namespace WPinternals
 
             if (SaveDialog)
             {
-                Microsoft.Win32.SaveFileDialog savedlg = new();
-
-                savedlg.FileName = Path ?? DefaultFileName;
+                Microsoft.Win32.SaveFileDialog savedlg = new()
+                {
+                    FileName = Path ?? DefaultFileName
+                };
 
                 // Show open file dialog box
                 result = savedlg.ShowDialog();
@@ -447,9 +448,10 @@ namespace WPinternals
             else
             {
                 // Select file
-                Microsoft.Win32.OpenFileDialog dlg = new();
-
-                dlg.FileName = Path ?? DefaultFileName;
+                Microsoft.Win32.OpenFileDialog dlg = new()
+                {
+                    FileName = Path ?? DefaultFileName
+                };
 
                 // Show open file dialog box
                 result = dlg.ShowDialog();

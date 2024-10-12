@@ -341,9 +341,10 @@ namespace MadWizard.WinUSBNet.API
 
         public void ReadPipeOverlapped(int ifaceIndex, byte pipeID, byte[] buffer, int offset, int bytesToRead, USBAsyncResult result)
         {
-            Overlapped overlapped = new();
-
-            overlapped.AsyncResult = result;
+            Overlapped overlapped = new()
+            {
+                AsyncResult = result
+            };
 
             unsafe
             {
@@ -364,8 +365,10 @@ namespace MadWizard.WinUSBNet.API
 
         public void WriteOverlapped(int ifaceIndex, byte pipeID, byte[] buffer, int offset, int bytesToWrite, USBAsyncResult result)
         {
-            Overlapped overlapped = new();
-            overlapped.AsyncResult = result;
+            Overlapped overlapped = new()
+            {
+                AsyncResult = result
+            };
 
             unsafe
             {
@@ -396,8 +399,10 @@ namespace MadWizard.WinUSBNet.API
             setupPacket.Index = index;
             setupPacket.Length = length;
 
-            Overlapped overlapped = new();
-            overlapped.AsyncResult = result;
+            Overlapped overlapped = new()
+            {
+                AsyncResult = result
+            };
 
             unsafe
             {

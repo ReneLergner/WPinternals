@@ -59,9 +59,11 @@ namespace WPinternals
             {
                 string FFUPath = null;
 
-                OpenFileDialog dlg = new();
-                dlg.DefaultExt = ".ffu"; // Default file extension
-                dlg.Filter = "ROM images (.ffu)|*.ffu"; // Filter files by extension 
+                OpenFileDialog dlg = new()
+                {
+                    DefaultExt = ".ffu", // Default file extension
+                    Filter = "ROM images (.ffu)|*.ffu" // Filter files by extension 
+                };
 
                 bool? result = dlg.ShowDialog();
 
@@ -95,9 +97,11 @@ namespace WPinternals
             {
                 string SecWIMPath = null;
 
-                OpenFileDialog dlg = new();
-                dlg.DefaultExt = ".secwim"; // Default file extension
-                dlg.Filter = "Secure WIM images (.secwim)|*.secwim"; // Filter files by extension 
+                OpenFileDialog dlg = new()
+                {
+                    DefaultExt = ".secwim", // Default file extension
+                    Filter = "Secure WIM images (.secwim)|*.secwim" // Filter files by extension 
+                };
 
                 bool? result = dlg.ShowDialog();
 

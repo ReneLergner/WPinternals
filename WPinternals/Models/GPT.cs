@@ -81,13 +81,15 @@ namespace WPinternals
                     break;
                 }
 
-                Partition CurrentPartition = new();
-                CurrentPartition.Name = Name;
-                CurrentPartition.FirstSector = ByteOperations.ReadUInt64(GPTBuffer, PartitionOffset + 0x20);
-                CurrentPartition.LastSector = ByteOperations.ReadUInt64(GPTBuffer, PartitionOffset + 0x28);
-                CurrentPartition.PartitionTypeGuid = ByteOperations.ReadGuid(GPTBuffer, PartitionOffset + 0x00);
-                CurrentPartition.PartitionGuid = ByteOperations.ReadGuid(GPTBuffer, PartitionOffset + 0x10);
-                CurrentPartition.Attributes = ByteOperations.ReadUInt64(GPTBuffer, PartitionOffset + 0x30);
+                Partition CurrentPartition = new()
+                {
+                    Name = Name,
+                    FirstSector = ByteOperations.ReadUInt64(GPTBuffer, PartitionOffset + 0x20),
+                    LastSector = ByteOperations.ReadUInt64(GPTBuffer, PartitionOffset + 0x28),
+                    PartitionTypeGuid = ByteOperations.ReadGuid(GPTBuffer, PartitionOffset + 0x00),
+                    PartitionGuid = ByteOperations.ReadGuid(GPTBuffer, PartitionOffset + 0x10),
+                    Attributes = ByteOperations.ReadUInt64(GPTBuffer, PartitionOffset + 0x30)
+                };
                 Partitions.Add(CurrentPartition);
                 PartitionOffset += PartitionEntrySize;
             }

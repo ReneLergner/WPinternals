@@ -221,19 +221,6 @@ namespace WPinternals
                             }
                             else
                             {
-                                bool AlreadyUnlocked = false;
-                                if (DoUnlock)
-                                {
-                                    LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
-                                    GPT GPT = FlashModel.ReadGPT();
-                                    if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
-                                    {
-                                        //ExitMessage("Phone is already unlocked", null);
-                                        //return;
-                                        AlreadyUnlocked = true;
-                                    }
-                                }
-
                                 TestPos = 4;
 
                                 // Stop responding to device arrival here, because all connections are handled by subfunctions, not here.
@@ -271,20 +258,28 @@ namespace WPinternals
                                         }
 
                                         Task.Run(async () =>
+                                        {
+                                            bool AlreadyUnlocked = false;
+                                            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+                                            GPT GPT = await LumiaUnlockBootloaderViewModel.ReadGPTFromFlashOrBootMgr(PhoneNotifier);
+                                            if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
                                             {
-                                                if (DoFixBoot)
-                                                {
-                                                    await LumiaV2UnlockBootViewModel.LumiaV2FixBoot(PhoneNotifier, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                                }
-                                                else if (!AlreadyUnlocked)
-                                                {
-                                                    await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
-                                                }
-                                                else
-                                                {
-                                                    await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage, true);
-                                                }
-                                            });
+                                                AlreadyUnlocked = true;
+                                            }
+
+                                            if (DoFixBoot)
+                                            {
+                                                await LumiaV2UnlockBootViewModel.LumiaV2FixBoot(PhoneNotifier, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                            }
+                                            else if (!AlreadyUnlocked)
+                                            {
+                                                await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                            }
+                                            else
+                                            {
+                                                await LumiaUnlockBootloaderViewModel.LumiaV2UnlockUEFI(PhoneNotifier, ProfileFFUPath, EDEPath, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage, true);
+                                            }
+                                        });
                                     }
                                     else
                                     {
@@ -666,8 +661,10 @@ namespace WPinternals
             {
                 State = MachineState.Default;
                 Exit();
-            });
-            SuccessMessageViewModel.SubMessage = SubMessage;
+            })
+            {
+                SubMessage = SubMessage
+            };
             ActivateSubContext(SuccessMessageViewModel);
         }
 

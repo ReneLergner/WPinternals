@@ -185,10 +185,8 @@ namespace WPinternals
                         {
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-
-                            BootMgrModel = (LumiaBootManagerAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader); // This also works for Bootloader Spec A
-
-                            GPT GPT = BootMgrModel.ReadGPT(); // May throw NotSupportedException
+                            await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader);
+                            GPT GPT = await LumiaUnlockBootloaderViewModel.ReadGPTFromFlashOrBootMgr(Notifier);
                             foreach (Partition Partition in GPT.Partitions)
                             {
                                 LogFile.Log(Partition.Name.PadRight(20) + "0x" + Partition.FirstSector.ToString("X8") + " - 0x" + Partition.LastSector.ToString("X8") + "    " + Partition.Volume, LogType.ConsoleOnly);
@@ -216,8 +214,8 @@ namespace WPinternals
                         {
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-                            BootMgrModel = (LumiaBootManagerAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader);
-                            GPT GPT = BootMgrModel.ReadGPT(); // May throw NotSupportedException
+                            await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader);
+                            GPT GPT = await LumiaUnlockBootloaderViewModel.ReadGPTFromFlashOrBootMgr(Notifier);
                             string DirPath = Path.GetDirectoryName(args[2]);
                             if (!string.IsNullOrEmpty(DirPath) && !Directory.Exists(DirPath))
                             {
@@ -275,8 +273,7 @@ namespace WPinternals
                         {
                             Notifier = new PhoneNotifierViewModel();
                             UIContext.Send(s => Notifier.Start(), null);
-                            BootMgrModel = (LumiaBootManagerAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Bootloader);
-                            byte[] GptChunk = BootMgrModel.GetGptChunk(0x20000);
+                            byte[] GptChunk = await LumiaUnlockBootloaderViewModel.GetGptChunkFromFlashOrBootMgr(Notifier, 0x20000);
                             GPT GPT = new(GptChunk);
                             string Xml = File.ReadAllText(args[2]);
                             GPT.MergePartitions(Xml, false);
@@ -1671,8 +1668,10 @@ namespace WPinternals
                     Microsoft.Win32.SafeHandles.SafeFileHandle safeFileHandle = new(stdHandle, true);
                     FileStream fileStream = new(safeFileHandle, FileAccess.Write);
                     Encoding encoding = Encoding.GetEncoding(MY_CODE_PAGE);
-                    StreamWriter standardOutput = new(fileStream, encoding);
-                    standardOutput.AutoFlush = true;
+                    StreamWriter standardOutput = new(fileStream, encoding)
+                    {
+                        AutoFlush = true
+                    };
                     Console.SetOut(standardOutput);
                 }
                 catch
