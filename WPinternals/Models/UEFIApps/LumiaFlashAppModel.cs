@@ -68,7 +68,7 @@ namespace WPinternals
         SkipSignatureCheck = 8
     }
 
-    internal class LumiaFlashAppModel : NokiaFlashModel
+    internal class LumiaFlashAppModel : NokiaUEFIModel
     {
         internal readonly LumiaFlashAppPhoneInfo FlashAppInfo = new();
         private UefiSecurityStatusResponse _SecurityStatus = null;

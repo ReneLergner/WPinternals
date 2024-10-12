@@ -240,7 +240,7 @@ namespace WPinternals
                         FlashAppType type = FlashAppType.FlashApp;
                         try
                         {
-                            NokiaFlashModel tmpModel = new NokiaFlashModel(e.DevicePath);
+                            NokiaUEFIModel tmpModel = new NokiaUEFIModel(e.DevicePath);
                             type = tmpModel.GetFlashAppType();
                             tmpModel.Dispose();
                             LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);
@@ -255,7 +255,7 @@ namespace WPinternals
                             case FlashAppType.BootManager:
                                 {
                                     CurrentModel = new LumiaBootManagerAppModel(e.DevicePath);
-                                    ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+                                    ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
                                     CurrentInterface = PhoneInterfaces.Lumia_Bootloader;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
@@ -268,9 +268,9 @@ namespace WPinternals
                             case FlashAppType.FlashApp:
                                 {
                                     CurrentModel = new LumiaFlashAppModel(e.DevicePath);
-                                    ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+                                    ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                                    ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                                    ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
                                     CurrentInterface = PhoneInterfaces.Lumia_Flash;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                                     LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
@@ -282,9 +282,9 @@ namespace WPinternals
                             case FlashAppType.PhoneInfoApp:
                                 {
                                     CurrentModel = new LumiaPhoneInfoAppModel(e.DevicePath);
-                                    ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+                                    ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                                    ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                                    ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
                                     CurrentInterface = PhoneInterfaces.Lumia_PhoneInfo;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                                     LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
@@ -442,7 +442,7 @@ namespace WPinternals
                 case PhoneInterfaces.Lumia_Bootloader:
                     {
                         CurrentModel = new LumiaBootManagerAppModel(DevicePath);
-                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+                        ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
                         CurrentInterface = PhoneInterfaces.Lumia_Bootloader;
                         LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
@@ -455,9 +455,9 @@ namespace WPinternals
                 case PhoneInterfaces.Lumia_Flash:
                     {
                         CurrentModel = new LumiaFlashAppModel(DevicePath);
-                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+                        ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                        ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                        ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
                         CurrentInterface = PhoneInterfaces.Lumia_Flash;
                         LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
                         LogFile.Log("Device path: " + DevicePath, LogType.FileOnly);
@@ -469,9 +469,9 @@ namespace WPinternals
                 case PhoneInterfaces.Lumia_PhoneInfo:
                     {
                         CurrentModel = new LumiaPhoneInfoAppModel(DevicePath);
-                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+                        ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                        ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                        ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
                         CurrentInterface = PhoneInterfaces.Lumia_PhoneInfo;
                         LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
                         LogFile.Log("Device path: " + DevicePath, LogType.FileOnly);
@@ -485,9 +485,9 @@ namespace WPinternals
                         LogFile.Log("Flash App Type could not be determined, assuming FlashApp", LogType.FileOnly);
 
                         CurrentModel = new LumiaFlashAppModel(DevicePath);
-                        ((NokiaFlashModel)CurrentModel).InterfaceChanged += InterfaceChanged;
+                        ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                        ((NokiaFlashModel)CurrentModel).DisableRebootTimeOut();
+                        ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
                         CurrentInterface = PhoneInterfaces.Lumia_Flash;
                         LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
                         LogFile.Log("Device path: " + DevicePath, LogType.FileOnly);

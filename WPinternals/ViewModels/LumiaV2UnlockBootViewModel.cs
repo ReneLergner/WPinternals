@@ -2344,7 +2344,7 @@ namespace WPinternals
             LogFile.BeginAction("FixBoot");
 
             LogFile.Log("Command: Fix boot after unlocking bootloader", LogType.FileAndConsole);
-            NokiaFlashModel FlashModel = (NokiaFlashModel)Notifier.CurrentModel;
+            NokiaUEFIModel FlashModel = (NokiaUEFIModel)Notifier.CurrentModel;
 
             if (SetWorkingStatus == null)
             {

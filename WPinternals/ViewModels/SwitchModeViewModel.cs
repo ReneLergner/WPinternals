@@ -649,7 +649,7 @@ namespace WPinternals
             {
                 if (TargetMode == PhoneInterfaces.Lumia_Bootloader)
                 {
-                    ((NokiaFlashModel)PhoneNotifier.CurrentModel).DisableRebootTimeOut();
+                    ((NokiaUEFIModel)PhoneNotifier.CurrentModel).DisableRebootTimeOut();
                 }
 
                 ModeSwitchSuccessWrapper();

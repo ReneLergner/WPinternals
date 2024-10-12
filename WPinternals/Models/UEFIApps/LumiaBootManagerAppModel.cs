@@ -24,7 +24,7 @@ using System.Linq;
 
 namespace WPinternals
 {
-    internal class LumiaBootManagerAppModel : NokiaFlashModel
+    internal class LumiaBootManagerAppModel : NokiaUEFIModel
     {
         internal readonly LumiaBootManagerPhoneInfo BootManagerInfo = new();
 

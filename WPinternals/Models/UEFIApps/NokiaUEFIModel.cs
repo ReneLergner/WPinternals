@@ -24,7 +24,7 @@ namespace WPinternals
 {
     internal delegate void InterfaceChangedHandler(PhoneInterfaces NewInterface, string DevicePath);
 
-    internal class NokiaFlashModel : NokiaPhoneModel
+    internal class NokiaUEFIModel : NokiaPhoneModel
     {
         private string _devicePath;
 
@@ -50,7 +50,7 @@ namespace WPinternals
         /* NOKXCE */
         private const string EchoSignature = $"{CommonExtendedMessageSignature}E";
 
-        public NokiaFlashModel(string DevicePath) : base(DevicePath)
+        public NokiaUEFIModel(string DevicePath) : base(DevicePath)
         {
             _devicePath = DevicePath;
         }
