@@ -21,6 +21,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {
@@ -40,8 +41,13 @@ namespace WPinternals
                 Serial.SendCommand([0x06], [0x02]);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                 return false;
             }
         }

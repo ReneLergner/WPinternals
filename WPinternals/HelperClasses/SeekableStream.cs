@@ -48,8 +48,13 @@ namespace WPinternals.HelperClasses
                 {
                     UnderlyingStreamLength = UnderlyingStream.Length;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                    LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                    LogFile.Log(ex.Message, LogType.FileAndConsole);
+                    LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                     throw new ArgumentException("Unknown stream length");
                 }
             }

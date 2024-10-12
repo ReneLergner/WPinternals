@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using WPinternals.HelperClasses;
 
 namespace WPinternals.Models.Lumia.NCSd
 {
@@ -73,20 +74,26 @@ namespace WPinternals.Models.Lumia.NCSd
                 Length = Device.InputPipe.Read(Buffer);
             }
 
-            JsonDocument ResultMessage = JsonDocument.Parse(System.Text.Encoding.ASCII.GetString(Buffer, 0, Length));
+            string ResultString = System.Text.Encoding.ASCII.GetString(Buffer, 0, Length);
+            JsonDocument ResultMessage = JsonDocument.Parse(ResultString);
 
             try
             {
-                JsonElement? ResultToken = ResultMessage.RootElement.GetProperty("result");
-                if (ResultToken == null || ResultElement == null)
+                bool result = ResultMessage.RootElement.TryGetProperty("result", out JsonElement ResultToken);
+                if (!result || ResultElement == null)
                 {
                     return null;
                 }
 
-                return ResultToken.Value.GetProperty(ResultElement);
+                return ResultToken.GetProperty(ResultElement);
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                 return null;
             }
         }

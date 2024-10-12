@@ -67,8 +67,13 @@ namespace WPinternals
                     Serial.SendData(PacketFromPcToProgrammer);
                     LogFile.Log("Hello packet accepted", LogType.FileOnly);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                    LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                    LogFile.Log(ex.Message, LogType.FileAndConsole);
+                    LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                     LogFile.Log("Hello packet not accepted", LogType.FileOnly);
                 }
 

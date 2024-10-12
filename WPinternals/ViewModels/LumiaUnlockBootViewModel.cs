@@ -850,8 +850,13 @@ namespace WPinternals
                     FFU FFU = new(_FFUPath);
                     IsSupportedFfuNeeded = !App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V1.1-EFIESP").TargetVersions.Any(v => v.Description == FFU.GetOSVersion());
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                    LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                    LogFile.Log(ex.Message, LogType.FileAndConsole);
+                    LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                     IsSupportedFfuNeeded = false;
                     return;
                 }
@@ -918,8 +923,13 @@ namespace WPinternals
                     FFU ProfileFFU = new(_ProfileFFUPath);
                     IsSupportedFfuNeeded = !App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == ProfileFFU.GetOSVersion());
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                    LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                    LogFile.Log(ex.Message, LogType.FileAndConsole);
+                    LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                     IsSupportedFfuNeeded = false;
                     return;
                 }
@@ -1023,8 +1033,13 @@ namespace WPinternals
                     ValidatedSupportedFfuPath = SupportedFFUPath;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                 IsSupportedFfuValid = false;
             }
         }

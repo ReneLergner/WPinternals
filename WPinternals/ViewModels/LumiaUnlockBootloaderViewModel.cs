@@ -1742,8 +1742,13 @@ namespace WPinternals
                             await Notifier.WaitForArrival();
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                        LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                        LogFile.Log(ex.Message, LogType.FileAndConsole);
+                        LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                         // If switching to mass storage mode failed, then we just skip that part. This might be a half unlocked phone.
                         LogFile.Log("Skipping Mass Storage mode", LogType.FileAndConsole);
                     }

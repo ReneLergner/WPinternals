@@ -18,6 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Xml;
@@ -53,8 +54,13 @@ namespace WPinternals.Models.Lumia.MSR
             {
                 Config = Client.DownloadString($"https://repairavoidance.blob.core.windows.net/packages/EmergencyFlash/{ProductType}/emergency_flash_config.xml");
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                 LogFile.Log("Emergency files for " + ProductType + " not found", LogType.FileAndConsole);
                 return null;
             }

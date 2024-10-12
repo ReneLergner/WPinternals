@@ -21,6 +21,7 @@
 using MadWizard.WinUSBNet;
 using System;
 using System.Diagnostics.Eventing.Reader;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using WPinternals.HelperClasses;
@@ -152,8 +153,10 @@ namespace WPinternals
             LogWatcher.Dispose();
         }
 
-        internal async Task WaitForNextNodeChange()
+        internal async Task WaitForNextNodeChange([CallerMemberName] string callerName = "")
         {
+            LogFile.Log("WaitForNextNodeChange Originating caller: " + callerName, LogType.FileOnly);
+
             // Node change events are on all USBnotifiers, so we just pick one
             await LumiaEmergencyNotifier.WaitForNextNodeChange();
         }
@@ -250,8 +253,13 @@ namespace WPinternals
                             tmpModel.Dispose();
                             LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                            LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                            LogFile.Log(ex.Message, LogType.FileAndConsole);
+                            LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                             LogFile.Log("Flash App Type could not be determined, assuming " + type.ToString(), LogType.FileOnly);
                         }
 
@@ -543,9 +551,11 @@ namespace WPinternals
             }
         }
 
-        internal async Task<IDisposable> WaitForArrival()
+        internal async Task<IDisposable> WaitForArrival([CallerMemberName] string callerName = "")
         {
             IDisposable Result = null;
+
+            LogFile.Log("WaitForArrival Originating caller: " + callerName, LogType.FileOnly);
 
             if (CurrentInterface == null)
             {
@@ -568,8 +578,10 @@ namespace WPinternals
             return Result;
         }
 
-        internal async Task WaitForRemoval()
+        internal async Task WaitForRemoval([CallerMemberName] string callerName = "")
         {
+            LogFile.Log("WaitForRemoval Originating caller: " + callerName, LogType.FileOnly);
+
             LogFile.Log("Waiting for phone to disconnect...", LogType.FileOnly);
 
             await Task.Run(() =>

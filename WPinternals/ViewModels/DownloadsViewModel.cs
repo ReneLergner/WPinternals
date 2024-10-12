@@ -82,8 +82,13 @@ namespace WPinternals
                     {
                         LastFFUStatusText = $"Error: {Ex.Message}. File \"{FFUFile}\" was not added.";
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                        LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                        LogFile.Log(ex.Message, LogType.FileAndConsole);
+                        LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                         LastFFUStatusText = $"Error: File \"{FFUFile}\" was not added.";
                     }
                 }
@@ -120,8 +125,13 @@ namespace WPinternals
                     {
                         LastSecWIMStatusText = $"Error: {Ex.Message}. File \"{SecWIMFile}\" was not added.";
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                        LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                        LogFile.Log(ex.Message, LogType.FileAndConsole);
+                        LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                         LastSecWIMStatusText = $"Error: File \"{SecWIMFile}\" was not added.";
                     }
                 }
@@ -1093,8 +1103,13 @@ namespace WPinternals
 
                 completed?.Invoke(true);
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                 completed?.Invoke(false);
             }
         }

@@ -195,8 +195,13 @@ namespace WPinternals
                     MassStorage.RestorePartition(part, partname, (v, t) => LogFile.Log("Progress: " + v + "%", LogType.ConsoleOnly));
                     LogFile.Log("", LogType.ConsoleOnly);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                    LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                    LogFile.Log(ex.Message, LogType.FileAndConsole);
+                    LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                     LogFile.Log("", LogType.ConsoleOnly);
                     LogFile.Log($"Failed writing {partname} to the device.", LogType.ConsoleOnly);
                 }

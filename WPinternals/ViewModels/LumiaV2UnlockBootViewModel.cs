@@ -787,6 +787,8 @@ namespace WPinternals
                         {
                             LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
                             LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                            LogFile.Log(ex.Message, LogType.FileAndConsole);
+                            LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
                             FailedToStartProgrammer = true;
                         }
                     }
@@ -810,6 +812,8 @@ namespace WPinternals
                             {
                                 LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
                                 LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
                                 FailedToStartProgrammer = true;
                             }
                         }
@@ -1507,6 +1511,8 @@ namespace WPinternals
                                     {
                                         LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
                                         LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                                        LogFile.Log(ex.Message, LogType.FileAndConsole);
+                                        LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
                                         FailedToStartProgrammer = true;
                                     }
                                 }
@@ -1787,6 +1793,8 @@ namespace WPinternals
                             {
                                 LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
                                 LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
                                 FailedToStartProgrammer = true;
                             }
                         }

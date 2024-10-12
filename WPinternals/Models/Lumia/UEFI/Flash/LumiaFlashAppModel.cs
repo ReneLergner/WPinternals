@@ -911,8 +911,13 @@ namespace WPinternals.Models.UEFIApps.Flash
                 ByteOperations.WriteAsciiString(Request, 0, RebootSignature);
                 ExecuteRawVoidMethod(Request);
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                 LogFile.Log("Sending reset-request failed", LogType.FileOnly);
                 LogFile.Log("Assuming automatic reset already in progress", LogType.FileOnly);
             }

@@ -156,8 +156,12 @@ namespace WPinternals
                                 ? Convert.ToUInt64(args[2][2..], 16)
                                 : Convert.ToUInt64(args[2], 10);
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                            LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                            LogFile.Log(ex.Message, LogType.FileAndConsole);
+                            LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
                             LogFile.Log("Bad start sector", LogType.ConsoleOnly);
                             break;
                         }
@@ -1674,8 +1678,12 @@ namespace WPinternals
                     };
                     Console.SetOut(standardOutput);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                    LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                    LogFile.Log(ex.Message, LogType.FileAndConsole);
+                    LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
                 }
             }
 

@@ -22,6 +22,7 @@ using System;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using System.Threading;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {
@@ -488,8 +489,13 @@ namespace WPinternals
 
                 callback(state);
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log("An unexpected error happened", LogType.FileAndConsole);
+                LogFile.Log(ex.GetType().ToString(), LogType.FileAndConsole);
+                LogFile.Log(ex.Message, LogType.FileAndConsole);
+                LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
+
                 p.Revert();
                 throw;
             }
