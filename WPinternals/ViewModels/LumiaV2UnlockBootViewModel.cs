@@ -28,7 +28,6 @@ using System.Threading.Tasks;
 using WPinternals.Config;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia.UEFI;
-using WPinternals.Models.UEFIApps;
 using WPinternals.Models.UEFIApps.BootMgr;
 using WPinternals.Models.UEFIApps.Flash;
 using WPinternals.Models.UEFIApps.PhoneInfo;

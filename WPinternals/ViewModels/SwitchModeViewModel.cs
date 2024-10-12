@@ -25,10 +25,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia;
-using WPinternals.Models.Lumia.MSR;
 using WPinternals.Models.Lumia.NCSd;
 using WPinternals.Models.Lumia.UEFI;
-using WPinternals.Models.UEFIApps;
 using WPinternals.Models.UEFIApps.BootMgr;
 using WPinternals.Models.UEFIApps.Flash;
 using WPinternals.Models.UEFIApps.PhoneInfo;
@@ -761,21 +759,7 @@ namespace WPinternals
                                 PhoneInfoAppInfo.Type = "RM-1151";
                             }
 
-                            (string ENOSWFileUrl, string DPLFileUrl) = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
-
                             UIContext?.Post(d => SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100), null);
-
-                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, [ENOSWFileUrl], ENOSWDownloadCompleted, Info.Firmware);
-
-                            downloadEntry.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) =>
-                            {
-                                if (e.PropertyName == "Progress")
-                                {
-                                    int progress = (sender as DownloadEntry)?.Progress ?? 0;
-                                    ulong.TryParse(progress.ToString(), out ulong progressret);
-                                    UIContext?.Post(d => UpdateWorkingStatus(null, CurrentProgressValue: progressret), null);
-                                }
-                            };
                         }
                         catch (Exception Ex)
                         {
@@ -875,21 +859,7 @@ namespace WPinternals
                                 PhoneInfoAppInfo.Type = "RM-1151";
                             }
 
-                            (string ENOSWFileUrl, string DPLFileUrl) = LumiaDownloadModel.SearchENOSW(PhoneInfoAppInfo.Type, Info.Firmware);
-
                             UIContext?.Post(d => SetWorkingStatus($"Downloading {PhoneInfoAppInfo.Type} Test Mode package...", MaxProgressValue: 100), null);
-
-                            DownloadEntry downloadEntry = new(ENOSWFileUrl, TempFolder, [ENOSWFileUrl], ENOSWDownloadCompleted, Info.Firmware);
-
-                            downloadEntry.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) =>
-                            {
-                                if (e.PropertyName == "Progress")
-                                {
-                                    int progress = (sender as DownloadEntry)?.Progress ?? 0;
-                                    ulong.TryParse(progress.ToString(), out ulong progressret);
-                                    UIContext?.Post(d => UpdateWorkingStatus(null, CurrentProgressValue: progressret), null);
-                                }
-                            };
                         }
                         catch (Exception Ex)
                         {

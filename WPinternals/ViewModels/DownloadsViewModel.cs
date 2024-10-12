@@ -93,6 +93,42 @@ namespace WPinternals
                     LastStatusText = null;
                 }
             });
+
+            AddSecWIMCommand = new DelegateCommand(() =>
+            {
+                string SecWIMPath = null;
+
+                OpenFileDialog dlg = new();
+                dlg.DefaultExt = ".secwim"; // Default file extension
+                dlg.Filter = "Secure WIM images (.secwim)|*.secwim"; // Filter files by extension 
+
+                bool? result = dlg.ShowDialog();
+
+                if (result == true)
+                {
+                    SecWIMPath = dlg.FileName;
+                    string SecWIMFile = Path.GetFileName(SecWIMPath);
+
+                    try
+                    {
+                        App.Config.AddSecWimToRepository(SecWIMPath, FirmwareVersion);
+                        App.Config.WriteConfig();
+                        LastStatusText = $"File \"{SecWIMFile}\" was added to the repository.";
+                    }
+                    catch (WPinternalsException Ex)
+                    {
+                        LastStatusText = $"Error: {Ex.Message}. File \"{SecWIMFile}\" was not added.";
+                    }
+                    catch
+                    {
+                        LastStatusText = $"Error: File \"{SecWIMFile}\" was not added.";
+                    }
+                }
+                else
+                {
+                    LastStatusText = null;
+                }
+            });
         }
 
         private string _LastStatusText = null;
@@ -192,9 +228,7 @@ namespace WPinternals
 
             new Thread(() =>
             {
-                string FFUURL = null;
                 string[] EmergencyURLs = null;
-                string SecureWIMURL = null;
 
                 try
                 {
@@ -206,16 +240,6 @@ namespace WPinternals
 
                     ProductType = TempProductType;
 
-                    try
-                    {
-                        FFUURL = LumiaDownloadModel.SearchFFU(ProductType, ProductCode, OperatorCode, out TempProductType);
-                    }
-                    catch (WPinternalsException ex)
-                    {
-                        LogFile.LogException(ex, LogType.FileOnly);
-                        FFUURL = LumiaDownloadModel.SearchFFU(ProductType, null, OperatorCode, out TempProductType);
-                    }
-
                     if (TempProductType != null)
                     {
                         ProductType = TempProductType;
@@ -225,11 +249,6 @@ namespace WPinternals
                     {
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
                     }
-
-                    if (ProductType != null && FirmwareVersion != null)
-                    {
-                        (SecureWIMURL, string _) = LumiaDownloadModel.SearchENOSW(ProductType, FirmwareVersion);
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -238,19 +257,9 @@ namespace WPinternals
 
                 UIContext.Post(s =>
                 {
-                    if (FFUURL != null)
-                    {
-                        SearchResultList.Add(new SearchResult(FFUURL, ProductType, FFUDownloaded, null));
-                    }
-
                     if (EmergencyURLs != null)
                     {
                         SearchResultList.Add(new SearchResult($"{ProductType} emergency-files", EmergencyURLs, ProductType, EmergencyDownloaded, ProductType));
-                    }
-
-                    if (SecureWIMURL != null)
-                    {
-                        SearchResultList.Add(new SearchResult($"{ProductType} ENOSW-files", SecureWIMURL, ProductType, ENOSWDownloaded, FirmwareVersion));
                     }
                 }, null);
 
@@ -279,9 +288,7 @@ namespace WPinternals
 
             new Thread(() =>
             {
-                string FFUURL = null;
                 string[] EmergencyURLs = null;
-                string SecureWIMURL = null;
                 try
                 {
                     string TempProductType = ProductType.ToUpper();
@@ -291,7 +298,6 @@ namespace WPinternals
                     }
 
                     ProductType = TempProductType;
-                    FFUURL = LumiaDownloadModel.SearchFFU(ProductType, ProductCode, OperatorCode, out TempProductType);
                     if (TempProductType != null)
                     {
                         ProductType = TempProductType;
@@ -301,11 +307,6 @@ namespace WPinternals
                     {
                         EmergencyURLs = LumiaDownloadModel.SearchEmergencyFiles(ProductType);
                     }
-
-                    if (ProductType != null && FirmwareVersion != null)
-                    {
-                        (SecureWIMURL, string _) = LumiaDownloadModel.SearchENOSW(ProductType, FirmwareVersion);
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -314,19 +315,9 @@ namespace WPinternals
 
                 UIContext.Post(s =>
                 {
-                    if (FFUURL != null)
-                    {
-                        Download(FFUURL, ProductType, FFUDownloadedAndCheckSupported, null);
-                    }
-
                     if (EmergencyURLs != null)
                     {
                         Download(EmergencyURLs, ProductType, EmergencyDownloaded, ProductType);
-                    }
-
-                    if (SecureWIMURL != null)
-                    {
-                        Download(SecureWIMURL, ProductType, ENOSWDownloaded, FirmwareVersion);
                     }
                 }, null);
             }).Start();
@@ -337,23 +328,6 @@ namespace WPinternals
             foreach (SearchResult Result in SearchResultList.Where(r => r.IsSelected))
             {
                 App.DownloadManager.Download(Result.URLs, Result.Category, Result.Callback, Result.State);
-            }
-        }
-
-        private void FFUDownloaded(string[] Files, object State)
-        {
-            App.Config.AddFfuToRepository(Files[0]);
-        }
-
-        private void FFUDownloadedAndCheckSupported(string[] Files, object State)
-        {
-            App.Config.AddFfuToRepository(Files[0]);
-
-            if (!App.Config.FFURepository.Any(e => App.PatchEngine.PatchDefinitions.First(p => p.Name == "SecureBootHack-V2-EFIESP").TargetVersions.Any(v => v.Description == e.OSVersion)))
-            {
-                const string ProductType2 = "RM-1085";
-                string URL = LumiaDownloadModel.SearchFFU(ProductType2, null, null);
-                Download(URL, ProductType2, FFUDownloaded, null);
             }
         }
 
@@ -380,11 +354,6 @@ namespace WPinternals
             {
                 App.Config.AddEmergencyToRepository(Type, ProgrammerPath, PayloadPath);
             }
-        }
-
-        private void ENOSWDownloaded(string[] Files, object State)
-        {
-            App.Config.AddSecWimToRepository(Files[0], (string)State);
         }
 
         public ObservableCollection<DownloadEntry> DownloadList { get; } = [];
@@ -683,6 +652,7 @@ namespace WPinternals
             }
         }
         public DelegateCommand AddFFUCommand { get; } = null;
+        public DelegateCommand AddSecWIMCommand { get; } = null;
     }
 
     internal enum DownloadStatus
