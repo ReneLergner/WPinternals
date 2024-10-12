@@ -42,7 +42,7 @@ namespace WPinternals
         internal bool HasChanged = false;
 
         [XmlElement("Partition")]
-        public List<Partition> Partitions = new();
+        public List<Partition> Partitions = [];
 
         public GPT() // Only for serialization
         {
@@ -334,7 +334,7 @@ namespace WPinternals
                 }
             }
 
-            List<Partition> DynamicPartitions = new();
+            List<Partition> DynamicPartitions = [];
             if (Archive != null)
             {
                 // Partitions which are present in the archive, and which have no start-sector in the new GPT data (dynamic relocation),

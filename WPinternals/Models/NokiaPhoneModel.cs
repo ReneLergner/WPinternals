@@ -56,7 +56,7 @@ namespace WPinternals
                 const string jsonrpc = "2.0";
                 int id = MessageId++;
                 string method = JsonMethod;
-                Dictionary<string, object> @params = new();
+                Dictionary<string, object> @params = [];
                 if (Params != null)
                 {
                     foreach (KeyValuePair<string, object> Param in Params)
@@ -191,7 +191,7 @@ namespace WPinternals
                 const string jsonrpc = "2.0";
                 int id = MessageId++;
                 string method = JsonMethod;
-                Dictionary<string, object> @params = new();
+                Dictionary<string, object> @params = [];
                 if (Params != null)
                 {
                     foreach (KeyValuePair<string, object> Param in Params)
@@ -279,7 +279,7 @@ namespace WPinternals
                 const string jsonrpc = "2.0";
                 int id = MessageId++;
                 string method = JsonMethod;
-                Dictionary<string, object> @params = new();
+                Dictionary<string, object> @params = [];
                 if (Params != null)
                 {
                     foreach (KeyValuePair<string, object> Param in Params)

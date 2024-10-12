@@ -327,7 +327,7 @@ namespace WPinternals
                 ProductType = "RM-1113";
             }
 
-            List<string> Result = new();
+            List<string> Result = [];
 
             WebClient Client = new();
             string Src;
@@ -488,7 +488,7 @@ namespace WPinternals
         {
             this.apiVersion = "1";
             this.query = new DiscoveryQueryParameters();
-            this.condition = new List<string>();
+            this.condition = [];
             if (Condition == DiscoveryCondition.All)
             {
                 this.condition.Add("all");
@@ -517,14 +517,14 @@ namespace WPinternals
 
         public ExtendedAttributes()
         {
-            this.Dictionary = new Dictionary<string, string>();
+            this.Dictionary = [];
         }
 
         protected ExtendedAttributes(SerializationInfo info, StreamingContext context)
         {
             if (info != null)
             {
-                this.Dictionary = new Dictionary<string, string>();
+                this.Dictionary = [];
                 SerializationInfoEnumerator Enumerator = info.GetEnumerator();
                 while (Enumerator.MoveNext())
                 {

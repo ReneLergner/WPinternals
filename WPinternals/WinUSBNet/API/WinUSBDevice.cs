@@ -260,7 +260,7 @@ namespace MadWizard.WinUSBNet.API
                 throw APIException.Win32("Failed to initialize WinUSB handle. Device might not be connected.");
             }
 
-            List<IntPtr> interfaces = new();
+            List<IntPtr> interfaces = [];
             byte numAddInterfaces = 0;
             byte idx = 0;
 

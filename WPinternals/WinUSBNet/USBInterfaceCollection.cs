@@ -107,7 +107,7 @@ namespace MadWizard.WinUSBNet
         /// array if no interface matches.</returns>
         public USBInterface[] FindAll(USBBaseClass interfaceClass)
         {
-            List<USBInterface> matchingInterfaces = new();
+            List<USBInterface> matchingInterfaces = [];
             for (int i = 0; i < _interfaces.Length; i++)
             {
                 USBInterface iface = _interfaces[i];

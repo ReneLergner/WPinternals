@@ -382,8 +382,8 @@ namespace WPinternals
             App.Config.AddSecWimToRepository(Files[0], (string)State);
         }
 
-        public ObservableCollection<DownloadEntry> DownloadList { get; } = new();
-        public ObservableCollection<SearchResult> SearchResultList { get; } = new();
+        public ObservableCollection<DownloadEntry> DownloadList { get; } = [];
+        public ObservableCollection<SearchResult> SearchResultList { get; } = [];
 
         private DelegateCommand _DownloadSelectedCommand = null;
         public DelegateCommand DownloadSelectedCommand

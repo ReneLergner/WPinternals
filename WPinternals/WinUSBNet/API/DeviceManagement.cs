@@ -206,7 +206,7 @@ namespace MadWizard.WinUSBNet.API
         public static DeviceDetails[] FindDevicesFromGuid(Guid guid)
         {
             IntPtr deviceInfoSet = IntPtr.Zero;
-            List<DeviceDetails> deviceList = new();
+            List<DeviceDetails> deviceList = [];
             try
             {
                 deviceInfoSet = SetupDiGetClassDevs(ref guid, IntPtr.Zero, IntPtr.Zero,

@@ -74,10 +74,21 @@ namespace WPinternals
 
             byte[] AsskMask = [1, 0, 16, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64];
             byte[] Challenge = new byte[0x88];
-            Dictionary<string, object> Params = new();
-            Params.Add("AsskMask", AsskMask);
-            Params.Add("Challenge", Challenge);
-            Params.Add("AsicIndex", 0);
+            Dictionary<string, object> Params = new()
+            {
+                {
+                    "AsskMask",
+                    AsskMask
+                },
+                {
+                    "Challenge",
+                    Challenge
+                },
+                {
+                    "AsicIndex",
+                    0
+                }
+            };
             byte[] TerminalResponseBytes = CurrentModel.ExecuteJsonMethodAsBytes("TerminalChallenge", Params, "TerminalResponse");
             if (TerminalResponseBytes != null)
             {

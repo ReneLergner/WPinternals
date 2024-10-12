@@ -61,7 +61,7 @@ namespace WPinternals
 
     internal class TerminalResponse
     {
-        public Dictionary<int, byte[]> RawEntries = new();
+        public Dictionary<int, byte[]> RawEntries = [];
         public byte[] PublicId = null;
         public byte[] RootKeyHash = null;
     }

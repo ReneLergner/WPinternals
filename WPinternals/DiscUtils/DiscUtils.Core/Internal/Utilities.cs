@@ -61,7 +61,7 @@ namespace DiscUtils.Internal
         /// <returns>The resultant array.</returns>
         public static U[] Map<T, U>(IEnumerable<T> source, Func<T, U> func)
         {
-            List<U> result = new();
+            List<U> result = [];
 
             foreach (T sVal in source)
             {

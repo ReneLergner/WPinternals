@@ -289,9 +289,17 @@ namespace WPinternals
                             return;
                     }
 
-                    Dictionary<string, object> Params = new();
-                    Params.Add("DeviceMode", DeviceMode);
-                    Params.Add("ResetMethod", "HwReset");
+                    Dictionary<string, object> Params = new()
+                    {
+                        {
+                            "DeviceMode",
+                            DeviceMode
+                        },
+                        {
+                            "ResetMethod",
+                            "HwReset"
+                        }
+                    };
                     try
                     {
                         ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteJsonMethodAsync("SetDeviceMode", Params);
@@ -1077,7 +1085,7 @@ namespace WPinternals
 
                                 // We've been reading the GPT, so we let the phone reset once more to be sure that memory maps are the same
                                 WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
-                                List<FlashPart> Parts = new();
+                                List<FlashPart> Parts = [];
                                 FlashPart Part = new();
                                 Part.StartSector = (uint)Target.FirstSector;
                                 Part.Stream = SB;
@@ -1286,7 +1294,7 @@ namespace WPinternals
 
                             // We've been reading the GPT, so we let the phone reset once more to be sure that memory maps are the same
                             WPinternalsStatus LastStatus = WPinternalsStatus.Undefined;
-                            List<FlashPart> Parts = new();
+                            List<FlashPart> Parts = [];
                             FlashPart Part = new();
                             Part.StartSector = (uint)Target.FirstSector;
                             Part.Stream = SB;

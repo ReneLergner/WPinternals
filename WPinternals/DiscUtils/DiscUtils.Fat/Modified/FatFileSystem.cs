@@ -94,7 +94,7 @@ namespace DiscUtils.Fat
         public FatFileSystem(Stream data)
             : base(new FatFileSystemOptions())
         {
-            _dirCache = new Dictionary<uint, Directory>();
+            _dirCache = [];
             _timeConverter = DefaultTimeConverter;
             Initialize(data);
         }
@@ -111,7 +111,7 @@ namespace DiscUtils.Fat
         public FatFileSystem(Stream data, Ownership ownsData)
             : base(new FatFileSystemOptions())
         {
-            _dirCache = new Dictionary<uint, Directory>();
+            _dirCache = [];
             _timeConverter = DefaultTimeConverter;
             Initialize(data);
             _ownsData = ownsData;
@@ -125,7 +125,7 @@ namespace DiscUtils.Fat
         public FatFileSystem(Stream data, TimeConverter timeConverter)
             : base(new FatFileSystemOptions())
         {
-            _dirCache = new Dictionary<uint, Directory>();
+            _dirCache = [];
             _timeConverter = timeConverter;
             Initialize(data);
         }
@@ -140,7 +140,7 @@ namespace DiscUtils.Fat
         public FatFileSystem(Stream data, Ownership ownsData, TimeConverter timeConverter)
             : base(new FatFileSystemOptions())
         {
-            _dirCache = new Dictionary<uint, Directory>();
+            _dirCache = [];
             _timeConverter = timeConverter;
             Initialize(data);
             _ownsData = ownsData;
@@ -156,7 +156,7 @@ namespace DiscUtils.Fat
         public FatFileSystem(Stream data, Ownership ownsData, FileSystemParameters parameters)
             : base(new FatFileSystemOptions(parameters))
         {
-            _dirCache = new Dictionary<uint, Directory>();
+            _dirCache = [];
 
             if (parameters?.TimeConverter != null)
             {
@@ -1273,7 +1273,7 @@ namespace DiscUtils.Fat
         {
             Regex re = Utilities.ConvertWildcardsToRegEx(searchPattern);
 
-            List<string> dirs = new();
+            List<string> dirs = [];
             DoSearch(dirs, path, re, searchOption == SearchOption.AllDirectories, true, false);
             return [.. dirs];
         }
@@ -1309,7 +1309,7 @@ namespace DiscUtils.Fat
         {
             Regex re = Utilities.ConvertWildcardsToRegEx(searchPattern);
 
-            List<string> results = new();
+            List<string> results = [];
             DoSearch(results, path, re, searchOption == SearchOption.AllDirectories, false, true);
             return [.. results];
         }

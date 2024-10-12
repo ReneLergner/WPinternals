@@ -151,7 +151,7 @@ namespace WPinternals
             return FlashProfiles.Find(p => string.Equals(p.PlatformID, PlatformID, StringComparison.CurrentCultureIgnoreCase) && string.Equals(p.PhoneFirmware, PhoneFirmware, StringComparison.CurrentCultureIgnoreCase) && ((FfuFirmware == null) || string.Equals(p.FfuFirmware, FfuFirmware, StringComparison.CurrentCultureIgnoreCase)));
         }
 
-        public List<FlashProfile> FlashProfiles = new();
+        public List<FlashProfile> FlashProfiles = [];
 
         internal void AddFfuToRepository(string FFUPath)
         {
@@ -218,7 +218,7 @@ namespace WPinternals
             }
         }
 
-        public List<FFUEntry> FFURepository = new();
+        public List<FFUEntry> FFURepository = [];
 
         internal void AddSecWimToRepository(string SecWimPath, string FirmwareVersion)
         {
@@ -264,9 +264,9 @@ namespace WPinternals
             }
         }
 
-        public List<SecWimEntry> SecWimRepository = new();
+        public List<SecWimEntry> SecWimRepository = [];
 
-        public List<EmergencyFileEntry> EmergencyRepository = new();
+        public List<EmergencyFileEntry> EmergencyRepository = [];
 
         internal void AddEmergencyToRepository(string Type, string ProgrammerPath, string PayloadPath)
         {

@@ -147,7 +147,7 @@ namespace MadWizard.WinUSBNet
         {
             int numInterfaces = InternalDevice.InterfaceCount;
 
-            List<USBPipe> allPipes = new();
+            List<USBPipe> allPipes = [];
             InputPipe = null;
             OutputPipe = null;
 

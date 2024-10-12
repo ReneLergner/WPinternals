@@ -117,7 +117,7 @@ namespace WPinternals
 
             byte[] Response = Serial.GetResponse(null, Length: (int)RKHLength);
             
-            List<byte[]> RootKeyHashes = new();
+            List<byte[]> RootKeyHashes = [];
             for (int i = 0; i < RKHLength / 0x20; i++)
             {
                 RootKeyHashes.Add(Response[(i * 0x20)..((i + 1) * 0x20)]);

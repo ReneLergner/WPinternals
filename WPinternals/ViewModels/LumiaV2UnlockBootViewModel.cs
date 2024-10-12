@@ -127,7 +127,7 @@ namespace WPinternals
                 UIContext.Send(s => Notifier.Start(), null);
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
 
-                List<FlashPart> Parts = new();
+                List<FlashPart> Parts = [];
                 FlashPart Part;
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
@@ -261,7 +261,7 @@ namespace WPinternals
                 PhoneNotifierViewModel Notifier = new();
                 UIContext.Send(s => Notifier.Start(), null);
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                List<FlashPart> Parts = new();
+                List<FlashPart> Parts = [];
 
                 // Use GetGptChunk() here instead of ReadGPT(), because ReadGPT() skips the first sector.
                 // We need the fist sector if we want to write back the GPT.
@@ -355,7 +355,7 @@ namespace WPinternals
 
                 bool IsUnlocked = false;
                 bool GPTChanged = false;
-                List<FlashPart> Parts = new();
+                List<FlashPart> Parts = [];
                 FlashPart Part;
                 if (string.Equals(PartitionName, "EFIESP", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -468,16 +468,14 @@ namespace WPinternals
         {
             using MemoryStream Stream = new(Data);
             FlashPart Part = new() { StartSector = StartSector, Stream = Stream };
-            List<FlashPart> Parts = new();
-            Parts.Add(Part);
+            List<FlashPart> Parts = [Part];
             await LumiaV2CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, Parts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental);
         }
 
         internal async static Task LumiaV2CustomFlash(PhoneNotifierViewModel Notifier, string FFUPath, bool PerformFullFlashFirst, bool SkipWrite, UInt32 StartSector, Stream Data, bool DoResetFirst = true, bool ClearFlashingStatusAtEnd = true, bool CheckSectorAlignment = true, bool ShowProgress = true, bool Experimental = false) //, string LoaderPath = null)
         {
             FlashPart Part = new() { StartSector = StartSector, Stream = Data };
-            List<FlashPart> Parts = new();
-            Parts.Add(Part);
+            List<FlashPart> Parts = [Part];
             await LumiaV2CustomFlash(Notifier, FFUPath, PerformFullFlashFirst, SkipWrite, Parts, DoResetFirst, ClearFlashingStatusAtEnd, CheckSectorAlignment, ShowProgress, Experimental);
         }
 
@@ -1880,7 +1878,7 @@ namespace WPinternals
             SetWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)TotalProcess1, Status: WPinternalsStatus.Initializing);
 
             var crypto = System.Security.Cryptography.SHA256.Create();
-            List<FlashingPayload> flashingPayloads = new();
+            List<FlashingPayload> flashingPayloads = [];
             if (flashParts == null)
             {
                 return [.. flashingPayloads];
@@ -1911,7 +1909,7 @@ namespace WPinternals
         //
         internal static FlashingPayload[] GetOptimizedPayloads(List<FlashPart> flashParts, Int32 chunkSize, UInt32 MaximumChunkCount, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null)
         {
-            List<FlashingPayload> flashingPayloads = new();
+            List<FlashingPayload> flashingPayloads = [];
             if (flashParts == null)
             {
                 return [.. flashingPayloads];
@@ -2013,7 +2011,7 @@ namespace WPinternals
 
             Partition Target;
             FlashPart Part;
-            List<FlashPart> Parts = new();
+            List<FlashPart> Parts = [];
             ulong MainOSOldSectorCount = 0;
             ulong MainOSNewSectorCount = 0;
             ulong DataOldSectorCount = 0;
@@ -2406,7 +2404,7 @@ namespace WPinternals
 
             Partition Target;
             FlashPart Part;
-            List<FlashPart> Parts = new();
+            List<FlashPart> Parts = [];
             ulong MainOSOldSectorCount = 0;
             ulong MainOSNewSectorCount = 0;
             ulong DataOldSectorCount = 0;
@@ -2712,8 +2710,8 @@ namespace WPinternals
 
         private static UInt32 CurrentBufferSize = 0;
         public static byte[] Buffer;
-        private static readonly List<Allocation> Allocations = new();
-        private static readonly List<FreeMemRange> FreeMemRanges = new();
+        private static readonly List<Allocation> Allocations = [];
+        private static readonly List<FreeMemRange> FreeMemRanges = [];
 
         public static UInt32 RoundUpToPages(UInt32 Size)
         {

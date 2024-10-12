@@ -64,7 +64,7 @@ namespace DiscUtils.Fat
         {
             _type = type;
             _buffer = buffer;
-            _dirtySectors = new Dictionary<uint, uint>();
+            _dirtySectors = [];
         }
 
         internal int NumEntries
@@ -220,7 +220,7 @@ namespace DiscUtils.Fat
 
         internal List<uint> GetChain(uint head)
         {
-            List<uint> result = new();
+            List<uint> result = [];
 
             if (head != 0)
             {

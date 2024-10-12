@@ -29,7 +29,7 @@ namespace WPinternals
     {
         internal static List<QualcommPartition> GetPossibleLoadersForRootKeyHash(string Path, byte[] RootKeyHash)
         {
-            List<QualcommPartition> Result = new();
+            List<QualcommPartition> Result = [];
 
             try
             {

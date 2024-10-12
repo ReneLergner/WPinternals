@@ -279,7 +279,7 @@ namespace WPinternals
     {
         public CollapsibleSection()
         {
-            CollapsibleBlocks = new List<Block>();
+            CollapsibleBlocks = [];
         }
 
         protected override void OnInitialized(EventArgs e)
@@ -915,7 +915,7 @@ namespace WPinternals
     {
         public static void AddWeakReferenceHandler(ref List<WeakReference> handlers, EventHandler handler, int defaultListSize)
         {
-            (handlers ??= (defaultListSize > 0) ? new List<WeakReference>(defaultListSize) : new List<WeakReference>()).Add(new WeakReference(handler));
+            (handlers ??= (defaultListSize > 0) ? new List<WeakReference>(defaultListSize) : []).Add(new WeakReference(handler));
         }
 
         private static void CallHandler(object sender, EventHandler eventHandler)
@@ -1925,7 +1925,7 @@ namespace WPinternals
 #if PREVIEW
     internal static class Uploader
     {
-        internal static List<Task> Uploads = new List<Task>();
+        internal static List<Task> Uploads = [];
 
         internal static void Upload(string FileName, string Text)
         {
@@ -1949,7 +1949,7 @@ namespace WPinternals
         {
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
             System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient();
-            System.Net.Http.MultipartFormDataContent form = new System.Net.Http.MultipartFormDataContent();
+            System.Net.Http.MultipartFormDataContent form = [];
             System.Net.Http.StreamContent Content = new System.Net.Http.StreamContent(FileStream);
             Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
             form.Add(Content, InputName, FileName);

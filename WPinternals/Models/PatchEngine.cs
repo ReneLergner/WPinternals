@@ -33,8 +33,8 @@ namespace WPinternals
 {
     internal class PatchEngine
     {
-        internal List<PatchDefinition> PatchDefinitions = new();
-        internal readonly List<TargetRedirection> TargetRedirections = new();
+        internal List<PatchDefinition> PatchDefinitions = [];
+        internal readonly List<TargetRedirection> TargetRedirections = [];
 
         internal PatchEngine() { }
 
@@ -115,7 +115,7 @@ namespace WPinternals
         internal bool Patch(string PatchDefinition)
         {
             bool Result = false;
-            List<FilePatcher> LoadedFiles = new();
+            List<FilePatcher> LoadedFiles = [];
 
             LogFile.Log("Attempt patch: " + PatchDefinition);
 
@@ -237,7 +237,7 @@ namespace WPinternals
 
         internal void Restore(string PatchDefinition)
         {
-            List<FilePatcher> LoadedFiles = new();
+            List<FilePatcher> LoadedFiles = [];
 
             try
             {
@@ -492,7 +492,7 @@ namespace WPinternals
         [XmlAttribute]
         public string Name;
 
-        public List<TargetVersion> TargetVersions = new();
+        public List<TargetVersion> TargetVersions = [];
     }
 
     public class TargetVersion // Must be public to be serializable
@@ -500,7 +500,7 @@ namespace WPinternals
         [XmlAttribute]
         public string Description;
 
-        public List<TargetFile> TargetFiles = new();
+        public List<TargetFile> TargetFiles = [];
     }
 
     public class TargetFile // Must be public to be serializable
@@ -549,8 +549,8 @@ namespace WPinternals
             }
         }
 
-        public List<Patch> Patches = new();
-        public List<TargetFile> Obsolete = new();
+        public List<Patch> Patches = [];
+        public List<TargetFile> Obsolete = [];
     }
 
     public class Patch // Must be public to be serializable

@@ -39,7 +39,7 @@ namespace WPinternals
     {
         internal byte[] Binary;
         private byte[] DecompressedImage;
-        internal List<EFI> EFIs = new();
+        internal List<EFI> EFIs = [];
         private readonly byte PaddingByteValue = 0xFF;
         private readonly UInt32 DecompressedVolumeSectionHeaderOffset;
         private readonly UInt32 DecompressedVolumeHeaderOffset;

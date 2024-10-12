@@ -1683,7 +1683,7 @@ namespace WPinternals
 
                 ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
 
-                List<FlashPart> FlashParts = new();
+                List<FlashPart> FlashParts = [];
 
                 if (UndoEFIESPPadding)
                 {
@@ -1928,7 +1928,7 @@ namespace WPinternals
                 LogFile.Log("Enabling Test Signing", LogType.FileAndConsole);
                 SetWorkingStatus("Enabling Test Signing", null, null);
 
-                List<FlashPart> Parts = new();
+                List<FlashPart> Parts = [];
                 FlashPart Part;
 
                 // Now add NV partition
@@ -2020,7 +2020,7 @@ namespace WPinternals
                     ShouldApplyOldEFIESPMethod = false;
                 }
 
-                Parts = ShouldApplyOldEFIESPMethod ? new List<FlashPart>() : LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
+                Parts = ShouldApplyOldEFIESPMethod ? [] : LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
                 Part = null;
 
                 UInt32 OriginalEfiespSizeInSectors = (UInt32)GPT.GetPartition("EFIESP").SizeInSectors;
@@ -2214,7 +2214,7 @@ namespace WPinternals
 
                     SetWorkingStatus("Problem detected, rolling back...", ErrorMessage);
                     await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
-                    Parts = new List<FlashPart>();
+                    Parts = [];
 
                     // Restore original GPT, which will also reference the original NV.
                     Part = new FlashPart
@@ -2390,7 +2390,7 @@ namespace WPinternals
                         GPT.Partitions.Add(IsUnlockedFlag);
                     }
 
-                    Parts = new List<FlashPart>();
+                    Parts = [];
                     GPT.Rebuild();
                     Part = new FlashPart
                     {
@@ -2528,7 +2528,7 @@ namespace WPinternals
 
             byte[] SecondEFIESP = NewEFIESP.Skip((int)SectorSize * ReservedOGSectors).Take((int)(NewEFIESP.Length - (ReservedSectors * SectorSize))).ToArray();
 
-            List<FlashPart> Parts = new();
+            List<FlashPart> Parts = [];
 
             FlashPart Part = new();
             Part.StartSector = (uint)EFIESP.FirstSector;
@@ -2559,7 +2559,7 @@ namespace WPinternals
 
             byte[] FirstSector = DeviceFFU.GetPartition("EFIESP").Take(EFIESPFirstPartSize).ToArray();
 
-            List<FlashPart> Parts = new();
+            List<FlashPart> Parts = [];
 
             FlashPart Part = new();
             Part.StartSector = (uint)EFIESP.FirstSector;

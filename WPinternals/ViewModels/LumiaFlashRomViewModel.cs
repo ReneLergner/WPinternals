@@ -549,7 +549,7 @@ namespace WPinternals
                     Phone = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
                     FlashPart Part;
-                    List<FlashPart> FlashParts = new();
+                    List<FlashPart> FlashParts = [];
 
                     Partition NvBackupPartition = GPT.GetPartition("BACKUP_BS_NV");
                     if (NvBackupPartition != null)
