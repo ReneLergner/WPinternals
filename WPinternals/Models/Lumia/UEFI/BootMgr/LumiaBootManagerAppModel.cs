@@ -401,25 +401,5 @@ namespace WPinternals.Models.UEFIApps.BootMgr
                 RaiseInterfaceChanged(PhoneInterfaces.Lumia_PhoneInfo);
             }
         }
-
-        internal void RebootToFlashApp()
-        {
-            LumiaBootManagerPhoneInfo info = ReadPhoneInfoBootManager();
-
-            bool ModernFlashApp = info.BootManagerVersionMajor >= 2;
-
-            byte[] Request = new byte[4];
-            ByteOperations.WriteAsciiString(Request, 0, RebootToFlashAppSignature); // This will let the phone charge
-            ExecuteRawVoidMethod(Request); // On phone with bootloader Spec A this triggers a reboot, so DisableRebootTimeOut() cannot be called immediately.
-
-            if (ModernFlashApp)
-            {
-                DisableRebootTimeOut();
-
-                info.App = FlashAppType.FlashApp;
-
-                RaiseInterfaceChanged(PhoneInterfaces.Lumia_Flash);
-            }
-        }
     }
 }

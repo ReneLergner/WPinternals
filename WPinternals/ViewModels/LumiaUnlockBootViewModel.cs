@@ -180,7 +180,6 @@ namespace WPinternals
                                     this.LoadersPath = LoadersPath;
                                     this.SBL3Path = SBL3Path;
                                     this.SupportedFFUPath = SupportedFFUPath;
-                                    StorePaths();
 
                                     LogFile.Log("Processing resources:");
                                     LogFile.Log("FFU: " + FFUPath);
@@ -196,14 +195,19 @@ namespace WPinternals
 
                                     ActivateSubContext(new BusyViewModel("Processing resources..."));
 
-                                    if (DoUnlock)
+                                    Task.Run(async () =>
                                     {
-                                        Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
-                                    }
-                                    else
-                                    {
-                                        Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
-                                    }
+                                        await StorePaths();
+
+                                        if (DoUnlock)
+                                        {
+                                            await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                        }
+                                        else
+                                        {
+                                            await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                        }
+                                    });
                                 }
 
                                 if (DoUnlock)
@@ -234,7 +238,6 @@ namespace WPinternals
                                         this.ProfileFFUPath = ProfileFFUPath;
                                         this.EDEPath = EDEPath;
                                         this.SupportedFFUPath = SupportedFFUPath;
-                                        StorePaths();
 
                                         if (DoFixBoot)
                                         {
@@ -255,6 +258,8 @@ namespace WPinternals
 
                                         Task.Run(async () =>
                                         {
+                                            await StorePaths();
+
                                             bool AlreadyUnlocked = false;
                                             LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
@@ -418,7 +423,6 @@ namespace WPinternals
                             this.FFUPath = FFUPath;
                             this.LoadersPath = LoadersPath;
                             this.SBL3Path = SBL3Path;
-                            StorePaths();
 
                             LogFile.Log("Processing resources:");
                             LogFile.Log("FFU: " + FFUPath);
@@ -434,14 +438,19 @@ namespace WPinternals
 
                             ActivateSubContext(new BusyViewModel("Processing resources..."));
 
-                            if (DoUnlock)
+                            Task.Run(async () =>
                             {
-                                Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
-                            }
-                            else
-                            {
-                                Task.Run(async () => await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage));
-                            }
+                                await StorePaths();
+
+                                if (DoUnlock)
+                                {
+                                    await LumiaUnlockBootloaderViewModel.LumiaV1UnlockFirmware(PhoneNotifier, FFUPath, LoadersPath, SBL3Path, SupportedFFUPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                }
+                                else
+                                {
+                                    await LumiaUnlockBootloaderViewModel.LumiaV1RelockFirmware(PhoneNotifier, FFUPath, LoadersPath, SetWorkingStatus, UpdateWorkingStatus, ExitMessage, ExitMessage);
+                                }
+                            });
                         };
 
                         if (DoUnlock)
@@ -513,15 +522,15 @@ namespace WPinternals
         {
             // SwitchModeViewModel must be created on the UI thread
             IsSwitchingInterface = false;
-            UIContext.Post((t) =>
+            UIContext.Post(async (t) =>
                 {
-                    StorePaths();
+                    await StorePaths();
                     LogFile.Log("Aborting.");
                     Exit();
                 }, null);
         }
 
-        private async void StorePaths()
+        private async Task StorePaths()
         {
             RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software\WPInternals", true) ?? Registry.CurrentUser.CreateSubKey(@"Software\WPInternals");
 

@@ -30,6 +30,7 @@ using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia.UEFI.Flash;
 using WPinternals.Models.UEFIApps.BootMgr;
 using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {
@@ -55,7 +56,17 @@ namespace WPinternals
 
                         if (FlashModel.CanReadGPT())
                         {
-                            FlashModel.SwitchToBootManagerContext();
+                            bool ModernFlashApp = FlashModel.ReadPhoneInfoFlashApp().FlashAppProtocolVersionMajor >= 2;
+
+                            if (ModernFlashApp)
+                            {
+                                FlashModel.SwitchToFlashAppContext();
+                            }
+                            else
+                            {
+                                FlashModel.ResetPhone();
+                                await Notifier.WaitForRemoval();
+                            }
 
                             if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader)
                             {
@@ -69,7 +80,14 @@ namespace WPinternals
 
                             GPT GPT = ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadGPT();
 
-                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                            if (ModernFlashApp)
+                            {
+                                ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                            }
+                            else
+                            {
+                                ((LumiaBootManagerAppModel)Notifier.CurrentModel).ResetPhoneToFlashMode();
+                            }
 
                             if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                             {
@@ -129,7 +147,15 @@ namespace WPinternals
 
                             byte[] GPT = ((LumiaBootManagerAppModel)Notifier.CurrentModel).GetGptChunk(Size);
 
-                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                            bool ModernFlashApp = ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadPhoneInfo().BootManagerProtocolVersionMajor >= 2;
+                            if (ModernFlashApp)
+                            {
+                                ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                            }
+                            else
+                            {
+                                ((LumiaBootManagerAppModel)Notifier.CurrentModel).ResetPhoneToFlashMode();
+                            }
 
                             if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                             {
@@ -851,6 +877,29 @@ namespace WPinternals
                     throw new WPinternalsException("Phone is in an unexpected mode.", "The phone should have been detected in flash mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                 }
 
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                {
+                    bool ModernFlashApp = ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadPhoneInfo().BootManagerProtocolVersionMajor >= 2;
+                    if (ModernFlashApp)
+                    {
+                        ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                    }
+                    else
+                    {
+                        ((LumiaBootManagerAppModel)Notifier.CurrentModel).ResetPhoneToFlashMode();
+                    }
+                }
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    await Notifier.WaitForArrival();
+                }
+
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
+
                 LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)Notifier.CurrentModel;
                 if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash && FlashModel.ReadParam("FS")[3] > 0)
                 {
@@ -1446,6 +1495,7 @@ namespace WPinternals
                     LogFile.Log("Flash MBR at 0x" + ((UInt32)0).ToString("X8"));
                     Flasher.Flash(0, MBR, Progress, 0, 0x200);
 
+                    // TIMEOUT
                     LogFile.Log("Flash GPT at 0x" + ((UInt32)0x200).ToString("X8"));
                     Flasher.Flash(0x200, GPT, Progress, 0, 0x41FF); // Bad bounds-check in the flash-loader prohibits to write the last byte.
 
@@ -1758,6 +1808,11 @@ namespace WPinternals
                 if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Normal)
                 {
                     await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_Flash, SetWorkingStatus, UpdateWorkingStatus);
+                }
+
+                if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                {
+                    ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
                 }
 
                 if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
@@ -2583,7 +2638,29 @@ namespace WPinternals
                             throw new WPinternalsException("Phone is in wrong mode", "The phone should have been detected in bootloader mode. Instead it has been detected in " + Notifier.CurrentInterface.ToString() + " mode.");
                         }
                     }
-                    ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+
+                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                    {
+                        bool ModernFlashApp = ((LumiaBootManagerAppModel)Notifier.CurrentModel).ReadPhoneInfo().BootManagerProtocolVersionMajor >= 2;
+                        if (ModernFlashApp)
+                        {
+                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                        }
+                        else
+                        {
+                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).ResetPhoneToFlashMode();
+                        }
+                    }
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        await Notifier.WaitForArrival();
+                    }
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
 
                     Parts = LumiaGenerateEFIESPFlashPayload(UnlockedEFIESP, GPT, ProfileFFU, IsSpecB);
 
