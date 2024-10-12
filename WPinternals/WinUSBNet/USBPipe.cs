@@ -286,7 +286,7 @@ namespace MadWizard.WinUSBNet
                 byte[] SubBuffer = new byte[length < 16 ? length : 16];
                 Array.Copy(buffer, offset, SubBuffer, 0, length < 16 ? length : 16);
                 // throw new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e);
-                LogAndThrowException(new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e));
+                LogAndThrowException(new USBException("Failed to write to pipe: " + WPinternals.HelperClasses.Converter.ConvertHexToString(SubBuffer, ""), e));
             }
         }
 
@@ -321,7 +321,7 @@ namespace MadWizard.WinUSBNet
                 byte[] SubBuffer = new byte[length < 16 ? length : 16];
                 Array.Copy(buffer, offset, SubBuffer, 0, length < 16 ? length : 16);
                 // throw new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e);
-                LogAndThrowException(new USBException("Failed to write to pipe: " + WPinternals.Converter.ConvertHexToString(SubBuffer, ""), e));
+                LogAndThrowException(new USBException("Failed to write to pipe: " + WPinternals.HelperClasses.Converter.ConvertHexToString(SubBuffer, ""), e));
             }
             catch (Exception e)
             {
@@ -452,8 +452,8 @@ namespace MadWizard.WinUSBNet
 
         private void LogException(Exception Ex)
         {
-            WPinternals.LogFile.Log("Error on USB port!", WPinternals.LogType.FileOnly);
-            WPinternals.LogFile.Log("Device: " + Device.Descriptor.FullName, WPinternals.LogType.FileOnly);
+            WPinternals.HelperClasses.LogFile.Log("Error on USB port!", WPinternals.HelperClasses.LogType.FileOnly);
+            WPinternals.HelperClasses.LogFile.Log("Device: " + Device.Descriptor.FullName, WPinternals.HelperClasses.LogType.FileOnly);
 
             if (IsIn)
             {
@@ -464,15 +464,15 @@ namespace MadWizard.WinUSBNet
                 (((API.APIException)Ex.InnerException).InnerException is System.ComponentModel.Win32Exception) &&
                 (((System.ComponentModel.Win32Exception)Ex.InnerException.InnerException).NativeErrorCode == 0X1F))
             {
-                WPinternals.LogFile.Log("Failed to communicate on new USB connection", WPinternals.LogType.FileAndConsole);
+                WPinternals.HelperClasses.LogFile.Log("Failed to communicate on new USB connection", WPinternals.HelperClasses.LogType.FileAndConsole);
             }
 
             if (LastWritten != null)
             {
-                WPinternals.LogFile.Log("Last written: " + WPinternals.Converter.ConvertHexToString(LastWritten, ""), WPinternals.LogType.FileOnly);
+                WPinternals.HelperClasses.LogFile.Log("Last written: " + WPinternals.HelperClasses.Converter.ConvertHexToString(LastWritten, ""), WPinternals.HelperClasses.LogType.FileOnly);
             }
 
-            WPinternals.LogFile.LogException(Ex, WPinternals.LogType.FileOnly);
+            WPinternals.HelperClasses.LogFile.LogException(Ex, WPinternals.HelperClasses.LogType.FileOnly);
         }
 
         private void LogAndThrowException(Exception Ex)

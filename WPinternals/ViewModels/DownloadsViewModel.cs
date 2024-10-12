@@ -30,6 +30,11 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.MSR;
+using WPinternals.Models.Lumia.NCSd;
+using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {
@@ -663,7 +668,7 @@ namespace WPinternals
             }
             else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Normal)
             {
-                NokiaPhoneModel LumiaNormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
+                NokiaCareSuiteModel LumiaNormalModel = (NokiaCareSuiteModel)Notifier.CurrentModel;
                 OperatorCode = LumiaNormalModel.ExecuteJsonMethodAsString("ReadOperatorName", "OperatorName"); // Example: 000-NL
                 string TempProductType = LumiaNormalModel.ExecuteJsonMethodAsString("ReadManufacturerModelName", "ManufacturerModelName"); // RM-821_eu_denmark_251
                 if (TempProductType.Contains('_'))
@@ -1082,7 +1087,7 @@ namespace WPinternals
 
     public static class HttpClientProgressExtensions
     {
-        public static async Task DownloadFileAsync(this HttpClient client, Uri address, string fileName, Action<HttpClientDownloadProgress> progress = null, Action<bool> completed = null, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task DownloadFileAsync(this HttpClient client, Uri address, string fileName, Action<HttpClientDownloadProgress> progress = null, Action<bool> completed = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -1094,25 +1099,22 @@ namespace WPinternals
                 if (progress is null || !contentLength.HasValue)
                 {
                     await download.CopyToAsync(destination);
-                    if (completed != null)
-                        completed(true);
+                    completed?.Invoke(true);
                     return;
                 }
 
-                Progress<long> progressWrapper = new Progress<long>(totalBytes => progress(new HttpClientDownloadProgress(totalBytes, contentLength.Value)));
+                Progress<long> progressWrapper = new(totalBytes => progress(new HttpClientDownloadProgress(totalBytes, contentLength.Value)));
                 await download.CopyToAsync(destination, 81920, progressWrapper, cancellationToken);
 
-                if (completed != null)
-                    completed(true);
+                completed?.Invoke(true);
             }
             catch
             {
-                if (completed != null)
-                    completed(false);
+                completed?.Invoke(false);
             }
         }
 
-        private static async Task CopyToAsync(this Stream source, Stream destination, int bufferSize, IProgress<long> progress = null, CancellationToken cancellationToken = default(CancellationToken))
+        private static async Task CopyToAsync(this Stream source, Stream destination, int bufferSize, IProgress<long> progress = null, CancellationToken cancellationToken = default)
         {
             if (bufferSize < 0)
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
@@ -1128,9 +1130,9 @@ namespace WPinternals
             byte[] buffer = new byte[bufferSize];
             long totalBytesRead = 0;
             int bytesRead;
-            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            while ((bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
             {
-                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
                 totalBytesRead += bytesRead;
                 progress?.Report(totalBytesRead);
             }

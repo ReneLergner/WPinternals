@@ -19,6 +19,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

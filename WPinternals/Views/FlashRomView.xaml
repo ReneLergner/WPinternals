@@ -26,15 +26,16 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel VerticalAlignment="Center">
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -45,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Flash Custom ROM" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -65,12 +66,12 @@ DEALINGS IN THE SOFTWARE.
                             <local:FilePicker Caption="Custom ROM or backup image: " SelectionText="Select the source-file to flash to the phone..." Path="{Binding ArchivePath, Mode=TwoWay}" AllowNull="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the Custom ROM will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash the Custom ROM." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the Custom ROM will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash the Custom ROM." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=FlashArchiveCommand, Mode=OneWay}" Content="Flash custom ROM" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>
@@ -78,7 +79,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -89,7 +90,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Flash original FFU" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -99,12 +100,12 @@ DEALINGS IN THE SOFTWARE.
                             <local:FilePicker Caption="FFU: " SelectionText="Select the FFU-file to flash to the phone..." Path="{Binding FFUPath, Mode=TwoWay}" AllowNull="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the FFU image will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash the FFU image." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the FFU image will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash the FFU image." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=FlashFFUCommand, Mode=OneWay}" Content="Flash FFU image" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>
@@ -112,7 +113,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -123,7 +124,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Flash separate partitions" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -145,12 +146,12 @@ DEALINGS IN THE SOFTWARE.
                             <local:FilePicker Caption="Data: " SelectionText="Select the source-file to flash to the Data partition..." Path="{Binding DataPath, Mode=TwoWay}" AllowNull="True" DefaultFileName="Data.bin" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the selected partitions will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash selected partitions." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the selected partitions will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash selected partitions." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=FlashPartitionsCommand, Mode=OneWay}" Content="Flash partitions" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>
@@ -158,7 +159,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -169,7 +170,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Flash MMOS" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -179,12 +180,12 @@ DEALINGS IN THE SOFTWARE.
                             <local:FilePicker Caption="SecWim: " SelectionText="Select the source-file to flash to the MMOS image..." Path="{Binding MMOSPath, Mode=TwoWay}" AllowNull="True" DefaultFileName="MMOS.secwim" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the selected MMOS image will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash MMOS." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Flash mode and then the selected MMOS image will be flashed." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Flash mode. You can continue to flash MMOS." IsVisible="{Binding IsPhoneInFlashMode, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=FlashMMOSCommand, Mode=OneWay}" Content="Flash MMOS" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>

@@ -19,6 +19,11 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.NCSd;
+using WPinternals.Models.UEFIApps.BootMgr;
+using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {
@@ -75,13 +80,13 @@ namespace WPinternals
                     ActivateSubContext(new NokiaPhoneInfoViewModel((LumiaPhoneInfoAppModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
                     break;
                 case PhoneInterfaces.Lumia_Normal:
-                    ActivateSubContext(new NokiaNormalViewModel((NokiaPhoneModel)CurrentModel, ModeSwitchRequestCallback));
+                    ActivateSubContext(new NokiaNormalViewModel((NokiaCareSuiteModel)CurrentModel, ModeSwitchRequestCallback));
                     break;
                 case PhoneInterfaces.Lumia_Flash:
                     ActivateSubContext(new NokiaFlashViewModel((LumiaFlashAppModel)CurrentModel, ModeSwitchRequestCallback, SwitchToGettingStarted));
                     break;
                 case PhoneInterfaces.Lumia_Label:
-                    ActivateSubContext(new NokiaLabelViewModel((NokiaPhoneModel)CurrentModel, ModeSwitchRequestCallback));
+                    ActivateSubContext(new NokiaLabelViewModel((NokiaCareSuiteModel)CurrentModel, ModeSwitchRequestCallback));
                     break;
                 case PhoneInterfaces.Lumia_MassStorage:
                     ActivateSubContext(new NokiaMassStorageViewModel((MassStorage)CurrentModel));

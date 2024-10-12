@@ -22,6 +22,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using WPinternals.HelperClasses;
+using WPinternals.Config;
 
 namespace WPinternals
 {

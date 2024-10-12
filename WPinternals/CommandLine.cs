@@ -26,6 +26,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using WPinternals.Config;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.MSR;
+using WPinternals.Models.Lumia.NCSd;
+using WPinternals.Models.UEFIApps.BootMgr;
+using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {
@@ -86,7 +93,7 @@ namespace WPinternals
             LumiaFlashAppModel FlashModel;
             LumiaBootManagerAppModel BootMgrModel;
             LumiaPhoneInfoAppModel PhoneInfoModel;
-            NokiaPhoneModel NormalModel;
+            NokiaCareSuiteModel NormalModel;
             LumiaFlashAppPhoneInfo FlashInfo;
             LumiaPhoneInfoAppPhoneInfo PhoneInfo;
             LumiaBootManagerPhoneInfo BootManagerInfo;
@@ -244,7 +251,7 @@ namespace WPinternals
                         LogFile.BeginAction("ConvertGPT");
                         try
                         {
-                            using var stream = File.OpenRead(args[2]);
+                            using FileStream stream = File.OpenRead(args[2]);
                             byte[] GPTBuffer = new byte[34 * 0x200];
                             stream.Read(GPTBuffer, 0, 34 * 0x200);
                             GPT GPT = new(GPTBuffer);// May throw NotSupportedException
@@ -1273,7 +1280,7 @@ namespace WPinternals
                         UIContext.Send(s => Notifier.Start(), null);
                         if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Normal)
                         {
-                            NormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
+                            NormalModel = (NokiaCareSuiteModel)Notifier.CurrentModel;
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
@@ -1328,7 +1335,7 @@ namespace WPinternals
                         }
                         else
                         {
-                            NormalModel = (NokiaPhoneModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Normal);
+                            NormalModel = (NokiaCareSuiteModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Normal);
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
                         URL = LumiaDownloadModel.SearchFFU(null, ProductCode, null, out ProductType);
@@ -1478,7 +1485,7 @@ namespace WPinternals
                         UIContext.Send(s => Notifier.Start(), null);
                         if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Normal)
                         {
-                            NormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
+                            NormalModel = (NokiaCareSuiteModel)Notifier.CurrentModel;
                             ProductType = NormalModel.ExecuteJsonMethodAsString("ReadManufacturerModelName", "ManufacturerModelName");
                             if (ProductType.Contains('_'))
                             {
@@ -1501,7 +1508,7 @@ namespace WPinternals
                         }
                         else
                         {
-                            NormalModel = (NokiaPhoneModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Normal);
+                            NormalModel = (NokiaCareSuiteModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Normal);
                             ProductType = NormalModel.ExecuteJsonMethodAsString("ReadManufacturerModelName", "ManufacturerModelName");
                             if (ProductType.Contains('_'))
                             {
@@ -1601,7 +1608,7 @@ namespace WPinternals
                         UIContext.Send(s => Notifier.Start(), null);
                         if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Normal)
                         {
-                            NormalModel = (NokiaPhoneModel)Notifier.CurrentModel;
+                            NormalModel = (NokiaCareSuiteModel)Notifier.CurrentModel;
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
                         else if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
@@ -1620,7 +1627,7 @@ namespace WPinternals
                         }
                         else
                         {
-                            NormalModel = (NokiaPhoneModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Normal);
+                            NormalModel = (NokiaCareSuiteModel)await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Normal);
                             ProductCode = NormalModel.ExecuteJsonMethodAsString("ReadProductCode", "ProductCode");
                         }
                         URL = LumiaDownloadModel.SearchFFU(null, ProductCode, null, out ProductType);

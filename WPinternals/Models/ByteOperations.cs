@@ -388,7 +388,7 @@ namespace WPinternals
             unchecked
             {
                 uint crc = (uint)(((uint)0) ^ (-1));
-                for (var i = Offset; i < (Offset + Length); i++)
+                for (uint i = Offset; i < (Offset + Length); i++)
                 {
                     crc = (crc >> 8) ^ CRC32Table[(crc ^ Input[i]) & 0xFF];
                 }

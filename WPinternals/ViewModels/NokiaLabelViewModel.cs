@@ -21,6 +21,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.NCSd;
+using WPinternals.Terminal;
 
 namespace WPinternals
 {
@@ -31,10 +34,10 @@ namespace WPinternals
 
     internal class NokiaLabelViewModel : ContextViewModel
     {
-        private readonly NokiaPhoneModel CurrentModel;
+        private readonly NokiaCareSuiteModel CurrentModel;
         private readonly Action<PhoneInterfaces> RequestModeSwitch;
 
-        internal NokiaLabelViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch)
+        internal NokiaLabelViewModel(NokiaCareSuiteModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch)
             : base()
         {
             this.RequestModeSwitch = RequestModeSwitch;
@@ -92,7 +95,7 @@ namespace WPinternals
             byte[] TerminalResponseBytes = CurrentModel.ExecuteJsonMethodAsBytes("TerminalChallenge", Params, "TerminalResponse");
             if (TerminalResponseBytes != null)
             {
-                TerminalResponse TerminalResponse = Terminal.Parse(TerminalResponseBytes, 0);
+                TerminalResponse TerminalResponse = Terminal.Terminal.Parse(TerminalResponseBytes, 0);
                 if (TerminalResponse != null)
                 {
                     PublicID = TerminalResponse.PublicId;

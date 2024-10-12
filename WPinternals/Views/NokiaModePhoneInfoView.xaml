@@ -26,15 +26,16 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" />
-        <local:BooleanConverter x:Key="InvisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" />
-        <local:BooleanConverter x:Key="InverseConverter" OnTrue="False" OnFalse="True" />
+        <helpers:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" />
+        <helpers:BooleanConverter x:Key="InvisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" />
+        <helpers:BooleanConverter x:Key="InverseConverter" OnTrue="False" OnFalse="True" />
     </UserControl.Resources>
     <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
-        <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
+        <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
             <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                 <FlowDocument.Resources>
                     <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -45,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
                         <Setter Property="Margin" Value="0"/>
                     </Style>
                 </FlowDocument.Resources>
-                <local:Paragraph>
+                <helpers:Paragraph>
                     <Run Text="Nokia Lumia - Switch mode" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                     <LineBreak />
                     <LineBreak />
@@ -76,8 +77,8 @@ DEALINGS IN THE SOFTWARE.
                     <Hyperlink NavigateUri="MassStorage">Switch to Mass-Storage-mode</Hyperlink>
                     <LineBreak />
                     <Run Text="This mode allows you to access the complete file-system of the phone. " />
-                    <local:CollapsibleRun IsVisible="{Binding EffectiveBootloaderSecurityStatus, Mode=OneWay}" Text="Your security flags indicate that this mode is prohibited on this phone."/>
-                    <local:CollapsibleRun IsVisible="{Binding EffectiveBootloaderSecurityStatus, Converter={StaticResource InverseConverter}, Mode=OneWay}" Text="Your security flags indicate the this mode can be accessed. But this switch will only succeed if you took all measures to unlock Mass Storage mode." />
+                    <helpers:CollapsibleRun IsVisible="{Binding EffectiveBootloaderSecurityStatus, Mode=OneWay}" Text="Your security flags indicate that this mode is prohibited on this phone."/>
+                    <helpers:CollapsibleRun IsVisible="{Binding EffectiveBootloaderSecurityStatus, Converter={StaticResource InverseConverter}, Mode=OneWay}" Text="Your security flags indicate the this mode can be accessed. But this switch will only succeed if you took all measures to unlock Mass Storage mode." />
                     <LineBreak />
                     <LineBreak />
                     <Hyperlink NavigateUri="Shutdown">Shutdown the phone</Hyperlink>
@@ -95,8 +96,8 @@ DEALINGS IN THE SOFTWARE.
                     <LineBreak />
                     <Run Text="Warning 3: " Foreground="Red" FontWeight="Bold"/>
                     <Run Text="Switching to Mass Storage mode should take about 10 seconds. Phones with Bootloader Spec A should be unlocked using an Engineering SBL3 to enable Mass Storage mode. When you unlocked the Bootloader, but you did not use an Engineering SBL3, an attempt to boot to Mass Storage mode may result in an unresponsive state. Installing drivers for this interface may also cause to hang the PC. So when this switch is taking too long, you should reboot both the PC and the phone." />
-                </local:Paragraph>
+                </helpers:Paragraph>
             </FlowDocument>
-        </local:FlowDocumentScrollViewerNoMouseWheel>
+        </helpers:FlowDocumentScrollViewerNoMouseWheel>
     </Border>
 </UserControl>

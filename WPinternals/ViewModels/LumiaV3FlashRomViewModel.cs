@@ -5,6 +5,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using WPinternals.HelperClasses;
+using WPinternals.Models.UEFIApps.Flash;
 
 namespace WPinternals
 {
@@ -428,7 +430,7 @@ namespace WPinternals
                 retstream.Seek(0, SeekOrigin.Begin);
 
                 byte[] FfuHeader = new byte[retstream.Length];
-                await retstream.ReadAsync(FfuHeader, 0, (Int32)retstream.Length);
+                await retstream.ReadAsync(FfuHeader.AsMemory(0, (Int32)retstream.Length));
                 retstream.Close();
 
                 Byte Options = 0;

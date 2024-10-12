@@ -23,6 +23,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

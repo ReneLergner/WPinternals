@@ -23,6 +23,8 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia;
 
 namespace WPinternals
 {
@@ -41,14 +43,14 @@ namespace WPinternals
         {
             try
             {
-                foreach (ManagementObject logical in new ManagementObjectSearcher("select * from Win32_LogicalDisk").Get())
+                foreach (ManagementObject logical in new ManagementObjectSearcher("select * from Win32_LogicalDisk").Get().Cast<ManagementObject>())
                 {
                     System.Diagnostics.Debug.Print(logical["Name"].ToString());
 
                     string Label = "";
-                    foreach (ManagementObject partition in logical.GetRelated("Win32_DiskPartition"))
+                    foreach (ManagementObject partition in logical.GetRelated("Win32_DiskPartition").Cast<ManagementObject>())
                     {
-                        foreach (ManagementObject drive in partition.GetRelated("Win32_DiskDrive"))
+                        foreach (ManagementObject drive in partition.GetRelated("Win32_DiskDrive").Cast<ManagementObject>())
                         {
                             if (drive["PNPDeviceID"].ToString().Contains("VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.CurrentCulture) ||
                                 drive["PNPDeviceID"].ToString().Contains("VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.CurrentCulture))

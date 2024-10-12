@@ -20,6 +20,7 @@
 
 using System;
 using System.IO;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

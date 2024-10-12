@@ -24,6 +24,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Xml.Serialization;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

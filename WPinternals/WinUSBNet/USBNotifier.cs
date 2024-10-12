@@ -68,7 +68,7 @@ namespace MadWizard.WinUSBNet
     {
         private readonly DeviceNotifyHook _hook;
         private Guid _guid;
-        private readonly WPinternals.AsyncAutoResetEvent NodeChangeEvent = new(false);
+        private readonly WPinternals.HelperClasses.AsyncAutoResetEvent NodeChangeEvent = new(false);
 
         /// <summary>
         /// Event triggered when a new USB device that matches the USBNotifier's GUID is connected

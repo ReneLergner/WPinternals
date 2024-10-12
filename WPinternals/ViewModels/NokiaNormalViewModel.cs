@@ -20,6 +20,8 @@
 
 using System;
 using System.Threading;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.NCSd;
 
 namespace WPinternals
 {
@@ -30,10 +32,10 @@ namespace WPinternals
 
     internal class NokiaNormalViewModel : ContextViewModel
     {
-        private readonly NokiaPhoneModel CurrentModel;
+        private readonly NokiaCareSuiteModel CurrentModel;
         private readonly Action<PhoneInterfaces> RequestModeSwitch;
 
-        internal NokiaNormalViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch)
+        internal NokiaNormalViewModel(NokiaCareSuiteModel CurrentModel, Action<PhoneInterfaces> RequestModeSwitch)
             : base()
         {
             this.CurrentModel = CurrentModel;

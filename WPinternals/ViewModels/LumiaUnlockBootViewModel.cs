@@ -24,6 +24,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WPinternals.Config;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.UEFI.Flash;
+using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {

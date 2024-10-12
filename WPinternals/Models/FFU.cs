@@ -20,6 +20,7 @@
 
 using System;
 using System.IO;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {
@@ -288,7 +289,7 @@ namespace WPinternals
             Partition Target = GPT.Partitions.Find(p => string.Equals(p.Name, Name, StringComparison.CurrentCultureIgnoreCase));
             if (Target == null)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(Name));
             }
 
             return GetSectors((int)Target.FirstSector, (int)(Target.LastSector - Target.FirstSector + 1));
@@ -314,7 +315,7 @@ namespace WPinternals
             Partition Target = GPT.Partitions.Find(p => string.Equals(p.Name, Name, StringComparison.CurrentCultureIgnoreCase));
             if (Target == null)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(Name));
             }
 
             int FirstChunk = GetChunkIndexFromSectorIndex((int)Target.FirstSector);

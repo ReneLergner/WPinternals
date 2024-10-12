@@ -23,6 +23,14 @@ using System;
 using System.Diagnostics.Eventing.Reader;
 using System.Threading;
 using System.Threading.Tasks;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia;
+using WPinternals.Models.Lumia.NCSd;
+using WPinternals.Models.Lumia.UEFI;
+using WPinternals.Models.UEFIApps;
+using WPinternals.Models.UEFIApps.BootMgr;
+using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {
@@ -172,7 +180,7 @@ namespace WPinternals
                         e.DevicePath.Contains("&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase)) // for Spec B (650)
                     {
                         CurrentInterface = PhoneInterfaces.Lumia_Label;
-                        CurrentModel = new NokiaPhoneModel(e.DevicePath);
+                        CurrentModel = new NokiaCareSuiteModel(e.DevicePath);
                         LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                         LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
                         LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
@@ -208,7 +216,7 @@ namespace WPinternals
                                         // So we assume we need to talk to this old interface.
 
                                         CurrentInterface = PhoneInterfaces.Lumia_Normal;
-                                        CurrentModel = new NokiaPhoneModel(DevicePath);
+                                        CurrentModel = new NokiaCareSuiteModel(DevicePath);
                                         LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                                         LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
                                         LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
@@ -223,7 +231,7 @@ namespace WPinternals
                             NewInterfaceWaitHandle.Set();
 
                             CurrentInterface = PhoneInterfaces.Lumia_Normal;
-                            CurrentModel = new NokiaPhoneModel(e.DevicePath);
+                            CurrentModel = new NokiaCareSuiteModel(e.DevicePath);
                             LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
                             LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
                             LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
@@ -239,7 +247,7 @@ namespace WPinternals
                         FlashAppType type = FlashAppType.FlashApp;
                         try
                         {
-                            NokiaUEFIModel tmpModel = new NokiaUEFIModel(e.DevicePath);
+                            NokiaUEFIModel tmpModel = new(e.DevicePath);
                             type = tmpModel.GetFlashAppType();
                             tmpModel.Dispose();
                             LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);

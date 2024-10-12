@@ -26,14 +26,15 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <StackPanel>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Getting started" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -48,16 +49,16 @@ DEALINGS IN THE SOFTWARE.
                             <LineBreak />
                             <LineBreak />
                             <Run Text="This section explains some basic information about using this tool. I suggest you take a few minutes and read this section thoroughly to help avoid problems and surprises. However please remember that any damage caused to a device during the use of this tool is your responsibility solely." />
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
             </StackPanel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Supported phones" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -74,9 +75,9 @@ DEALINGS IN THE SOFTWARE.
                             <Run Text="My old exploits have been proven to work on all Lumia's with Bootloader Spec A. My new exploits should be working on all Lumia's with Bootloader Spec B. I have tested a lot of models, but not all. So I cannot be sure yet that the new exploits work on all models. It is possible that some models have modified bootloaders which may not be compatible. When a phone turns out to be incompatible when trying to unlock it, it will end up in Flash mode, and it will not be able to boot the OS anymore. In this case it will always be possible to flash a stock ROM to get the phone booting again. Here is a list which shows what Bootloader Spec was used for different Lumia models. It also shows which OS versions are supported for enabling Root Access."/>
                             <LineBreak />
                             <LineBreak />
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <Border BorderThickness="1" BorderBrush="#FFD4D4D4" Background="#FFF8F8F8" HorizontalAlignment="Stretch" Margin="20,-10,20,0" Padding="0,20,0,20" >
                     <TextBlock Margin="30,0,30,0">
                         <Bold>Lumia models with Bootloader Spec A</Bold><LineBreak />
@@ -151,15 +152,15 @@ DEALINGS IN THE SOFTWARE.
             </StackPanel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Required Third Party Downloads" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
                         <Run Text="There are a number of third party components which must be downloaded and in some cases installed before you can use this tool." />
-                    </local:Paragraph>
-                    <local:Paragraph>
+                    </helpers:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Lumia drivers" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -175,26 +176,26 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="To enable communication with your phone whilst it is in this mode you must install one of the following drivers, both of which are supported by the tool."/>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                     <List MarkerStyle="Decimal">
                         <ListItem>
-                            <local:Paragraph>
+                            <helpers:Paragraph>
                                 <Run FontWeight="Bold" Text="Microsoft / Nokia Driver"/>
                                 <Run Text=" – This exposes the phone in emergency mode as a WinUSB device. This "/>
                                 <Hyperlink NavigateUri="https://www.google.com/search?q=%22emergencydownloaddriver.msi%22">google search</Hyperlink>
                                 <Run Text=" will help you locate the driver."/>
-                            </local:Paragraph>    
+                            </helpers:Paragraph>    
                         </ListItem>
                         <ListItem>
-                            <local:Paragraph>
+                            <helpers:Paragraph>
                                 <Run FontWeight="Bold" Text="Qualcomm Driver"/>
                                 <Run Text=" – This exposes the phone as a serial device whilst in this emergency mode. This "/>
                                 <Hyperlink NavigateUri="https://www.google.com/search?q=%22qcser.inf%22">google search</Hyperlink>
                                 <Run Text=" will help you locate the driver."/>
-                            </local:Paragraph>
+                            </helpers:Paragraph>
                         </ListItem>
                     </List>
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run FontWeight="Bold" Text="WARNING: "/>
                         <Run Text="I would strongly suggest to use the Microsoft / Nokia driver. Eventhough the Qualcomm driver is supported, I have seen some unexpected behavior when using this driver. If Windows Phone Internals freezes when the phone is switched to or through Emergency Mode, first make sure you have a driver installed for Emergency Mode. If the phone is exposed as serial COM port, then you should uninstall the driver and install the WinUSB driver from Microsoft." />
                         <LineBreak />
@@ -258,14 +259,14 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="If you are unable to obtain an engineering image, you must first dump your phones ROM image, then apply the desired changes to this image and finally flash the modified image back onto your device." />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Unlocking the bootloader" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -364,14 +365,14 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="    &quot;C:\Program Files\PsTools\PsExec.exe&quot; -d -s -i &quot;&lt;PATH TO FILE MANAGER&gt;&quot;" FontFamily="Courier New" FontSize="12" />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Root Access" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -448,14 +449,14 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="Root Access allows a high degree of tweaking on your phone. But be aware that it also makes your phone vulnerable to badly written software and malware! If you unlocked Mass Storage mode, then this tool will allow you to enable or disable Root Access directly on your phone. To be safe, you can enable Root Access, then make necessary changes and tweaks to your phone and then disable Root Access afterwards." />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Custom ROM's" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -538,14 +539,14 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="Be aware that the Windows Phone system binaries are protected by copyright! Only create custom ROM's for gaining a more comprehensive understanding of your target device and for your own personal use." />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Updating your phone" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -554,14 +555,14 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <Run FontWeight="Bold" Text="WARNING: "/>
                         <Run Text="When you are running Windows Phone 8 or Windows Phone 8.1, the phone can still start the update process when the phone is unlocked. But that may damage your phone! On Windows 10 Mobile update process will first do an integrity check. When the phone it unlocked, the update process will not start. After relocking the phone, you can update it again." />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Backup" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -576,14 +577,14 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="Be aware that all stages of SecureBoot must be disabled at all times to be able to boot a custom ROM. Therefore the Backup-function also makes a backup of the EFIESP partition." />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Build and capture" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -760,14 +761,14 @@ DEALINGS IN THE SOFTWARE.
                                 </TextBlock.Inlines>
                             </TextBlock>
                         </BulletDecorator>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Windows 10 Mobile" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -783,11 +784,11 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="When system-files are modified, the hash-codes don't match the variables on the secure container anymore, and it will not be possible to decrypt the pincode for two hours and it will not be possible to unlock the phone during this time. The phone will show this warning: -" />
-                    </local:Paragraph>
-                    <local:Paragraph Margin="30,0,0,0">
+                    </helpers:Paragraph>
+                    <helpers:Paragraph Margin="30,0,0,0">
                         <Run FontStyle="Italic" Text="&quot;This device has been locked for security reasons. Connect your device to a power source for at least two hours, and then try again.&quot;" />
-                    </local:Paragraph>
-                    <local:Paragraph>
+                    </helpers:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Security Lock can be triggered when you previously had a pincode enabled and then disabled it later on. Disabling the pincode does not clean-up the security container. If you then Enable Root Access, the variables with hash-codes of system-files will change. As soon as you enable the pincode again, you will get the Security Lock warning. In this situation you have three options:"/>
                         <LineBreak/>
                         <LineBreak/>
@@ -824,14 +825,14 @@ DEALINGS IN THE SOFTWARE.
                                 </TextBlock.Inlines>
                             </TextBlock>
                         </BulletDecorator>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Known limitations" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -872,9 +873,9 @@ DEALINGS IN THE SOFTWARE.
                         <LineBreak />
                         <LineBreak />
                         <Run Text="Windows Phone Internals supports only one single connected phone at a time. When multiple phones are connected, Windows Phone Internals can start showing unexpected and unstable behaviour." />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
     </StackPanel>
 </UserControl>

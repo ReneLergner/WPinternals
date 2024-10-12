@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
     </UserControl.Resources>
     <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
         <StackPanel Orientation="Vertical" Margin="50,25,50,25">

@@ -23,6 +23,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia;
+using WPinternals.Models.Lumia.MSR;
+using WPinternals.Models.Lumia.NCSd;
+using WPinternals.Models.Lumia.UEFI;
+using WPinternals.Models.UEFIApps;
+using WPinternals.Models.UEFIApps.BootMgr;
+using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {
@@ -233,8 +242,6 @@ namespace WPinternals
         {
             IsSwitching = true;
 
-            byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
-            byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
             byte[] RebootCommandResult;
 
             bool ModernFlashApp;
@@ -301,7 +308,7 @@ namespace WPinternals
                     };
                     try
                     {
-                        ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteJsonMethodAsync("SetDeviceMode", Params);
+                        ((NokiaCareSuiteModel)PhoneNotifier.CurrentModel).ExecuteJsonMethodAsync("SetDeviceMode", Params);
                         PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                     }
                     catch (Exception Ex)
@@ -327,13 +334,13 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Lumia_Normal:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
                             ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
                             LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_Bootloader:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ResetPhone();
                             ModeSwitchProgressWrapper("Rebooting phone to Bootloader mode...", null);
                             LogFile.Log("Rebooting phone to Bootloader mode", LogType.FileAndConsole);
                             break;
@@ -354,29 +361,22 @@ namespace WPinternals
                         case PhoneInterfaces.Lumia_Label:
                             SwitchFromFlashToLabelMode();
                             break;
-                        case PhoneInterfaces.Lumia_Flash: // attempt to boot from limited flash to full flash
-                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            byte[] RebootToFlashCommand = [0x4E, 0x4F, 0x4B, 0x53]; // NOKS
-                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootToFlashCommand);
-                            ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
-                            LogFile.Log("Rebooting phone to Flash mode", LogType.FileAndConsole);
-                            break;
                         case PhoneInterfaces.Lumia_MassStorage:
                             SwitchFromFlashToMassStorageMode();
                             break;
                         case PhoneInterfaces.Qualcomm_Download:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
-                            RebootCommandResult = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
-                            if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
+                            try
+                            {
+                                ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).SwitchToEmergencyMode();
+
+                                ModeSwitchProgressWrapper("Rebooting phone to Qualcomm Download mode...", null);
+                                LogFile.Log("Rebooting phone to Qualcomm Download mode", LogType.FileAndConsole);
+                            }
+                            catch (NotSupportedException) // This means fail: NOKU (unknow command)
                             {
                                 IsSwitchingInterface = false;
                                 ModeSwitchErrorWrapper("Failed to switch to Qualcomm Download mode");
-                            }
-                            else
-                            {
-                                ModeSwitchProgressWrapper("Rebooting phone to Qualcomm Download mode...", null);
-                                LogFile.Log("Rebooting phone to Qualcomm Download mode", LogType.FileAndConsole);
                             }
                             break;
                         default:
@@ -389,7 +389,9 @@ namespace WPinternals
                     {
                         case PhoneInterfaces.Lumia_Normal:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            // This will return to the previous app
+                            ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ContinueBoot();
+                            // TODO: Handle which app we go to and reboot too!
                             ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
                             LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
                             break;
@@ -435,17 +437,16 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Qualcomm_Download:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
-                            RebootCommandResult = ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
-                            if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
+                            try
+                            {
+                                ((LumiaPhoneInfoAppModel)PhoneNotifier.CurrentModel).SwitchToEmergencyMode();
+                                ModeSwitchProgressWrapper("Rebooting phone to Qualcomm Download mode...", null);
+                                LogFile.Log("Rebooting phone to Qualcomm Download mode", LogType.FileAndConsole);
+                            }
+                            catch (NotSupportedException) // This means fail: NOKU (unknow command)
                             {
                                 IsSwitchingInterface = false;
                                 ModeSwitchErrorWrapper("Failed to switch to Qualcomm Download mode");
-                            }
-                            else
-                            {
-                                ModeSwitchProgressWrapper("Rebooting phone to Qualcomm Download mode...", null);
-                                LogFile.Log("Rebooting phone to Qualcomm Download mode", LogType.FileAndConsole);
                             }
                             break;
                         default:
@@ -468,23 +469,16 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Lumia_Normal:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ResetPhone();
                             ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
                             LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
-                            break;
-                        case PhoneInterfaces.Lumia_Bootloader:
-                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
-                            ModeSwitchProgressWrapper("Rebooting phone to Bootloader mode...", null);
-                            LogFile.Log("Rebooting phone to Bootloader mode", LogType.FileAndConsole);
                             break;
                         case PhoneInterfaces.Lumia_Label:
                             SwitchFromFlashToLabelMode();
                             break;
                         case PhoneInterfaces.Lumia_Flash: // attempt to boot from limited flash to full flash
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            byte[] RebootToFlashCommand = [0x4E, 0x4F, 0x4B, 0x53]; // NOKS
-                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootToFlashCommand);
+                            ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ResetPhoneToFlashMode();
                             ModeSwitchProgressWrapper("Rebooting phone to Flash mode...", null);
                             LogFile.Log("Rebooting phone to Flash mode", LogType.FileAndConsole);
                             break;
@@ -493,17 +487,16 @@ namespace WPinternals
                             break;
                         case PhoneInterfaces.Qualcomm_Download:
                             PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-                            byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
-                            RebootCommandResult = ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
-                            if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
+                            try
+                            {
+                                ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).SwitchToEmergencyMode();
+                                ModeSwitchProgressWrapper("Rebooting phone to Qualcomm Download mode...", null);
+                                LogFile.Log("Rebooting phone to Qualcomm Download mode", LogType.FileAndConsole);
+                            }
+                            catch (NotSupportedException) // This means fail: NOKU (unknow command)
                             {
                                 IsSwitchingInterface = false;
                                 ModeSwitchErrorWrapper("Failed to switch to Qualcomm Download mode");
-                            }
-                            else
-                            {
-                                ModeSwitchProgressWrapper("Rebooting phone to Qualcomm Download mode...", null);
-                                LogFile.Log("Rebooting phone to Qualcomm Download mode", LogType.FileAndConsole);
                             }
                             break;
                         default:
@@ -674,25 +667,19 @@ namespace WPinternals
             else if ((CurrentMode == PhoneInterfaces.Lumia_Flash) && (TargetMode == PhoneInterfaces.Qualcomm_Download))
             {
                 byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52];
-                byte[] RebootToQualcommDownloadCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x43, 0x42, 0x45]; // NOKXCBE // TODO
                 IsSwitchingInterface = true;
                 LogFile.Log("Sending command for rebooting to Emergency Download mode");
-                byte[] RebootCommandResult = ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToQualcommDownloadCommand);
-                if (RebootCommandResult?.Length >= 8)
+                try
                 {
-                    int ResultCode = (RebootCommandResult[6] << 8) + RebootCommandResult[7];
-                    LogFile.Log("Resultcode: 0x" + ResultCode.ToString("X4"));
-                }
-                if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknow command)
-                {
-                    ModeSwitchErrorWrapper("Failed to switch to Qualcomm Download mode");
-                    IsSwitchingInterface = false;
-                }
-                else
-                {
+                    ((NokiaUEFIModel)PhoneNotifier.CurrentModel).SwitchToEmergencyMode();
                     PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
                     ModeSwitchProgressWrapper("And now rebooting phone to Qualcomm Download mode...", null);
                     LogFile.Log("Rebooting phone to Qualcomm Download mode");
+                }
+                catch (NotSupportedException)
+                {
+                    ModeSwitchErrorWrapper("Failed to switch to Qualcomm Download mode");
+                    IsSwitchingInterface = false;
                 }
             }
             else
@@ -802,12 +789,8 @@ namespace WPinternals
                     {
                         PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
 
-                        byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
-                        byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
-
-                        BootModeFlagCommand[0x0F] = 0x59;
-                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
-                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).WriteParam("UBF", [(byte)'Y']);
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
                         ModeSwitchProgressWrapper("Rebooting phone to Label mode", null);
                         LogFile.Log("Rebooting phone to Label mode", LogType.FileAndConsole);
                     }
@@ -920,12 +903,8 @@ namespace WPinternals
                     {
                         PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
 
-                        byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
-                        byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
-
-                        BootModeFlagCommand[0x0F] = 0x59;
-                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
-                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).WriteParam("UBF", [(byte)'Y']);
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
                         ModeSwitchProgressWrapper("Rebooting phone to Label mode", null);
                         LogFile.Log("Rebooting phone to Label mode", LogType.FileAndConsole);
                     }
@@ -1018,36 +997,32 @@ namespace WPinternals
 
                 if (IsOldLumia || IsOriginalEngineeringLumia)
                 {
-                    byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
-                    byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52];
-                    byte[] RebootToMassStorageCommand = [0x4E, 0x4F, 0x4B, 0x4D]; // NOKM
                     IsSwitchingInterface = true;
-                    byte[] RebootCommandResult = ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToMassStorageCommand);
-                    if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknown command)
+                    try
                     {
-                        BootModeFlagCommand[0x0F] = 0x4D;
-                        byte[] BootFlagResult = ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
-                        UInt16 ResultCode = BitConverter.ToUInt16(BootFlagResult, 6);
-                        if (ResultCode == 0)
-                        {
-                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetToMassStorageMode();
 
-                            ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
-                            ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
-                            LogFile.Log("Rebooting phone to Mass Storage mode");
-                        }
-                        else
-                        {
-                            ModeSwitchErrorWrapper("Failed to switch to Mass Storage mode");
-                            IsSwitchingInterface = false;
-                        }
-                    }
-                    else
-                    {
                         PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
 
                         ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
                         LogFile.Log("Rebooting phone to Mass Storage mode");
+                    }
+                    catch (NotSupportedException) // This means fail: NOKU (unknown command)
+                    {
+                        try
+                        {
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).WriteParam("UBF", [(byte)'M']);
+                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+
+                            ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
+                            ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
+                            LogFile.Log("Rebooting phone to Mass Storage mode");
+                        }
+                        catch (NotSupportedException)
+                        {
+                            ModeSwitchErrorWrapper("Failed to switch to Mass Storage mode");
+                            IsSwitchingInterface = false;
+                        }
                     }
                 }
                 else if (IsUnlockedNew)
@@ -1061,7 +1036,7 @@ namespace WPinternals
                             // Implementation of writing a partition with SecureBoot variable to the phone
                             ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
                             LogFile.Log("Preparing phone for Mass Storage Mode", LogType.FileAndConsole);
-                            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                             // Magic!
                             // The SBMSM resource is a compressed version of a raw NV-variable-partition.
@@ -1069,7 +1044,7 @@ namespace WPinternals
                             // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                             // This normally leads to endless-loops when the NV-variables are enumerated.
                             // But the partition contains an extra hack to break out the endless loops.
-                            using (var stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
+                            using (Stream stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
                             {
                                 using DecompressedStream dec = new(stream);
                                 using MemoryStream SB = new(); // Must be a seekable stream!
@@ -1227,36 +1202,31 @@ namespace WPinternals
 
             if (IsOldLumia || IsOriginalEngineeringLumia)
             {
-                byte[] BootModeFlagCommand = [0x4E, 0x4F, 0x4B, 0x58, 0x46, 0x57, 0x00, 0x55, 0x42, 0x46, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]; // NOKFW UBF
-                byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52];
-                byte[] RebootToMassStorageCommand = [0x4E, 0x4F, 0x4B, 0x4D]; // NOKM
                 IsSwitchingInterface = true;
-                byte[] RebootCommandResult = ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(RebootToMassStorageCommand);
-                if (RebootCommandResult?.Length == 4) // This means fail: NOKU (unknown command)
+                try
                 {
-                    BootModeFlagCommand[0x0F] = 0x4D;
-                    byte[] BootFlagResult = ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawMethod(BootModeFlagCommand);
-                    UInt16 ResultCode = BitConverter.ToUInt16(BootFlagResult, 6);
-                    if (ResultCode == 0)
-                    {
-                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
-
-                        ((NokiaPhoneModel)PhoneNotifier.CurrentModel).ExecuteRawVoidMethod(RebootCommand);
-                        ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
-                        LogFile.Log("Rebooting phone to Mass Storage mode");
-                    }
-                    else
-                    {
-                        ModeSwitchErrorWrapper("Failed to switch to Mass Storage mode");
-                        IsSwitchingInterface = false;
-                    }
-                }
-                else
-                {
+                    ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetToMassStorageMode();
                     PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
 
                     ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
                     LogFile.Log("Rebooting phone to Mass Storage mode");
+                }
+                catch (NotSupportedException) // This means fail: NOKU (unknown command)
+                {
+                    try
+                    {
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).WriteParam("UBF", [(byte)'M']);
+                        PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+
+                        ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ResetPhone();
+                        ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
+                        LogFile.Log("Rebooting phone to Mass Storage mode");
+                    }
+                    catch (NotSupportedException)
+                    {
+                        ModeSwitchErrorWrapper("Failed to switch to Mass Storage mode");
+                        IsSwitchingInterface = false;
+                    }
                 }
             }
             else if (IsUnlockedNew)
@@ -1270,7 +1240,7 @@ namespace WPinternals
                         // Implementation of writing a partition with SecureBoot variable to the phone
                         ModeSwitchProgressWrapper(ProgressText, MassStorageWarning);
                         LogFile.Log("Preparing phone for Mass Storage Mode", LogType.FileAndConsole);
-                        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                        System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                         // Magic!
                         // The SBMSM resource is a compressed version of a raw NV-variable-partition.
@@ -1278,7 +1248,7 @@ namespace WPinternals
                         // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                         // This normally leads to endless-loops when the NV-variables are enumerated.
                         // But the partition contains an extra hack to break out the endless loops.
-                        using (var stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
+                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
                         {
                             using DecompressedStream dec = new(stream);
                             using MemoryStream SB = new(); // Must be a seekable stream!

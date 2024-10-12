@@ -25,6 +25,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using WPinternals.HelperClasses;
+using WPinternals.Config;
+using WPinternals.Models.Lumia;
 
 namespace WPinternals
 {

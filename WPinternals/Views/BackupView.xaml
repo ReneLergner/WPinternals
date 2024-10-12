@@ -26,15 +26,16 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel VerticalAlignment="Center">
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -45,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Backup to archive" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -57,12 +58,12 @@ DEALINGS IN THE SOFTWARE.
                             <local:FilePicker Caption="Archive: " SelectionText="Select the target-file for backup..." Path="{Binding ArchivePath, Mode=TwoWay}" DefaultFileName="Backup.zip" SaveDialog="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then a backup will be made from the selected partitions." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to make a backup." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then a backup will be made from the selected partitions." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to make a backup." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=BackupArchiveCommand, Mode=OneWay}" Content="Backup phone" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>
@@ -70,7 +71,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -81,7 +82,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Backup separate partitions" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -97,12 +98,12 @@ DEALINGS IN THE SOFTWARE.
                             <local:FilePicker Caption="Data: " SelectionText="Select the target-file for backup of the Data partition..." Path="{Binding DataPath, Mode=TwoWay}" AllowNull="True" SaveDialog="True" DefaultFileName="Data.bin" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then a backup will be made from the selected partitions." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to make a backup." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then a backup will be made from the selected partitions." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to make a backup." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=BackupCommand, Mode=OneWay}" Content="Backup phone" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>
@@ -110,7 +111,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -121,7 +122,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Backup provisioned partitions" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -133,12 +134,12 @@ DEALINGS IN THE SOFTWARE.
                             <local:FilePicker Caption="Archive: " SelectionText="Select the target-file for backup..." Path="{Binding ArchiveProvisioningPath, Mode=TwoWay}" DefaultFileName="Backup Provisioning.zip" SaveDialog="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged"/>
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then a backup will be made from the selected partitions." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to make a backup." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then a backup will be made from the selected partitions." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to make a backup." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=BackupArchiveProvisioningCommand, Mode=OneWay}" Content="Backup phone" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>

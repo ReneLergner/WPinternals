@@ -20,6 +20,7 @@
 
 using System;
 using System.Threading;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

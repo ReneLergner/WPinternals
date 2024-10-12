@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:WPinternals"
+      xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
       mc:Ignorable="d" 
       d:DesignWidth="700">
     <UserControl.Resources>
-        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
         <local:DownloaderNameConvertor x:Key="DownloaderNameConvertor" />
         <local:DownloaderSizeConvertor x:Key="DownloaderSizeConvertor" />
         <local:DownloaderSpeedConvertor x:Key="DownloaderSpeedConvertor" />
@@ -50,7 +51,7 @@ DEALINGS IN THE SOFTWARE.
     <StackPanel VerticalAlignment="Center">
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -61,16 +62,16 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Download" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
                             <local:FolderPicker Caption="Download folder: " SelectionText="Select the destination location for the downloaded files..." Path="{Binding DownloadFolder, Mode=TwoWay}" AllowNull="False" HorizontalAlignment="Stretch" />
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <TextBlock Margin="36,0,36,6">Currently downloading:</TextBlock>
-                <ListView Grid.Row="1" ItemsSource="{Binding DownloadList}" Margin="36,0,36,24" MinHeight="66" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" local:GridViewColumnResize.Enabled="True" >
+                <ListView Grid.Row="1" ItemsSource="{Binding DownloadList}" Margin="36,0,36,24" MinHeight="66" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" helpers:GridViewColumnResize.Enabled="True" >
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -78,7 +79,7 @@ DEALINGS IN THE SOFTWARE.
                     </ListView.ItemContainerStyle>
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn local:GridViewColumnResize.Width="*" Header="Name" DisplayMemberBinding="{Binding Name}" HeaderContainerStyle="{StaticResource HeaderLeftAligned}" />
+                            <GridViewColumn helpers:GridViewColumnResize.Width="*" Header="Name" DisplayMemberBinding="{Binding Name}" HeaderContainerStyle="{StaticResource HeaderLeftAligned}" />
                             <GridViewColumn Width="80" Header="Size" HeaderContainerStyle="{StaticResource HeaderRightAligned}" >
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
@@ -114,7 +115,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,20">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -125,7 +126,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Model" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak/>
                             <LineBreak/>
@@ -142,9 +143,9 @@ DEALINGS IN THE SOFTWARE.
                             <LineBreak/>
                             <Run Text="For some older Lumia models the operatorcode search criterion doesn't work. Your search may not yield any results when use the Operatorcode search criterion. You should use the Productcode to find the files for your exact model." />
                             <LineBreak/>
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <Grid Margin="36,-6,36,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -177,7 +178,7 @@ DEALINGS IN THE SOFTWARE.
                 </Grid>
 
                 <TextBlock Margin="36,30,36,6">Search results:</TextBlock>
-                <ListView Grid.Row="1" Name="SearchResultsListView" ItemsSource="{Binding SearchResultList}" Margin="36,0,36,0" MinHeight="66" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" local:GridViewColumnResize.Enabled="True">
+                <ListView Grid.Row="1" Name="SearchResultsListView" ItemsSource="{Binding SearchResultList}" Margin="36,0,36,0" MinHeight="66" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" helpers:GridViewColumnResize.Enabled="True">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
@@ -186,7 +187,7 @@ DEALINGS IN THE SOFTWARE.
                     </ListView.ItemContainerStyle>
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn local:GridViewColumnResize.Width="*" Header="Name" DisplayMemberBinding="{Binding Name}" HeaderContainerStyle="{StaticResource HeaderLeftAligned}" />
+                            <GridViewColumn helpers:GridViewColumnResize.Width="*" Header="Name" DisplayMemberBinding="{Binding Name}" HeaderContainerStyle="{StaticResource HeaderLeftAligned}" />
                             <GridViewColumn Width="80" Header="Size" HeaderContainerStyle="{StaticResource HeaderRightAligned}" >
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
@@ -204,7 +205,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto">
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto">
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -215,12 +216,12 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Repository" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-15,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=LastStatusText, Converter={StaticResource ObjectToVisibilityConverter}}">
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,-15,20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=LastStatusText, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -231,11 +232,11 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="{Binding Path=LastStatusText}" />
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <Button Height="30" Width="Auto" Content="Add existing FFU-file..." Padding="20,5,20,5" HorizontalAlignment="Right" Margin="0,0,36,20" Command="{Binding Path=AddFFUCommand}"/>
             </StackPanel>
         </Border>

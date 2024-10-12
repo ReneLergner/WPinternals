@@ -20,6 +20,8 @@
 
 using System;
 using System.Threading;
+using WPinternals.Models.Lumia;
+using WPinternals.Models.UEFIApps.BootMgr;
 
 namespace WPinternals
 {

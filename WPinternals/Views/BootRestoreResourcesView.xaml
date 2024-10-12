@@ -26,18 +26,19 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:HexConverter x:Key="HexConverter" />
-        <local:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
-        <local:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
+        <helpers:HexConverter x:Key="HexConverter" />
+        <helpers:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
+        <helpers:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
     </UserControl.Resources>
     <StackPanel VerticalAlignment="Center">
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,0">
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument Loaded="Document_Loaded" FontFamily="Segoe UI" FontSize="12" PagePadding="1">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="General info" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -55,58 +56,58 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Root Key Hash" />
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=RootKeyHash, Converter={StaticResource HexConverter}, Mode=OneWay}" TextWrapping="Wrap" />
                         </Grid>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,20,0,0" >
             <StackPanel Margin="20,0,20,0">
                 <StackPanel Visibility="{Binding Path=TargetHasNewFlashProtocol, Converter={StaticResource InverseVisibilityConverter}}">
-                    <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
+                    <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
                         <FlowDocument Loaded="Document_Loaded" FontFamily="Segoe UI" FontSize="12" PagePadding="1">
-                            <local:Paragraph TextAlignment="Left">
+                            <helpers:Paragraph TextAlignment="Left">
                                 <Run Text="Resources for boot restore" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                                 <LineBreak />
                                 <LineBreak />
                                 <Run Text="You can use this function to restore the boot partitions to their original state or to repair corrupted boot partitions. If your phone currently has Root Access, then first disable Root Access before you restore the bootloader! If your bootloader is currently unlocked, the bootloader will be restored to its original state and the phone will boot normally. If you are trying to repair a corrupted bootloader, afterwards the phone will probably remain in Flash-mode. From there on, you can only flash a stock ROM. This will erase all you apps, data and settings."/>
                                 <LineBreak />
-                            </local:Paragraph>
+                            </helpers:Paragraph>
                         </FlowDocument>
-                    </local:FlowDocumentScrollViewerNoMouseWheel>
+                    </helpers:FlowDocumentScrollViewerNoMouseWheel>
                     <local:FilePicker SelectionText="Select your FFU-image..." Path="{Binding FFUPath, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                    <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=IsBootLoaderUnlocked, Converter={StaticResource InverseVisibilityConverter}}">
+                    <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=IsBootLoaderUnlocked, Converter={StaticResource InverseVisibilityConverter}}">
                         <FlowDocument Loaded="Document_Loaded" FontFamily="Segoe UI" FontSize="12" PagePadding="1">
-                            <local:Paragraph TextAlignment="Left">
+                            <helpers:Paragraph TextAlignment="Left">
                                 <LineBreak />
                                 <Run Text="You should also select a folder where you have Lumia Emergency Flash Loaders. This tool will try to select the Loader that is suitable for your phone."/>
                                 <LineBreak />
-                            </local:Paragraph>
+                            </helpers:Paragraph>
                         </FlowDocument>
-                    </local:FlowDocumentScrollViewerNoMouseWheel>
+                    </helpers:FlowDocumentScrollViewerNoMouseWheel>
                     <local:FolderPicker SelectionText="Select the folder with Lumia Emergency Flash Loaders..." Path="{Binding LoadersPath, Mode=TwoWay}" HorizontalAlignment="Stretch" Visibility="{Binding Path=IsBootLoaderUnlocked, Converter={StaticResource InverseVisibilityConverter}}"/>
                 </StackPanel>
                 <StackPanel Visibility="{Binding Path=TargetHasNewFlashProtocol, Converter={StaticResource VisibilityConverter}}">
-                    <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
+                    <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
                         <FlowDocument Loaded="Document_Loaded" FontFamily="Segoe UI" FontSize="12" PagePadding="1">
-                            <local:Paragraph TextAlignment="Left">
+                            <helpers:Paragraph TextAlignment="Left">
                                 <Run Text="Restore SecureBoot" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                                 <LineBreak />
                                 <LineBreak />
                                 <Run Text="You can use this function to restore SecureBoot to its original state. During the process of restoring SecureBoot, the phone will be switched to Mass Storage mode. After that the phone must be rebooted. You will be notified. You will need to reboot the phone manually at that stage, because it cannot be done programmatically. After you reboot the phone, the relock procedure will continue automatically."/>
-                            </local:Paragraph>
+                            </helpers:Paragraph>
                         </FlowDocument>
-                    </local:FlowDocumentScrollViewerNoMouseWheel>
-                    <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=IsProfileFfuValid, Converter={StaticResource InverseVisibilityConverter}}">
+                    </helpers:FlowDocumentScrollViewerNoMouseWheel>
+                    <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=IsProfileFfuValid, Converter={StaticResource InverseVisibilityConverter}}">
                         <FlowDocument Loaded="Document_Loaded" FontFamily="Segoe UI" FontSize="12" PagePadding="1">
-                            <local:Paragraph TextAlignment="Left">
+                            <helpers:Paragraph TextAlignment="Left">
                                 <LineBreak />
                                 <Run Text="WARNING: " FontWeight="Bold" Foreground="Red" />
                                 <Run Text="No valid profile-FFU could be found. Go to the "/>
                                 <Hyperlink NavigateUri="Download">download</Hyperlink>
                                 <Run Text=" page in this tool and download a new FFU-file for your phone, or add an existing FFU-file to the repository."/>
-                            </local:Paragraph>
+                            </helpers:Paragraph>
                         </FlowDocument>
-                    </local:FlowDocumentScrollViewerNoMouseWheel>
+                    </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,25,0,0">
                     <Button Command="{Binding Path=OkCommand, Mode=OneWay}" Content="Continue" Width="100" Height="Auto" Padding="0,5"/>

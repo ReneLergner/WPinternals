@@ -438,12 +438,12 @@ namespace WPinternals
                         //read the content
                         //TODO: it may throw an exception (stream closed because file expired?)
                         //In that case we would wrap into another try catch and try to read the reason behind this
-                        while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+                        while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, cancellationToken)) > 0)
                         {
                             totalBytesRead += bytesRead;
 
                             //simply write to the file
-                            await streamToWriteTo.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+                            await streamToWriteTo.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
 
                             //report progress
                             downloadProgress?.Report(new FileDownloadStatus(downloadFile)
@@ -593,9 +593,9 @@ namespace WPinternals
             byte[] buffer = new byte[bufSizeEffective];
             using MemoryStream ms = new(buffer);
             using CryptoStream cs = new(ms, hashAlgorithm, CryptoStreamMode.Write);
-            while ((readBytes = await fileStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+            while ((readBytes = await fileStream.ReadAsync(buffer, cancellationToken)) > 0)
             {
-                await cs.WriteAsync(buffer, 0, readBytes, cancellationToken);
+                await cs.WriteAsync(buffer.AsMemory(0, readBytes), cancellationToken);
                 ms.Position = 0;
                 totalBytesRead += readBytes;
                 progress?.Report(totalBytesRead);

@@ -26,6 +26,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.UEFI.Flash;
+using WPinternals.Models.UEFIApps.BootMgr;
+using WPinternals.Models.UEFIApps.Flash;
 
 namespace WPinternals
 {
@@ -51,8 +55,7 @@ namespace WPinternals
             FlashModel.SendFfuPayloadV1(EmptyChunk);
 
             // Reboot to Qualcomm Emergency mode
-            byte[] RebootCommand = [0x4E, 0x4F, 0x4B, 0x52]; // NOKR
-            FlashModel.ExecuteRawVoidMethod(RebootCommand);
+            FlashModel.ResetPhone();
         }
 
         private static void SendLoader(PhoneNotifierViewModel PhoneNotifier, List<QualcommPartition> PossibleLoaders)
@@ -1960,7 +1963,7 @@ namespace WPinternals
                 string SBRes = IsSpecB ? "WPinternals.SB" : "WPinternals.SBA";
                 Part.Stream = new SeekableStream(() =>
                 {
-                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                    System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                     // Magic!
                     // The SB(A) resource is a compressed version of a raw NV-variable-partition.
@@ -1968,7 +1971,7 @@ namespace WPinternals
                     // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                     // This normally leads to endless-loops when the NV-variables are enumerated.
                     // But the partition contains an extra hack to break out the endless loops.
-                    var stream = assembly.GetManifestResourceStream(SBRes);
+                    Stream stream = assembly.GetManifestResourceStream(SBRes);
 
                     return new DecompressedStream(stream);
                 });

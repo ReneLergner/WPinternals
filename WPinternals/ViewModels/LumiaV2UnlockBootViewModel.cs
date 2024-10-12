@@ -25,6 +25,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using WPinternals.Config;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia.UEFI;
+using WPinternals.Models.UEFIApps;
+using WPinternals.Models.UEFIApps.BootMgr;
+using WPinternals.Models.UEFIApps.Flash;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {
@@ -183,7 +190,7 @@ namespace WPinternals
                 Part.StartSector = (UInt32)TargetPartition.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
                 Part.Stream = new SeekableStream(() =>
                 {
-                    var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                    System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                     // Magic!
                     // The SB resource is a compressed version of a raw NV-variable-partition.
@@ -191,7 +198,7 @@ namespace WPinternals
                     // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                     // This normally leads to endless-loops when the NV-variables are enumerated.
                     // But the partition contains an extra hack to break out the endless loops.
-                    var stream = assembly.GetManifestResourceStream("WPinternals.SB");
+                    Stream stream = assembly.GetManifestResourceStream("WPinternals.SB");
 
                     return new DecompressedStream(stream);
                 });
@@ -500,7 +507,7 @@ namespace WPinternals
                 }
                 else
                 {
-                    foreach (var part in FlashParts)
+                    foreach (FlashPart part in FlashParts)
                     {
                         if (part.StartSector >= UefiBSNV.FirstSector && part.StartSector <= UefiBSNV.LastSector)
                         {
@@ -1877,7 +1884,7 @@ namespace WPinternals
             ulong CurrentProcess1 = 0;
             SetWorkingStatus("Hashing resources...", "Initializing flash...", (UInt64)TotalProcess1, Status: WPinternalsStatus.Initializing);
 
-            var crypto = System.Security.Cryptography.SHA256.Create();
+            System.Security.Cryptography.SHA256 crypto = System.Security.Cryptography.SHA256.Create();
             List<FlashingPayload> flashingPayloads = [];
             if (flashParts == null)
             {
@@ -1888,7 +1895,7 @@ namespace WPinternals
             {
                 FlashPart flashPart = flashParts[(Int32)j];
                 flashPart.Stream.Seek(0, SeekOrigin.Begin);
-                var totalChunkCount = flashPart.Stream.Length / chunkSize;
+                long totalChunkCount = flashPart.Stream.Length / chunkSize;
                 for (UInt32 i = 0; i < totalChunkCount; i++)
                 {
                     UpdateWorkingStatus("Hashing resources...", "Initializing flash...", CurrentProcess1, WPinternalsStatus.Initializing);
@@ -1931,19 +1938,19 @@ namespace WPinternals
                 {
                     FlashPart flashPart = flashParts[(Int32)j];
                     flashPart.Stream.Seek(0, SeekOrigin.Begin);
-                    var totalChunkCount = flashPart.Stream.Length / chunkSize;
+                    long totalChunkCount = flashPart.Stream.Length / chunkSize;
                     for (UInt32 i = 0; i < totalChunkCount; i++)
                     {
                         UpdateWorkingStatus("Hashing resources...", "Initializing flash...", CurrentProcess1, WPinternalsStatus.Initializing);
                         byte[] buffer = new byte[chunkSize];
                         Int64 position = flashPart.Stream.Position;
                         flashPart.Stream.Read(buffer, 0, chunkSize);
-                        var hash = crypto.ComputeHash(buffer);
+                        byte[] hash = crypto.ComputeHash(buffer);
 
                         if (flashingPayloads.Any(x => ByteOperations.Compare(x.ChunkHashes[0], hash)))
                         {
-                            var payloadIndex = flashingPayloads.FindIndex(x => ByteOperations.Compare(x.ChunkHashes[0], hash));
-                            var locationList = flashingPayloads[payloadIndex].TargetLocations.ToList();
+                            int payloadIndex = flashingPayloads.FindIndex(x => ByteOperations.Compare(x.ChunkHashes[0], hash));
+                            List<uint> locationList = flashingPayloads[payloadIndex].TargetLocations.ToList();
                             locationList.Add((flashPart.StartSector * 0x200 / (UInt32)chunkSize) + i);
                             flashingPayloads[payloadIndex].TargetLocations = [.. locationList];
                         }
@@ -2255,15 +2262,15 @@ namespace WPinternals
                         Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
                         Part.Stream = new SeekableStream(() =>
                         {
-                            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
-                                    // Magic!
-                                    // The SB resource is a compressed version of a raw NV-variable-partition.
-                                    // In this partition the SecureBoot variable is disabled.
-                                    // It overwrites the variable in a different NV-partition than where this variable is stored usually.
-                                    // This normally leads to endless-loops when the NV-variables are enumerated.
-                                    // But the partition contains an extra hack to break out the endless loops.
-                                    var stream = assembly.GetManifestResourceStream("WPinternals.SB");
+                            // Magic!
+                            // The SB resource is a compressed version of a raw NV-variable-partition.
+                            // In this partition the SecureBoot variable is disabled.
+                            // It overwrites the variable in a different NV-partition than where this variable is stored usually.
+                            // This normally leads to endless-loops when the NV-variables are enumerated.
+                            // But the partition contains an extra hack to break out the endless loops.
+                            Stream stream = assembly.GetManifestResourceStream("WPinternals.SB");
 
                             return new DecompressedStream(stream);
                         });
@@ -2614,7 +2621,7 @@ namespace WPinternals
                             Part.StartSector = (UInt32)Target.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
                             Part.Stream = new SeekableStream(() =>
                             {
-                                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                                System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
                                 // Magic!
                                 // The SB resource is a compressed version of a raw NV-variable-partition.
@@ -2622,7 +2629,7 @@ namespace WPinternals
                                 // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                                 // This normally leads to endless-loops when the NV-variables are enumerated.
                                 // But the partition contains an extra hack to break out the endless loops.
-                                var stream = assembly.GetManifestResourceStream("WPinternals.SB");
+                                Stream stream = assembly.GetManifestResourceStream("WPinternals.SB");
 
                                 return new DecompressedStream(stream);
                             });

@@ -79,7 +79,7 @@ namespace WPinternals
         /// <returns>True if the user presses OK else false</returns>
         public bool ShowDialog(IntPtr hWndOwner)
         {
-            var fbd = new FolderBrowserDialog
+            FolderBrowserDialog fbd = new FolderBrowserDialog
             {
                 Description = this.Title,
                 SelectedPath = this.InitialDirectory,

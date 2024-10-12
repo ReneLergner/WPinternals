@@ -21,6 +21,8 @@
 using System;
 using System.IO;
 using System.Threading;
+using WPinternals.HelperClasses;
+using WPinternals.Models.UEFIApps.Flash;
 
 namespace WPinternals
 {

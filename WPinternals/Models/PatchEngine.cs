@@ -28,6 +28,7 @@ using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Xml;
 using System.Xml.Serialization;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

@@ -20,6 +20,8 @@
 
 using System;
 using System.Windows;
+using WPinternals.Config;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

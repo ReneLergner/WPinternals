@@ -26,15 +26,16 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel VerticalAlignment="Center">
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,25">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -45,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Enable Root Access directly on phone" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -54,12 +55,12 @@ DEALINGS IN THE SOFTWARE.
                             <Run Text=" first. Make sure you don't have any Windows Phone disks or partitions mounted before you continue to Mass Storage Mode. Not all OS versions are supported. The OS version will verified after the phone is switched to Mass Storage mode." />
                             <LineBreak />
                             <LineBreak />
-                            <local:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then Root Access will be enabled." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
-                            <local:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to enable Root Access." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
-                        </local:Paragraph>
+                            <helpers:CollapsibleRun Text="You have to connect your phone before you can continue." IsVisible="{Binding IsPhoneDisconnected, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="When you continue, the phone will be switched to Mass Storage mode and then Root Access will be enabled." IsVisible="{Binding IsPhoneInOtherMode, Mode=OneWay}"/>
+                            <helpers:CollapsibleRun Text="The phone is in Mass Storage mode. You can continue to enable Root Access." IsVisible="{Binding IsPhoneInMassStorage, Mode=OneWay}"/>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=UnlockPhoneCommand, Mode=OneWay}" Content="Unlock phone" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>
@@ -67,7 +68,7 @@ DEALINGS IN THE SOFTWARE.
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -78,7 +79,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Enable Root Access on ROM images" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -107,9 +108,9 @@ DEALINGS IN THE SOFTWARE.
                             <LineBreak />
                             <LineBreak />
                             <local:FolderPicker Caption="MainOS: " SelectionText="Select the drive where the MainOS partition is mounted..." Path="{Binding MainOSMountPoint, Mode=TwoWay}" AllowNull="True" HorizontalAlignment="Stretch" PathChanged="FolderPicker_PathChanged"/>
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=UnlockImageCommand, Mode=OneWay}" Content="Unlock images" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>

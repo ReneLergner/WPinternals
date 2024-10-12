@@ -26,13 +26,14 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
         <Grid>
-            <local:FlowDocumentScrollViewerNoMouseWheel Margin="45,25,45,75" VerticalScrollBarVisibility="Auto">
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Margin="45,25,45,75" VerticalScrollBarVisibility="Auto">
                 <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" PagePadding="0">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Registration" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -59,9 +60,9 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Telegram ID (optional)" Margin="0,3,0,0" />
                             <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TelegramID, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="24" />
                         </Grid>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,80,45,25">
                 <Button Command="{Binding Path=ContinueCommand, Mode=OneWay}" Content="Register" Width="100" Height="Auto" Padding="0,5" IsEnabled="{Binding Path=IsRegistrationComplete, Mode=OneWay}" />
                 <Button Command="{Binding Path=ExitCommand, Mode=OneWay}" Content="Exit" Width="100" Height="Auto" Padding="0,5" Margin="10,0,0,0" />

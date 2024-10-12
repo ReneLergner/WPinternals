@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using WPinternals.HelperClasses;
+using WPinternals.Models.UEFIApps.Flash;
 
 namespace WPinternals
 {
@@ -181,9 +183,9 @@ namespace WPinternals
             await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_MassStorage);
             MassStorage MassStorage = (MassStorage)Notifier.CurrentModel;
 
-            foreach (var part in Directory.EnumerateFiles(PartPath))
+            foreach (string part in Directory.EnumerateFiles(PartPath))
             {
-                var partname = part.Split('\\').Last().Replace(".img", "");
+                string partname = part.Split('\\').Last().Replace(".img", "");
                 try
                 {
                     LogFile.Log($"Writing {partname} to the device.", LogType.ConsoleOnly);
@@ -203,7 +205,7 @@ namespace WPinternals
 
         internal static void PatchImg(string dump)
         {
-            using var fil = File.Open(dump, FileMode.Open);
+            using FileStream fil = File.Open(dump, FileMode.Open);
             byte[] gptbuffer = new byte[0x4200];
 
             fil.Seek(0x200, SeekOrigin.Begin);

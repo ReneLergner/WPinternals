@@ -26,20 +26,21 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:HexConverter x:Key="HexConverter" />
-        <local:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
-        <local:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
-        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <helpers:HexConverter x:Key="HexConverter" />
+        <helpers:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
+        <helpers:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
             <StackPanel Orientation="Vertical">
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="General info" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -72,36 +73,36 @@ DEALINGS IN THE SOFTWARE.
                                 <TextBlock Grid.Row="6" Grid.Column="0" Text="Bootloader" />
                                 <TextBlock Grid.Row="6" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding BootloaderDescription}"/>
                             </Grid>
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=SamsungWarningVisible, Converter={StaticResource VisibilityConverter}}">
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=SamsungWarningVisible, Converter={StaticResource VisibilityConverter}}">
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <LineBreak />
-                            <local:CollapsibleRun Text="Read the " IsVisible="{Binding SamsungWarningVisible}" />
+                            <helpers:CollapsibleRun Text="Read the " IsVisible="{Binding SamsungWarningVisible}" />
                             <Hyperlink NavigateUri="GettingStarted">Getting started</Hyperlink>
                             <Run Text=" section for important information about Samsung eMMC." />
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <LineBreak />
                             <Run Text="To let the phone go back to Windows, boot to " />
                             <Hyperlink NavigateUri="Normal">Normal</Hyperlink>
                             <Run Text=" mode." />
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
             </StackPanel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
             <Expander Header="Phone identity" HorizontalContentAlignment="Stretch" Template="{DynamicResource TopicExpanderTemplate}" Margin="20,0">
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <LineBreak />
                             <Grid IsHitTestVisible="False">
                                 <Grid.ColumnDefinitions>
@@ -117,15 +118,15 @@ DEALINGS IN THE SOFTWARE.
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Public Phone ID" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=PublicID, Converter={StaticResource HexConverter}, Mode=OneWay}" TextWrapping="Wrap" />
                             </Grid>
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
             </Expander>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20" >
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph TextAlignment="Left">
+                    <helpers:Paragraph TextAlignment="Left">
                         <Run Text="Bootloader Security" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -158,14 +159,14 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="4" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveBootloaderSecurityStatus, Converter={StaticResource InverseVisibilityConverter}}" />
                             <TextBlock Grid.Row="4" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveBootloaderSecurityStatus, Converter={StaticResource VisibilityConverter}}"/>
                         </Grid>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20" >
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph TextAlignment="Left">
+                    <helpers:Paragraph TextAlignment="Left">
                         <Run Text="Secure Boot technology" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -194,14 +195,14 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveSecureBootStatus, Converter={StaticResource InverseVisibilityConverter}}" />
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=EffectiveSecureBootStatus, Converter={StaticResource VisibilityConverter}}"/>
                         </Grid>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20" >
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph TextAlignment="Left">
+                    <helpers:Paragraph TextAlignment="Left">
                         <Run Text="Hardware debugging" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -222,14 +223,14 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="Disabled" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=NativeDebugStatus, Converter={StaticResource InverseVisibilityConverter}}" />
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="Enabled" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=NativeDebugStatus, Converter={StaticResource VisibilityConverter}}"/>
                         </Grid>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" >
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
-                    <local:Paragraph TextAlignment="Left">
+                    <helpers:Paragraph TextAlignment="Left">
                         <Run Text="Fuse Security" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <LineBreak />
@@ -332,9 +333,9 @@ DEALINGS IN THE SOFTWARE.
                             <TextBlock Grid.Row="14" Grid.Column="1" Text="Not blown" FontWeight="Bold" Foreground="#FF40C133" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSsmStatus, Converter={StaticResource InverseVisibilityConverter}}" />
                             <TextBlock Grid.Row="14" Grid.Column="1" Text="Blown" FontWeight="Bold" Foreground="#FFAC3631" TextWrapping="Wrap" Visibility="{Binding Path=FinalConfigSsmStatus, Converter={StaticResource VisibilityConverter}}"/>
                         </Grid>
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Border>
     </StackPanel>
 </UserControl>

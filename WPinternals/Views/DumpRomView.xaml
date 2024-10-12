@@ -26,15 +26,16 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <local:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel VerticalAlignment="Center">
         <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0">
             <StackPanel>
-                <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,20,0" VerticalScrollBarVisibility="Auto" >
                     <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
                         <FlowDocument.Resources>
                             <!-- This style is used to set the margins for all paragraphs in the FlowDocument to 0. -->
@@ -45,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
                                 <Setter Property="Margin" Value="0"/>
                             </Style>
                         </FlowDocument.Resources>
-                        <local:Paragraph>
+                        <helpers:Paragraph>
                             <Run Text="Dump ROM" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                             <LineBreak />
                             <LineBreak />
@@ -71,9 +72,9 @@ DEALINGS IN THE SOFTWARE.
                             <LineBreak />
                             <local:FilePicker x:Name="DataPicker" Caption="Data: " SelectionText="Select the target-file for the Data partition..." Path="{Binding DataPath, Mode=TwoWay}" AllowNull="True" SaveDialog="True" HorizontalAlignment="Stretch" PathChanged="FilePicker_PathChanged" DefaultFileName="Data.bin"/>
                             <CheckBox x:Name="CompressData" Margin="70,5,0,0" Content="Compress Data partition" IsChecked="{Binding CompressData, Mode=TwoWay}" Checked="CompressData_Changed" Unchecked="CompressData_Changed"/>
-                        </local:Paragraph>
+                        </helpers:Paragraph>
                     </FlowDocument>
-                </local:FlowDocumentScrollViewerNoMouseWheel>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
                 <StackPanel Orientation="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,40,25">
                     <Button Command="{Binding Path=DumpCommand, Mode=OneWay}" Content="Dump partitions" Width="120" Height="Auto" Padding="0,5" />
                 </StackPanel>

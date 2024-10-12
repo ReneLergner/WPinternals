@@ -21,6 +21,7 @@
 using MadWizard.WinUSBNet;
 using System;
 using System.IO.Ports;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {

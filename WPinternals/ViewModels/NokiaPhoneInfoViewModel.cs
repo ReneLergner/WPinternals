@@ -21,6 +21,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia;
+using WPinternals.Models.UEFIApps.PhoneInfo;
 
 namespace WPinternals
 {

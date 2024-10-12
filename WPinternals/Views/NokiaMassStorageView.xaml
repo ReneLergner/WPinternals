@@ -26,12 +26,13 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
-        <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
+        <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
             <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded">
-                <local:Paragraph>
+                <helpers:Paragraph>
                     <Run Text="Nokia Lumia - Mass Storage mode" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                     <LineBreak />
                     <LineBreak />
@@ -59,8 +60,8 @@ DEALINGS IN THE SOFTWARE.
                     <LineBreak />
                     <LineBreak />
                     <Run Text="When the phone is in Mass Storage mode, it also exposes a special version of the Qualcomm Emergency Download mode. That mode supports reboot-commands. But those are blocked by Mass Storage mode, so this tool is not able to reboot your phone to normal mode. But this is not a problem. To escape from Mass Storage mode you have to perform a soft-reset. Older Lumia models require you to press and hold the volume-down-button and the power-button at the same time for at least 10 seconds. New Lumia models only require to press and hold the power-button for 10 seconds. This will trigger a power-cycle and the phone will reboot. Once fully booted, the phone may show strange behavior, like complaining about mail-accounts, showing old text-messages, inability to load https-websites, etc. This is expected behavior, because the time-settings of the phone are incorrect. Just wait a few seconds for the phone to get a data-connection and have the date/time synced. After that the strange behavior will stop automatically and normal operation is resumed." />
-                </local:Paragraph>
+                </helpers:Paragraph>
             </FlowDocument>
-        </local:FlowDocumentScrollViewerNoMouseWheel>
+        </helpers:FlowDocumentScrollViewerNoMouseWheel>
     </Border>
 </UserControl>

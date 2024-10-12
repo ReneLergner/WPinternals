@@ -24,6 +24,7 @@ using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
+using WPinternals.HelperClasses;
 
 namespace WPinternals
 {
@@ -149,7 +150,7 @@ namespace WPinternals
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var resultSize = new Size(availableSize.Width, 0);
+            Size resultSize = new Size(availableSize.Width, 0);
 
 #if NETCORE
             FormattedText formatted = new FormattedText(

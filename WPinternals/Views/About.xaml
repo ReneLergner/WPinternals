@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
@@ -39,9 +40,9 @@ DEALINGS IN THE SOFTWARE.
             </Grid.ColumnDefinitions>
             <Image Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Source="{StaticResource LogoImageSource}" Margin="-10,0,0,0">
             </Image>
-            <local:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
+            <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" >
                 <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" TextAlignment="Left">
-                    <local:Paragraph>
+                    <helpers:Paragraph>
                         <Run Text="Windows Phone Internals" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
                         <LineBreak />
                         <Run>
@@ -88,9 +89,9 @@ DEALINGS IN THE SOFTWARE.
                         <Run Text="DiscUtils by Kenneth Bell (" />
                         <Hyperlink NavigateUri="https://github.com/DiscUtils/DiscUtils/blob/master/LICENSE.txt">license</Hyperlink>
                         <Run Text=")" />
-                    </local:Paragraph>
+                    </helpers:Paragraph>
                 </FlowDocument>
-            </local:FlowDocumentScrollViewerNoMouseWheel>
+            </helpers:FlowDocumentScrollViewerNoMouseWheel>
         </Grid>
     </Border>
 </UserControl>

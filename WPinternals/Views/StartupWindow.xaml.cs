@@ -21,6 +21,7 @@
 using Microsoft.Win32;
 using System;
 using System.Windows;
+using WPinternals.Config;
 
 namespace WPinternals
 {
