@@ -40,7 +40,8 @@ namespace WPinternals
     internal enum MachineState
     {
         Default,
-        LumiaUnlockBoot
+        LumiaUnlockBoot,
+        LumiaGetGPT
     };
 
     internal class LumiaUnlockBootViewModel : ContextViewModel
@@ -95,12 +96,7 @@ namespace WPinternals
                 return;
             }
 
-            if (State == MachineState.LumiaUnlockBoot)
-            {
-                return;
-            }
-
-            if (IsSwitchingInterface)
+            if ((State == MachineState.LumiaGetGPT) || (State == MachineState.LumiaUnlockBoot))
             {
                 return;
             }
@@ -261,7 +257,17 @@ namespace WPinternals
                                         {
                                             bool AlreadyUnlocked = false;
                                             LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
+
+                                            MachineState OriginalState = State;
+                                            State = MachineState.LumiaGetGPT; // Stop handling arrival notifications in this screen
+                                            bool OriginalIsSwitchingInterface = IsSwitchingInterface;
+                                            IsSwitchingInterface = true; // Stop handling arrival notifications in MainViewModel
+
                                             GPT GPT = await LumiaUnlockBootloaderViewModel.ReadGPTFromFlashOrBootMgr(PhoneNotifier);
+
+                                            IsSwitchingInterface = OriginalIsSwitchingInterface;
+                                            State = OriginalState;
+
                                             if ((GPT.GetPartition("IS_UNLOCKED") != null) || (GPT.GetPartition("BACKUP_EFIESP") != null))
                                             {
                                                 AlreadyUnlocked = true;
@@ -305,6 +311,11 @@ namespace WPinternals
 
                                 Task.Run(async () =>
                                 {
+                                    MachineState OriginalState = State;
+                                    State = MachineState.LumiaGetGPT; // Stop handling arrival notifications in this screen
+                                    bool OriginalIsSwitchingInterface = IsSwitchingInterface;
+                                    IsSwitchingInterface = true; // Stop handling arrival notifications in MainViewModel
+
                                     bool ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
                                     if (ModernFlashApp)
                                     {
@@ -349,6 +360,9 @@ namespace WPinternals
                                     {
                                         throw new WPinternalsException("Unexpected Mode");
                                     }
+
+                                    IsSwitchingInterface = OriginalIsSwitchingInterface;
+                                    State = OriginalState;
 
                                     if (DoUnlock)
                                     {
@@ -569,8 +583,10 @@ namespace WPinternals
                 LumiaFlashAppModel Model = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
                 LumiaFlashAppPhoneInfo FlashInfo = Model.ReadPhoneInfo();
 
+                MachineState OriginalState = State;
+                State = MachineState.LumiaGetGPT; // Stop handling arrival notifications in this screen
                 bool OriginalIsSwitchingInterface = IsSwitchingInterface;
-                IsSwitchingInterface = true;
+                IsSwitchingInterface = true; // Stop handling arrival notifications in MainViewModel
 
                 bool ModernFlashApp = ((LumiaFlashAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo().FlashAppProtocolVersionMajor >= 2;
                 if (ModernFlashApp)
@@ -616,6 +632,7 @@ namespace WPinternals
                 }
 
                 IsSwitchingInterface = OriginalIsSwitchingInterface;
+                State = OriginalState;
 
                 if (EDEPath == null)
                 {

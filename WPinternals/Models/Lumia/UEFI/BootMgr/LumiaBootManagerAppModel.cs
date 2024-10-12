@@ -374,7 +374,7 @@ namespace WPinternals.Models.UEFIApps.BootMgr
 
             if (ModernFlashApp)
             {
-                DisableRebootTimeOut();
+                //DisableRebootTimeOut();
 
                 info.App = FlashAppType.FlashApp;
 
