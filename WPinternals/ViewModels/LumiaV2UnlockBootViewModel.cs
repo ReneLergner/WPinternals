@@ -1564,8 +1564,22 @@ namespace WPinternals
                             break;
                         }
 
-                        // In case we are on an Engineering phone which isn't stuck in flashmode and booted to BootMgrApp
-                        ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                        if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                        {
+                            // In case we are on an Engineering phone which isn't stuck in flashmode and booted to BootMgrApp
+                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+
+                            if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                            {
+                                await Notifier.WaitForArrival();
+                            }
+                        }
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            throw new WPinternalsException("Unexpected Mode");
+                        }
+
                         ((LumiaFlashAppModel)Notifier.CurrentModel).DisableRebootTimeOut();
                     }
 

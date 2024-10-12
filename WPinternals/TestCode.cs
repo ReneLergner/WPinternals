@@ -52,8 +52,7 @@ namespace WPinternals
             byte[] RootKeyHash = null;
             if (PhoneNotifier.CurrentInterface == PhoneInterfaces.Qualcomm_Download)
             {
-                QualcommDownload Download2 = new((QualcommSerial)PhoneNotifier.CurrentModel);
-                RootKeyHash = Download2.GetRKH();
+                RootKeyHash = new QualcommDownload((QualcommSerial)PhoneNotifier.CurrentModel).GetRKH();
             }
 
             List<QualcommPartition> PossibleLoaders = null;
@@ -76,6 +75,7 @@ namespace WPinternals
 
             QualcommSerial Serial = (QualcommSerial)PhoneNotifier.CurrentModel;
             QualcommDownload Download = new(Serial);
+
             if (Download.IsAlive())
             {
                 int Attempt = 1;

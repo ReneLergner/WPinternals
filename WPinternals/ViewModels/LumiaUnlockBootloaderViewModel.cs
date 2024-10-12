@@ -413,6 +413,16 @@ namespace WPinternals
                     if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                     {
                         await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            await Notifier.WaitForArrival();
+                        }
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            throw new WPinternalsException("Unexpected Mode");
+                        }
                     }
                 }
 
@@ -811,6 +821,16 @@ namespace WPinternals
                     if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                     {
                         await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_Flash, SetWorkingStatus, UpdateWorkingStatus);
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            await Notifier.WaitForArrival();
+                        }
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            throw new WPinternalsException("Unexpected Mode");
+                        }
                     }
                 }
                 else
@@ -1478,6 +1498,16 @@ namespace WPinternals
                     if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                     {
                         await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_Flash, SetWorkingStatus, UpdateWorkingStatus);
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            await Notifier.WaitForArrival();
+                        }
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            throw new WPinternalsException("Unexpected Mode");
+                        }
                     }
 
                     // phone is in flash mode, we can exit
@@ -1725,14 +1755,17 @@ namespace WPinternals
                     await SwitchModeViewModel.SwitchToWithStatus(Notifier, PhoneInterfaces.Lumia_Flash, SetWorkingStatus, UpdateWorkingStatus);
                 }
 
-                if ((Notifier.CurrentInterface != PhoneInterfaces.Lumia_Bootloader) && (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash))
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                 {
                     await Notifier.WaitForArrival();
                 }
 
-                SetWorkingStatus("Flashing...", "The phone may reboot a couple of times. Just wait for it.", null, Status: WPinternalsStatus.Initializing);
+                if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                {
+                    throw new WPinternalsException("Unexpected Mode");
+                }
 
-                ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                SetWorkingStatus("Flashing...", "The phone may reboot a couple of times. Just wait for it.", null, Status: WPinternalsStatus.Initializing);
 
                 List<FlashPart> FlashParts = [];
 
@@ -1871,12 +1904,19 @@ namespace WPinternals
                     if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                     {
                         ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            await Notifier.WaitForArrival();
+                        }
                     }
 
-                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Flash)
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                     {
-                        await LumiaFlashParts(Notifier, FFUPath, false, false, null, DoResetFirst, ClearFlashingStatusAtEnd: true, ShowProgress: false);
+                        throw new WPinternalsException("Unexpected Mode");
                     }
+
+                    await LumiaFlashParts(Notifier, FFUPath, false, false, null, DoResetFirst, ClearFlashingStatusAtEnd: true, ShowProgress: false);
                 }
 
                 LogFile.Log("Phone is relocked", LogType.FileAndConsole);
@@ -2265,6 +2305,17 @@ namespace WPinternals
 
                     SetWorkingStatus("Problem detected, rolling back...", ErrorMessage);
                     await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        await Notifier.WaitForArrival();
+                    }
+
+                    if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                    {
+                        throw new WPinternalsException("Unexpected Mode");
+                    }
+
                     Parts = [];
 
                     // Restore original GPT, which will also reference the original NV.
@@ -2495,6 +2546,16 @@ namespace WPinternals
                     {
                         SetWorkingStatus("Rebooting phone...");
                         await SwitchModeViewModel.SwitchTo(Notifier, PhoneInterfaces.Lumia_Flash);
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            await Notifier.WaitForArrival();
+                        }
+
+                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                        {
+                            throw new WPinternalsException("Unexpected Mode");
+                        }
                     }
                     else
                     {

@@ -87,34 +87,6 @@ namespace WPinternals
         internal SwitchModeViewModel(PhoneNotifierViewModel PhoneNotifier, PhoneInterfaces? TargetMode, ModeSwitchProgressHandler ModeSwitchProgress, ModeSwitchErrorHandler ModeSwitchError, ModeSwitchSuccessHandler ModeSwitchSuccess, SetWorkingStatus SetWorkingStatus = null, UpdateWorkingStatus UpdateWorkingStatus = null)
             : base()
         {
-            if ((PhoneNotifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader) && (TargetMode == PhoneInterfaces.Lumia_Flash))
-            {
-                LumiaBootManagerPhoneInfo Info = ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).ReadPhoneInfo(false);
-                if (Info.BootManagerProtocolVersionMajor >= 2)
-                {
-                    try
-                    {
-                        // The implementation of SwitchToFlashAppContext() is improved
-                        // SwitchToFlashAppContext() should only be used with BootMgr v2
-                        // For switching from BootMgr to FlashApp, it will use NOKS
-                        // That will switch to a charging state, whereas a normal context switch will not start charging
-                        // The implementation of NOKS in BootMgr mode has changed in BootMgr v2
-                        // It does not disconnect / reconnect anymore and the apptype is changed immediately
-                        // NOKS still doesnt return a status
-                        // BootMgr v1 uses normal NOKS and waits for arrival of FlashApp
-                        ((LumiaBootManagerAppModel)PhoneNotifier.CurrentModel).SwitchToFlashAppContext();
-
-                        // But this was called as a real switch, so we will raise an arrival event.
-                        PhoneNotifier.CurrentInterface = PhoneInterfaces.Lumia_Flash;
-                        PhoneNotifier.NotifyArrival();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogFile.LogException(ex, LogType.FileOnly);
-                    }
-                }
-            }
-
             if (PhoneNotifier.CurrentInterface == TargetMode)
             {
                 ModeSwitchSuccess(PhoneNotifier.CurrentModel, (PhoneInterfaces)PhoneNotifier.CurrentInterface);

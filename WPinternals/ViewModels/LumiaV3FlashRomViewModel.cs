@@ -193,8 +193,7 @@ namespace WPinternals
 
             try
             {
-                LumiaFlashAppModel Model = (LumiaFlashAppModel)Notifier.CurrentModel;
-                LumiaFlashAppPhoneInfo Info = Model.ReadPhoneInfo();
+                LumiaFlashAppPhoneInfo Info = ((LumiaFlashAppModel)Notifier.CurrentModel).ReadPhoneInfo();
 
                 if ((Info.SecureFfuSupportedProtocolMask & ((ushort)FfuProtocol.ProtocolSyncV2)) == 0) // Exploit needs protocol v2 -> This check is not conclusive, because old phones also report support for this protocol, although it is really not supported.
                 {
@@ -443,7 +442,7 @@ namespace WPinternals
                 LogFile.Log("Flash in progress...", LogType.ConsoleOnly);
                 SetWorkingStatus("Flashing...", null, (UInt64?)payloads.Length, Status: WPinternalsStatus.Flashing);
 
-                Model.SendFfuHeaderV1(FfuHeader, Options);
+                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV1(FfuHeader, Options);
 
                 UInt64 counter = 0;
                 Int32 numberOfPayloadsToSendAtOnce = 1;
@@ -485,24 +484,25 @@ namespace WPinternals
 
                     if ((Info.SecureFfuSupportedProtocolMask & (ushort)FfuProtocol.ProtocolSyncV2) != 0)
                     {
-                        Model.SendFfuPayloadV2(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Length).ToString()));
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuPayloadV2(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Length).ToString()));
                     }
                     else
                     {
-                        Model.SendFfuPayloadV1(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Length).ToString()));
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuPayloadV1(payloadBuffer, Int32.Parse((counter * 100 / (UInt64)payloads.Length).ToString()));
                     }
 
                     UpdateWorkingStatus(ProgressText, null, counter, WPinternalsStatus.Flashing);
                 }
 
-                Model.ResetPhone();
+                ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
 
                 await Notifier.WaitForRemoval();
 
                 ExitSuccess("Flash succeeded!", null);
             }
-            catch
+            catch (Exception ex)
             {
+                LogFile.Log(ex.Message);
                 throw new WPinternalsException("Custom flash failed");
             }
         }
