@@ -15,7 +15,7 @@ jobs:
         platform: [win]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v1
@@ -31,7 +31,7 @@ jobs:
           msbuild /m /t:restore,wpinternals:publish /p:Platform=${{ matrix.architecture }} /p:RuntimeIdentifier=${{ matrix.platform }}-${{ matrix.architecture }} /p:PublishDir=${{ github.workspace }}/artifacts/${{ matrix.platform }}-${{ matrix.architecture }} /p:PublishSingleFile=true /p:PublishTrimmed=false WPinternals.sln
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.platform }}-${{ matrix.architecture }}
           path: ${{ github.workspace }}/artifacts/${{ matrix.platform }}-${{ matrix.architecture }}
