@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WPinternalsSDK
+﻿namespace WPinternalsSDK
 {
     public enum CreationDisposition
     {

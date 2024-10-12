@@ -21,7 +21,6 @@
 using MadWizard.WinUSBNet;
 using System;
 using System.Diagnostics.Eventing.Reader;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 

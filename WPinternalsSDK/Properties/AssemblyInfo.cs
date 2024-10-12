@@ -1,9 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 
 [assembly: AssemblyVersion("1.0.5795.42493")]
 [assembly: AssemblyTitle("WPinternals SDK")]

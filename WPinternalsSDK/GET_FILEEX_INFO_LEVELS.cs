@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WPinternalsSDK
+﻿namespace WPinternalsSDK
 {
     internal enum GET_FILEEX_INFO_LEVELS
     {
