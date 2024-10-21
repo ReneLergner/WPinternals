@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Patcher</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Patcher\ArmCompiler.cs">
+      <Link>ArmCompiler.cs</Link>
+    </Compile>
+    <Compile Include="..\Patcher\ByteOperations.cs">
+      <Link>ByteOperations.cs</Link>
+    </Compile>
+    <Compile Include="..\Patcher\HelperClasses.cs">
+      <Link>HelperClasses.cs</Link>
+    </Compile>
+    <Compile Include="..\Patcher\ObjectFileParser.cs">
+      <Link>ObjectFileParser.cs</Link>
+    </Compile>
+    <Compile Include="..\Patcher\PatchEngine.cs">
+      <Link>PatchEngine.cs</Link>
+    </Compile>
+    <Compile Include="..\Patcher\PeFile.cs">
+      <Link>PeFile.cs</Link>
+    </Compile>
+    <None Include="..\Patcher\LICENSE">
+      <Link>LICENSE</Link>
+    </None>
+    <None Update="BootUnllockAndRootAccessPatchScript.pds">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Gee.External.Capstone" Version="2.0.2" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+</Project>

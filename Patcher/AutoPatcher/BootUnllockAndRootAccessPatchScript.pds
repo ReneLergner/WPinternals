@@ -1,0 +1,698 @@
+﻿// Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+//
+// Patch Definition Script for Boot Unlock and Root Access on Windows Mobile
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+    
+PatchDefinition Name="RootAccess-MainOS" VersionFrom="EFIESP\Windows\System32\Boot\mobilestartup.efi"
+    
+    PatchFile Path="Windows\System32\sspisrv.dll"
+    
+        JumpToImport "RpcImpersonateClient"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "CheckLowboxAccess" // Optional here
+        PatchCode
+            MOVS R1, #1
+            STR R1, [R0]
+            MOVS R0, #0
+            BX LR
+        EndPatch
+        PatchChecksum
+    
+    PatchFile Path="Windows\System32\NtlmShared.dll"
+    
+        JumpToExport "MsvpPasswordValidate"
+        PatchCode
+            MOVS R0, #1
+            BX LR
+        EndPatch
+        PatchChecksum
+    
+    PatchFile Path="Windows\System32\pacmanserver.dll"
+    
+        FindFirstUnicode "GetMaxCountForDeployedApp"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        PatchCode
+            LDR R1, =0x7FFFFFFF
+            STR R1, [R0]
+            MOVS R0, #0
+            BX LR
+        EndPatch
+        PatchChecksum
+    
+    PatchFile Path="Windows\System32\mscoree.dll"
+    
+        JumpToImport "GetModuleFileNameW"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "CompareWithWhiteList" // Optional here
+        PatchCode
+            MOVS R0, #0
+            BX LR
+        EndPatch
+        PatchChecksum
+    
+    PatchFile Path="Windows\System32\DeploymentExt.dll"
+    
+        FindFirstUnicode "MaxUnsignedApp"
+        JumpToReference
+        FindValue 0x800413A0
+        FindPreviousConditionalJump
+        MakeJumpUnconditional
+        PatchChecksum
+    
+    PatchFile Path="Windows\System32\ntoskrnl.exe"
+    
+    // Fase 1: find all kernel-functions
+    
+        JumpToExport "SeAccessCheckWithHint"
+        CreateLabel "SeAccessCheckWithHint"
+        
+        FindFunctionCall R0 = "ADD R0, SP, #0x7C" R1 = "MOV R1, R?"
+        JumpToTarget
+        CreateLabel "SepFilterToDiscretionary"
+        
+        JumpToReference R0 = "ADDS R0, R?, #0xD0"
+        FindPreviousInstruction "PUSH"
+        FindPreviousInstruction "PUSH"
+        CreateLabel "SeAccessCheckByType"
+        
+        FindFunctionCall R0 = "ADDS R0, R?, #0xF8" R1 = "MOV R1, R?" R2 = "LDR R2, [R?,#0x28]" R3 = "MOV R3, R?"
+        JumpToTarget
+        CreateLabel "SepConstrainByMandatory"
+    
+        JumpBack // to SeAccessCheckByType
+        JumpBack // to SepFilterToDiscretionary
+        
+        JumpToReference R1 = "LDR R1, [R?,#8]"
+        FindPreviousInstruction "PUSH"
+        CreateLabel "SepCommonAccessCheckEx"
+        
+        FindFunctionCall Result = "STR R0, [SP,#0xD4]"
+        JumpToTarget
+        CreateLabel "SepAccessCheckEx"
+    
+        JumpBack // to SepCommonAccessCheckEx
+        JumpBack // to SepFilterToDiscretionary
+        
+        JumpToReference R0 = "ADDS R0, R?, #0x130"
+        FindPreviousInstruction "PUSH"
+        FindPreviousInstruction "PUSH"
+        CreateLabel "SepAccessCheckAndAuditAlarm"
+        
+        FindFunctionCall R0 = "LDR R0, [R?,#0x130]" R1 = "MOV R1, R?" R2 = "LDR R2, [R?,#0x50]" R3 = "MOV R3, R?"
+        JumpToTarget
+        CreateLabel "SepConstrainByConstraintMask"
+        FindNextConditionalJump
+        JumpToTarget
+        CreateLabel "SepConstrainByConstraintMask_FunctionChunk01"
+        
+        JumpBack // to SepConstrainByConstraintMask
+        JumpBack // to SepAccessCheckAndAuditAlarm
+        JumpBack // to SepFilterToDiscretionary
+        JumpBack // to SeAccessCheckWithHint
+        
+        FindFunctionCall R0 = "ADD R0, SP, #0x88" R1 = "MOV R1, R?"
+        JumpToTarget
+        CreateLabel "SepMandatoryToDiscretionary"
+        JumpBack
+        
+        FindFunctionCall Result = "STR R0, [SP,#0x70]"
+        JumpToTarget
+        CreateLabel "SepAccessCheck"
+        
+        JumpToExport "SePrivilegeCheck"
+        FindFunctionCall
+        JumpToTarget
+        CreateLabel "SepPrivilegeCheck"
+        
+        JumpToExport "SeSinglePrivilegeCheck"
+        CreateLabel "SeSinglePrivilegeCheck"
+        
+        JumpToExport "ObReferenceObjectByHandleWithTag"
+        CreateLabel "ObReferenceObjectByHandleWithTag"
+    
+    // Fase 2: patches
+        
+        JumpToLabel "SeAccessCheckByType"
+        
+            // Patch 1:
+            FindNextValue 0xC0000022
+            FindPreviousConditionalJump
+            FindPreviousConditionalJump
+            FindPreviousConditionalJump
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            FindNextValue 0xC0000022
+            
+            // Patch 2:
+            FindNextValue 0xC0000022
+            FindStore
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            
+            // Patch 3:
+            FindNextValue 0xC0000022
+            FindPreviousConditionalJump
+            MakeJumpUnconditional // This jump is right above the value 0xC0000022. After patch the pointer is back on that value.
+            // FindNextValue 0xC0000022
+            
+            // Patch 4:
+            FindNextValue 0xC0000022
+            FindPreviousConditionalJump
+            MakeJumpUnconditional // This jump is right above the value 0xC0000022. After patch the pointer is back on that value.
+            // FindNextValue 0xC0000022
+            
+            // Patch 5:
+            FindNextValue 0xC0000022
+            FindNextInstruction "BNE"
+            JumpToTarget
+            CreateLabel "TargetPatch5"
+            JumpBack
+            FindPreviousInstruction "BEQ"
+            PatchCode
+                B TargetPatch5
+            EndPatch
+            
+            // Patch 6:
+            FindNextValue 0xC0000022
+            FindNextConditionalJump
+            MakeJumpUnconditional
+            
+            // Patch 7:
+            FindNextValue 0xC0000022
+            FindStore
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            
+            // Patch 8:
+            FindNextValue 0xC0000022
+            JumpToReference
+            ClearInstruction
+            JumpBack
+            
+            // Patch 9:
+            FindNextValue 0xC0000022
+            JumpToReference
+            ClearInstruction
+            JumpBack
+        
+        JumpToLabel "SepAccessCheckAndAuditAlarm"
+        
+            // Patch 10:
+            FindNextValue 0xC0000022
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            FindNextValue 0xC0000022
+            
+            // Patch 11:
+            FindNextValue 0xC0000022
+            FindStore
+            CreateLabel "Patch11"
+            FindNextConditionalJump
+            JumpToTarget
+            CreateLabel "TargetPatch11"
+            JumpToLabel "Patch11"
+            PatchCode
+                B TargetPatch11
+            EndPatch
+            
+             // Patch 12:
+            FindNextValue 0xC0000022
+            PatchCode
+                MOV.W R2, #0
+            EndPatch
+            
+        JumpToLabel "SepCommonAccessCheckEx"
+    
+            // Patch 13:
+            FindNextInstruction "TST"
+            FindNextInstruction "TST"
+            FindPreviousConditionalJump
+            ClearInstruction
+            
+        JumpToLabel "SeAccessCheckWithHint"            
+            
+            // Patch 14:
+            FindNextInstruction "BEQ"
+            MakeJumpUnconditional
+            
+        JumpToLabel "SeSinglePrivilegeCheck"
+        
+            // Patch 15:
+            PatchCode
+                MOVS R0, #1
+                BX LR
+            EndPatch
+            
+        JumpToLabel "ObReferenceObjectByHandleWithTag"
+            
+            FindFunctionCall
+            JumpToTarget
+            CreateLabel "ObpReferenceObjectByHandleWithTag"
+            FindInstructionPattern "LDR R?, [R?,#0x74]; CMP R?, #0; BNE ?" InstructionIndex = 2
+            JumpToTarget
+            
+            // Patch 16:
+            FindNextConditionalJump
+            MakeJumpUnconditional // This jump is right above the value 0xC0000022. After patch the pointer is on the error-value.
+            
+            // Patch 17:
+            JumpToReference
+            ClearInstruction
+            JumpBack
+            JumpBack
+            
+            // Patch 18:
+            FindNextValue 0xC0000022
+            JumpToReference
+            ClearInstruction
+            
+        JumpToLabel "SepPrivilegeCheck"
+            
+            // Patch 19:
+            PatchCode
+                MOVS R0, #1
+                BX LR
+            EndPatch
+            
+        JumpToLabel "SepMandatoryToDiscretionary"
+            
+            // Patch 20:
+            PatchCode
+                MOVS R0, #0
+                BX LR
+            EndPatch
+            
+        JumpToLabel "SepAccessCheckEx"
+        
+            // Patch 21:
+            FindNextValue 0x2000000
+            CreateLabel "Patch21"
+            FindNextInstruction "B"
+            JumpToTarget
+            CreateLabel "TargetPatch21"
+            JumpToLabel "Patch21"
+            PatchCode
+                B TargetPatch21
+            EndPatch
+            FindNextValue 0xC0000022
+            
+            // Patch 22:
+            FindNextValue 0xC0000022
+            FindPreviousConditionalJump
+            MakeJumpUnconditional // This jump is right above the value 0xC0000022. After patch the pointer is back on that value.
+            // FindNextValue 0xC0000022
+            
+            // Patch 23:
+            JumpToReference 0
+            ClearInstruction
+            JumpBack
+            
+            // Patch 24:
+            JumpToReference 1
+            ClearInstruction
+            JumpBack
+            
+            // Patch 25:
+            JumpToReference 2
+            ClearInstruction
+            JumpBack
+            
+            // Patch 26:
+            FindNextValue 0xC0000022
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            FindNextValue 0xC0000022
+    
+            // Patch 27:
+            FindNextValue 0xC0000022
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            FindNextValue 0xC0000022
+            
+            // Patch 28:
+            JumpToReference
+            ClearInstruction
+            
+        JumpToLabel "SepAccessCheck"
+        
+            // Patch 29:
+            FindFunctionCall R0 = "LDR R0, [SP,#0x28]"
+            JumpToTarget
+            CreateLabel "SepNormalAccessCheck"
+            JumpBack
+            FindNextInstruction "TST"
+            FindNextConditionalJump
+            ClearInstruction
+            
+            // Patch 30:
+            FindFunctionCall R0 = "MOV R0, R?" R1 = "MOV R1, R?" R2 = "MOV R2, R?" R3 = "LDR R3, [SP,#0x38]"
+            JumpToTarget
+            CreateLabel "SepMaximumAccessCheck"
+            JumpBack
+            FindNextConditionalJump
+            ClearInstruction
+            
+            // Patch 31:
+            FindNextConditionalJump
+            ClearInstruction
+            
+            // Patch 32:
+            FindNextValue 0xC0000022
+            JumpToReference 1
+            ClearInstruction
+            JumpBack
+            
+            // Patch 33:
+            JumpToReference 2
+            ClearInstruction
+            JumpBack
+            
+            // Patch 34:
+            FindNextValue 0xC0000022
+            FindPreviousInstruction "MOVS"
+            FindPreviousInstruction "MOVS"
+            JumpToReference
+            ClearInstruction
+            JumpBack
+            FindNextValue 0xC0000022
+            
+            // Patch 35:
+            JumpToReference CodePattern = "BEQ"
+            ClearInstruction
+            JumpBack
+            
+            // Patch 36:
+            JumpToReference CodePattern = "MOVS; B"
+            FindPreviousInstruction "B"
+            JumpToTarget
+            CreateLabel "TargetPatch36"
+            JumpBack
+            FindPreviousInstruction "CMP"
+            PatchCode
+                B.W TargetPatch36
+            EndPatch
+            JumpBack
+            
+            // Patch 37:
+            JumpToReference CodePattern = "STR; B"
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            
+            // Patch 38:
+            // Stay in function-chunk. Error-code is between previous two patches.
+            FindPreviousValue 0xC0000022
+            FindPreviousConditionalJump
+            MakeJumpUnconditional
+            
+        JumpToLabel "SepConstrainByMandatory"
+        
+            // Patch 39:
+            FindNextInstruction "BNE"
+            JumpToTarget
+            FindNextInstruction "CBNZ"
+            JumpToTarget
+            CreateLabel "TargetPatch39"
+            JumpBack
+            FindPreviousInstruction "BEQ"
+            PatchCode
+                B TargetPatch39
+            EndPatch
+            JumpBack
+            
+            // Patch 40:
+            FindNextInstruction "B"
+            JumpToTarget
+            FindNextInstruction "CBNZ"
+            JumpToTarget
+            CreateLabel "TargetPatch40"
+            JumpBack
+            FindPreviousInstruction "BEQ"
+            PatchCode
+                B TargetPatch40
+            EndPatch
+            
+        JumpToLabel "SepFilterToDiscretionary"
+    
+            // Patch 41:
+            PatchCode
+                MOVS R0, #0
+                BX LR
+            EndPatch
+                
+        JumpToLabel "SepConstrainByConstraintMask_FunctionChunk01"
+            
+            // Patch 42:
+            FindNextInstruction "TST"
+            FindNextInstruction "CBNZ"
+            JumpToTarget
+            CreateLabel "TargetPatch42"
+            JumpBack
+            FindPreviousInstruction "BEQ"
+            PatchCode
+                B TargetPatch42
+            EndPatch
+            
+            // Patch 43:
+            FindNextInstruction "TST"
+            FindNextInstruction "CBNZ"
+            JumpToTarget
+            CreateLabel "TargetPatch43"
+            JumpBack
+            FindPreviousInstruction "BEQ"
+            FindPreviousInstruction "BEQ" // This one is actually not necessary. Kept here for consistency.
+            PatchCode
+                B TargetPatch43
+            EndPatch
+            
+        PatchChecksum
+    
+PatchDefinition Name="SecureBootHack-MainOS" VersionFrom="EFIESP\Windows\System32\Boot\mobilestartup.efi"
+    
+    PatchFile Path="Windows\System32\BOOT\winload.efi"
+    
+        FindFirstAscii "1.3.6.1.4.1.311.61.4.1"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "ImgpValidateImageHash"
+        PatchCode
+            MOVS    R0, #0
+            BX      LR
+        EndPatch
+        PatchChecksum
+    
+    PatchFile Path="Windows\System32\ci.dll"
+    
+        JumpToImport "PsGetProcessSignatureLevel"
+        JumpToReference
+        CreateLabel "PsGetProcessSignatureLevelWrapper"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "CipReportAndReprieveUMCIFailure"
+        FindNextInstruction "TST.W"
+        FindNextConditionalJump
+        MakeJumpUnconditional "BNE" // BNE -> B, BEQ -> NOP
+        PatchChecksum
+    
+PatchDefinition Name="SecureBootHack-V1-EFIESP" VersionFrom="EFIESP\Windows\System32\Boot\mobilestartup.efi" RelativePath="EFIESP" RelativeOutputPath="SecureBootHack-V1"
+    
+    PatchFile Path="Windows\System32\boot\mobilestartup.efi" // Symbols taken from pdb from version 10.0.10586.107
+    
+        FindFirstAscii "1.3.6.1.4.1.311.61.4.1"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "ImgpValidateImageHash"
+        PatchCode
+            MOVS    R0, #0
+            BX      LR
+        EndPatch
+        FindFirstUnicode "BootDebugPolicyApplied"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "ApplyBootDebugPolicy"
+        PatchCode // This patch is for the new unlock for Lumia Spec A
+            MOVS    R0, #0
+            BX      LR
+        EndPatch
+        PatchChecksum
+    
+    PatchFile Path="efi\boot\bootarm.efi"
+    
+        FindFirstAscii "1.3.6.1.4.1.311.61.4.1"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "ImgpValidateImageHash"
+        PatchCode
+            MOVS    R0, #0
+            BX      LR
+        EndPatch
+        PatchChecksum
+    
+PatchDefinition Name="SecureBootHack-V2-EFIESP" VersionFrom="EFIESP\Windows\System32\Boot\mobilestartup.efi" RelativePath="EFIESP"
+    
+    PatchFile Path="Windows\System32\boot\mobilestartup.efi"
+    
+        FindFirstAscii "MZ"
+        CreateLabel "ImageBase"
+        FindFirstAscii "1.3.6.1.4.1.311.61.4.1"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "ImgpValidateImageHash"
+        PatchCode
+            MOVS    R0, #0
+            BX      LR
+        EndPatch
+        FindFirstUnicode "BootDebugPolicyApplied"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "ApplyBootDebugPolicy"
+        PatchCode
+            MOVS    R0, #0
+            BX      LR
+        EndPatch
+        CreateLabel "EnterMassStorageModeShellCode" // Use the left-over space of the ApplyBootDebugPolicy-function to insert shell-code later on
+        FindFirstUnicode "MassStorageFlag"
+        CreateLabel "MassStorageName"
+        PatchUnicode "Heathcliff74MSM"
+        FindFirstBytes "41 E5 C1 A0 CE 73 7F 46 88 EC D4 4F 92 34 50 4A"
+        CreateLabel "MassStorageGuid"
+        JumpToLabel "MassStorageName"
+        JumpToReference
+        FindNextInstruction "BL"
+        JumpToTarget
+        CreateLabel "EfiGetVariableVolatile"
+        FindValue 2
+        FindNextConditionalJump
+        MakeJumpUnconditional "BEQ"
+        FindFirstUnicode "\Windows\System32\boot\ui\boot.ums.waiting.bmpx"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "EnterMassStorageMode"
+        JumpToReference
+        PatchCode
+            B.W EnterMassStorageModeShellCode
+        EndPatch
+        CreateLabel ReturnFromMassStorageMode
+        FindFirstValue 0x26000145
+        IfNotFoundGo PatchForSetErrorDone
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "SetError"
+        PatchCode
+            MOVS    R0, #1
+            BX      LR
+        EndPatch        
+        PatchForSetErrorDone:
+        FindFirstUnicode "DeviceIDVersion"
+        JumpToReference
+        FindNextInstruction "BL"
+        JumpToTarget
+        CreateLabel "EfiSetVariable"
+        FindFirstAscii "charge: DisplayPowerState protocol successfully loaded"
+        JumpToReference
+        FindPreviousInstruction "PUSH.W"
+        CreateLabel "InitGraphicsSubsystem"
+        FindNextInstruction "BL"
+        JumpToTarget
+        CreateLabel "BlpArchQueryCurrentContextType"
+        JumpBack
+        FindNextInstruction "BL"
+        FindNextInstruction "BL"
+        FindNextInstruction "BL"
+        JumpToTarget
+        CreateLabel "BlpArchSwitchContext"
+        JumpBack
+        FindNextInstruction "LDR"
+        JumpToTarget
+        CreateLabel "EfiBS"
+        JumpToLabel "EnterMassStorageModeShellCode"
+        PatchCode
+            MOV R0, PC
+            LDR R1, =(ApplyBootDebugPolicy - ImageBase + 8)               // Subtract (Offset of shell-code + 4)
+            SUB R0, R0, R1                                                // R0 = relocated base of mobilestartup.efi
+            PUSH {R4-R6}
+            SUB SP, SP, #4
+            MOV R4, R0                                                    // R4 = relocated base of mobilestartup.efi
+    
+            LDR R3, =(MassStorageName - ImageBase)                        // Offset of NV var name (which is patched to "Heathcliff74MSM")
+            ADD R0, R4, R3
+            LDR R3, =(MassStorageGuid - ImageBase)                        // Offset of NV var Guid
+            ADD R1, R4, R3
+            MOVS R2, #3                                                   // Non-volatile, boot-services
+            MOVS R3, #0                                                   // Data-size
+            STR R3, [SP]                                                  // Pointer to data-buffer = NULL
+            LDR R6, =(EfiSetVariable - ImageBase + 1)                     // Offset of SetVariable + 1
+            ADD R5, R4, R6
+            BLX R5                                                        // EfiSetVariable -> Delete variable
+    
+            LDR R1, =(BlpArchQueryCurrentContextType - ImageBase + 1)     // Offset to first thread-function + 1
+            ADD R5, R4, R1
+            BLX R5
+            MOV R6, R0
+            CMP R6, #1
+            BEQ ContextSwitchDone1
+            MOVS R0, #1
+            LDR R1, =(BlpArchSwitchContext - ImageBase + 1)               // Offset to second thread-function + 1
+            ADD R5, R4, R1
+            BLX R5
+            ContextSwitchDone1:
+    
+            LDR R0, =(EfiBS - ImageBase)                                  // Offset of pointer to BootServices function-table
+            ADD R1, R4, R0                                                // R1 = pointer to pointer to BootServices function-table
+            LDR R1, [R1]                                                  // R1 = pointer to BootServices function-table
+            LDR.W R5, [R1,#0xAC]                                          // LocateProtocol
+            ADR R0, VarServicesGuid                                       // This is relative, no need to relocate
+            MOVS R1, #0
+            MOV R2, SP
+            BLX R5                                                        // LocateProtocol - pVarServices in [SP]
+            LDR R5, [SP]                                                  // R5 = Pointer to VariableServices interface
+            LDR R5, [R5,#4]                                               // R5 = pointer to FlushVariableNV()
+            CMP R5, #0
+            BNE PointerFound
+            LDR R5, [SP]                                                  // R5 = Pointer to VariableServices interface
+            LDR R5, [R5,#8]                                               // R5 = pointer to FlushVariableNV()
+            PointerFound:
+            BLX R5                                                        // FlushVariableNV()
+    
+            CMP R6, #1
+            BEQ ContextSwitchDone2
+            MOV R0, R6
+            LDR R1, =(BlpArchSwitchContext - ImageBase + 1)               // Offset to second thread-function + 1
+            ADD R5, R4, R1
+            BLX R5
+            ContextSwitchDone2:
+    
+            LDR R6, =(EnterMassStorageMode - ImageBase + 1)               // Offset of EnterMassStorageMode + 1
+            ADD R5, R4, R6
+            BLX R5                                                        // EnterMassStorageMode
+    
+            LDR R6, =(ReturnFromMassStorageMode - ImageBase + 1)          // Offset of return address + 1
+            ADD R0, R4, R6
+            ADD SP, SP, #4
+            POP {R4-R6}
+            BX R0
+    
+            VarServicesGuid:
+            DCD 0xf9085b9d
+            DCW 0x9304, 0x40fb
+            DCB 0x8f, 0xe0, 0x4a, 0xee, 0x3b, 0x1a, 0x78, 0x4b
+        EndPatch        
+        PatchChecksum
