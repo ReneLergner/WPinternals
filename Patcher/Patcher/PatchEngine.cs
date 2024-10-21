@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda
+﻿// Copyright (c) 2018, Rene Lergner - @Heathcliff74xda
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -53,7 +53,7 @@ namespace WPinternals
             FileWriter.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
             FileWriter.WriteLine("");
             FileWriter.WriteLine("<!--");
-            FileWriter.WriteLine("Copyright(c) 2018, Rene Lergner - wpinternals.net - @Heathcliff74xda");
+            FileWriter.WriteLine("Copyright(c) 2018, Rene Lergner - @Heathcliff74xda");
             FileWriter.WriteLine("");
             FileWriter.WriteLine("Permission is hereby granted, free of charge, to any person obtaining a");
             FileWriter.WriteLine("copy of this software and associated documentation files(the \"Software\"),");
