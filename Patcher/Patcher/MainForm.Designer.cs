@@ -184,7 +184,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(117, 13);
             this.label4.TabIndex = 3;
-            this.label4.Text = "Patch defintions xml-file";
+            this.label4.Text = "Patch definitions xml-file";
             // 
             // label5
             // 
@@ -193,7 +193,7 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(107, 13);
             this.label5.TabIndex = 6;
-            this.label5.Text = "Patch defintion name";
+            this.label5.Text = "Patch definition name";
             // 
             // cmbPatchDefinitionName
             // 
@@ -239,7 +239,7 @@
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(269, 13);
             this.label7.TabIndex = 10;
-            this.label7.Text = "Folder for target file relative to Patch Defintion rootfolder";
+            this.label7.Text = "Folder for target file relative to Patch Definition rootfolder";
             // 
             // label8
             // 

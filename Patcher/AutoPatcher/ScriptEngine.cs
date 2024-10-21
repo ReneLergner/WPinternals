@@ -617,7 +617,7 @@ namespace Patcher
             // Patch bytes in buffer
             System.Buffer.BlockCopy(Bytes, 0, FileBuffer, (int)RawOffset, Bytes.Length);
 
-            // Add patch to defintions (original and patched bytes)
+            // Add patch to definitions (original and patched bytes)
             Patch CurrentPatch = FilePatchCollection.Patches.Find(p => p.Address == RawOffset);
             if (CurrentPatch == null)
             {

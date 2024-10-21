@@ -41,8 +41,8 @@ namespace Patcher
         /// <param name="VirtualAddress"></param>
         /// <param name="CodeType"></param>
         /// <param name="ArmCodeFragment"></param>
-        /// <param name="PatchDefintionsXmlPath"></param>
-        public static void AddPatch(string InputFilePath, string OutputFilePath, string PatchDefinitionName, string TargetVersionDescription, string TargetFilePath, string PathToVisualStudioWithWP8SDK, UInt32 VirtualAddress, CodeType CodeType, string ArmCodeFragment, string PatchDefintionsXmlPath)
+        /// <param name="PatchDefinitionsXmlPath"></param>
+        public static void AddPatch(string InputFilePath, string OutputFilePath, string PatchDefinitionName, string TargetVersionDescription, string TargetFilePath, string PathToVisualStudioWithWP8SDK, UInt32 VirtualAddress, CodeType CodeType, string ArmCodeFragment, string PatchDefinitionsXmlPath)
         {
             SHA1Managed SHA = new();
 
@@ -65,8 +65,8 @@ namespace Patcher
                 RawOffset = PeFile.ConvertVirtualAddressToRawOffset(VirtualAddress);
 
             // Add or replace patch
-            string PatchDefintionsXml = File.ReadAllText(PatchDefintionsXmlPath);
-            PatchEngine PatchEngine = new(PatchDefintionsXml);
+            string PatchDefinitionsXml = File.ReadAllText(PatchDefinitionsXmlPath);
+            PatchEngine PatchEngine = new(PatchDefinitionsXml);
             PatchDefinition PatchDefinition = PatchEngine.PatchDefinitions.Find(d => string.Equals(d.Name, PatchDefinitionName, StringComparison.CurrentCultureIgnoreCase));
             if (PatchDefinition == null)
             {
@@ -143,8 +143,8 @@ namespace Patcher
             if (OutputFilePath != null)
                 File.WriteAllBytes(OutputFilePath, Binary);
 
-            // Write PatchDefintions
-            PatchEngine.WriteDefinitions(PatchDefintionsXmlPath);
+            // Write PatchDefinitions
+            PatchEngine.WriteDefinitions(PatchDefinitionsXmlPath);
         }
 
         private static UInt32 CalculateChecksum(byte[] PEFile)

@@ -183,7 +183,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(117, 13);
             this.label4.TabIndex = 3;
-            this.label4.Text = "Patch defintions xml-file";
+            this.label4.Text = "Patch definitions xml-file";
             // 
             // txtConsole
             // 
