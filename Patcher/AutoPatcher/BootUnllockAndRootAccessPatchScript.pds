@@ -81,7 +81,7 @@ PatchDefinition Name="RootAccess-MainOS" VersionFrom="EFIESP\Windows\System32\Bo
     
     PatchFile Path="Windows\System32\ntoskrnl.exe"
     
-    // Fase 1: find all kernel-functions
+    // Phase 1: find all kernel-functions
     
         JumpToExport "SeAccessCheckWithHint"
         CreateLabel "SeAccessCheckWithHint"
@@ -150,7 +150,7 @@ PatchDefinition Name="RootAccess-MainOS" VersionFrom="EFIESP\Windows\System32\Bo
         JumpToExport "ObReferenceObjectByHandleWithTag"
         CreateLabel "ObReferenceObjectByHandleWithTag"
     
-    // Fase 2: patches
+    // Phase 2: patches
         
         JumpToLabel "SeAccessCheckByType"
         
