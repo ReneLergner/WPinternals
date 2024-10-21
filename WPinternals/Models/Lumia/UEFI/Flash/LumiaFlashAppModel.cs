@@ -779,6 +779,14 @@ namespace WPinternals.Models.UEFIApps.Flash
             ExecuteRawMethod(Request);
         }
 
+        // Erases MODEM_FS1 and MODEM_FS2, and restores MODEM_FSG to MODEM_FS1
+        internal void DoFactoryReset()
+        {
+            byte[] Request = new byte[4];
+            ByteOperations.WriteAsciiString(Request, 0, FactoryResetSignature);
+            ExecuteRawMethod(Request);
+        }
+
         internal void EndAsyncFlash()
         {
             byte[] Request = new byte[7];

@@ -261,7 +261,6 @@ namespace WPinternals
                                             await StorePaths();
 
                                             bool AlreadyUnlocked = false;
-                                            LumiaFlashAppModel FlashModel = (LumiaFlashAppModel)PhoneNotifier.CurrentModel;
 
                                             MachineState OriginalState = State;
                                             State = MachineState.LumiaGetGPT; // Stop handling arrival notifications in this screen

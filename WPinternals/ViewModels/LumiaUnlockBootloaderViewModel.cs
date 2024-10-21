@@ -60,7 +60,7 @@ namespace WPinternals
 
                             if (ModernFlashApp)
                             {
-                                FlashModel.SwitchToFlashAppContext();
+                                FlashModel.SwitchToBootManagerContext();
                             }
                             else
                             {
