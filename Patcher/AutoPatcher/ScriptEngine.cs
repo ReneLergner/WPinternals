@@ -1487,13 +1487,16 @@ namespace Patcher
 
             if (FindSuccess)
             {
-                FunctionDescriptor FoundLabel = Labels.Find(l => string.Equals(l.Name, Label, StringComparison.CurrentCultureIgnoreCase));
-                if (FoundLabel == null)
-                    throw new ScriptExecutionException("Label not found: " + Label);
-
-                WriteLog("Condition was found, jumping to label: " + Label);
-                WriteLog("New virtual address: 0x" + FoundLabel.VirtualAddress.ToString("X8"));
-                CurrentVirtualAddressTarget = FoundLabel.VirtualAddress;
+                CodeLine NewLine = ScriptCode.Find(l => string.Equals(l.Label, Label, StringComparison.CurrentCultureIgnoreCase));
+                if (NewLine == null)
+                {
+                    throw new ScriptExecutionException("Label " + Label + " not found");
+                }
+                else
+                {
+                    Pointer = ScriptCode.IndexOf(NewLine);
+                    WriteLog("Go to label: " + Label);
+                }
             }
         }
 
@@ -1504,13 +1507,16 @@ namespace Patcher
 
             if (!FindSuccess)
             {
-                FunctionDescriptor FoundLabel = Labels.Find(l => string.Equals(l.Name, Label, StringComparison.CurrentCultureIgnoreCase));
-                if (FoundLabel == null)
-                    throw new ScriptExecutionException("Label not found: " + Label);
-
-                WriteLog("Condition was not found, jumping to label: " + Label);
-                WriteLog("New virtual address: 0x" + FoundLabel.VirtualAddress.ToString("X8"));
-                CurrentVirtualAddressTarget = FoundLabel.VirtualAddress;
+                CodeLine NewLine = ScriptCode.Find(l => string.Equals(l.Label, Label, StringComparison.CurrentCultureIgnoreCase));
+                if (NewLine == null)
+                {
+                    throw new ScriptExecutionException("Label " + Label + " not found");
+                }
+                else
+                {
+                    Pointer = ScriptCode.IndexOf(NewLine);
+                    WriteLog("Go to label: " + Label);
+                }
             }
         }
 
