@@ -1461,7 +1461,7 @@ namespace Patcher
             }
             else
             {
-                throw new ScriptExecutionException("Could not jump to target: " + CurrentInstruction.Operand);
+                throw new ScriptExecutionException("Could not jump to target: " + CurrentInstruction.Operand + " - " + AddressString);
             }
         }
 

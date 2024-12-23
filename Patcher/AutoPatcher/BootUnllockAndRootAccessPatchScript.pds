@@ -86,56 +86,47 @@ PatchDefinition Name="RootAccess-MainOS" VersionFrom="EFIESP\Windows\System32\Bo
         JumpToExport "SeAccessCheckWithHint"
         CreateLabel "SeAccessCheckWithHint"
         
-        FindFunctionCall R0 = "ADD R0, SP, #0x7C" R1 = "MOV R1, R?"
+        FindInstructionPattern "MOV R3, R?; MOV R1, R?; BL ?" InstructionIndex = 2
         JumpToTarget
-        CreateLabel "SepFilterToDiscretionary"
+        CreateLabel "SepMandatoryIntegrityCheck"
         
-        JumpToReference R0 = "ADDS R0, R?, #0xD0"
+        JumpToReference R0 = "ADDS R0, R?, #0x118"
         FindPreviousInstruction "PUSH"
         FindPreviousInstruction "PUSH"
         CreateLabel "SeAccessCheckByType"
         
-        FindFunctionCall R0 = "ADDS R0, R?, #0xF8" R1 = "MOV R1, R?" R2 = "LDR R2, [R?,#0x28]" R3 = "MOV R3, R?"
+        FindFunctionCall R0 = "ADDS R0, R?, #0x108" R1 = "MOV R1, R?" R2 = "LDR R2, [R?,#0x40]" R3 = "MOV R3, R?"
         JumpToTarget
         CreateLabel "SepConstrainByMandatory"
     
         JumpBack // to SeAccessCheckByType
-        JumpBack // to SepFilterToDiscretionary
+        JumpBack // to SepMandatoryIntegrityCheck
         
         JumpToReference R1 = "LDR R1, [R?,#8]"
         FindPreviousInstruction "PUSH"
         CreateLabel "SepCommonAccessCheckEx"
         
-        FindFunctionCall Result = "STR R0, [SP,#0xD4]"
+        FindFunctionCall Result = "STR R0, [SP,#0x88]"
         JumpToTarget
         CreateLabel "SepAccessCheckEx"
     
         JumpBack // to SepCommonAccessCheckEx
-        JumpBack // to SepFilterToDiscretionary
+        JumpBack // to SepMandatoryIntegrityCheck
         
-        JumpToReference R0 = "ADDS R0, R?, #0x130"
+        JumpToReference R0 = "ADDS R0, R?, #0x170"
         FindPreviousInstruction "PUSH"
         FindPreviousInstruction "PUSH"
         CreateLabel "SepAccessCheckAndAuditAlarm"
         
-        FindFunctionCall R0 = "LDR R0, [R?,#0x130]" R1 = "MOV R1, R?" R2 = "LDR R2, [R?,#0x50]" R3 = "MOV R3, R?"
-        JumpToTarget
-        CreateLabel "SepConstrainByConstraintMask"
-        FindNextConditionalJump
-        JumpToTarget
-        CreateLabel "SepConstrainByConstraintMask_FunctionChunk01"
-        
-        JumpBack // to SepConstrainByConstraintMask
-        JumpBack // to SepAccessCheckAndAuditAlarm
-        JumpBack // to SepFilterToDiscretionary
-        JumpBack // to SeAccessCheckWithHint
-        
-        FindFunctionCall R0 = "ADD R0, SP, #0x88" R1 = "MOV R1, R?"
+        FindFunctionCall R0 = "ADDS R0, R?, #0x160" R1 = "MOV R1, R?"
         JumpToTarget
         CreateLabel "SepMandatoryToDiscretionary"
         JumpBack
         
-        FindFunctionCall Result = "STR R0, [SP,#0x70]"
+        JumpBack // to SepMandatoryIntegrityCheck
+        JumpBack // to SeAccessCheckWithHint
+        
+        FindFunctionCall R0 = "LDR R0, [SP, #0x84]" R1 = "MOVS R1, #0"
         JumpToTarget
         CreateLabel "SepAccessCheck"
         
@@ -196,24 +187,6 @@ PatchDefinition Name="RootAccess-MainOS" VersionFrom="EFIESP\Windows\System32\Bo
             FindNextValue 0xC0000022
             FindNextConditionalJump
             MakeJumpUnconditional
-            
-            // Patch 7:
-            FindNextValue 0xC0000022
-            FindStore
-            FindPreviousConditionalJump
-            MakeJumpUnconditional
-            
-            // Patch 8:
-            FindNextValue 0xC0000022
-            JumpToReference
-            ClearInstruction
-            JumpBack
-            
-            // Patch 9:
-            FindNextValue 0xC0000022
-            JumpToReference
-            ClearInstruction
-            JumpBack
         
         JumpToLabel "SepAccessCheckAndAuditAlarm"
         
@@ -291,14 +264,6 @@ PatchDefinition Name="RootAccess-MainOS" VersionFrom="EFIESP\Windows\System32\Bo
             // Patch 19:
             PatchCode
                 MOVS R0, #1
-                BX LR
-            EndPatch
-            
-        JumpToLabel "SepMandatoryToDiscretionary"
-            
-            // Patch 20:
-            PatchCode
-                MOVS R0, #0
                 BX LR
             EndPatch
             
@@ -451,39 +416,6 @@ PatchDefinition Name="RootAccess-MainOS" VersionFrom="EFIESP\Windows\System32\Bo
                 B TargetPatch40
             EndPatch
             
-        JumpToLabel "SepFilterToDiscretionary"
-    
-            // Patch 41:
-            PatchCode
-                MOVS R0, #0
-                BX LR
-            EndPatch
-                
-        JumpToLabel "SepConstrainByConstraintMask_FunctionChunk01"
-            
-            // Patch 42:
-            FindNextInstruction "TST"
-            FindNextInstruction "CBNZ"
-            JumpToTarget
-            CreateLabel "TargetPatch42"
-            JumpBack
-            FindPreviousInstruction "BEQ"
-            PatchCode
-                B TargetPatch42
-            EndPatch
-            
-            // Patch 43:
-            FindNextInstruction "TST"
-            FindNextInstruction "CBNZ"
-            JumpToTarget
-            CreateLabel "TargetPatch43"
-            JumpBack
-            FindPreviousInstruction "BEQ"
-            FindPreviousInstruction "BEQ" // This one is actually not necessary. Kept here for consistency.
-            PatchCode
-                B TargetPatch43
-            EndPatch
-            
         PatchChecksum
     
 PatchDefinition Name="SecureBootHack-MainOS" VersionFrom="EFIESP\Windows\System32\Boot\mobilestartup.efi"
@@ -502,13 +434,13 @@ PatchDefinition Name="SecureBootHack-MainOS" VersionFrom="EFIESP\Windows\System3
     
     PatchFile Path="Windows\System32\ci.dll"
     
-        JumpToImport "PsGetProcessSignatureLevel"
+        JumpToImport "_wcsupr"
         JumpToReference
-        CreateLabel "PsGetProcessSignatureLevelWrapper"
+        CreateLabel "_wcsuprWrapper"
         JumpToReference
         FindPreviousInstruction "PUSH.W"
         CreateLabel "CipReportAndReprieveUMCIFailure"
-        FindNextInstruction "TST.W"
+        FindInstructionPattern "MOVS R?, #1; LDR R?, [R?]; TST R?, R?" InstructionIndex = 2
         FindNextConditionalJump
         MakeJumpUnconditional "BNE" // BNE -> B, BEQ -> NOP
         PatchChecksum
