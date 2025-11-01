@@ -344,6 +344,7 @@
     <Folder Include="DiscUtils\DiscUtils.Core\Internal\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\7zip\7zip.csproj" />
     <ProjectReference Include="..\WinUSBNet\WinUSBNet.csproj" />
   </ItemGroup>
   <PropertyGroup>
