@@ -197,7 +197,7 @@ namespace WPinternals
                     // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                     // This normally leads to endless-loops when the NV-variables are enumerated.
                     // But the partition contains an extra hack to break out the endless loops.
-                    Stream stream = assembly.GetManifestResourceStream("WPinternals.SB");
+                    Stream stream = assembly.GetManifestResourceStream("WPinternals.Assets.SB");
 
                     return new DecompressedStream(stream);
                 });
@@ -2293,7 +2293,7 @@ namespace WPinternals
                             // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                             // This normally leads to endless-loops when the NV-variables are enumerated.
                             // But the partition contains an extra hack to break out the endless loops.
-                            Stream stream = assembly.GetManifestResourceStream("WPinternals.SB");
+                            Stream stream = assembly.GetManifestResourceStream("WPinternals.Assets.SB");
 
                             return new DecompressedStream(stream);
                         });
@@ -2652,7 +2652,7 @@ namespace WPinternals
                                 // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                                 // This normally leads to endless-loops when the NV-variables are enumerated.
                                 // But the partition contains an extra hack to break out the endless loops.
-                                Stream stream = assembly.GetManifestResourceStream("WPinternals.SB");
+                                Stream stream = assembly.GetManifestResourceStream("WPinternals.Assets.SB");
 
                                 return new DecompressedStream(stream);
                             });

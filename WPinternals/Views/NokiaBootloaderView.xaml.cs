@@ -45,7 +45,7 @@ namespace WPinternals
             UIContext = SynchronizationContext.Current;
 
             // Setting these properties in XAML results in an error. Why?
-            GifImage.GifSource = "/aerobusy.gif";
+            GifImage.GifSource = "/Assets/aerobusy.gif";
             GifImage.AutoStart = true;
 
             Loaded += NokiaBootloaderView_Loaded;

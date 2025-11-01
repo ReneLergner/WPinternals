@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <BitmapImage x:Key="LogoImageSource" UriSource="..\Logo.png" />
+        <BitmapImage x:Key="LogoImageSource" UriSource="..\Assets\Logo.png" />
     </UserControl.Resources>
     <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25">
         <Grid>

@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
              d:DesignWidth="700"
              >
     <UserControl.Resources>
-        <BitmapImage x:Key="Busy" UriSource="..\aerobusy.gif" />
+        <BitmapImage x:Key="Busy" UriSource="..\Assets\aerobusy.gif" />
         <helpers:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
         <helpers:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
     </UserControl.Resources>

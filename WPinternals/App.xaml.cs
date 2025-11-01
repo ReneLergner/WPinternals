@@ -77,14 +77,14 @@ namespace WPinternals
             Registration.CheckExpiration();
 
             string PatchDefintionsXml;
-            string PatchDefintionsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PatchDefintions.xml");
+            string PatchDefintionsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "PatchDefintions.xml");
             if (File.Exists(PatchDefintionsPath))
             {
                 PatchDefintionsXml = File.ReadAllText(PatchDefintionsPath);
             }
             else
             {
-                using Stream stream = System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("WPinternals.PatchDefinitions.xml");
+                using Stream stream = System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("WPinternals.Assets.PatchDefinitions.xml");
                 using StreamReader sr = new(stream);
                 PatchDefintionsXml = sr.ReadToEnd();
             }

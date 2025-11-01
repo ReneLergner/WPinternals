@@ -1013,7 +1013,7 @@ namespace WPinternals
                         // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                         // This normally leads to endless-loops when the NV-variables are enumerated.
                         // But the partition contains an extra hack to break out the endless loops.
-                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
+                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.Assets.SBMSM"))
                         {
                             using DecompressedStream dec = new(stream);
                             using MemoryStream SB = new(); // Must be a seekable stream!
@@ -1240,7 +1240,7 @@ namespace WPinternals
                         // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                         // This normally leads to endless-loops when the NV-variables are enumerated.
                         // But the partition contains an extra hack to break out the endless loops.
-                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
+                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.Assets.SBMSM"))
                         {
                             using DecompressedStream dec = new(stream);
                             using MemoryStream SB = new(); // Must be a seekable stream!
@@ -1441,7 +1441,7 @@ namespace WPinternals
                         // It overwrites the variable in a different NV-partition than where this variable is stored usually.
                         // This normally leads to endless-loops when the NV-variables are enumerated.
                         // But the partition contains an extra hack to break out the endless loops.
-                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.SBMSM"))
+                        using (Stream stream = assembly.GetManifestResourceStream("WPinternals.Assets.SBMSM"))
                         {
                             using DecompressedStream dec = new(stream);
                             using MemoryStream SB = new(); // Must be a seekable stream!

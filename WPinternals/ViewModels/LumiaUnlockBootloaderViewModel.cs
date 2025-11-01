@@ -2108,7 +2108,7 @@ namespace WPinternals
                 Part = new FlashPart();
                 Partition TargetPartition = GPT.GetPartition("UEFI_BS_NV");
                 Part.StartSector = (UInt32)TargetPartition.FirstSector; // GPT is prepared for 64-bit sector-offset, but flash app isn't.
-                string SBRes = IsSpecB ? "WPinternals.SB" : "WPinternals.SBA";
+                string SBRes = IsSpecB ? "WPinternals.Assets.SB" : "WPinternals.Assets.SBA";
                 Part.Stream = new SeekableStream(() =>
                 {
                     System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();

@@ -33,7 +33,7 @@
     <NoWarn>1701;1702;CA1416;RCS1090;RCS1163</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>WPinternals.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\WPinternals.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>WPinternals.App</StartupObject>
@@ -306,27 +306,27 @@
       <SubType>Designer</SubType>
     </None>
     <AppDesigner Include="Properties\" />
-    <EmbeddedResource Include="SB" />
-    <EmbeddedResource Include="SBA" />
-    <EmbeddedResource Include="SBMSM" />
+    <EmbeddedResource Include="Assets\SB" />
+    <EmbeddedResource Include="Assets\SBA" />
+    <EmbeddedResource Include="Assets\SBMSM" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Logo.png" />
+    <Resource Include="Assets\Logo.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="WPinternals.ico" />
+    <Resource Include="Assets\WPinternals.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="aerobusy.gif" />
+    <Resource Include="Assets\aerobusy.gif" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="PhoneReboot.png" />
+    <Resource Include="Assets\PhoneReboot.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Logo-Small.png" />
+    <Resource Include="Assets\Logo-Small.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="PatchDefinitions.xml">
+    <EmbeddedResource Include="Assets\PatchDefinitions.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

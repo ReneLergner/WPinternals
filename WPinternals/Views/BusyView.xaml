@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
              mc:Ignorable="d" 
              d:DesignWidth="700">
     <UserControl.Resources>
-        <BitmapImage x:Key="Busy" UriSource="..\aerobusy.gif" />
+        <BitmapImage x:Key="Busy" UriSource="..\Assets\aerobusy.gif" />
         <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
         <helpers:InverseObjectToVisibilityConverter x:Key="InverseObjectToVisibilityConverter" />
         <helpers:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
