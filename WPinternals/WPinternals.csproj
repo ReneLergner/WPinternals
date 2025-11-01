@@ -340,11 +340,8 @@
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="DiscUtils\DiscUtils.Core\CoreCompat\" />
-    <Folder Include="DiscUtils\DiscUtils.Core\Internal\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\7zip\7zip.csproj" />
+    <ProjectReference Include="..\DiscUtils\DiscUtils.Fat\DiscUtils.Fat.WPI.csproj" />
     <ProjectReference Include="..\WinUSBNet\WinUSBNet.csproj" />
   </ItemGroup>
   <PropertyGroup>

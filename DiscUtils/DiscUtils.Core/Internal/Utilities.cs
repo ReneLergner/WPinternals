@@ -28,7 +28,7 @@ using System.Text.RegularExpressions;
 
 namespace DiscUtils.Internal
 {
-    internal static class Utilities
+    public static class Utilities
     {
         /// <summary>
         /// Converts between two arrays.

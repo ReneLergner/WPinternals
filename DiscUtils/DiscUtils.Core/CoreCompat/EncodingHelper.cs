@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DiscUtils.CoreCompat
 {
-    internal static class EncodingHelper
+    public static class EncodingHelper
     {
         private static bool _registered;
 
