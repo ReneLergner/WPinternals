@@ -30,9 +30,9 @@ namespace MadWizard.WinUSBNet
             _notifier = notifier;
 
             IntPtr hWnd = IntPtr.Zero;
-            if (Application.Current.MainWindow != null)
+            if (System.Windows.Application.Current.MainWindow != null)
             {
-                hWnd = new WindowInteropHelper(Application.Current.MainWindow).Handle;
+                hWnd = new WindowInteropHelper(System.Windows.Application.Current.MainWindow).Handle;
             }
 
             if (hWnd == IntPtr.Zero)
@@ -42,7 +42,7 @@ namespace MadWizard.WinUSBNet
 
             API.DeviceManagement.RegisterForDeviceNotifications(hWnd, _guid, ref _notifyHandle);
 
-            HwndSource source = PresentationSource.FromVisual(Application.Current.MainWindow) as HwndSource;
+            HwndSource source = PresentationSource.FromVisual(System.Windows.Application.Current.MainWindow) as HwndSource;
             source.AddHook(WndProc);
         }
 
@@ -168,22 +168,22 @@ namespace MadWizard.WinUSBNet
 
                     void RemoveHookAction()
                     {
-                        if (Application.Current.MainWindow != null)
+                        if (System.Windows.Application.Current.MainWindow != null)
                         {
-                            HwndSource source = PresentationSource.FromVisual(Application.Current.MainWindow) as HwndSource;
+                            HwndSource source = PresentationSource.FromVisual(System.Windows.Application.Current.MainWindow) as HwndSource;
                             source.RemoveHook(WndProc);
                         }
                     }
 
-                    if (Application.Current != null)
+                    if (System.Windows.Application.Current != null)
                     {
-                        if (Application.Current.Dispatcher.Thread.ManagedThreadId == Environment.CurrentManagedThreadId)
+                        if (System.Windows.Application.Current.Dispatcher.Thread.ManagedThreadId == Environment.CurrentManagedThreadId)
                         {
                             RemoveHookAction();
                         }
                         else
                         {
-                            Application.Current.Dispatcher.Invoke(RemoveHookAction);
+                            System.Windows.Application.Current.Dispatcher.Invoke(RemoveHookAction);
                         }
                     }
                 }

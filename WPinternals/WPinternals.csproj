@@ -343,6 +343,9 @@
     <Folder Include="DiscUtils\DiscUtils.Core\CoreCompat\" />
     <Folder Include="DiscUtils\DiscUtils.Core\Internal\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinUSBNet\WinUSBNet.csproj" />
+  </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>
       "C:\Program Files\PsTools\pskill.exe" XDesProc.exe 2&gt;nul 1&gt;nul

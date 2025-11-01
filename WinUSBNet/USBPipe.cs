@@ -452,8 +452,10 @@ namespace MadWizard.WinUSBNet
 
         private void LogException(Exception Ex)
         {
-            WPinternals.HelperClasses.LogFile.Log("Error on USB port!", WPinternals.HelperClasses.LogType.FileOnly);
-            WPinternals.HelperClasses.LogFile.Log("Device: " + Device.Descriptor.FullName, WPinternals.HelperClasses.LogType.FileOnly);
+            // TODO: FIX!
+
+            //WPinternals.HelperClasses.LogFile.Log("Error on USB port!", WPinternals.HelperClasses.LogType.FileOnly);
+            //WPinternals.HelperClasses.LogFile.Log("Device: " + Device.Descriptor.FullName, WPinternals.HelperClasses.LogType.FileOnly);
 
             if (IsIn)
             {
@@ -464,15 +466,15 @@ namespace MadWizard.WinUSBNet
                 (((API.APIException)Ex.InnerException).InnerException is System.ComponentModel.Win32Exception) &&
                 (((System.ComponentModel.Win32Exception)Ex.InnerException.InnerException).NativeErrorCode == 0X1F))
             {
-                WPinternals.HelperClasses.LogFile.Log("Failed to communicate on new USB connection", WPinternals.HelperClasses.LogType.FileAndConsole);
+                //WPinternals.HelperClasses.LogFile.Log("Failed to communicate on new USB connection", WPinternals.HelperClasses.LogType.FileAndConsole);
             }
 
             if (LastWritten != null)
             {
-                WPinternals.HelperClasses.LogFile.Log("Last written: " + WPinternals.HelperClasses.Converter.ConvertHexToString(LastWritten, ""), WPinternals.HelperClasses.LogType.FileOnly);
+                //WPinternals.HelperClasses.LogFile.Log("Last written: " + WPinternals.HelperClasses.Converter.ConvertHexToString(LastWritten, ""), WPinternals.HelperClasses.LogType.FileOnly);
             }
 
-            WPinternals.HelperClasses.LogFile.LogException(Ex, WPinternals.HelperClasses.LogType.FileOnly);
+            //WPinternals.HelperClasses.LogFile.LogException(Ex, WPinternals.HelperClasses.LogType.FileOnly);
         }
 
         private void LogAndThrowException(Exception Ex)
