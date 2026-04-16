@@ -27,6 +27,7 @@ using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia;
 using WPinternals.Models.Lumia.NCSd;
 using WPinternals.Models.Lumia.UEFI;
+using WPinternals.Models.SimpleIO;
 using WPinternals.Models.UEFIApps.BootMgr;
 using WPinternals.Models.UEFIApps.Flash;
 using WPinternals.Models.UEFIApps.PhoneInfo;
@@ -94,7 +95,7 @@ namespace WPinternals
             else
             {
                 this.PhoneNotifier = PhoneNotifier;
-                this.CurrentModel = (NokiaPhoneModel)PhoneNotifier.CurrentModel;
+                this.CurrentModel = PhoneNotifier.CurrentModel;
                 this.CurrentMode = PhoneNotifier.CurrentInterface;
                 this.TargetMode = TargetMode;
                 if (ModeSwitchProgress != null)
@@ -217,6 +218,26 @@ namespace WPinternals
             // Make switch and set message or navigate to error
             switch (CurrentMode)
             {
+                case PhoneInterfaces.SimpleIO:
+                    IsSwitchingInterface = true;
+                    switch (TargetMode)
+                    {
+                        case PhoneInterfaces.Lumia_Normal:
+                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                            ((SimpleIOModel)CurrentModel).ContinueBoot();
+                            ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
+                            LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
+                            break;
+                        case PhoneInterfaces.Lumia_MassStorage:
+                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                            ((SimpleIOModel)CurrentModel).EnterMassStorage();
+                            ModeSwitchProgressWrapper("Rebooting phone to Mass Storage mode...", null);
+                            LogFile.Log("Rebooting phone to Mass Storage mode", LogType.FileAndConsole);
+                            break;
+                        default:
+                            return;
+                    }
+                    break;
                 case PhoneInterfaces.Lumia_Normal:
                 case PhoneInterfaces.Lumia_Label:
                     string DeviceMode;

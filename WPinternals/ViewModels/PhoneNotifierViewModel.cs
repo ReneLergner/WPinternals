@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia.NCSd;
 using WPinternals.Models.Lumia.UEFI;
+using WPinternals.Models.SimpleIO;
 using WPinternals.Models.UEFIApps.BootMgr;
 using WPinternals.Models.UEFIApps.Flash;
 using WPinternals.Models.UEFIApps.PhoneInfo;
@@ -47,6 +48,7 @@ namespace WPinternals
         private USBNotifier LumiaEmergencyNotifier;
         private USBNotifier LumiaLabelNotifier;
         private USBNotifier HidInterfaceNotifier;
+        private USBNotifier SimpleIONotifier;
 
         public PhoneInterfaces? CurrentInterface = null;
         private PhoneInterfaces? LastInterface = null;
@@ -66,6 +68,8 @@ namespace WPinternals
         private Guid LumiaLabelInterfaceGuid = new("{F4FE0C27-7304-4ED7-AAB5-130893B84B6F}");
         private Guid LumiaFlashInterfaceGuid = new("{9e3bd5f7-9690-4fcc-8810-3e2650cd6ecc}");
         private Guid LumiaEmergencyInterfaceGuid = new("{71DE994D-8B7C-43DB-A27E-2AE7CD579A0C}");
+
+        private Guid SimpleIOInterfaceGuid = new("{82809dd0-51f5-11e1-b86c-0800200c9a66}");
 
         private readonly object ModelLock = new();
 
@@ -113,6 +117,10 @@ namespace WPinternals
             HidInterfaceNotifier.Arrival += LumiaNotifier_Arrival;
             HidInterfaceNotifier.Removal += LumiaNotifier_Removal;
 
+            SimpleIONotifier = new USBNotifier(SimpleIOInterfaceGuid);
+            SimpleIONotifier.Arrival += LumiaNotifier_Arrival;
+            SimpleIONotifier.Removal += LumiaNotifier_Removal;
+
             try
             {
                 EventLogQuery LogQuery = new("Microsoft-Windows-Kernel-PnP/Configuration", PathType.LogName, "*[System[(EventID = 411)]]");
@@ -150,6 +158,7 @@ namespace WPinternals
             ComPortNotifier.Dispose();
             LumiaEmergencyNotifier.Dispose();
             HidInterfaceNotifier.Dispose();
+            SimpleIONotifier.Dispose();
             LogWatcher.Dispose();
         }
 
@@ -176,7 +185,18 @@ namespace WPinternals
                 if (e.DevicePath.Contains("VID_0421&", StringComparison.OrdinalIgnoreCase) ||
                     e.DevicePath.Contains("VID_045E&", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (e.DevicePath.Contains("&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) ||
+                    if (e.DevicePath.Contains("&PID_062A", StringComparison.OrdinalIgnoreCase))
+                    {
+                        CurrentModel = new SimpleIOModel(e.DevicePath);
+
+                        CurrentInterface = PhoneInterfaces.SimpleIO;
+                        LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
+                        LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
+                        LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                        LogFile.Log("Mode: SimpleIO", LogType.FileAndConsole);
+                        NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+                    }
+                    else if (e.DevicePath.Contains("&PID_0660&MI_04", StringComparison.OrdinalIgnoreCase) ||
                         e.DevicePath.Contains("&PID_0713&MI_04", StringComparison.OrdinalIgnoreCase) || // for Spec B
                         e.DevicePath.Contains("&PID_0A01&MI_04", StringComparison.OrdinalIgnoreCase)) // for Spec B (650)
                     {
@@ -530,6 +550,7 @@ namespace WPinternals
                 e.DevicePath.Contains("VID_0421&PID_05EE", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_045E&PID_062A", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase)

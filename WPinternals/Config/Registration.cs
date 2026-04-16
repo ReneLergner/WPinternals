@@ -33,7 +33,7 @@ namespace WPinternals.Config
         internal const bool IsPrerelease = false;
 #endif
 
-        internal static readonly DateTime ExpirationDate = new(2026, 4, 1);
+        internal static readonly DateTime ExpirationDate = new(2027, 4, 1);
 
         internal static void CheckExpiration()
         {

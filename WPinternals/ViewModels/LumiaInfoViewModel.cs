@@ -21,6 +21,7 @@
 using System;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia.NCSd;
+using WPinternals.Models.SimpleIO;
 using WPinternals.Models.UEFIApps.BootMgr;
 using WPinternals.Models.UEFIApps.Flash;
 using WPinternals.Models.UEFIApps.PhoneInfo;
@@ -90,6 +91,9 @@ namespace WPinternals
                     break;
                 case PhoneInterfaces.Lumia_MassStorage:
                     ActivateSubContext(new NokiaMassStorageViewModel((MassStorage)CurrentModel));
+                    break;
+                case PhoneInterfaces.SimpleIO:
+                    ActivateSubContext(new SimpleIOViewModel((SimpleIOModel)CurrentModel, ModeSwitchRequestCallback));
                     break;
             }
         }

@@ -115,6 +115,12 @@ DEALINGS IN THE SOFTWARE.
         <DataTemplate DataType="{x:Type local:ContextViewModel}">
             <local:ContextView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type local:SimpleIOViewModel}">
+            <local:SimpleIOView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:SimpleIOModeViewModel}">
+            <local:SimpleIOModeView />
+        </DataTemplate>
         <BitmapImage x:Key="LogoImageSource" UriSource="..\Assets\Logo.png" />
         <BitmapImage x:Key="LogoSmallImageSource" UriSource="..\Assets\Logo-Small.png" />
         <Style x:Key="MenuButtonStyle" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" TargetType="{x:Type Button}">
