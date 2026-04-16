@@ -24,6 +24,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using UnifiedFlashingPlatform;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia.NCSd;
 using WPinternals.Models.Lumia.UEFI;
@@ -49,6 +50,7 @@ namespace WPinternals
         private USBNotifier LumiaLabelNotifier;
         private USBNotifier HidInterfaceNotifier;
         private USBNotifier SimpleIONotifier;
+        private USBNotifier UFPNotifier;
 
         public PhoneInterfaces? CurrentInterface = null;
         private PhoneInterfaces? LastInterface = null;
@@ -70,6 +72,8 @@ namespace WPinternals
         private Guid LumiaEmergencyInterfaceGuid = new("{71DE994D-8B7C-43DB-A27E-2AE7CD579A0C}");
 
         private Guid SimpleIOInterfaceGuid = new("{82809dd0-51f5-11e1-b86c-0800200c9a66}");
+
+        private Guid UFPInterfaceGuid = new("{9E3BD5F7-9690-4FCC-8810-3E2650CD6ECC}");
 
         private readonly object ModelLock = new();
 
@@ -121,6 +125,10 @@ namespace WPinternals
             SimpleIONotifier.Arrival += LumiaNotifier_Arrival;
             SimpleIONotifier.Removal += LumiaNotifier_Removal;
 
+            UFPNotifier = new USBNotifier(UFPInterfaceGuid);
+            UFPNotifier.Arrival += LumiaNotifier_Arrival;
+            UFPNotifier.Removal += LumiaNotifier_Removal;
+
             try
             {
                 EventLogQuery LogQuery = new("Microsoft-Windows-Kernel-PnP/Configuration", PathType.LogName, "*[System[(EventID = 411)]]");
@@ -159,6 +167,7 @@ namespace WPinternals
             LumiaEmergencyNotifier.Dispose();
             HidInterfaceNotifier.Dispose();
             SimpleIONotifier.Dispose();
+            UFPNotifier.Dispose();
             LogWatcher.Dispose();
         }
 
@@ -185,7 +194,18 @@ namespace WPinternals
                 if (e.DevicePath.Contains("VID_0421&", StringComparison.OrdinalIgnoreCase) ||
                     e.DevicePath.Contains("VID_045E&", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (e.DevicePath.Contains("&PID_062A", StringComparison.OrdinalIgnoreCase))
+                    if (e.DevicePath.Contains("&PID_0658", StringComparison.OrdinalIgnoreCase))
+                    {
+                        CurrentModel = new UnifiedFlashingPlatformModel(e.DevicePath);
+
+                        CurrentInterface = PhoneInterfaces.UFP;
+                        LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
+                        LogFile.Log("Device path: " + e.DevicePath, LogType.FileOnly);
+                        LogFile.Log("Connected device: Lumia", LogType.FileAndConsole);
+                        LogFile.Log("Mode: UFP", LogType.FileAndConsole);
+                        NewDeviceArrived(new ArrivalEventArgs((PhoneInterfaces)CurrentInterface, CurrentModel));
+                    }
+                    else if (e.DevicePath.Contains("&PID_062A", StringComparison.OrdinalIgnoreCase))
                     {
                         CurrentModel = new SimpleIOModel(e.DevicePath);
 
@@ -551,6 +571,7 @@ namespace WPinternals
                 e.DevicePath.Contains("VID_045E&PID_0A00", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("VID_045E&PID_0A02", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("VID_045E&PID_062A", StringComparison.OrdinalIgnoreCase) ||
+                e.DevicePath.Contains("VID_045E&PID_0658", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("VID_05C6&PID_9008", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("DISK&VEN_QUALCOMM&PROD_MMC_STORAGE", StringComparison.OrdinalIgnoreCase) ||
                 e.DevicePath.Contains("DISK&VEN_MSFT&PROD_PHONE_MMC_STOR", StringComparison.OrdinalIgnoreCase)

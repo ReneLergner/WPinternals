@@ -344,6 +344,9 @@
     <ProjectReference Include="..\DiscUtils\DiscUtils.Fat\DiscUtils.Fat.WPI.csproj" />
     <ProjectReference Include="..\WinUSBNet\WinUSBNet.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\UFP\" />
+  </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>
       "C:\Program Files\PsTools\pskill.exe" XDesProc.exe 2&gt;nul 1&gt;nul

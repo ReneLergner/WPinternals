@@ -1,0 +1,125 @@
+﻿<!--
+Copyright (c) 2018, Rene Lergner - @Heathcliff74xda
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<UserControl x:Class="WPinternals.UFPView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPinternals"
+             xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
+             mc:Ignorable="d" 
+             d:DesignWidth="700">
+    <UserControl.Resources>
+        <helpers:HexConverter x:Key="HexConverter" />
+        <helpers:BooleanConverter x:Key="VisibilityConverter" OnTrue="Visible" OnFalse="Collapsed" OnNull="Collapsed"/>
+        <helpers:BooleanConverter x:Key="InverseVisibilityConverter" OnTrue="Collapsed" OnFalse="Visible" OnNull="Collapsed" />
+        <helpers:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+    </UserControl.Resources>
+    <StackPanel>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <StackPanel Orientation="Vertical">
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <helpers:Paragraph>
+                            <Run Text="General info" FontSize="18" FontWeight="Bold" Foreground="#FF3753A6" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Grid IsHitTestVisible="False">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Platform name" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding PlatformName, Mode=OneWay}" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Operating mode" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Unified Flashing Platform" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Product Type" Visibility="{Binding Path=ProductType, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding ProductType}" Visibility="{Binding Path=ProductType, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Product Code" Visibility="{Binding Path=ProductCode, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding ProductCode}" Visibility="{Binding Path=ProductCode, Converter={StaticResource ObjectToVisibilityConverter}}"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Storage" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding eMMC}"/>
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Bootloader" />
+                                <TextBlock Grid.Row="6" Grid.Column="1" FontWeight="Bold" Foreground="#FF3753A6" TextWrapping="Wrap" Text="{Binding BootloaderDescription}"/>
+                            </Grid>
+                        </helpers:Paragraph>
+                    </FlowDocument>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding Path=SamsungWarningVisible, Converter={StaticResource VisibilityConverter}}">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <helpers:Paragraph>
+                            <LineBreak />
+                            <helpers:CollapsibleRun Text="Read the " IsVisible="{Binding SamsungWarningVisible}" />
+                            <Hyperlink NavigateUri="GettingStarted">Getting started</Hyperlink>
+                            <Run Text=" section for important information about Samsung eMMC." />
+                        </helpers:Paragraph>
+                    </FlowDocument>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" Margin="20,0" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <helpers:Paragraph>
+                            <LineBreak />
+                            <Run Text="To let the phone go back to Windows, boot to " />
+                            <Hyperlink NavigateUri="Normal">Normal</Hyperlink>
+                            <Run Text=" mode." />
+                        </helpers:Paragraph>
+                    </FlowDocument>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+            </StackPanel>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="#FFD4D4D4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="25" Margin="0,0,0,20">
+            <Expander Header="Phone identity" HorizontalContentAlignment="Stretch" Template="{DynamicResource TopicExpanderTemplate}" Margin="20,0">
+                <helpers:FlowDocumentScrollViewerNoMouseWheel Grid.Column="1" VerticalScrollBarVisibility="Auto" >
+                    <FlowDocument x:Name="Document" FontFamily="Segoe UI" FontSize="12" Loaded="Document_Loaded" PagePadding="1">
+                        <helpers:Paragraph>
+                            <LineBreak />
+                            <Grid IsHitTestVisible="False">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Root Key Hash" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=RootKeyHash, Converter={StaticResource HexConverter}, Mode=OneWay}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Public Phone ID" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=PublicID, Converter={StaticResource HexConverter}, Mode=OneWay}" TextWrapping="Wrap" />
+                            </Grid>
+                        </helpers:Paragraph>
+                    </FlowDocument>
+                </helpers:FlowDocumentScrollViewerNoMouseWheel>
+            </Expander>
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UnifiedFlashingPlatform;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia;
 using WPinternals.Models.Lumia.NCSd;
@@ -218,6 +219,36 @@ namespace WPinternals
             // Make switch and set message or navigate to error
             switch (CurrentMode)
             {
+                case PhoneInterfaces.UFP:
+                    IsSwitchingInterface = true;
+                    switch (TargetMode)
+                    {
+                        case null:
+                            ((UnifiedFlashingPlatformModel)PhoneNotifier.CurrentModel).Shutdown();
+                            ModeSwitchProgressWrapper("Please disconnect your device. Waiting...", null);
+                            LogFile.Log("Please disconnect your device. Waiting...", LogType.FileAndConsole);
+                            new Thread(() =>
+                            {
+                                PhoneNotifier.WaitForRemoval().Wait();
+                                ModeSwitchSuccessWrapper();
+                            }).Start();
+                            break;
+                        case PhoneInterfaces.Lumia_Normal:
+                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                            ((UnifiedFlashingPlatformModel)PhoneNotifier.CurrentModel).ResetPhone();
+                            ModeSwitchProgressWrapper("Rebooting phone to Normal mode...", null);
+                            LogFile.Log("Rebooting phone to Normal mode", LogType.FileAndConsole);
+                            break;
+                        case PhoneInterfaces.Lumia_Bootloader:
+                            PhoneNotifier.NewDeviceArrived += NewDeviceArrived;
+                            ((UnifiedFlashingPlatformModel)PhoneNotifier.CurrentModel).ResetPhone();
+                            ModeSwitchProgressWrapper("Rebooting phone to Bootloader mode...", null);
+                            LogFile.Log("Rebooting phone to Bootloader mode", LogType.FileAndConsole);
+                            break;
+                        default:
+                            return;
+                    }
+                    break;
                 case PhoneInterfaces.SimpleIO:
                     IsSwitchingInterface = true;
                     switch (TargetMode)

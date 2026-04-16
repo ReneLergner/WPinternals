@@ -19,6 +19,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using UnifiedFlashingPlatform;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia.NCSd;
 using WPinternals.Models.SimpleIO;
@@ -112,6 +113,9 @@ namespace WPinternals
                     break;
                 case PhoneInterfaces.SimpleIO:
                     ActivateSubContext(new SimpleIOModeViewModel((SimpleIOModel)CurrentModel, OnModeSwitchRequested));
+                    break;
+                case PhoneInterfaces.UFP:
+                    ActivateSubContext(new UFPModeViewModel((UnifiedFlashingPlatformModel)CurrentModel, OnModeSwitchRequested));
                     break;
             }
         }

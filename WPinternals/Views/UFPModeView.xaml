@@ -20,11 +20,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 -->
 
-<UserControl x:Class="WPinternals.NokiaModeFlashView"
+<UserControl x:Class="WPinternals.UFPModeView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:WPinternals"
              xmlns:helpers="clr-namespace:WPinternals.HelperClasses"
              mc:Ignorable="d" 
@@ -51,27 +51,12 @@ DEALINGS IN THE SOFTWARE.
                     <LineBreak />
                     <LineBreak />
                     <Run Text="Current mode: " />
-                    <Run Text="Flash" Foreground="#FF3753A6" FontWeight="Bold" />
+                    <Run Text="Unified Flashing Platform" Foreground="#FF3753A6" FontWeight="Bold" />
                     <LineBreak />
                     <LineBreak />
                     <Hyperlink NavigateUri="Normal">Switch to Normal-mode</Hyperlink>
                     <LineBreak />
                     <Run Text="This will switch back to Windows Phone OS." />
-                    <LineBreak />
-                    <LineBreak />
-                    <Hyperlink NavigateUri="PhoneInfo">Switch to Phone-Info-mode</Hyperlink>
-                    <LineBreak />
-                    <Run Text="This will switch to Phone Info Mode." />
-                    <LineBreak />
-                    <LineBreak />
-                    <Hyperlink NavigateUri="BootMgr">Switch to Boot-Manager-mode</Hyperlink>
-                    <LineBreak />
-                    <Run Text="This will switch to Boot Manager Mode." />
-                    <LineBreak />
-                    <LineBreak />
-                    <Hyperlink NavigateUri="Label">Switch to Label-mode</Hyperlink>
-                    <LineBreak />
-                    <Run Text="This interface is meant for querying and provisioning the phone. This is normally used for configuring the phone during manufacturing." />
                     <LineBreak />
                     <LineBreak />
                     <Hyperlink NavigateUri="Shutdown">Shutdown the phone</Hyperlink>
@@ -82,8 +67,7 @@ DEALINGS IN THE SOFTWARE.
                     <Hyperlink NavigateUri="MassStorage">Switch to Mass-Storage-mode</Hyperlink>
                     <LineBreak />
                     <Run Text="This mode allows you to access the complete file-system of the phone. " />
-                    <helpers:CollapsibleRun IsVisible="{Binding EffectiveBootloaderSecurityStatus, Mode=OneWay}" Text="Your security flags indicate that this mode is prohibited on this phone."/>
-                    <helpers:CollapsibleRun IsVisible="{Binding EffectiveBootloaderSecurityStatus, Converter={StaticResource InverseConverter}, Mode=OneWay}" Text="Your security flags indicate the this mode can be accessed. But this switch will only succeed if you took all measures to unlock Mass Storage mode." />
+                    <Run Text="To enter this mode the phone will first be booted to Flash mode. After that this tool will immediately attempt to boot the phone to Mass Storage mode. So you may see your phone reboot multiple times." />
                     <LineBreak />
                     <LineBreak />
                     <Run Text="Warning 1: " Foreground="Red" FontWeight="Bold"/>
