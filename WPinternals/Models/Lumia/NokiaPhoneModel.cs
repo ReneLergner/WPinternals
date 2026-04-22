@@ -32,15 +32,7 @@ namespace WPinternals.Models.Lumia
 
         public NokiaPhoneModel(string DevicePath)
         {
-            // Mass Storage device is not WinUSB
-            try
-            {
-                Device = new USBDevice(DevicePath);
-            }
-            catch (Exception ex)
-            {
-                LogFile.LogException(ex, LogType.FileOnly);
-            }
+            Device = new USBDevice(DevicePath);
         }
 
         public void ResetDevice()
@@ -93,7 +85,7 @@ namespace WPinternals.Models.Lumia
 
             if (disposing)
             {
-                Device?.Dispose();
+                Device.Dispose();
             }
 
             // Clean unmanaged resources here.

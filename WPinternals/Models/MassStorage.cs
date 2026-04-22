@@ -28,8 +28,9 @@ using WPinternals.Models.Lumia;
 
 namespace WPinternals
 {
-    internal class MassStorage : NokiaPhoneModel
+    internal class MassStorage : IDisposable
     {
+        protected bool Disposed = false;
         internal string Drive = null;
         internal string PhysicalDrive = null;
         internal string VolumeLabel = null;
@@ -39,7 +40,7 @@ namespace WPinternals
 
         private string Serial;
 
-        internal MassStorage(string DevicePath) : base(DevicePath)
+        internal MassStorage(string DevicePath)
         {
             try
             {
@@ -131,7 +132,27 @@ namespace WPinternals
             }
         }
 
-        protected override void Dispose(bool disposing)
+        /// <summary>
+        /// Disposes the UsbDevice including all unmanaged WinUSB handles. This function
+        /// should be called when the UsbDevice object is no longer in use, otherwise
+        /// unmanaged handles will remain open until the garbage collector finalizes the
+        /// object.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Finalizer for the UsbDevice. Disposes all unmanaged handles.
+        /// </summary>
+        ~MassStorage()
+        {
+            Dispose(false);
+        }
+
+        protected void Dispose(bool disposing)
         {
             if (Disposed)
             {
@@ -141,8 +162,6 @@ namespace WPinternals
             if (disposing)
             {
                 CloseVolume();
-
-                base.Dispose(disposing);
             }
         }
 

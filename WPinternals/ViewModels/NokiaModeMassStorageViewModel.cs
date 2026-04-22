@@ -28,10 +28,10 @@ namespace WPinternals
         private readonly MassStorage CurrentModel;
         private readonly Action<PhoneInterfaces?> RequestModeSwitch;
 
-        internal NokiaModeMassStorageViewModel(NokiaPhoneModel CurrentModel, Action<PhoneInterfaces?> RequestModeSwitch)
+        internal NokiaModeMassStorageViewModel(MassStorage CurrentModel, Action<PhoneInterfaces?> RequestModeSwitch)
             : base()
         {
-            this.CurrentModel = (MassStorage)CurrentModel;
+            this.CurrentModel = CurrentModel;
             this.RequestModeSwitch = RequestModeSwitch;
         }
 
