@@ -27,6 +27,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WPinternals.Config;
 using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia;
 using WPinternals.Models.Lumia.UEFI;
 using WPinternals.Models.UEFIApps.BootMgr;
 using WPinternals.Models.UEFIApps.Flash;
@@ -908,6 +909,7 @@ namespace WPinternals
             bool AssumeImageHeaderFallsInGap = true;
             bool AllocateAsyncBuffersOnPhone = true;
             bool AllocateBackupBuffersOnPhone = false;
+            bool AsyncScanCompleted = false;
             UInt32 CurrentGapFill = EstimatedGapFill;
             UInt32 OldGapFill;
             bool Success = false;
@@ -949,6 +951,12 @@ namespace WPinternals
             do
             {
                 AttemptCount++;
+                IDisposable AttemptModel = Notifier.CurrentModel;
+                if (AttemptModel is NokiaPhoneModel ActivePhoneModel)
+                {
+                    ActivePhoneModel.SetTransferTimeout(PerformFullFlashFirst ? NokiaPhoneModel.DefaultTransferTimeoutMs : 10000);
+                }
+
                 if ((Profile == null) || (AttemptCount > 1))
                 {
                     LogFile.Log("Custom flash attempt: " + AttemptCount + " of " + MaximumAttempts, LogType.FileAndConsole);
@@ -964,6 +972,10 @@ namespace WPinternals
                     ExploitHeaderAllocationSize = CurrentGapFill + (UInt32)FFU.ChunkSize;
                 }
 
+                LogFile.Log(
+                    $"Flashing attempt {AttemptCount}/{MaximumAttempts}: Fill=0x{CurrentGapFill:X}, Header=0x{ExploitHeaderAllocationSize:X}, AssumeInGap={AssumeImageHeaderFallsInGap}, AsyncBuffers={AllocateAsyncBuffersOnPhone}, BackupBuffers={AllocateBackupBuffersOnPhone}",
+                    LogType.FileOnly);
+
                 // Initialize flash attempts
                 // Make sure async buffers are allocated on the phone before overflow attempts,
                 // or else failed attempts may cause more memory-gaps and allocation becomes more unpredictable.
@@ -976,19 +988,36 @@ namespace WPinternals
                 // In any case, the allocation of the async-buffers should not be simulated in the Uefi Memory Simulator,
                 // because that would create a gap in the Simulator, instead of avoiding a gap on the phone.
                 //
-                if (AllocateAsyncBuffersOnPhone)
+                bool AttemptInitFailed = false;
+                try
                 {
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).StartAsyncFlash();
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).EndAsyncFlash(); // Ending Async flashing is not necessary for Lumia 950, but it is necessary for Lumia 640!
-                }
+                    if (AllocateAsyncBuffersOnPhone)
+                    {
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).StartAsyncFlash();
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).EndAsyncFlash(); // Ending Async flashing is not necessary for Lumia 950, but it is necessary for Lumia 640!
+                    }
 
-                if (AllocateBackupBuffersOnPhone)
+                    if (AllocateBackupBuffersOnPhone)
+                    {
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FSG");
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FS1");
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FS2");
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("SSD");
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("DPP");
+                    }
+                }
+                catch (BadConnectionException)
                 {
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FSG");
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FS1");
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("MODEM_FS2");
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("SSD");
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).BackupPartitionToRam("DPP");
+                    LogFile.Log("Connection to phone is lost during flash initialization", LogType.FileAndConsole);
+                    AttemptInitFailed = true;
+                    WaitForReset = true;
+                }
+                catch (Exception Ex)
+                {
+                    LogFile.Log("Flash attempt initialization failed", LogType.FileAndConsole);
+                    LogFile.LogException(Ex, LogType.FileOnly);
+                    AttemptInitFailed = true;
+                    PhoneNeedsReset = true;
                 }
 
                 HeaderOffset = 0;
@@ -1025,6 +1054,11 @@ namespace WPinternals
                 LastHeaderV2Size = 0;
                 do
                 {
+                    if (AttemptInitFailed)
+                    {
+                        break;
+                    }
+
                     HeadersFull = false;
 
                     // On every flashing phase we must fill the memory gap first, before sending the header.
@@ -1255,6 +1289,10 @@ namespace WPinternals
 
                                     FlashInProgress = true;
                                     Scanning = false;
+                                    if (Notifier.CurrentModel is NokiaPhoneModel FlashingPhoneModel)
+                                    {
+                                        FlashingPhoneModel.SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
+                                    }
                                     SetWorkingStatus(null, null, (UInt64?)payloads.Length, Status: WPinternalsStatus.Flashing);
                                 }
                             }
@@ -1357,6 +1395,9 @@ namespace WPinternals
                         {
                             Step = 12;
                             App.Config.SetProfile(PhoneInfo.Type, FlashInfo.PlatformID, PhoneInfo.ProductCode, FlashInfo.Firmware, FFU.GetFirmwareVersion(), CurrentGapFill, ExploitHeaderAllocationSize, AssumeImageHeaderFallsInGap, AllocateAsyncBuffersOnPhone);
+                            LogFile.Log(
+                                $"Saved flashing profile: Fill=0x{CurrentGapFill:X}, Header=0x{ExploitHeaderAllocationSize:X}, AssumeInGap={AssumeImageHeaderFallsInGap}, AsyncBuffers={AllocateAsyncBuffersOnPhone}",
+                                LogType.FileAndConsole);
                             if (ShowProgress)
                             {
                                 LogFile.Log("Custom flash succeeded!", LogType.FileAndConsole);
@@ -1433,24 +1474,43 @@ namespace WPinternals
 
                     if (PhoneNeedsReset)
                     {
-                        ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
+                        if (Notifier.CurrentModel is LumiaFlashAppModel FlashModelToReset)
+                        {
+                            FlashModelToReset.ResetDevice();
+                            FlashModelToReset.ResetPhone();
+                        }
                         WaitForReset = true;
                     }
 
                     if (WaitForReset)
                     {
+                        if (!PhoneNeedsReset && ReferenceEquals(Notifier.CurrentModel, AttemptModel))
+                        {
+                            // Give PnP a brief moment in case the device already crashed and is disconnecting
+                            await Task.Delay(500);
+                            if (ReferenceEquals(Notifier.CurrentModel, AttemptModel) && (Notifier.CurrentModel is LumiaFlashAppModel StalledFlashModel))
+                            {
+                                LogFile.Log("Phone did not disconnect after timeout; resetting USB pipes and attempting reboot", LogType.FileAndConsole);
+                                StalledFlashModel.ResetDevice();
+                                StalledFlashModel.ResetPhone();
+                            }
+                        }
+
                         #region Properly recover from reset between flash attempts - many phones respond differently
 
                         Timeout = false;
-                        try
+                        if (ReferenceEquals(Notifier.CurrentModel, AttemptModel) || (Notifier.CurrentInterface == null))
                         {
-                            await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(40));
+                            try
+                            {
+                                await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(ReferenceEquals(Notifier.CurrentModel, AttemptModel) ? 20 : 40));
+                            }
+                            catch (TimeoutException)
+                            {
+                                Timeout = true;
+                            }
                         }
-                        catch (TimeoutException)
-                        {
-                            Timeout = true;
-                        }
-                        if ((Notifier.CurrentInterface == null) && (!AutoEmergencyReset || Timeout))
+                        if (((Notifier.CurrentInterface == null) || ReferenceEquals(Notifier.CurrentModel, AttemptModel)) && (!AutoEmergencyReset || Timeout))
                         {
                             AutoEmergencyReset = false;
 
@@ -1598,6 +1658,7 @@ namespace WPinternals
                         AssumeImageHeaderFallsInGap = true;
                         AllocateAsyncBuffersOnPhone = true;
                         AllocateBackupBuffersOnPhone = false;
+                        AsyncScanCompleted = false;
                         CurrentGapFill = EstimatedGapFill;
                         Profile = null;
                         ResetScanning = false;
@@ -1609,26 +1670,55 @@ namespace WPinternals
                     else
                     {
                         AllocateBackupBuffersOnPhone = false;
-                        if (AllocateAsyncBuffersOnPhone)
+                        OldGapFill = CurrentGapFill;
+                        if (OldGapFill <= EstimatedGapFill)
                         {
-                            AllocateAsyncBuffersOnPhone = false;
+                            CurrentGapFill = EstimatedGapFill + (EstimatedGapFill - OldGapFill) + (UInt32)FFU.ChunkSize;
+                            if (CurrentGapFill > MaximumGapFill)
+                            {
+                                if (OldGapFill > 0)
+                                {
+                                    CurrentGapFill = OldGapFill - (UInt32)FFU.ChunkSize;
+                                }
+                                else if (AssumeImageHeaderFallsInGap)
+                                {
+                                    AssumeImageHeaderFallsInGap = false;
+                                    CurrentGapFill = EstimatedGapFill;
+                                }
+                                else if (!AsyncScanCompleted && AllocateAsyncBuffersOnPhone)
+                                {
+                                    AsyncScanCompleted = true;
+                                    AllocateAsyncBuffersOnPhone = false;
+                                    AssumeImageHeaderFallsInGap = true;
+                                    CurrentGapFill = EstimatedGapFill;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
                         }
                         else
                         {
-                            AllocateAsyncBuffersOnPhone = true;
-                            OldGapFill = CurrentGapFill;
-                            if (OldGapFill <= EstimatedGapFill)
+                            if (OldGapFill <= (EstimatedGapFill * 2))
                             {
-                                CurrentGapFill = EstimatedGapFill + (EstimatedGapFill - OldGapFill) + (UInt32)FFU.ChunkSize;
+                                CurrentGapFill = EstimatedGapFill - (OldGapFill - EstimatedGapFill);
+                            }
+                            else
+                            {
+                                CurrentGapFill = OldGapFill + (UInt32)FFU.ChunkSize;
                                 if (CurrentGapFill > MaximumGapFill)
                                 {
-                                    if (OldGapFill > 0)
-                                    {
-                                        CurrentGapFill = OldGapFill - (UInt32)FFU.ChunkSize;
-                                    }
-                                    else if (AssumeImageHeaderFallsInGap)
+                                    if (AssumeImageHeaderFallsInGap)
                                     {
                                         AssumeImageHeaderFallsInGap = false;
+                                        CurrentGapFill = EstimatedGapFill;
+                                    }
+                                    else if (!AsyncScanCompleted && AllocateAsyncBuffersOnPhone)
+                                    {
+                                        AsyncScanCompleted = true;
+                                        AllocateAsyncBuffersOnPhone = false;
+                                        AssumeImageHeaderFallsInGap = true;
                                         CurrentGapFill = EstimatedGapFill;
                                     }
                                     else
@@ -1637,34 +1727,16 @@ namespace WPinternals
                                     }
                                 }
                             }
-                            else
-                            {
-                                if (OldGapFill <= (EstimatedGapFill * 2))
-                                {
-                                    CurrentGapFill = EstimatedGapFill - (OldGapFill - EstimatedGapFill);
-                                }
-                                else
-                                {
-                                    CurrentGapFill = OldGapFill + (UInt32)FFU.ChunkSize;
-                                    if (CurrentGapFill > MaximumGapFill)
-                                    {
-                                        if (AssumeImageHeaderFallsInGap)
-                                        {
-                                            AssumeImageHeaderFallsInGap = false;
-                                            CurrentGapFill = EstimatedGapFill;
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }
             }
             while (!Success && !Abort);
+
+            if (Notifier.CurrentModel is NokiaPhoneModel FinishedPhoneModel)
+            {
+                FinishedPhoneModel.SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
+            }
 
             // Now we will first try to create a memory corruption in the phone, before we reset the phone.
             // The memory corruption will cause the phone to abort the shutdown-sequence and switch to emergency mode immediately.

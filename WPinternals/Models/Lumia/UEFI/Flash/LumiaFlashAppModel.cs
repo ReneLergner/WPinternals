@@ -709,6 +709,11 @@ namespace WPinternals.Models.UEFIApps.Flash
                 Request[0x0C + PartitionBytes.Length + 0x01] = 0;
 
                 byte[] Response = ExecuteRawMethod(Request);
+                if (Response == null)
+                {
+                    throw new BadConnectionException();
+                }
+
                 int ResultCode = (Response[6] << 8) + Response[7];
                 if (ResultCode != 0)
                 {
@@ -776,7 +781,11 @@ namespace WPinternals.Models.UEFIApps.Flash
             ByteOperations.WriteAsciiString(Request, 0, AsyncFlashModeSignature + "S");
             Request[8] = 1; // Protocol version must be 1
             Request[9] = 0; // Protocol type must be 0
-            ExecuteRawMethod(Request);
+            byte[] Response = ExecuteRawMethod(Request);
+            if (Response == null)
+            {
+                throw new BadConnectionException();
+            }
         }
 
         // Erases MODEM_FS1 and MODEM_FS2, and restores MODEM_FSG to MODEM_FS1
@@ -791,7 +800,11 @@ namespace WPinternals.Models.UEFIApps.Flash
         {
             byte[] Request = new byte[7];
             ByteOperations.WriteAsciiString(Request, 0, AsyncFlashModeSignature + "E");
-            ExecuteRawMethod(Request);
+            byte[] Response = ExecuteRawMethod(Request);
+            if (Response == null)
+            {
+                throw new BadConnectionException();
+            }
         }
 
         internal void ProvisionSecureBootKeys(SecureBootKeyType KeyType) // Only for Flashmode, not BootManager mode.
