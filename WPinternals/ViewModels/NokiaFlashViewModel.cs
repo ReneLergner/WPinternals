@@ -22,6 +22,7 @@ using System;
 using System.Threading;
 using WPinternals.HelperClasses;
 using WPinternals.Models.Lumia;
+using WPinternals.Models.Lumia.UEFI;
 using WPinternals.Models.Lumia.UEFI.Flash;
 using WPinternals.Models.UEFIApps.Flash;
 
@@ -63,6 +64,7 @@ namespace WPinternals
             {
                 if (!DeviceInfoLoaded)
                 {
+                    CurrentModel.SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
                     try
                     {
                         //byte[] Imsi = CurrentModel.ExecuteJsonMethodAsBytes("ReadImsi", "Imsi"); // 9 bytes: 08 29 40 40 ...
@@ -91,12 +93,22 @@ namespace WPinternals
                         //string Test = CurrentModel.ExecuteJsonMethodAsString("ReadManufacturingData", ""); -> This method is only possible in Label-mode.
 
                         UefiSecurityStatusResponse SecurityStatus = CurrentModel.ReadSecurityStatus();
+                        if ((SecurityStatus == null) && CurrentModel.LastCommunicationFailed)
+                        {
+                            LumiaFlashAppPhoneInfo ProbeInfo = CurrentModel.ReadPhoneInfo(false);
+                            if (CurrentModel.LastCommunicationFailed && (ProbeInfo.State == PhoneInfoState.Empty))
+                            {
+                                LogFile.Log("Phone in Flash mode did not respond to status queries; skipping further info polling.", LogType.FileAndConsole);
+                                DeviceInfoLoaded = true;
+                                return;
+                            }
+                        }
 
                         UInt32? FlagsResult = CurrentModel.ReadSecurityFlags();
                         UInt32 SecurityFlags = 0;
                         if (FlagsResult != null)
                         {
-                            SecurityFlags = (UInt32)CurrentModel.ReadSecurityFlags();
+                            SecurityFlags = FlagsResult.Value;
                             LogFile.Log("Security flags: 0x" + SecurityFlags.ToString("X8"));
 
                             FinalConfigDakStatus = CurrentModel.ReadFuseStatus(Fuse.Dak);
@@ -294,6 +306,10 @@ namespace WPinternals
                         LogFile.Log(ex.StackTrace, LogType.FileAndConsole);
 
                         LogFile.Log("Reading status from Flash interface was aborted.");
+                    }
+                    finally
+                    {
+                        CurrentModel.SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
                     }
                     DeviceInfoLoaded = true;
                 }

@@ -106,9 +106,19 @@ namespace WPinternals.Models.Lumia.UEFI
 
             byte[] Response = ExecuteRawMethod(Request);
 
+            if ((Response == null) || (Response.Length < 4))
+            {
+                throw new BadConnectionException();
+            }
+
             if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
             {
                 throw new NotSupportedException();
+            }
+
+            if (Response.Length < 8)
+            {
+                throw new BadConnectionException();
             }
 
             UInt16 Error = (UInt16)((Response[6] << 8) + Response[7]);

@@ -66,12 +66,19 @@ namespace WPinternals.Models.Lumia.UEFI
         /* NOKV   */
         private const string InfoQuerySignature = $"{Signature}V";
 
+        internal bool LastCommunicationFailed { get; private set; }
+
         internal FlashAppType GetFlashAppType()
         {
             byte[] Request = new byte[4];
             ByteOperations.WriteAsciiString(Request, 0, InfoQuerySignature);
             byte[] Response = ExecuteRawMethod(Request);
-            if ((Response == null) || (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU"))
+            if (LastCommunicationFailed || (Response == null))
+            {
+                throw new BadConnectionException();
+            }
+
+            if (ByteOperations.ReadAsciiString(Response, 0, 4) == "NOKU")
             {
                 throw new NotSupportedException();
             }
@@ -91,16 +98,19 @@ namespace WPinternals.Models.Lumia.UEFI
                 byte[] Request = new byte[4];
                 ByteOperations.WriteAsciiString(Request, 0, InfoQuerySignature);
                 byte[] Response = ExecuteRawMethod(Request);
-                if ((Response != null) && (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU"))
+                if (Response != null)
                 {
-                    Result.App = (FlashAppType)Response[5];
-                    Result.ProtocolVersionMajor = Response[6];
-                    Result.ProtocolVersionMinor = Response[7];
-                    Result.VersionMajor = Response[8];
-                    Result.VersionMinor = Response[9];
-                }
+                    if (ByteOperations.ReadAsciiString(Response, 0, 4) != "NOKU")
+                    {
+                        Result.App = (FlashAppType)Response[5];
+                        Result.ProtocolVersionMajor = Response[6];
+                        Result.ProtocolVersionMinor = Response[7];
+                        Result.VersionMajor = Response[8];
+                        Result.VersionMinor = Response[9];
+                    }
 
-                Result.State = PhoneInfoState.Basic;
+                    Result.State = PhoneInfoState.Basic;
+                }
             }
 
             return Result;
@@ -148,15 +158,17 @@ namespace WPinternals.Models.Lumia.UEFI
             byte[] Result = null;
             lock (UsbLock)
             {
-                Device.OutputPipe.Write(RawMethod, 0, Length);
+                LastCommunicationFailed = false;
                 try
                 {
+                    Device.OutputPipe.Write(RawMethod, 0, Length);
                     int OutputLength = Device.InputPipe.Read(Buffer);
                     Result = new byte[OutputLength];
                     System.Buffer.BlockCopy(Buffer, 0, Result, 0, OutputLength);
                 }
-                catch (Exception ex) // Reboot command looses connection
+                catch (Exception ex) // Reboot command looses connection or pipe times out
                 {
+                    LastCommunicationFailed = true;
                     LogFile.LogException(ex, LogType.FileOnly);
                 }
             }

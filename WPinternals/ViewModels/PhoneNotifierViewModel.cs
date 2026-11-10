@@ -26,6 +26,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnifiedFlashingPlatform;
 using WPinternals.HelperClasses;
+using WPinternals.Models.Lumia;
 using WPinternals.Models.Lumia.NCSd;
 using WPinternals.Models.Lumia.UEFI;
 using WPinternals.Models.SimpleIO;
@@ -297,11 +298,18 @@ namespace WPinternals
                              e.DevicePath.Contains("&PID_05EE", StringComparison.OrdinalIgnoreCase))   // VID_0421&PID_05EE is for early RX100
                     {
                         FlashAppType type = FlashAppType.FlashApp;
+                        bool IsCommunicationUnresponsive = false;
                         NokiaUEFIModel tmpModel = new(e.DevicePath);
+                        tmpModel.SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
                         try
                         {
                             type = tmpModel.GetFlashAppType();
                             LogFile.Log("Flash App Type: " + type.ToString(), LogType.FileOnly);
+                        }
+                        catch (BadConnectionException)
+                        {
+                            IsCommunicationUnresponsive = true;
+                            LogFile.Log("Flash App Type probe timed out or failed; device may be stalled. Assuming " + type.ToString(), LogType.FileAndConsole);
                         }
                         catch (Exception ex)
                         {
@@ -335,7 +343,12 @@ namespace WPinternals
                                     CurrentModel = new LumiaFlashAppModel(e.DevicePath);
                                     ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                                    ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
+                                    if (!IsCommunicationUnresponsive)
+                                    {
+                                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
+                                        ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
+                                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
+                                    }
                                     CurrentInterface = PhoneInterfaces.Lumia_Flash;
                                     CurrentDevicePath = e.DevicePath;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
@@ -350,7 +363,12 @@ namespace WPinternals
                                     CurrentModel = new LumiaPhoneInfoAppModel(e.DevicePath);
                                     ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
-                                    ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
+                                    if (!IsCommunicationUnresponsive)
+                                    {
+                                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
+                                        ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
+                                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
+                                    }
                                     CurrentInterface = PhoneInterfaces.Lumia_PhoneInfo;
                                     CurrentDevicePath = e.DevicePath;
                                     LogFile.Log("Found device on interface: " + ((USBNotifier)sender).Guid.ToString(), LogType.FileOnly);
@@ -530,7 +548,9 @@ namespace WPinternals
                         CurrentModel = new LumiaFlashAppModel(DevicePath);
                         ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
+                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
                         ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
+                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
                         CurrentInterface = PhoneInterfaces.Lumia_Flash;
                         CurrentDevicePath = DevicePath;
                         LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
@@ -545,7 +565,9 @@ namespace WPinternals
                         CurrentModel = new LumiaPhoneInfoAppModel(DevicePath);
                         ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
+                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
                         ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
+                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
                         CurrentInterface = PhoneInterfaces.Lumia_PhoneInfo;
                         CurrentDevicePath = DevicePath;
                         LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);
@@ -562,7 +584,9 @@ namespace WPinternals
                         CurrentModel = new LumiaFlashAppModel(DevicePath);
                         ((NokiaUEFIModel)CurrentModel).InterfaceChanged += InterfaceChanged;
 
+                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
                         ((NokiaUEFIModel)CurrentModel).DisableRebootTimeOut();
+                        ((NokiaPhoneModel)CurrentModel).SetTransferTimeout(NokiaPhoneModel.DefaultTransferTimeoutMs);
                         CurrentInterface = PhoneInterfaces.Lumia_Flash;
                         CurrentDevicePath = DevicePath;
                         LogFile.Log("Found device on interface: " + LumiaFlashInterfaceGuid.ToString(), LogType.FileOnly);

@@ -917,6 +917,9 @@ namespace WPinternals
             bool PhoneNeedsReset = false;
             bool WaitForReset = false;
             int AttemptCount = 0;
+            int InitRetryCount = 0;
+            const int MaxInitRetriesPerProfileCandidate = 2;
+            bool AttemptInitFailed = false;
             UInt32 ExploitHeaderAllocationSize = 0;
             UInt32 LastHeaderV2Size = 0;
             byte[] PartialHeader;
@@ -951,10 +954,13 @@ namespace WPinternals
             do
             {
                 AttemptCount++;
+                uint ProgressAttemptCount = (uint)Math.Min(AttemptCount, MaximumAttempts);
                 IDisposable AttemptModel = Notifier.CurrentModel;
                 if (AttemptModel is NokiaPhoneModel ActivePhoneModel)
                 {
-                    ActivePhoneModel.SetTransferTimeout(PerformFullFlashFirst ? NokiaPhoneModel.DefaultTransferTimeoutMs : 10000);
+                    ActivePhoneModel.SetTransferTimeout(
+                        PerformFullFlashFirst ? NokiaPhoneModel.DefaultTransferTimeoutMs : 10000,
+                        NokiaPhoneModel.DefaultTransferTimeoutMs);
                 }
 
                 if ((Profile == null) || (AttemptCount > 1))
@@ -967,7 +973,7 @@ namespace WPinternals
                     }
 
                     Scanning = true;
-                    UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", (uint)AttemptCount, Status: WPinternalsStatus.Scanning);
+                    UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", ProgressAttemptCount, Status: WPinternalsStatus.Scanning);
 
                     ExploitHeaderAllocationSize = CurrentGapFill + (UInt32)FFU.ChunkSize;
                 }
@@ -988,12 +994,15 @@ namespace WPinternals
                 // In any case, the allocation of the async-buffers should not be simulated in the Uefi Memory Simulator,
                 // because that would create a gap in the Simulator, instead of avoiding a gap on the phone.
                 //
-                bool AttemptInitFailed = false;
+                AttemptInitFailed = false;
                 try
                 {
                     if (AllocateAsyncBuffersOnPhone)
                     {
+                        // Allow newly enumerated FlashApp USB endpoints and async buffers to settle before EndAsyncFlash()
+                        await Task.Delay(250 + (InitRetryCount * 150));
                         ((LumiaFlashAppModel)Notifier.CurrentModel).StartAsyncFlash();
+                        await Task.Delay(150 + (InitRetryCount * 50));
                         ((LumiaFlashAppModel)Notifier.CurrentModel).EndAsyncFlash(); // Ending Async flashing is not necessary for Lumia 950, but it is necessary for Lumia 640!
                     }
 
@@ -1061,177 +1070,180 @@ namespace WPinternals
 
                     HeadersFull = false;
 
-                    // On every flashing phase we must fill the memory gap first, before sending the header.
-                    if (CurrentGapFill > UefiMemorySim.PageSize)
+                    Stream CurrentStream = null;
+                    int StreamIndex = 0;
+                    int Step = -3;
+                    try
                     {
-                        if (FlashingPhase > 0)
+                        // On every flashing phase we must fill the memory gap first, before sending the header.
+                        if (CurrentGapFill > UefiMemorySim.PageSize)
                         {
-                            // Avoid Error 0x0010 "Invalid sub block length".
-                            // Headersize must increase compared to last time a header was sent, to avoid processing the header.
-                            // Offset must be 0, to reset buffers.
-                            // Previous data + new data must fit in new headersize.
-                            // We can send an extra byte, because last memory buffer was sent including the tail.
-                            // And there is always extra space in the memoryspace after the tail.
-                            ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
+                            if (FlashingPhase > 0)
+                            {
+                                // Avoid Error 0x0010 "Invalid sub block length".
+                                // Headersize must increase compared to last time a header was sent, to avoid processing the header.
+                                // Offset must be 0, to reset buffers.
+                                // Previous data + new data must fit in new headersize.
+                                // We can send an extra byte, because last memory buffer was sent including the tail.
+                                // And there is always extra space in the memoryspace after the tail.
+                                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
+                            }
+
+                            // CurrentGapFill is the amount of data we want to be allocated on the phone
+                            // But we send less data, so the header won't be processed yet.
+                            PartialHeader = new byte[UefiMemorySim.PageSize];
+                            ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap -> This will fail on phones with Flash Protocol v1.x !! On Lumia 640 this will hang on receiving the response when EndAsyncFlash was not called.
                         }
 
-                        // CurrentGapFill is the amount of data we want to be allocated on the phone
-                        // But we send less data, so the header won't be processed yet.
-                        PartialHeader = new byte[UefiMemorySim.PageSize];
-                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap -> This will fail on phones with Flash Protocol v1.x !! On Lumia 640 this will hang on receiving the response when EndAsyncFlash was not called.
-                    }
+                        Step = -2;
+                        using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
+                        {
+                            // On every flashing phase we need to send the full header again to reset all the counters.
+                            FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
+                            ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV1(FfuHeader, Options);
 
-                    using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
-                    {
-                        // On every flashing phase we need to send the full header again to reset all the counters.
-                        FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
-                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV1(FfuHeader, Options);
+                            if (PerformFullFlashFirst && (FlashingPhase == 0))
+                            {
+                                // If we flash the stock ROM at this point, the header is in memory is not overwritten yet.
+                                // This means that after the last chunk was written, the flashing-status is written to NV (and also flushed).
+                                // But this doesn't matter, because even when we want to overwrite NV, this happens later.
+                                // When the header is successfully overwritten in memory, the next chunk of custom data will be allowed to be written.
+
+                                Step = -1;
+                                LogFile.Log("Starting custom flash attempt by doing a full flash.", LogType.FileAndConsole);
+
+                                UInt64 Position = CombinedFFUHeaderSize;
+                                byte[] FlashPayload;
+                                int ChunkIndex = 0;
+                                UInt32 TotalChunkCount = (UInt32)FFU.TotalChunkCount;
+
+                                // Protocol v2
+                                FlashPayload = new byte[FlashInfo.WriteBufferSize];
+
+                                while (Position < (UInt64)FfuFile.Length)
+                                {
+                                    UInt32 CommonFlashPayloadSize = FlashInfo.WriteBufferSize;
+                                    if (((UInt64)FfuFile.Length - Position) < CommonFlashPayloadSize)
+                                    {
+                                        CommonFlashPayloadSize = (UInt32)((UInt64)FfuFile.Length - Position);
+                                        FlashPayload = new byte[CommonFlashPayloadSize];
+                                    }
+
+                                    FfuFile.Read(FlashPayload, 0, (int)CommonFlashPayloadSize);
+                                    ChunkIndex += (int)(CommonFlashPayloadSize / FFU.ChunkSize);
+                                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuPayloadV2(FlashPayload, ShowProgress ? (int)((double)(ChunkIndex + 1) * 100 / TotalChunkCount) : 0, 0);
+                                    Position += CommonFlashPayloadSize;
+                                }
+                            }
+                        }
+
+                        Step = 0;
+                        UInt32 NewWriteDescriptorOffset = 0xF8;
+                        UInt32 CatalogSize = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.ContentStart + 0x18);
+                        UInt32 NewHashOffset = 0x20 + CatalogSize;
+
+                        UInt32 WriteDescriptorLength = 0;
+                        UInt32 WriteDescriptorCount = 0;
+                        UInt32 HashTableSize = 0;
 
                         if (PerformFullFlashFirst && (FlashingPhase == 0))
                         {
-                            // If we flash the stock ROM at this point, the header is in memory is not overwritten yet.
-                            // This means that after the last chunk was written, the flashing-status is written to NV (and also flushed).
-                            // But this doesn't matter, because even when we want to overwrite NV, this happens later.
-                            // When the header is successfully overwritten in memory, the next chunk of custom data will be allowed to be written.
+                            // Set offset for new descriptor to end of descriptor-table
+                            WriteDescriptorLength = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD4);
+                            NewWriteDescriptorOffset += WriteDescriptorLength;
 
-                            LogFile.Log("Starting custom flash attempt by doing a full flash.", LogType.FileAndConsole);
+                            // Get descriptor-count of the FFU
+                            WriteDescriptorCount = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD0);
 
-                            UInt64 Position = CombinedFFUHeaderSize;
-                            byte[] FlashPayload;
-                            int ChunkIndex = 0;
-                            UInt32 TotalChunkCount = (UInt32)FFU.TotalChunkCount;
+                            // Set offset for new hash to end of hash-table
+                            HashTableSize = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.ContentStart + 0x1C);
+                            NewHashOffset += HashTableSize; // Skip to the end of the original hash-table.
+                        }
+                        else
+                        {
+                            // From start of hash-table skip the first hashes for Image- and StoreHeaders.
+                            HashTableSize = (UInt32)((FFU.ImageHeader.Length + FFU.StoreHeader.Length) / FFU.ChunkSize * 0x20);
+                            NewHashOffset += HashTableSize;
+                        }
 
-                            // Protocol v2
-                            FlashPayload = new byte[FlashInfo.WriteBufferSize];
+                        // Determine available space and number of payloads to send for this phase
+                        UInt32 HashSpace = (UInt32)(FFU.SecurityHeader.Length - NewHashOffset);
+                        UInt32 DescriptorSpace = (UInt32)(FFU.StoreHeader.Length - NewWriteDescriptorOffset);
 
-                            while (Position < (UInt64)FfuFile.Length)
+                        FlashingPhasePayloadCount = 0;
+
+                        // Always flash one extra chunk on the GPT (for purpose of testing and for making sure that first chunk does not contain all zero's).
+                        UInt32 SecurityHeaderSize = FlashInProgress ? 0 : 0x20u;
+                        UInt32 StoreHeaderSize = FlashInProgress ? 0 : 0x10u;
+                        for (UInt32 i = FlashingPhaseStartPayloadIndex; i < payloads.Length; i++)
+                        {
+                            UInt32 NewSecurityHeaderSize = SecurityHeaderSize + payloads[i].GetSecurityHeaderSize();
+                            UInt32 NewStoreHeaderSize = StoreHeaderSize + payloads[i].GetStoreHeaderSize();
+
+                            if (NewSecurityHeaderSize > HashSpace || NewStoreHeaderSize > DescriptorSpace)
                             {
-                                UInt32 CommonFlashPayloadSize = FlashInfo.WriteBufferSize;
-                                if (((UInt64)FfuFile.Length - Position) < CommonFlashPayloadSize)
-                                {
-                                    CommonFlashPayloadSize = (UInt32)((UInt64)FfuFile.Length - Position);
-                                    FlashPayload = new byte[CommonFlashPayloadSize];
-                                }
-
-                                FfuFile.Read(FlashPayload, 0, (int)CommonFlashPayloadSize);
-                                ChunkIndex += (int)(CommonFlashPayloadSize / FFU.ChunkSize);
-                                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuPayloadV2(FlashPayload, ShowProgress ? (int)((double)(ChunkIndex + 1) * 100 / TotalChunkCount) : 0, 0);
-                                Position += CommonFlashPayloadSize;
+                                HeadersFull = true;
+                                break;
                             }
-                        }
-                    }
 
-                    UInt32 NewWriteDescriptorOffset = 0xF8;
-                    UInt32 CatalogSize = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.ContentStart + 0x18);
-                    UInt32 NewHashOffset = 0x20 + CatalogSize;
-
-                    UInt32 WriteDescriptorLength = 0;
-                    UInt32 WriteDescriptorCount = 0;
-                    UInt32 HashTableSize = 0;
-
-                    if (PerformFullFlashFirst && (FlashingPhase == 0))
-                    {
-                        // Set offset for new descriptor to end of descriptor-table
-                        WriteDescriptorLength = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD4);
-                        NewWriteDescriptorOffset += WriteDescriptorLength;
-
-                        // Get descriptor-count of the FFU
-                        WriteDescriptorCount = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD0);
-
-                        // Set offset for new hash to end of hash-table
-                        HashTableSize = ByteOperations.ReadUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.ContentStart + 0x1C);
-                        NewHashOffset += HashTableSize; // Skip to the end of the original hash-table.
-                    }
-                    else
-                    {
-                        // From start of hash-table skip the first hashes for Image- and StoreHeaders.
-                        HashTableSize = (UInt32)((FFU.ImageHeader.Length + FFU.StoreHeader.Length) / FFU.ChunkSize * 0x20);
-                        NewHashOffset += HashTableSize;
-                    }
-
-                    // Determine available space and number of payloads to send for this phase
-                    UInt32 HashSpace = (UInt32)(FFU.SecurityHeader.Length - NewHashOffset);
-                    UInt32 DescriptorSpace = (UInt32)(FFU.StoreHeader.Length - NewWriteDescriptorOffset);
-
-                    FlashingPhasePayloadCount = 0;
-
-                    // Always flash one extra chunk on the GPT (for purpose of testing and for making sure that first chunk does not contain all zero's).
-                    UInt32 SecurityHeaderSize = FlashInProgress ? 0 : 0x20u;
-                    UInt32 StoreHeaderSize = FlashInProgress ? 0 : 0x10u;
-                    for (UInt32 i = FlashingPhaseStartPayloadIndex; i < payloads.Length; i++)
-                    {
-                        UInt32 NewSecurityHeaderSize = SecurityHeaderSize + payloads[i].GetSecurityHeaderSize();
-                        UInt32 NewStoreHeaderSize = StoreHeaderSize + payloads[i].GetStoreHeaderSize();
-
-                        if (NewSecurityHeaderSize > HashSpace || NewStoreHeaderSize > DescriptorSpace)
-                        {
-                            HeadersFull = true;
-                            break;
+                            FlashingPhasePayloadCount++;
+                            SecurityHeaderSize = NewSecurityHeaderSize;
+                            StoreHeaderSize = NewStoreHeaderSize;
                         }
 
-                        FlashingPhasePayloadCount++;
-                        SecurityHeaderSize = NewSecurityHeaderSize;
-                        StoreHeaderSize = NewStoreHeaderSize;
-                    }
+                        HashTableSize += SecurityHeaderSize;
+                        WriteDescriptorCount += FlashingPhasePayloadCount + (FlashInProgress ? 0 : 1u);
+                        WriteDescriptorLength += StoreHeaderSize;
 
-                    HashTableSize += SecurityHeaderSize;
-                    WriteDescriptorCount += FlashingPhasePayloadCount + (FlashInProgress ? 0 : 1u);
-                    WriteDescriptorLength += StoreHeaderSize;
-
-                    if (!ClearFlashingStatusAtEnd || HeadersFull)
-                    {
-                        WriteDescriptorCount++;
-                    }
-
-                    // Write back new header values.
-                    ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD4, WriteDescriptorLength);
-                    ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD0, WriteDescriptorCount);
-                    ByteOperations.WriteUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.ContentStart + 0x1C, HashTableSize);
-                    ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xEC, 0); // FlashOnlyTableLength - Make flash progress bar white immediately.
-                    ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xE8, 1); // FlashOnlyTableCount
-
-                    // Write new descriptors
-                    // First write descriptor and hash for the first GPT chunk
-                    if (!FlashInProgress) // We only send the first GPT chunk when flash is not in progress yet.
-                    {
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, 0x00000001); // Location count
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, 0x00000001); // Chunk count
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x08, 0x00000000); // Disk access method (0 = Begin, 2 = End)
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x0C, 0x00000000); // Chunk index = GPT
-                        NewWriteDescriptorOffset += 0x10;
-                        byte[] GPTHashValue = System.Security.Cryptography.SHA256.Create().ComputeHash(GPTChunk, 0, FFU.ChunkSize); // Hash is 0x20 bytes
-                        System.Buffer.BlockCopy(GPTHashValue, 0, UefiMemorySim.Buffer, (int)(SecurityHeaderAllocation.ContentStart + NewHashOffset), 0x20);
-                        NewHashOffset += 0x20;
-                    }
-
-                    for (UInt32 i = 0; i < FlashingPhasePayloadCount; i++)
-                    {
-                        FlashingPayload payload = payloads[FlashingPhaseStartPayloadIndex + i];
-
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, (UInt32)payload.TargetLocations.Length); // Location count
-                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, payload.ChunkCount);                      // Chunk count
-                        NewWriteDescriptorOffset += 0x08;
-
-                        foreach (UInt32 location in payload.TargetLocations)
+                        if (!ClearFlashingStatusAtEnd || HeadersFull)
                         {
-                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, 0x00000000);                          // Disk access method (0 = Begin, 2 = End)
-                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, location);                            // Chunk index
-                            NewWriteDescriptorOffset += 0x08;
+                            WriteDescriptorCount++;
                         }
 
-                        foreach (byte[] hashValue in payload.ChunkHashes)
+                        // Write back new header values.
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD4, WriteDescriptorLength);
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xD0, WriteDescriptorCount);
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.ContentStart + 0x1C, HashTableSize);
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xEC, 0); // FlashOnlyTableLength - Make flash progress bar white immediately.
+                        ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + 0xE8, 1); // FlashOnlyTableCount
+
+                        // Write new descriptors
+                        // First write descriptor and hash for the first GPT chunk
+                        if (!FlashInProgress) // We only send the first GPT chunk when flash is not in progress yet.
                         {
-                            // Write new hash
-                            System.Buffer.BlockCopy(hashValue, 0, UefiMemorySim.Buffer, (Int32)(SecurityHeaderAllocation.ContentStart + NewHashOffset), 0x20);
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, 0x00000001); // Location count
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, 0x00000001); // Chunk count
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x08, 0x00000000); // Disk access method (0 = Begin, 2 = End)
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x0C, 0x00000000); // Chunk index = GPT
+                            NewWriteDescriptorOffset += 0x10;
+                            byte[] GPTHashValue = System.Security.Cryptography.SHA256.Create().ComputeHash(GPTChunk, 0, FFU.ChunkSize); // Hash is 0x20 bytes
+                            System.Buffer.BlockCopy(GPTHashValue, 0, UefiMemorySim.Buffer, (int)(SecurityHeaderAllocation.ContentStart + NewHashOffset), 0x20);
                             NewHashOffset += 0x20;
                         }
-                    }
 
-                    Stream CurrentStream = null;
-                    int StreamIndex = 0;
-                    int Step = 0;
-                    try
-                    {
+                        for (UInt32 i = 0; i < FlashingPhasePayloadCount; i++)
+                        {
+                            FlashingPayload payload = payloads[FlashingPhaseStartPayloadIndex + i];
+
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, (UInt32)payload.TargetLocations.Length); // Location count
+                            ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, payload.ChunkCount);                      // Chunk count
+                            NewWriteDescriptorOffset += 0x08;
+
+                            foreach (UInt32 location in payload.TargetLocations)
+                            {
+                                ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x00, 0x00000000);                          // Disk access method (0 = Begin, 2 = End)
+                                ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.ContentStart + NewWriteDescriptorOffset + 0x04, location);                            // Chunk index
+                                NewWriteDescriptorOffset += 0x08;
+                            }
+
+                            foreach (byte[] hashValue in payload.ChunkHashes)
+                            {
+                                // Write new hash
+                                System.Buffer.BlockCopy(hashValue, 0, UefiMemorySim.Buffer, (Int32)(SecurityHeaderAllocation.ContentStart + NewHashOffset), 0x20);
+                                NewHashOffset += 0x20;
+                            }
+                        }
+
                         // Send a small portion of header v2 at offset 0
                         // The payload is smaller than the total headersize, so that it won't start processing the header now.
                         // This will allocate new memory at the bottom of the memory-pool, but it will not reset the previously imported ffu header.
@@ -1476,6 +1488,7 @@ namespace WPinternals
                     {
                         if (Notifier.CurrentModel is LumiaFlashAppModel FlashModelToReset)
                         {
+                            FlashModelToReset.SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
                             FlashModelToReset.ResetDevice();
                             FlashModelToReset.ResetPhone();
                         }
@@ -1491,6 +1504,7 @@ namespace WPinternals
                             if (ReferenceEquals(Notifier.CurrentModel, AttemptModel) && (Notifier.CurrentModel is LumiaFlashAppModel StalledFlashModel))
                             {
                                 LogFile.Log("Phone did not disconnect after timeout; resetting USB pipes and attempting reboot", LogType.FileAndConsole);
+                                StalledFlashModel.SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
                                 StalledFlashModel.ResetDevice();
                                 StalledFlashModel.ResetPhone();
                             }
@@ -1529,7 +1543,7 @@ namespace WPinternals
 
                             await Notifier.WaitForRemoval();
 
-                            UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", (uint)AttemptCount, Status: WPinternalsStatus.Scanning);
+                            UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", ProgressAttemptCount, Status: WPinternalsStatus.Scanning);
 
                             await Notifier.WaitForArrival();
                         }
@@ -1615,7 +1629,7 @@ namespace WPinternals
 
                                     await Notifier.WaitForRemoval();
 
-                                    UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", (uint)AttemptCount, Status: WPinternalsStatus.Scanning);
+                                    UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", ProgressAttemptCount, Status: WPinternalsStatus.Scanning);
 
                                     await Notifier.WaitForArrival();
                                 }
@@ -1633,11 +1647,52 @@ namespace WPinternals
                         if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
                         {
                             // In case we are on an Engineering phone which isn't stuck in flashmode and booted to BootMgrApp
-                            ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                            bool SwitchFailed = false;
+                            try
+                            {
+                                ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                            }
+                            catch (BadConnectionException Ex)
+                            {
+                                LogFile.LogException(Ex, LogType.FileOnly);
+                                SwitchFailed = true;
+                            }
 
                             if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
                             {
-                                await Notifier.WaitForArrival();
+                                bool SwitchTimeout = false;
+                                try
+                                {
+                                    await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(SwitchFailed ? 10 : 30));
+                                }
+                                catch (TimeoutException)
+                                {
+                                    SwitchTimeout = true;
+                                }
+
+                                if (SwitchTimeout || (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader))
+                                {
+                                    if (Notifier.CurrentModel is LumiaBootManagerAppModel StalledBootMgrModel)
+                                    {
+                                        StalledBootMgrModel.SetTransferTimeout(NokiaPhoneModel.FastProbeTimeoutMs);
+                                        StalledBootMgrModel.ResetDevice();
+                                        StalledBootMgrModel.ResetPhone();
+                                    }
+
+                                    UpdateWorkingStatus("You need to manually reset your phone now!", "The phone in BootMgr mode is not responding. To continue the unlock-sequence, keep the phone connected and reboot it manually by holding Power + Volume Down for about 10 seconds until it vibrates.", null, WPinternalsStatus.WaitingForManualReset);
+                                    await Notifier.WaitForRemoval();
+                                    UpdateWorkingStatus("Scanning for flashing-profile - attempt " + AttemptCount.ToString() + " of " + MaximumAttempts.ToString(), "Your phone may appear to be in a reboot-loop. This is expected behavior. Don't interfere this process.", ProgressAttemptCount, Status: WPinternalsStatus.Scanning);
+                                    await Notifier.WaitForArrival();
+
+                                    if (Notifier.CurrentInterface == PhoneInterfaces.Lumia_Bootloader)
+                                    {
+                                        ((LumiaBootManagerAppModel)Notifier.CurrentModel).SwitchToFlashAppContext();
+                                        if (Notifier.CurrentInterface != PhoneInterfaces.Lumia_Flash)
+                                        {
+                                            await Notifier.WaitForArrival().TimeoutAfter(TimeSpan.FromSeconds(15));
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -1659,16 +1714,26 @@ namespace WPinternals
                         AllocateAsyncBuffersOnPhone = true;
                         AllocateBackupBuffersOnPhone = false;
                         AsyncScanCompleted = false;
+                        InitRetryCount = 0;
                         CurrentGapFill = EstimatedGapFill;
                         Profile = null;
                         ResetScanning = false;
                     }
+                    else if (AttemptInitFailed && (InitRetryCount < MaxInitRetriesPerProfileCandidate))
+                    {
+                        InitRetryCount++;
+                        LogFile.Log(
+                            $"Flash initialization failed before testing Fill=0x{CurrentGapFill:X}; retrying same candidate ({InitRetryCount}/{MaxInitRetriesPerProfileCandidate}).",
+                            LogType.FileAndConsole);
+                    }
                     else if (Experimental && !AllocateBackupBuffersOnPhone)
                     {
+                        InitRetryCount = 0;
                         AllocateBackupBuffersOnPhone = true;
                     }
                     else
                     {
+                        InitRetryCount = 0;
                         AllocateBackupBuffersOnPhone = false;
                         OldGapFill = CurrentGapFill;
                         if (OldGapFill <= EstimatedGapFill)
@@ -1749,40 +1814,47 @@ namespace WPinternals
 
                 ByteOperations.WriteUInt32(UefiMemorySim.Buffer, SecurityHeaderAllocation.HeadStart + 4, 0); // Set allocation size to 0 in allocationhead
                 ByteOperations.WriteUInt32(UefiMemorySim.Buffer, StoreHeaderAllocation.HeadStart + 4, 0); // Set allocation size to 0 in allocationhead
-                if (CurrentGapFill > UefiMemorySim.PageSize)
+                try
                 {
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
-                    PartialHeader = new byte[UefiMemorySim.PageSize];
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap
-                }
-                using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
-                {
-                    // On every flashing phase we need to send the full header again, because this triggers ffu_import_invalidate(), which is necessary to reset all the counters.
-                    FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV1(FfuHeader, Options);
-                }
-                PartialHeader = new byte[UefiMemorySim.PageSize];
-                ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(ExploitHeaderAllocationSize, 0, PartialHeader, Options); // SkipWrite = 1 (only works on engineering phones)
-                UInt32 ExploitHeaderRemaining = SecurityHeaderAllocation.TailEnd + 1 - PartialHeaderAllocation.ContentStart - (UInt32)PartialHeader.Length;
-                HeaderOffset = (UInt32)PartialHeader.Length;
-                while (ExploitHeaderRemaining > 0)
-                {
-                    UInt32 CurrentFill = ExploitHeaderRemaining;
-                    if (CurrentFill > FlashInfo.WriteBufferSize)
+                    if (CurrentGapFill > UefiMemorySim.PageSize)
                     {
-                        CurrentFill = FlashInfo.WriteBufferSize;
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(LastHeaderV2Size + 1, 0, new byte[1], Options);
+                        PartialHeader = new byte[UefiMemorySim.PageSize];
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(CurrentGapFill, 0, PartialHeader, Options); // Fill memory gap
+                    }
+                    using (FileStream FfuFile = new(FFU.Path, FileMode.Open, FileAccess.Read))
+                    {
+                        // On every flashing phase we need to send the full header again, because this triggers ffu_import_invalidate(), which is necessary to reset all the counters.
+                        FfuFile.Read(FfuHeader, 0, (int)CombinedFFUHeaderSize);
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV1(FfuHeader, Options);
+                    }
+                    PartialHeader = new byte[UefiMemorySim.PageSize];
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(ExploitHeaderAllocationSize, 0, PartialHeader, Options); // SkipWrite = 1 (only works on engineering phones)
+                    UInt32 ExploitHeaderRemaining = SecurityHeaderAllocation.TailEnd + 1 - PartialHeaderAllocation.ContentStart - (UInt32)PartialHeader.Length;
+                    HeaderOffset = (UInt32)PartialHeader.Length;
+                    while (ExploitHeaderRemaining > 0)
+                    {
+                        UInt32 CurrentFill = ExploitHeaderRemaining;
+                        if (CurrentFill > FlashInfo.WriteBufferSize)
+                        {
+                            CurrentFill = FlashInfo.WriteBufferSize;
+                        }
+
+                        PartialHeader = new byte[CurrentFill];
+                        PartialHeaderAllocation.CopyFromThisAllocation(HeaderOffset, CurrentFill, PartialHeader, 0);
+                        ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options);
+                        LastHeaderV2Size = HeaderOffset + CurrentFill + 1;
+                        ExploitHeaderRemaining -= CurrentFill;
+                        HeaderOffset += CurrentFill;
                     }
 
-                    PartialHeader = new byte[CurrentFill];
-                    PartialHeaderAllocation.CopyFromThisAllocation(HeaderOffset, CurrentFill, PartialHeader, 0);
-                    ((LumiaFlashAppModel)Notifier.CurrentModel).SendFfuHeaderV2(HeaderOffset + CurrentFill + 1, HeaderOffset, PartialHeader, Options);
-                    LastHeaderV2Size = HeaderOffset + CurrentFill + 1;
-                    ExploitHeaderRemaining -= CurrentFill;
-                    HeaderOffset += CurrentFill;
+                    // Do the actual reset, which will result in a crash while cleaning up memory
+                    ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
                 }
-
-                // Do the actual reset, which will result in a crash while cleaning up memory
-                ((LumiaFlashAppModel)Notifier.CurrentModel).ResetPhone();
+                catch (BadConnectionException)
+                {
+                    LogFile.Log("Phone dropped connection while triggering hard exit", LogType.FileAndConsole);
+                }
 
                 LogFile.Log("Phone performs hard exit", LogType.FileAndConsole);
 

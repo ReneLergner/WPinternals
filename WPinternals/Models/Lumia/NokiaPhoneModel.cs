@@ -27,6 +27,7 @@ namespace WPinternals.Models.Lumia
     internal class NokiaPhoneModel : IDisposable
     {
         internal const int DefaultTransferTimeoutMs = 30000;
+        internal const int FastProbeTimeoutMs = 3000;
 
         protected bool Disposed = false;
         internal readonly USBDevice Device = null;
@@ -40,21 +41,26 @@ namespace WPinternals.Models.Lumia
 
         public void SetTransferTimeout(int TimeoutMs)
         {
-            if (Disposed || (Device == null) || (TimeoutMs < 0))
+            SetTransferTimeout(TimeoutMs, TimeoutMs);
+        }
+
+        public void SetTransferTimeout(int InputTimeoutMs, int OutputTimeoutMs)
+        {
+            if (Disposed || (Device == null))
             {
                 return;
             }
 
             try
             {
-                if (Device.InputPipe != null)
+                if ((InputTimeoutMs >= 0) && (Device.InputPipe != null))
                 {
-                    Device.InputPipe.Policy.PipeTransferTimeout = TimeoutMs;
+                    Device.InputPipe.Policy.PipeTransferTimeout = InputTimeoutMs;
                 }
 
-                if (Device.OutputPipe != null)
+                if ((OutputTimeoutMs >= 0) && (Device.OutputPipe != null))
                 {
-                    Device.OutputPipe.Policy.PipeTransferTimeout = TimeoutMs;
+                    Device.OutputPipe.Policy.PipeTransferTimeout = OutputTimeoutMs;
                 }
             }
             catch (Exception ex)

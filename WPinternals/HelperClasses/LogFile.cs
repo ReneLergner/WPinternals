@@ -87,7 +87,10 @@ namespace WPinternals.HelperClasses
             Exception CurrentEx = Ex;
             while (CurrentEx != null)
             {
-                Log(Indent + "Error: " + RemoveBadChars(CurrentEx.Message).Replace("of type '.' ", "") + (AdditionalInfo == null ? "" : " - " + AdditionalInfo), Type);
+                string win32Suffix = CurrentEx is System.ComponentModel.Win32Exception w32
+                    ? $" (Win32 0x{w32.NativeErrorCode:X8})"
+                    : "";
+                Log(Indent + "Error: " + RemoveBadChars(CurrentEx.Message).Replace("of type '.' ", "") + win32Suffix + (AdditionalInfo == null ? "" : " - " + AdditionalInfo), Type);
                 AdditionalInfo = null;
                 if (CurrentEx is WPinternalsException)
                 {
@@ -106,7 +109,7 @@ namespace WPinternals.HelperClasses
 
         private static string RemoveBadChars(string Text)
         {
-            return System.Text.RegularExpressions.Regex.Replace(Text, @"[^\u0020-\u007E]+", string.Empty);
+            return System.Text.RegularExpressions.Regex.Replace(Text ?? string.Empty, @"[\x00-\x1F\x7F]+", " ").Trim();
         }
 
         public static void DumpLog(StreamReader r)
