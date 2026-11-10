@@ -21,6 +21,8 @@
 using System;
 using System.ComponentModel;
 using System.Threading;
+using System.Windows;
+using System.Windows.Threading;
 using WPinternals.HelperClasses;
 
 namespace WPinternals
@@ -28,6 +30,7 @@ namespace WPinternals
     internal class ContextViewModel : INotifyPropertyChanged
     {
         protected SynchronizationContext UIContext;
+        protected readonly Dispatcher UIDispatcher;
 
         private bool _IsSwitchingInterface = false;
         public bool IsSwitchingInterface
@@ -39,6 +42,49 @@ namespace WPinternals
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
+        protected bool IsOnUIThread()
+        {
+            if (UIDispatcher != null)
+            {
+                return UIDispatcher.CheckAccess();
+            }
+
+            if (UIContext is DispatcherSynchronizationContext)
+            {
+                Dispatcher AppDispatcher = Application.Current?.Dispatcher;
+                if (AppDispatcher != null)
+                {
+                    return AppDispatcher.CheckAccess();
+                }
+            }
+
+            return (UIContext == null) || (SynchronizationContext.Current == UIContext);
+        }
+
+        protected void PostToUI(Action Action)
+        {
+            if (IsOnUIThread())
+            {
+                Action();
+            }
+            else if (UIDispatcher != null)
+            {
+                UIDispatcher.BeginInvoke(Action);
+            }
+            else if ((UIContext is DispatcherSynchronizationContext) && (Application.Current?.Dispatcher != null))
+            {
+                Application.Current.Dispatcher.BeginInvoke(Action);
+            }
+            else if (UIContext != null)
+            {
+                UIContext.Post(_ => Action(), null);
+            }
+            else
+            {
+                Action();
+            }
+        }
+
         protected void OnPropertyChanged(string propertyName)
         {
             if ((UIContext == null) && (SynchronizationContext.Current != null))
@@ -48,13 +94,13 @@ namespace WPinternals
 
             if (this.PropertyChanged != null)
             {
-                if (SynchronizationContext.Current == UIContext)
+                if (IsOnUIThread())
                 {
                     PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
                 }
                 else
                 {
-                    UIContext.Post((s) => PropertyChanged(this, new PropertyChangedEventArgs(propertyName)), null);
+                    PostToUI(() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)));
                 }
             }
         }
@@ -86,6 +132,7 @@ namespace WPinternals
         internal ContextViewModel()
         {
             UIContext = SynchronizationContext.Current;
+            UIDispatcher = Dispatcher.FromThread(Thread.CurrentThread);
         }
 
         internal ContextViewModel(MainViewModel Main) : this()

@@ -67,18 +67,6 @@ namespace WPinternals
         private readonly SemaphoreSlim EvaluateGate = new(1, 1);
         private int EvaluateGeneration = 0;
 
-        private void PostToUI(Action Action)
-        {
-            if ((UIContext == null) || (SynchronizationContext.Current == UIContext))
-            {
-                Action();
-            }
-            else
-            {
-                UIContext.Post(_ => Action(), null);
-            }
-        }
-
         internal LumiaUnlockBootViewModel(PhoneNotifierViewModel PhoneNotifier, Action SwitchToFlashRom, Action SwitchToUndoRoot, Action SwitchToDownload, bool DoUnlock, Action Callback)
             : base()
         {
@@ -107,9 +95,9 @@ namespace WPinternals
         // Non-blocking on UI thread. Threadsafe.
         internal override void EvaluateViewState()
         {
-            if ((UIContext != null) && (SynchronizationContext.Current != UIContext))
+            if (!IsOnUIThread())
             {
-                UIContext.Post(_ => EvaluateViewState(), null);
+                PostToUI(EvaluateViewState);
                 return;
             }
 
@@ -905,6 +893,11 @@ namespace WPinternals
 
         private void NewDeviceArrived(ArrivalEventArgs Args)
         {
+            if (!IsActive || (State == MachineState.LumiaGetGPT) || (State == MachineState.LumiaUnlockBoot))
+            {
+                return;
+            }
+
             // Do not start on a new thread, because EvaluateViewState will also create new ViewModels and those should be created on the UI thread.
             EvaluateViewState();
         }
